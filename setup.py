@@ -10,7 +10,7 @@ def create_directory(path):
 
 
 def main():
-    root_directories = ['data', 'images', 'logs']
+    root_directories = ['data', 'images', 'logs', 'backups']
     quotes_subdirs = ['packing_slips', 'quotes', 'workorders']
 
     for directory in root_directories:
