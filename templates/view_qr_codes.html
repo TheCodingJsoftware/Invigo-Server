@@ -3,6 +3,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=yes" />
 <script src="https://www.kryogenix.org/code/browser/sorttable/sorttable.js"></script>
 <script src="https://cdn.jsdelivr.net/gh/davidshimjs/qrcodejs/qrcode.min.js"></script>
+<link href='https://fonts.googleapis.com/css?family=Varela Round' rel='stylesheet'>
 <title>View QR Codes</title>
 
 <head>
@@ -11,6 +12,7 @@
             align-items: center;
             text-align: center;
             transition: background-color 0.3s ease-in-out, color 0.3s ease-in-out, border-color 0.3s ease-in-out, border 0.3s ease-in-out, transform 0.3s ease-in-out;
+            font-family: 'Varela Round';
         }
 
         .content {
@@ -22,11 +24,9 @@
             font-size: 20px;
             text-align: center;
             padding-bottom: 5px;
-            font-family: Arial, Helvetica, sans-serif;
         }
 
         p {
-            font-family: Arial, Helvetica, sans-serif;
             font-size: 26px;
             margin-bottom: 5px;
             text-align: center;
@@ -34,7 +34,8 @@
         }
 
         .qr-container {
-            display: flex;
+            display: grid;
+            grid-template-columns: auto auto;
             flex-wrap: wrap;
             justify-content: space-around;
         }
@@ -53,18 +54,13 @@
             border: 1px solid transparent;
             max-width: 100%;
             height: auto;
-            transition: box-shadow 0.3s ease-in-out, color 0.3s ease-in-out, border-color 0.3s ease-in-out, border 0.3s ease-in-out, transform 0.3s ease-in-out;
-            transform: scale(1);
-        }
-
-        .qr-item img:hover {
-            transform: scale(1.05);
-            border: 1px solid black;
-            box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.3), 0 6px 20px 0 rgba(0, 0, 0, 0.3);
         }
 
         @media print {
             details:not([open]) {
+                display: none;
+            }
+            summary{
                 display: none;
             }
         }
@@ -90,7 +86,7 @@
         <div class="qr-container">
             <div class="qr-item" data-name="add_cutoff_sheet">
                 <div class="qr-code"></div>
-                <p>Add Cut Off</p>
+                <p style="font-size: 56px;">Add Remnant to Database</p>
             </div>
         </div>
     </details>
@@ -106,8 +102,8 @@
                 const qrDiv = item.querySelector('.qr-code');
                 new QRCode(qrDiv, {
                     text: encodedUrl,
-                    width: 1024,
-                    height: 1024,
+                    width: 2048,
+                    height: 2048,
                     colorDark: "#000000",
                     colorLight: "#ffffff",
                     correctLevel: QRCode.CorrectLevel.H
