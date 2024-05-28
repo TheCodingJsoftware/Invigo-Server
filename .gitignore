@@ -169,3 +169,6 @@ saved_quotes
 order_number.json
 backups
 run.bat
+*.zip
+*.json
+*.log
