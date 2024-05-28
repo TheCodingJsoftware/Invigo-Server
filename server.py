@@ -381,7 +381,7 @@ class SendErrorReportHandler(tornado.web.RequestHandler):
         if error_log is not None:
             send_error_log(body=error_log, connected_clients=connected_clients)
             with open(
-                f'{os.path.dirname(os.path.realpath(__file__))}/logs/U{datetime.now().strftime("%B %d %A %Y %I_%M_%S %p")}.log',
+                f'{os.path.dirname(os.path.realpath(__file__))}/logs/Error Log - {datetime.now().strftime("%B %d %A %Y %I_%M_%S %p")}.log',
                 "w",
                 encoding="utf-8",
             ) as error_file:
