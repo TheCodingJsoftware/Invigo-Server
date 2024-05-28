@@ -135,15 +135,15 @@
 <header><p>Invigo</p></header>
 <body>
     <div class="grid-container">
-        <div data-url="http://invigo.test/inventory" class="grid-item" data-color="#8d48aa">
+        <div data-url="/inventory" class="grid-item" data-color="#8d48aa">
             <i class="fa-solid fa-boxes-stacked"></i>
             <p class="title">Inventory</p>
         </div>
-        <div data-url="http://invigo.test/sheet_qr_codes" class="grid-item" data-color="white">
+        <div data-url="/sheet_qr_codes" class="grid-item" data-color="white">
             <p class="title">Sheet QR Codes</p>
             <i class="fa-solid fa-qrcode"></i>
         </div>
-        <div data-url="http://invigo.test/server_log" class="grid-item" data-color="#bf382f">
+        <div data-url="/server_log" class="grid-item" data-color="#bf382f">
             <p class="title">Server Log</p>
             <i class="fa-solid fa-server"></i>
         </div>
@@ -159,7 +159,7 @@
             <p class="title">Packing Slips</p>
             <i class="fa-solid fa-file-signature"></i>
         </div>
-        <div data-url="http://invigo.test/logs" class="grid-item" data-color="#f1c234">
+        <div data-url="/logs" class="grid-item" data-color="#f1c234">
             <p class="title">Logs</p>
             <i class="fa-solid fa-file-lines"></i>
         </div>
@@ -199,6 +199,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         item.addEventListener('mousedown', function() {
             this.style.backgroundColor = color;
+            this.querySelector('svg').style.color = '#171717';
         });
 
         item.addEventListener('mouseup', function() {
@@ -224,85 +225,5 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 });
-    class Accordion {
-        constructor(el) {
-            this.el = el;
-            this.summary = el.querySelector('summary');
-            this.content = el.querySelector('.group_items');
-
-            this.animation = null;
-            this.isClosing = false;
-            this.isExpanding = false;
-            this.summary.addEventListener('click', (e) => this.onClick(e));
-        }
-
-        onClick(e) {
-            e.preventDefault();
-            this.el.style.overflow = 'hidden';
-            if (this.isClosing || !this.el.open) {
-                this.open();
-            } else if (this.isExpanding || this.el.open) {
-                this.shrink();
-            }
-        }
-
-        shrink() {
-            this.isClosing = true;
-
-            const startHeight = `${this.el.offsetHeight}px`;
-            const endHeight = `${this.summary.offsetHeight+15}px`;
-
-            if (this.animation) {
-                this.animation.cancel();
-            }
-
-            this.animation = this.el.animate({
-                height: [startHeight, endHeight]
-            }, {
-                duration: 400,
-                easing: 'ease-out'
-            });
-
-            this.animation.onfinish = () => this.onAnimationFinish(false);
-            this.animation.oncancel = () => this.isClosing = false;
-        }
-
-        open() {
-            this.el.style.height = `${this.el.offsetHeight+10}px`;
-            this.el.open = true;
-            window.requestAnimationFrame(() => this.expand());
-        }
-
-        expand() {
-            this.isExpanding = true;
-            const startHeight = `${this.el.offsetHeight}px`;
-            const endHeight = `${this.summary.offsetHeight + this.content.offsetHeight+10}px`;
-
-            if (this.animation) {
-                this.animation.cancel();
-            }
-
-            this.animation = this.el.animate({
-                height: [startHeight, endHeight]
-            }, {
-                duration: 400,
-                easing: 'ease-out'
-            });
-            this.animation.onfinish = () => this.onAnimationFinish(true);
-            this.animation.oncancel = () => this.isExpanding = false;
-        }
-
-        onAnimationFinish(open) {
-            this.el.open = open;
-            this.animation = null;
-            this.isClosing = false;
-            this.isExpanding = false;
-            this.el.style.height = this.el.style.overflow = '';
-        }
-    }
-
-    document.querySelectorAll('details').forEach((el) => {
-        new Accordion(el);
-    });
 </script>
 </html>
