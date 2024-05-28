@@ -102,6 +102,7 @@ class LogDeleteHandler(tornado.web.RequestHandler):
             self.set_status(404)
             self.write("Log file not found")
 
+
 class LogContentHandler(tornado.web.RequestHandler):
     def post(self):
         log_file_name = self.get_argument("log_file_name")
@@ -109,8 +110,10 @@ class LogContentHandler(tornado.web.RequestHandler):
         log_file_path = os.path.join(log_dir, log_file_name)
 
         if os.path.isfile(log_file_path):
-            with open(log_file_path, 'r') as log_file:
-                self.write(log_file.read())
+            with open(log_file_path, 'r', encoding="utf-8") as log_file:
+                lines = log_file.readlines()
+                reversed_lines = lines[::-1]  # Reverse the lines
+                self.write(''.join(reversed_lines))
         else:
             self.set_status(404)
             self.write("Log file not found")
