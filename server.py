@@ -738,6 +738,6 @@ if __name__ == "__main__":
     )
     # executor = concurrent.futures.ThreadPoolExecutor(max_workers=10)
     # app.executor = executor
-    app.listen(8080)
+    app.listen(80)
     CustomPrint.print("INFO - Invigo server started")
     tornado.ioloop.IOLoop.current().start()
