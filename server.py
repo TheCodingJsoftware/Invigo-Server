@@ -57,6 +57,65 @@ class ServerLogsHandler(tornado.web.RequestHandler):
         self.write(logs)
 
 
+
+class LogsHandler(tornado.web.RequestHandler):
+    def get(self):
+        log_dir = "logs/"
+
+        server_logs = []
+        error_logs = []
+
+        for file in os.listdir(log_dir):
+            if os.path.isfile(os.path.join(log_dir, file)):
+                file_path = os.path.join(log_dir, file)
+                file_info = {
+                    "name": file,
+                    "mtime": os.path.getmtime(file_path)  # Get the modification time
+                }
+                if file.startswith("Server Log"):
+                    server_logs.append(file_info)
+                elif file.startswith("Error Log"):
+                    error_logs.append(file_info)
+
+        # Sort logs by modification time (newest first)
+        server_logs.sort(key=lambda x: x["mtime"], reverse=True)
+        error_logs.sort(key=lambda x: x["mtime"], reverse=True)
+
+        template = env.get_template("logs.html")
+        rendered_template = template.render(
+            server_logs=[log["name"] for log in server_logs],
+            error_logs=[log["name"] for log in error_logs]
+        )
+        self.write(rendered_template)
+
+
+class LogDeleteHandler(tornado.web.RequestHandler):
+    def post(self):
+        log_file_name = self.get_argument("log_file_name")
+        log_dir = "logs/"
+        log_file_path = os.path.join(log_dir, log_file_name)
+
+        if os.path.isfile(log_file_path):
+            os.remove(log_file_path)
+            self.write(f"Log file {log_file_name} deleted")
+        else:
+            self.set_status(404)
+            self.write("Log file not found")
+
+class LogContentHandler(tornado.web.RequestHandler):
+    def post(self):
+        log_file_name = self.get_argument("log_file_name")
+        log_dir = "logs/"
+        log_file_path = os.path.join(log_dir, log_file_name)
+
+        if os.path.isfile(log_file_path):
+            with open(log_file_path, 'r') as log_file:
+                self.write(log_file.read())
+        else:
+            self.set_status(404)
+            self.write("Log file not found")
+
+
 class FileSenderHandler(tornado.websocket.WebSocketHandler):
     def open(self):
         connected_clients.add(self)
@@ -378,9 +437,12 @@ class SendErrorReportHandler(tornado.web.RequestHandler):
             connected_clients=connected_clients,
         )
         if error_log is not None:
-            send_error_log(body=error_log, connected_clients=connected_clients)
+            log_file_name = f'Error Log - {datetime.now().strftime("%B %d %A %Y %I_%M_%S %p")}.log'
+            error_log_url = f"http://invi.go/logs#{log_file_name}"
+
+            send_error_log(body=f"{error_log_url}\n{error_log}", connected_clients=connected_clients)
             with open(
-                f'{os.path.dirname(os.path.realpath(__file__))}/logs/Error Log - {datetime.now().strftime("%B %d %A %Y %I_%M_%S %p")}.log',
+                f'{os.path.dirname(os.path.realpath(__file__))}/logs/{log_file_name}',
                 "w",
                 encoding="utf-8",
             ) as error_file:
@@ -708,6 +770,9 @@ if __name__ == "__main__":
         [
             (r"/", MainHandler),
             (r"/server_log", ServerLogsHandler),
+            (r"/logs", LogsHandler),
+            (r"/fetch_log", LogContentHandler),
+            (r"/delete_log", LogDeleteHandler),
             (r"/file/(.*)", FileReceiveHandler),
             (r"/command", CommandHandler),
             (r"/upload", FileUploadHandler),

@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Inventory</title>
+        <link href='https://fonts.googleapis.com/css?family=Varela Round'
+            rel='stylesheet'>
+        <script src="https://kit.fontawesome.com/b88fae5da2.js"
+            crossorigin="anonymous"></script>
+        <style>
+        @import url("https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css");
+        * {
+            -webkit-box-sizing: border-box;
+            -moz-box-sizing: border-box;
+            box-sizing: border-box;
+        }
+
+
+        html {
+            scroll-behavior: smooth;
+            justify-content: center;
+            position: center;
+            text-align: center;
+            align-items: center;
+            margin: auto;
+            font-family: 'Varela Round';
+        }
+        ::-webkit-scrollbar {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #bf392f5f;
+            border-radius: 15px;
+        }
+        ::-webkit-scrollbar-corner {
+        background: transparent;
+        }
+        details {
+            overflow-y: auto;
+            overflow-x: hidden;
+            text-align: center;
+            color: #fff;
+            font-size: 200%;
+            overflow: none;
+            background-color: #222222;
+            padding: 6px;
+            border-radius: 25px;
+            border: 1px solid #76797c;
+            transition: 0.3s ease-in-out;
+        }
+
+        details:hover {
+            border: 1px solid #bf382f;
+            box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.3), 0 6px 20px 0 rgba(0, 0, 0, 0.3);
+        }
+
+        details span {
+            display: inline-block;
+            margin-top: 1rem;
+        }
+
+        details summary::-webkit-details-marker {
+            display: none;
+        }
+
+        details[open]>summary:before {
+            transform: rotate(90deg);
+        }
+
+        details[open] summary {
+            opacity: 0.8;
+            animation-name: fadeOut;
+            animation-duration: 5000ms;
+        }
+
+        details>summary {
+            padding: 2px 6px;
+            font-weight: 700;
+            border: none;
+            cursor: pointer;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        #group {
+            overflow-y: auto;
+            overflow-x: hidden;
+            background: rgb(32, 32, 32);
+            margin: 1%;
+            width: auto;
+        }
+
+        #group_name {
+            font-size: 32px;
+        }
+
+        .group_items {
+            overflow-y: auto;
+            text-align: center;
+            align-items: center;
+            padding: 10px;
+            margin: auto;
+        }
+
+        body {
+            justify-content: center;
+            position: center;
+            align-items: center;
+            margin: auto;
+            height: 100%;
+            background-color: #1c1c1c;
+            text-decoration: none;
+            color: rgb(240, 244, 245);
+        }
+
+        button {
+            width: 100%;
+            font-size: 16px;
+            color: #8C8C8C;
+            border: 1px solid transparent;
+            padding: 10px;
+            margin-top: 10px;
+            background-color: #1a1a1a;
+            border-radius: 10px;
+            transition: background-color 0.3s ease-in-out, color 0.3s ease-in-out, border-color 0.3s ease-in-out, border 0.3s ease-in-out, transform 0.3s ease-in-out;
+        }
+
+        .log-item {
+            display: flex;
+            align-items: center;
+        }
+        .log-item button {
+            margin-right: 10px;
+        }
+        .delete-button{
+            width: 40px;
+        }
+
+        button:hover {
+            color: #171717;
+            border: 1px solid #bf382f;
+            background-color: #bf382f;
+            cursor: pointer;
+        }
+        button#close_dialog{
+            position: sticky;
+            top: 0;
+            left: 0;
+        }
+        #log_dialog {
+            visibility: hidden;
+            position: fixed;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            padding: 20px;
+            border: 1px solid #bf382f;
+            border-radius: 15px;
+            color: #8C8C8C;
+            width: 80%;
+            height: 80%;
+            background-color: #101010;
+            z-index: 1000;
+            overflow-y: auto;
+            overflow-x: auto;
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
+            overflow: hidden;
+            box-shadow: 0 4px 8px 0 #bf392f42, 0 6px 20px 0 #bf392f3f;
+            padding-right: 17px;
+            box-sizing: content-box;
+        }
+        #log_dialog.show {
+            visibility: visible;
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1);
+        }
+        #log_content{
+            width: 100%;
+            height: 90%;
+            text-align: left;
+            overflow-y: scroll;
+            overflow-x: scroll;
+        }
+        #log_dialog_overlay {
+            visibility: hidden;
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out;
+        }
+        #log_dialog_overlay.show {
+            visibility: visible;
+            opacity: 1;
+        }
+        @media (max-width: 600px) {
+            #log_content{
+                font-size: 6pt;
+            }
+        }
+    </style>
+    </head>
+
+    <body>
+        <details id="group" {{"open" if error_logs else ""}}>
+            <summary id="group_name">
+                Error Logs
+            </summary>
+            <div class="group_items">
+                {% for error_log_file_name in error_logs %}
+                <div class="log-item">
+                    <button
+                        onclick="fetchLogContent('{{ error_log_file_name }}')">{{
+                        error_log_file_name }}</button>
+                    <button class="delete-button"
+                        onclick="deleteLog('{{ error_log_file_name }}', this)">
+                        <i class="fa-solid fa-trash"></i>
+                    </button>
+                </div>
+                {% endfor %}
+            </div>
+        </details>
+        <br>
+        <details id="group" open>
+            <summary id="group_name">
+                Server Logs
+            </summary>
+            <div class="group_items">
+                <a href="/server_log" style="text-decoration: none;">
+                    <button>Live Server Log</button>
+                </a>
+                {% for server_log_file_name in server_logs %}
+                <div class="log-item">
+                    <button
+                        onclick="fetchLogContent('{{ server_log_file_name }}')">{{
+                        server_log_file_name }}</button>
+                    <button class="delete-button"
+                        onclick="deleteLog('{{ server_log_file_name }}', this)">
+                        <i class="fa-solid fa-trash"></i>
+                    </button>
+                </div>
+                {% endfor %}
+            </div>
+        </details>
+        <div id="log_dialog_overlay" onclick="closeDialog()"></div>
+        <div id="log_dialog">
+            <button id="close_dialog" onclick="closeDialog()">Close</button>
+            <pre id="log_content"></pre>
+        </div>
+    </body>
+
+    <script>
+    function fetchLogContent(file_name) {
+        const formData = new FormData();
+        formData.append("log_file_name", file_name);
+
+        fetch("/fetch_log", {
+            method: "POST",
+            body: formData
+        })
+        .then(response => response.text())
+        .then(data => {
+            document.getElementById("log_content").innerHTML = data;
+            document.getElementById("log_dialog").classList.add("show");
+            document.getElementById("log_dialog_overlay").classList.add("show");
+            window.location.hash = encodeURIComponent(file_name);
+        })
+        .catch(error => {
+            console.error('Error fetching log content:', error);
+        });
+    }
+
+    function deleteLog(logFileName, button) {
+        const formData = new FormData();
+        formData.append("log_file_name", logFileName);
+
+        fetch("/delete_log", {
+            method: "POST",
+            body: formData
+        })
+        .then(response => response.text())
+        .then(data => {
+            console.log(data);
+            const parent = button.parentElement;
+            parent.parentElement.removeChild(parent);
+        })
+        .catch(error => {
+            console.error('Error deleting log file:', error);
+        });
+    }
+
+    function checkForHash() {
+        const hash = window.location.hash.substring(1);
+        if (hash) {
+            fetchLogContent(decodeURIComponent(hash));
+        }
+    }
+    function closeDialog() {
+        window.location.hash = '';
+        setTimeout(() => {
+            document.getElementById("log_dialog").classList.remove("show");
+            document.getElementById("log_dialog_overlay").classList.remove("show");
+        }, 200);
+    }
+    class Accordion {
+        constructor(el) {
+            this.el = el;
+            this.summary = el.querySelector('summary');
+            this.content = el.querySelector('.group_items');
+
+            this.animation = null;
+            this.isClosing = false;
+            this.isExpanding = false;
+            this.summary.addEventListener('click', (e) => this.onClick(e));
+        }
+
+        onClick(e) {
+            e.preventDefault();
+            this.el.style.overflow = 'hidden';
+            if (this.isClosing || !this.el.open) {
+                this.open();
+            } else if (this.isExpanding || this.el.open) {
+                this.shrink();
+            }
+        }
+
+        shrink() {
+            this.isClosing = true;
+
+            const startHeight = `${this.el.offsetHeight}px`;
+            const endHeight = `${this.summary.offsetHeight+15}px`;
+
+            if (this.animation) {
+                this.animation.cancel();
+            }
+
+            this.animation = this.el.animate({
+                height: [startHeight, endHeight]
+            }, {
+                duration: 400,
+                easing: 'ease-out'
+            });
+
+            this.animation.onfinish = () => this.onAnimationFinish(false);
+            this.animation.oncancel = () => this.isClosing = false;
+        }
+
+        open() {
+            this.el.style.height = `${this.el.offsetHeight+10}px`;
+            this.el.open = true;
+            window.requestAnimationFrame(() => this.expand());
+        }
+
+        expand() {
+            this.isExpanding = true;
+            const startHeight = `${this.el.offsetHeight}px`;
+            const endHeight = `${this.summary.offsetHeight + this.content.offsetHeight+10}px`;
+
+            if (this.animation) {
+                this.animation.cancel();
+            }
+
+            this.animation = this.el.animate({
+                height: [startHeight, endHeight]
+            }, {
+                duration: 400,
+                easing: 'ease-out'
+            });
+            this.animation.onfinish = () => this.onAnimationFinish(true);
+            this.animation.oncancel = () => this.isExpanding = false;
+        }
+
+        onAnimationFinish(open) {
+            this.el.open = open;
+            this.animation = null;
+            this.isClosing = false;
+            this.isExpanding = false;
+            this.el.style.height = this.el.style.overflow = '';
+        }
+    }
+    checkForHash();
+    document.querySelectorAll('details').forEach((el) => {
+        new Accordion(el);
+    });
+</script>
+</html>
