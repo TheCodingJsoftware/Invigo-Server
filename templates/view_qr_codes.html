@@ -1,13 +1,17 @@
 <!DOCTYPE html>
 <html>
-<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=yes" />
-<script src="https://www.kryogenix.org/code/browser/sorttable/sorttable.js"></script>
-<script src="https://cdn.jsdelivr.net/gh/davidshimjs/qrcodejs/qrcode.min.js"></script>
-<link href='https://fonts.googleapis.com/css?family=Varela Round' rel='stylesheet'>
-<title>View QR Codes</title>
+    <meta name="viewport"
+        content="width=device-width,initial-scale=1,user-scalable=yes" />
+    <script
+        src="https://www.kryogenix.org/code/browser/sorttable/sorttable.js"></script>
+    <script
+        src="https://cdn.jsdelivr.net/gh/davidshimjs/qrcodejs/qrcode.min.js"></script>
+    <link href='https://fonts.googleapis.com/css?family=Varela Round'
+        rel='stylesheet'>
+    <title>View QR Codes</title>
 
-<head>
-    <style>
+    <head>
+        <style>
         html {
             align-items: center;
             text-align: center;
@@ -65,34 +69,34 @@
             }
         }
     </style>
-</head>
+    </head>
 
-<body>
-    {% for category, sheets in sheet_data.items() %}
-    <details class="category">
-        <summary>{{ category }}</summary>
-        <div class="qr-container">
-            {% for sheet in sheets %}
-            <div class="qr-item" data-name="{{ sheet }}">
-                <div class="qr-code"></div>
-                <p>{{ sheet }}</p>
+    <body>
+        {% for category, sheets in sheet_data.items() %}
+        <details class="category">
+            <summary>{{ category }}</summary>
+            <div class="qr-container">
+                {% for sheet in sheets %}
+                <div class="qr-item" data-name="{{ sheet }}">
+                    <div class="qr-code"></div>
+                    <p>{{ sheet }}</p>
+                </div>
+                {% endfor %}
             </div>
-            {% endfor %}
-        </div>
-    </details>
-    {% endfor %}
-    <details class="category">
-        <summary>Add Cut Off</summary>
-        <div class="qr-container">
-            <div class="qr-item" data-name="add_cutoff_sheet">
-                <div class="qr-code"></div>
-                <p style="font-size: 56px;">Add Remnant to Database</p>
+        </details>
+        {% endfor %}
+        <details class="category">
+            <summary>Add Cut Off</summary>
+            <div class="qr-container">
+                <div class="qr-item" data-name="add_cutoff_sheet">
+                    <div class="qr-code"></div>
+                    <p style="font-size: 56px;">Add Remnant to Database</p>
+                </div>
             </div>
-        </div>
-    </details>
-</body>
+        </details>
+    </body>
 
-<script>
+    <script>
     document.addEventListener('DOMContentLoaded', function () {
         baseUrl = "http://invi.go/";
         document.querySelectorAll('.qr-item').forEach(item => {

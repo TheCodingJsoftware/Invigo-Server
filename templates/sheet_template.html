@@ -1,9 +1,11 @@
 <!DOCTYPE html>
 <html>
-<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=yes" />
-<link href='https://fonts.googleapis.com/css?family=Varela Round' rel='stylesheet'>
-<head>
-    <style>
+    <meta name="viewport"
+        content="width=device-width,initial-scale=1,user-scalable=yes" />
+    <link href='https://fonts.googleapis.com/css?family=Varela Round'
+        rel='stylesheet'>
+    <head>
+        <style>
         html {
             align-items: center;
             text-align: center;
@@ -136,36 +138,39 @@
             margin: 0;
         }
     </style>
-    <title>{{ sheet_name }}</title>
-</head>
+        <title>{{ sheet_name }}</title>
+    </head>
 
-<body>
-    <div class="content">
-        {% if pending_data["is_order_pending"] == True %}
-        <h1 class="order_is_pending">Order is Pending</h1>
-        <h1>{{ sheet_name }}</h1>
-        <p>Pending Since: {{ pending_data["order_pending_date"] }}
-            <br>
-            Expected Arrival: {{ pending_data["expected_arrival_time"] }}
-            <br>
-            Sheets Ordered: {{ pending_data["order_pending_quantity"] }}
-        </p>
-        {% else %}
-        <h1 class="order_is_not_pending">No Order is Pending</h1>
-        <h1>{{ sheet_name }}</h1>
-        {% endif %}
-        <p>Current quantity: {{ quantity }}</p>
-        <form action="/sheets_in_inventory/{{ sheet_name }}" method="post" class="form-container">
-            <label for="new_quantity">New Quantity:</label>
+    <body>
+        <div class="content">
             {% if pending_data["is_order_pending"] == True %}
-            <input type="number" name="new_quantity" id="new_quantity" placeholder="0" value="{{pending_data["
-                new_quantity"]}}">
+            <h1 class="order_is_pending">Order is Pending</h1>
+            <h1>{{ sheet_name }}</h1>
+            <p>Pending Since: {{ pending_data["order_pending_date"] }}
+                <br>
+                Expected Arrival: {{ pending_data["expected_arrival_time"] }}
+                <br>
+                Sheets Ordered: {{ pending_data["order_pending_quantity"] }}
+            </p>
             {% else %}
-            <input type="number" name="new_quantity" id="new_quantity" placeholder="0">
+            <h1 class="order_is_not_pending">No Order is Pending</h1>
+            <h1>{{ sheet_name }}</h1>
             {% endif %}
-            <button type="submit">Set</button>
-        </form>
-    </div>
-</body>
+            <p>Current quantity: {{ quantity }}</p>
+            <form action="/sheets_in_inventory/{{ sheet_name }}" method="post"
+                class="form-container">
+                <label for="new_quantity">New Quantity:</label>
+                {% if pending_data["is_order_pending"] == True %}
+                <input type="number" name="new_quantity" id="new_quantity"
+                    placeholder="0" value="{{pending_data["
+                    new_quantity"]}}">
+                {% else %}
+                <input type="number" name="new_quantity" id="new_quantity"
+                    placeholder="0">
+                {% endif %}
+                <button type="submit">Set</button>
+            </form>
+        </div>
+    </body>
 
 </html>

@@ -1,13 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
 
-<head>
-    <script src="https://kit.fontawesome.com/b88fae5da2.js" crossorigin="anonymous"></script>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href='https://fonts.googleapis.com/css?family=Varela Round' rel='stylesheet'>
-    <title>Invigo</title>
-    <style>
+    <head>
+        <script src="https://kit.fontawesome.com/b88fae5da2.js"
+            crossorigin="anonymous"></script>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link href='https://fonts.googleapis.com/css?family=Varela Round'
+            rel='stylesheet'>
+        <title>Invigo</title>
+        <style>
     @import url("https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css");
         * {
             margin: 0;
@@ -59,7 +61,6 @@
 
         .grid-item:hover {
             cursor: pointer;
-            box-shadow: 0 4px 8px 0 #52525216, 0 6px 20px 0 #57575727;
         }
         .grid-item svg{
             position: absolute;
@@ -130,51 +131,55 @@
             }
         }
     </style>
-</head>
+    </head>
 
-<header><p>Invigo</p></header>
-<body>
-    <div class="grid-container">
-        <div data-url="/inventory" class="grid-item" data-color="#8d48aa">
-            <i class="fa-solid fa-boxes-stacked"></i>
-            <p class="title">Inventory</p>
+    <header><p>Invigo</p></header>
+    <body>
+        <div class="grid-container">
+            <div data-url="/inventory" class="grid-item" data-color="#8d48aa">
+                <i class="fa-solid fa-boxes-stacked"></i>
+                <p class="title">Inventory</p>
+            </div>
+            <div data-url="/sheet_qr_codes" class="grid-item"
+                data-color="white">
+                <p class="title">Sheet QR Codes</p>
+                <i class="fa-solid fa-qrcode"></i>
+            </div>
+            <div data-url="/server_log" class="grid-item" data-color="#f1c234">
+                <p class="title">Server Log</p>
+                <i class="fa-solid fa-server"></i>
+            </div>
+            <div data-url="#" class="grid-item" data-color="#37cb77">
+                <p class="title">Quotes</p>
+                <i class="fa-solid fa-file-invoice-dollar"></i>
+            </div>
+            <div data-url="#" class="grid-item" data-color="#369ad8">
+                <p class="title">Workorders</p>
+                <i class="fa-solid fa-file-export"></i>
+            </div>
+            <div data-url="#" class="grid-item" data-color="#25bc9d">
+                <p class="title">Packing Slips</p>
+                <i class="fa-solid fa-file-signature"></i>
+            </div>
+            <div data-url="/logs" class="grid-item" data-color="#bf382f">
+                <p class="title">Logs</p>
+                <i class="fa-solid fa-file-lines"></i>
+            </div>
+            <div data-url="http://10.0.0.10:5051/download" class="grid-item"
+                data-color="#3daee9">
+                <p class="title">Download</p>
+                <i class="fa-solid fa-download"></i>
+            </div>
+            <div
+                data-url="https://github.com/TheCodingJsoftware/Inventory-Manager"
+                class="grid-item" data-color="#344a5d">
+                <p class="title">Source Code</p>
+                <i class="fa-solid fa-code"></i>
+            </div>
         </div>
-        <div data-url="/sheet_qr_codes" class="grid-item" data-color="white">
-            <p class="title">Sheet QR Codes</p>
-            <i class="fa-solid fa-qrcode"></i>
-        </div>
-        <div data-url="/server_log" class="grid-item" data-color="#bf382f">
-            <p class="title">Server Log</p>
-            <i class="fa-solid fa-server"></i>
-        </div>
-        <div data-url="#" class="grid-item" data-color="#37cb77">
-            <p class="title">Quotes</p>
-            <i class="fa-solid fa-file-invoice-dollar"></i>
-        </div>
-        <div data-url="#" class="grid-item" data-color="#369ad8">
-            <p class="title">Workorders</p>
-            <i class="fa-solid fa-file-export"></i>
-        </div>
-        <div data-url="#" class="grid-item" data-color="#25bc9d">
-            <p class="title">Packing Slips</p>
-            <i class="fa-solid fa-file-signature"></i>
-        </div>
-        <div data-url="/logs" class="grid-item" data-color="#f1c234">
-            <p class="title">Logs</p>
-            <i class="fa-solid fa-file-lines"></i>
-        </div>
-        <div data-url="http://10.0.0.10:5051/download" class="grid-item" data-color="#3daee9">
-            <p class="title">Download</p>
-            <i class="fa-solid fa-download"></i>
-        </div>
-        <div data-url="https://github.com/TheCodingJsoftware/Inventory-Manager" class="grid-item" data-color="#344a5d">
-            <p class="title">Source Code</p>
-            <i class="fa-solid fa-code"></i>
-        </div>
-    </div>
-</body>
+    </body>
 
-<script>
+    <script>
     function isMobileDevice() {
         return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
     }

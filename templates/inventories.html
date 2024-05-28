@@ -1,12 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Inventory</title>
-    <link href='https://fonts.googleapis.com/css?family=Varela Round' rel='stylesheet'>
-    <style>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Inventory</title>
+        <link href='https://fonts.googleapis.com/css?family=Varela Round'
+            rel='stylesheet'>
+        <style>
         * {
             -webkit-box-sizing: border-box;
             -moz-box-sizing: border-box;
@@ -121,26 +122,26 @@
             cursor: pointer;
         }
     </style>
-</head>
+    </head>
 
-<body>
-    {% for inventory, category_data in data.items() %}
-    <details id="group" open>
-        <summary id="group_name">
-            {{ inventory }}
-        </summary>
-        <div class="group_items">
-            {% for category_name, category_url in category_data.items() %}
-            <a href="{{ category_url }}" style="text-decoration: none;">
-                <button>{{ category_name }}</button>
-            </a>
-            {% endfor %}
-        </div>
-    </details>
-    {% endfor %}
-</body>
+    <body>
+        {% for inventory, category_data in data.items() %}
+        <details id="group" open>
+            <summary id="group_name">
+                {{ inventory }}
+            </summary>
+            <div class="group_items">
+                {% for category_name, category_url in category_data.items() %}
+                <a href="{{ category_url }}" style="text-decoration: none;">
+                    <button>{{ category_name }}</button>
+                </a>
+                {% endfor %}
+            </div>
+        </details>
+        {% endfor %}
+    </body>
 
-<script>
+    <script>
     class Accordion {
         constructor(el) {
             this.el = el;

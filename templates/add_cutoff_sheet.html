@@ -1,10 +1,12 @@
 <!DOCTYPE html>
 <html>
-<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=yes" />
-<script src="https://www.kryogenix.org/code/browser/sorttable/sorttable.js"></script>
+    <meta name="viewport"
+        content="width=device-width,initial-scale=1,user-scalable=yes" />
+    <script
+        src="https://www.kryogenix.org/code/browser/sorttable/sorttable.js"></script>
 
-<head>
-    <style>
+    <head>
+        <style>
         html {
             transition: background-color 0.3s ease-in-out, color 0.3s ease-in-out, border-color 0.3s ease-in-out, border 0.3s ease-in-out, transform 0.3s ease-in-out;
             background-color: #222222;
@@ -198,8 +200,8 @@
             padding: 5px;
         }
     </style>
-    <title>Add Cutoff Sheet</title>
-    <script>
+        <title>Add Cutoff Sheet</title>
+        <script>
         function validateForm() {
             var length = document.getElementById("length").value;
             var width = document.getElementById("width").value;
@@ -213,75 +215,83 @@
             }
         }
     </script>
-</head>
+    </head>
 
-<body>
-    <div class="content">
-        <h1>Add Cutoff Sheet</h1>
-        <form action="/add_cutoff_sheet" method="post">
-            <label for="sheet_dim">Sheet Dimension:</label>
-            <br>
-            <div style="display: inline-flex; align-items: center;">
-                <input type="number" step="0.001" id="length" name="length" placeholder="Length"
+    <body>
+        <div class="content">
+            <h1>Add Cutoff Sheet</h1>
+            <form action="/add_cutoff_sheet" method="post">
+                <label for="sheet_dim">Sheet Dimension:</label>
+                <br>
+                <div style="display: inline-flex; align-items: center;">
+                    <input type="number" step="0.001" id="length" name="length"
+                        placeholder="Length"
+                        oninput="validateForm()">
+                    <span>X</span>
+                    <input type="number" step="0.001" id="width" name="width"
+                        placeholder="Width" oninput="validateForm()">
+                </div>
+                <br>
+                <select id="thickness" name="thickness"
                     oninput="validateForm()">
-                <span>X</span>
-                <input type="number" step="0.001" id="width" name="width" placeholder="Width" oninput="validateForm()">
-            </div>
-            <br>
-            <select id="thickness" name="thickness" oninput="validateForm()">
-                <option value="" disabled selected>Select Thickness</option>
-                {% for thickness in thicknesses %}
-                <option value="{{ thickness }}">{{ thickness }}</option>
-                {% endfor %}
-            </select><br>
+                    <option value disabled selected>Select Thickness</option>
+                    {% for thickness in thicknesses %}
+                    <option value="{{ thickness }}">{{ thickness }}</option>
+                    {% endfor %}
+                </select><br>
 
-            <select id="material" name="material" oninput="validateForm()">
-                <option value="" disabled selected>Select Material</option>
-                {% for material in materials %}
-                <option value="{{ material }}">{{ material }}</option>
-                {% endfor %}
-            </select><br>
+                <select id="material" name="material" oninput="validateForm()">
+                    <option value disabled selected>Select Material</option>
+                    {% for material in materials %}
+                    <option value="{{ material }}">{{ material }}</option>
+                    {% endfor %}
+                </select><br>
 
-            <label for="quantity">Quantity:</label>
-            <input type="number" id="quantity" name="quantity" placeholder="1" value="1"><br>
-            <button type="submit" id="addButton" disabled style="width: 150px;">Add</button>
-        </form>
-        <div style="margin-top: 50px;"></div>
-        <h1>Current Cutoff Sheets:</h1>
-        <table class="sortable">
-            <thead>
-                <tr>
-                    <th>Thickness</th>
-                    <th>Material</th>
-                    <th>len x wid</th>
-                    <th>DEL</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for sheet in cutoff_sheets %}
-                <tr>
-                    <td>{{ sheet.thickness }}</td>
-                    <td>{{ sheet.material }}</td>
-                    <td>{{ sheet.get_sheet_dimension() }}</td>
-                    <td>
-                        <form action="/delete_cutoff_sheet" method="post">
-                            <input type="hidden" name="sheet_id" value="{{ sheet.get_name() }}">
-                            <button class="delete" type="submit">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor"
-                                    class="bi bi-trash" viewBox="0 0 16 16">
-                                    <path
-                                        d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z" />
-                                    <path
-                                        d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z" />
-                                </svg>
-                            </button>
-                        </form>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-</body>
+                <label for="quantity">Quantity:</label>
+                <input type="number" id="quantity" name="quantity"
+                    placeholder="1" value="1"><br>
+                <button type="submit" id="addButton" disabled
+                    style="width: 150px;">Add</button>
+            </form>
+            <div style="margin-top: 50px;"></div>
+            <h1>Current Cutoff Sheets:</h1>
+            <table class="sortable">
+                <thead>
+                    <tr>
+                        <th>Thickness</th>
+                        <th>Material</th>
+                        <th>len x wid</th>
+                        <th>DEL</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for sheet in cutoff_sheets %}
+                    <tr>
+                        <td>{{ sheet.thickness }}</td>
+                        <td>{{ sheet.material }}</td>
+                        <td>{{ sheet.get_sheet_dimension() }}</td>
+                        <td>
+                            <form action="/delete_cutoff_sheet" method="post">
+                                <input type="hidden" name="sheet_id"
+                                    value="{{ sheet.get_name() }}">
+                                <button class="delete" type="submit">
+                                    <svg xmlns="http://www.w3.org/2000/svg"
+                                        width="20" height="20"
+                                        fill="currentColor"
+                                        class="bi bi-trash" viewBox="0 0 16 16">
+                                        <path
+                                            d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z" />
+                                        <path
+                                            d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z" />
+                                    </svg>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </body>
 
 </html>

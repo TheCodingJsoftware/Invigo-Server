@@ -1,9 +1,11 @@
 <!DOCTYPE html>
 <html>
-<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=yes" />
-<link href='https://fonts.googleapis.com/css?family=Varela Round' rel='stylesheet'>
-<head>
-    <style>
+    <meta name="viewport"
+        content="width=device-width,initial-scale=1,user-scalable=yes" />
+    <link href='https://fonts.googleapis.com/css?family=Varela Round'
+        rel='stylesheet'>
+    <head>
+        <style>
         html {
             align-items: center;
             background-color: #222222;
@@ -57,26 +59,26 @@
             margin: 0;
         }
     </style>
-    <title>{{ sheet_name }}</title>
-</head>
+        <title>{{ sheet_name }}</title>
+    </head>
 
-<body>
-    <div class="content">
-        {% if pending_data["is_order_pending"] == True %}
-        <h1 class="order_is_pending">Order is Pending</h1>
-        <h1>{{ sheet_name }}</h1>
-        <p>Pending Since: {{ pending_data["order_pending_date"] }}
-            <br>
-            Expected Arrival: {{ pending_data["expected_arrival_time"] }}
-            <br>
-            Sheets Ordered: {{ pending_data["order_pending_quantity"] }}
-        </p>
-        {% else %}
-        <h1 class="order_is_not_pending">No Order is Pending</h1>
-        <h1>{{ sheet_name }}</h1>
-        {% endif %}
-        <p>Current quantity: {{ quantity }}</p>
-    </div>
-</body>
+    <body>
+        <div class="content">
+            {% if pending_data["is_order_pending"] == True %}
+            <h1 class="order_is_pending">Order is Pending</h1>
+            <h1>{{ sheet_name }}</h1>
+            <p>Pending Since: {{ pending_data["order_pending_date"] }}
+                <br>
+                Expected Arrival: {{ pending_data["expected_arrival_time"] }}
+                <br>
+                Sheets Ordered: {{ pending_data["order_pending_quantity"] }}
+            </p>
+            {% else %}
+            <h1 class="order_is_not_pending">No Order is Pending</h1>
+            <h1>{{ sheet_name }}</h1>
+            {% endif %}
+            <p>Current quantity: {{ quantity }}</p>
+        </div>
+    </body>
 
 </html>
