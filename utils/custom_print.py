@@ -19,7 +19,7 @@ def convert_set_to_list(s):
 class CustomPrint:
     @staticmethod
     def print(*args, **kwargs):
-        global messages, connected_clients
+        global connected_clients
         try:
             connected_clients = convert_set_to_list(kwargs["connected_clients"])
             connected_clients = [connected_client.request.remote_ip for connected_client in connected_clients]
@@ -36,7 +36,7 @@ class CustomPrint:
 
     @staticmethod
     def log_to_file(message):
-        with open("server.log", "a", encoding="utf-8") as log_file:
+        with open(f"logs/{datetime.now().strftime('%A %B %d %Y')}.log", "a", encoding="utf-8") as log_file:
             log_file.write(f"{str(datetime.now())} - {message}\n")
 
 

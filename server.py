@@ -13,7 +13,6 @@ from io import StringIO
 from pathlib import Path
 from urllib.parse import quote
 
-import aiotools
 import coloredlogs
 import jinja2
 import schedule
@@ -35,7 +34,7 @@ from utils.sheet_settings.sheet_settings import SheetSettings
 from utils.sheets_inventory.sheets_inventory import SheetsInventory
 
 # Store connected clients
-connected_clients = set()
+connected_clients: set[tornado.websocket.WebSocketHandler] = set()
 
 # Configure Jinja2 template environment
 loader = jinja2.FileSystemLoader("templates")
@@ -657,31 +656,35 @@ def signal_clients_for_changes(client_to_ignore, changed_files: list[str]) -> No
 
 
 def hourly_backup_inventory_files():
-    files = os.listdir(f"{os.path.dirname(os.path.realpath(__file__))}/data")
-    path_to_zip_file: str = f"{os.path.dirname(os.path.realpath(__file__))}/backups/hourly_backup - {datetime.now().strftime('%I %p')}.zip"
-    file = zipfile.ZipFile(path_to_zip_file, mode="w")
-    for file_path in files:
-        file.write(
-            f"{os.path.dirname(os.path.realpath(__file__))}/data/{file_path}",
-            file_path,
-            compress_type=zipfile.ZIP_DEFLATED,
-        )
-    file.close()
+    files_to_backup = os.listdir(f"{os.path.dirname(os.path.realpath(__file__))}/data")
+    path_to_zip_file: str = f"{os.path.dirname(os.path.realpath(__file__))}/backups/Hourly Backup - {datetime.now().strftime('%I %p')}.zip"
+    zip_files(path_to_zip_file, files_to_backup)
     CustomPrint.print("INFO - Hourly backup complete", connected_clients=connected_clients)
 
 
 def daily_backup_inventory_files():
-    files = os.listdir(f"{os.path.dirname(os.path.realpath(__file__))}/data")
-    path_to_zip_file: str = f"{os.path.dirname(os.path.realpath(__file__))}/backups/daily_backup - {datetime.now().strftime('%d %B, %Y')}.zip"
+    files_to_backup = os.listdir(f"{os.path.dirname(os.path.realpath(__file__))}/data")
+    path_to_zip_file: str = f"{os.path.dirname(os.path.realpath(__file__))}/backups/Daily Backup - {datetime.now().strftime('%d %B')}.zip"
+    zip_files(path_to_zip_file, files_to_backup)
+    CustomPrint.print("INFO - Daily backup complete", connected_clients=connected_clients)
+
+
+def weekly_backup_inventory_files():
+    files_to_backup = os.listdir(f"{os.path.dirname(os.path.realpath(__file__))}/data")
+    path_to_zip_file: str = f"{os.path.dirname(os.path.realpath(__file__))}/backups/Weekly Backup - {datetime.now().strftime('%W')}.zip"
+    zip_files(path_to_zip_file, files_to_backup)
+    CustomPrint.print("INFO - Weekly backup complete", connected_clients=connected_clients)
+
+
+def zip_files(path_to_zip_file: str, files_to_backup: list[str]):
     file = zipfile.ZipFile(path_to_zip_file, mode="w")
-    for file_path in files:
+    for file_path in files_to_backup:
         file.write(
             f"{os.path.dirname(os.path.realpath(__file__))}/data/{file_path}",
             file_path,
             compress_type=zipfile.ZIP_DEFLATED,
         )
     file.close()
-    CustomPrint.print("INFO - Daily backup complete", connected_clients=connected_clients)
 
 
 def schedule_thread():
@@ -695,8 +698,9 @@ if __name__ == "__main__":
     sys.stdout = StringIO()
 
     schedule.every().monday.at("04:00").do(partial(generate_sheet_report, connected_clients))
-    schedule.every().day.at("04:00").do(daily_backup_inventory_files)
     schedule.every().hour.do(hourly_backup_inventory_files)
+    schedule.every().day.at("04:00").do(daily_backup_inventory_files)
+    schedule.every().week.do(weekly_backup_inventory_files)
 
     thread = threading.Thread(target=schedule_thread)
     thread.start()
@@ -704,7 +708,7 @@ if __name__ == "__main__":
     app = tornado.web.Application(
         [
             (r"/", MainHandler),
-            (r"/logs", ServerLogsHandler),
+            (r"/server_log", ServerLogsHandler),
             (r"/file/(.*)", FileReceiveHandler),
             (r"/command", CommandHandler),
             (r"/upload", FileUploadHandler),
@@ -716,6 +720,7 @@ if __name__ == "__main__":
             (r"/set_order_number/(\d+)", SetOrderNumberHandler),
             (r"/get_order_number", GetOrderNumberHandler),
             (r"/sheets_in_inventory/(.*)", SheetQuantityHandler),
+            (r"/sheet_qr_codes", QRCodePageHandler),
             (r"/add_cutoff_sheet", AddCutoffSheetHandler),
             (r"/delete_cutoff_sheet", DeleteCutoffSheetHandler),
             (r"/send_error_report", SendErrorReportHandler),
@@ -727,7 +732,6 @@ if __name__ == "__main__":
             (r"/load_quote/(.*)", LoadQuoteHandler),
             (r"/delete_quote/(.*)", DeleteQuoteHandler),
             (r"/send_email", SendEmailHandler),
-            (r"/view_qr_codes", QRCodePageHandler),
             (r"/inventory", InventoryHandler),
             (r"/inventory/(.*)/(.*)", InventoryTablesHandler),
         ]
