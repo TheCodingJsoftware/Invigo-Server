@@ -8,10 +8,13 @@
         src="https://cdn.jsdelivr.net/gh/davidshimjs/qrcodejs/qrcode.min.js"></script>
     <link href='https://fonts.googleapis.com/css?family=Varela Round'
         rel='stylesheet'>
+    <script src="https://kit.fontawesome.com/b88fae5da2.js"
+        crossorigin="anonymous"></script>
     <title>View QR Codes</title>
 
     <head>
         <style>
+        @import url("https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css");
         html {
             align-items: center;
             text-align: center;
@@ -60,7 +63,25 @@
             height: auto;
         }
 
+        .fixed-button {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            font-size: 16px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
         @media print {
+            .fixed-button{
+                display: none;
+            }
             details:not([open]) {
                 display: none;
             }
@@ -94,9 +115,14 @@
                 </div>
             </div>
         </details>
+        <button id="back_to_main" class="fixed-button"
+            onclick="goToMainUrl()"><i class="fa-solid fa-house"></i></button>
     </body>
 
     <script>
+    function goToMainUrl(){
+        window.location.href = "/"
+    }
     document.addEventListener('DOMContentLoaded', function () {
         baseUrl = "http://invi.go/";
         document.querySelectorAll('.qr-item').forEach(item => {

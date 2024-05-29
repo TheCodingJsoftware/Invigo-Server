@@ -21,7 +21,10 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>{{ inventory_type }} - {{ category }}</title>
+        <script src="https://kit.fontawesome.com/b88fae5da2.js"
+            crossorigin="anonymous"></script>
         <style>
+        @import url("https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css");
         * {
             -webkit-box-sizing: border-box;
             -moz-box-sizing: border-box;
@@ -107,6 +110,23 @@
         #managerTable {
             max-height: 100%;
         }
+        .fixed-button {
+            border: 1px solid #8d48aa;
+            background-color: #8d48aa;
+            color: rgb(240, 244, 245);
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            font-size: 16px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
     </style>
     </head>
 
@@ -131,6 +151,13 @@
                 </tbody>
             </table>
         </div>
+        <button id="back_to_main" class="fixed-button"
+            onclick="goToMainUrl()"><i class="fa-solid fa-house"></i></button>
     </body>
 
+    <script>
+        function goToMainUrl(){
+            window.location.href = "/inventory"
+        }
+    </script>
 </html>

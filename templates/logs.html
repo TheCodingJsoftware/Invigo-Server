@@ -207,6 +207,23 @@
             visibility: visible;
             opacity: 1;
         }
+        .fixed-button {
+            background-color: #bf382f;
+            color: #171717;
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            font-size: 16px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
         @media (max-width: 600px) {
             #log_content{
                 font-size: 5pt;
@@ -267,9 +284,14 @@
                 <pre id="log_content"></pre>
             </div>
         </div>
+        <button id="back_to_main" class="fixed-button"
+            onclick="goToMainUrl()"><i class="fa-solid fa-house"></i></button>
     </body>
 
     <script>
+    function goToMainUrl(){
+        window.location.href = "/"
+    }
     function fetchLogContent(file_name) {
         const formData = new FormData();
         formData.append("log_file_name", file_name);
