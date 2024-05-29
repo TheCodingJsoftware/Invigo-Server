@@ -10,26 +10,26 @@ def create_directory(path):
 
 
 def main():
-    root_directories = ['data', 'images', 'logs', 'backups']
-    quotes_subdirs = ['packing_slips', 'quotes', 'workorders']
+    root_directories = ["data", "images", "logs", "backups"]
+    quotes_subdirs = ["packing_slips", "quotes", "workorders"]
 
     for directory in root_directories:
         create_directory(directory)
 
-    saved_quotes_path = 'saved_quotes'
+    saved_quotes_path = "saved_quotes"
     create_directory(saved_quotes_path)
 
     for subdir in quotes_subdirs:
         create_directory(os.path.join(saved_quotes_path, subdir))
 
-    previous_quotes_path = 'previous_quotes'
+    previous_quotes_path = "previous_quotes"
     create_directory(saved_quotes_path)
 
     for subdir in quotes_subdirs:
         create_directory(os.path.join(previous_quotes_path, subdir))
 
     if not os.path.exists("order_number.json"):
-        with open("order_number.json", 'w', encoding="utf-8") as f:
+        with open("order_number.json", "w", encoding="utf-8") as f:
             f.write('{"order_number": 0}')
 
 

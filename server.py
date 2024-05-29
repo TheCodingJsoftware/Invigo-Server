@@ -1,6 +1,7 @@
 # import concurrent.futures
 import json
 import os
+import re
 import shutil
 import sys
 import threading
@@ -57,7 +58,6 @@ class ServerLogsHandler(tornado.web.RequestHandler):
         self.write(logs)
 
 
-
 class LogsHandler(tornado.web.RequestHandler):
     def get(self):
         log_dir = "logs/"
@@ -68,10 +68,7 @@ class LogsHandler(tornado.web.RequestHandler):
         for file in os.listdir(log_dir):
             if os.path.isfile(os.path.join(log_dir, file)):
                 file_path = os.path.join(log_dir, file)
-                file_info = {
-                    "name": file,
-                    "mtime": os.path.getmtime(file_path)  # Get the modification time
-                }
+                file_info = {"name": file, "mtime": os.path.getmtime(file_path)}  # Get the modification time
                 if file.startswith("Server Log"):
                     server_logs.append(file_info)
                 elif file.startswith("Error Log"):
@@ -82,10 +79,7 @@ class LogsHandler(tornado.web.RequestHandler):
         error_logs.sort(key=lambda x: x["mtime"], reverse=True)
 
         template = env.get_template("logs.html")
-        rendered_template = template.render(
-            server_logs=[log["name"] for log in server_logs],
-            error_logs=[log["name"] for log in error_logs]
-        )
+        rendered_template = template.render(server_logs=[log["name"] for log in server_logs], error_logs=[log["name"] for log in error_logs])
         self.write(rendered_template)
 
 
@@ -110,10 +104,52 @@ class LogContentHandler(tornado.web.RequestHandler):
         log_file_path = os.path.join(log_dir, log_file_name)
 
         if os.path.isfile(log_file_path):
-            with open(log_file_path, 'r', encoding="utf-8") as log_file:
+            with open(log_file_path, "r") as log_file:
                 lines = log_file.readlines()
-                reversed_lines = lines[::-1]  # Reverse the lines
-                self.write(''.join(reversed_lines))
+                reversed_lines = lines[::-1]
+
+                formatted_lines = []
+                ip_regex = re.compile(r"\b(?:\d{1,3}\.){3}\d{1,3}\b")
+                string_regex = re.compile(r'(["\'])(?:(?=(\\?))\2.)*?\1')
+                keywords = {
+                    "INFO": "#2ead65",
+                    "ERROR": "#bf382f",
+                    "ERRNO": "#bf382f",
+                    "INVIGO SERVER STARTED": "#3daee9",
+                    "HOURLY BACKUP COMPLETE": "#f1c234",
+                    "DAILY BACKUP COMPLETE": "#f1c234",
+                    "WEEKLY BACKUP COMPLETE": "#f1c234",
+                    "UPLOADED": "#0057ea",
+                    "DOWNLOADED": "#0057ea",
+                    "SENT": "#0057ea",
+                    "UPLOAD": "#0057ea",
+                    "DOWNLOAD": "#0057ea",
+                    "LOADED": "#0057ea",
+                    "PINECONE": "#25bc9d",
+                }
+
+                def keyword_replacer(match):
+                    keyword = match.group(0)
+                    color = keywords[keyword.upper()]
+                    return f'<span style="color: {color}">{keyword}</span>'
+
+                for line in reversed_lines:
+                    match = re.match(r"(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d+) - (INFO|ERROR) - (.*)", line, re.IGNORECASE)
+                    if match:
+                        date, level, message = match.groups()
+                        level_color = "#2ead65" if level.upper() == "INFO" else "#bf382f"
+                        message = string_regex.sub(r'<span style="color: #c3705d;">\g<0></span>', message)
+                        message = ip_regex.sub(r'<span style="color: #8d48aa;">\g<0></span>', message)
+
+                        for keyword in keywords:
+                            message = re.sub(r"\b" + re.escape(keyword) + r"\b", keyword_replacer, message, flags=re.IGNORECASE)
+
+                        formatted_line = f"<b>{date}</b> - <span style='color: {level_color}'>{level}</span> - <span style='color: #EAE9FC'>{message}</span>"
+                        formatted_lines.append(formatted_line)
+                    else:
+                        formatted_lines.append(line)
+
+                self.write("<br>".join(formatted_lines))
         else:
             self.set_status(404)
             self.write("Log file not found")
@@ -445,7 +481,7 @@ class SendErrorReportHandler(tornado.web.RequestHandler):
 
             send_error_log(body=f"{error_log_url}\n{error_log}", connected_clients=connected_clients)
             with open(
-                f'{os.path.dirname(os.path.realpath(__file__))}/logs/{log_file_name}',
+                f"{os.path.dirname(os.path.realpath(__file__))}/logs/{log_file_name}",
                 "w",
                 encoding="utf-8",
             ) as error_file:

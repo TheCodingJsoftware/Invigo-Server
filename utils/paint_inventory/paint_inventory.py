@@ -1,5 +1,4 @@
 import contextlib
-
 import json
 
 from utils.components_inventory.components_inventory import ComponentsInventory
