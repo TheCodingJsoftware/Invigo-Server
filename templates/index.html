@@ -35,6 +35,58 @@
             align-items: center;
             overflow-x: hidden;
         }
+        .folder-content {
+            display: flex;
+            visibility: hidden;
+            opacity: 0;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: #161616;
+            padding: 20px;
+            border: 1px solid #0d0d0d;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            z-index: 1001;
+            border-radius: 25px;
+            transition: opacity 0.3s linear;
+        }
+
+        .folder-content.visible {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        .folder-content div{
+            margin: 40px;
+        }
+
+        .folder-content h2{
+            position: absolute;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            padding-top: 15px;
+            width: 100%;
+        }
+
+        .overlay {
+            visibility: hidden;
+            opacity: 0;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            transition: opacity 0.3s ease-in-out;
+        }
+
+        .overlay.visible {
+            visibility: visible;
+            opacity: 1;
+        }
+
 
         .grid-container{
             display: grid;
@@ -126,14 +178,20 @@
                 padding: 1rem;
             }
             .grid-item p.title {
-            transform: translate(-50%, 13vw);
-            font-size: 12px;
+                transform: translate(-50%, 13vw);
+                font-size: 12px;
+            }
+            .folder-content{
+                flex-direction: column;
             }
         }
     </style>
     </head>
 
-    <header><p>Invigo</p></header>
+    <header>
+        <p>Invigo</p>
+        <div id="latest_version"></div>
+    </header>
     <body>
         <div class="grid-container">
             <div data-url="/inventory" class="grid-item" data-color="#8d48aa">
@@ -147,7 +205,7 @@
             </div>
             <div data-url="/server_log" class="grid-item" data-color="#f1c234">
                 <p class="title">Server Log</p>
-                <i class="fa-solid fa-server"></i>
+                <i class="fa-solid fa-file-lines"></i>
             </div>
             <div data-url="#" class="grid-item" data-color="#37cb77">
                 <p class="title">Quotes</p>
@@ -163,25 +221,53 @@
             </div>
             <div data-url="/logs" class="grid-item" data-color="#bf382f">
                 <p class="title">Logs</p>
-                <i class="fa-solid fa-file-lines"></i>
+                <i class="fa-solid fa-box-archive"></i>
             </div>
             <div data-url="http://10.0.0.10:5051/download" class="grid-item"
                 data-color="#3daee9">
                 <p class="title">Download</p>
                 <i class="fa-solid fa-download"></i>
             </div>
-            <div
-                data-url="https://github.com/TheCodingJsoftware/Inventory-Manager"
-                class="grid-item" data-color="#344a5d">
+            <div data-url="#source-code-folder" class="grid-item"
+                data-color="#344a5d">
                 <p class="title">Source Code</p>
-                <i class="fa-solid fa-code"></i>
+                <i class="fa-solid fa-folder"></i>
+            </div>
+            <div id="source-code-folder" class="folder-content">
+                <h2>Source Code</h2>
+                <div
+                    data-url="https://github.com/TheCodingJsoftware/Inventory-Manager"
+                    class="grid-item" data-color="#344a5d">
+                    <p class="title">Invigo</p>
+                    <i class="fa-solid fa-code"></i>
+                </div>
+                <div
+                    data-url="https://github.com/TheCodingJsoftware/Invigo-Server"
+                    class="grid-item" data-color="#344a5d">
+                    <p class="title">Server</p>
+                    <i class="fa-solid fa-server"></i>
+                </div>
+                <div
+                    data-url="https://github.com/TheCodingJsoftware/Invigo-Web"
+                    class="grid-item" data-color="#344a5d">
+                    <p class="title">Web</p>
+                    <i class="fa-solid fa-globe"></i>
+                </div>
             </div>
         </div>
+        <div id="overlay" class="overlay" onclick="closeFolder()"></div>
     </body>
 
     <script>
     function isMobileDevice() {
         return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    }
+    function closeFolder() {
+        window.location.hash = '';
+    }
+
+    function goToMainUrl() {
+        window.location.href = '/';  // Replace '/' with the main URL if different
     }
 document.addEventListener('DOMContentLoaded', function() {
     const gridItems = document.querySelectorAll('.grid-item');
@@ -228,7 +314,58 @@ document.addEventListener('DOMContentLoaded', function() {
                 this.querySelector('svg').style.color = '#EAE9FC';
             }, 300);
         });
+        function showFolder(folderId) {
+            const folderContent = document.getElementById(folderId);
+            const overlay = document.getElementById('overlay');
+            if (folderContent) {
+                folderContent.classList.add('visible');
+                overlay.classList.add('visible');
+            }
+        }
+
+        function hideAllFolders() {
+            const folderContents = document.querySelectorAll('.folder-content');
+            const overlay = document.getElementById('overlay');
+            folderContents.forEach(folder => {
+                folder.classList.remove('visible');
+            });
+            overlay.classList.remove('visible');
+        }
+
+        function checkForHash() {
+            const hash = window.location.hash.substring(1);
+            if (hash) {
+                hideAllFolders();
+                showFolder(hash);
+            } else {
+                hideAllFolders();
+            }
+        }
+
+        window.addEventListener('hashchange', checkForHash, false);
+
+        checkForHash(); // Load contents on page load if there's a hash
     });
+
+    // const latestVersionDiv = document.getElementById("latest_version");
+
+    // const versionUrl = "http://10.0.0.10:5051/version";
+    // const messageUrl = "http://10.0.0.10:5051/update_message";
+
+    // Promise.all([
+    //     fetch(versionUrl, { timeout: 10000 }).then(response => response.text()),
+    //     fetch(messageUrl, { timeout: 10000 }).then(response => response.text())
+    // ])
+    // .then(([version, message]) => {
+    //     latestVersionDiv.innerHTML = `
+    //         <p><strong>Version:</strong> ${version}</p>
+    //         <p><strong>Message:</strong> ${message}</p>
+    //     `;
+    // })
+    // .catch(error => {
+    //     console.error('Error fetching data:', error);
+    //     latestVersionDiv.innerHTML = `<p>Error fetching latest version information.</p>`;
+    // });
 });
 </script>
 </html>

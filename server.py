@@ -477,7 +477,7 @@ class SendErrorReportHandler(tornado.web.RequestHandler):
         )
         if error_log is not None:
             log_file_name = f'Error Log - {datetime.now().strftime("%B %d %A %Y %I_%M_%S %p")}.log'
-            error_log_url = f"http://invi.go/logs#{log_file_name}"
+            error_log_url = f"http://invi.go/logs#{quote(log_file_name, safe='')}"
 
             send_error_log(body=f"{error_log_url}\n{error_log}", connected_clients=connected_clients)
             with open(
@@ -501,7 +501,7 @@ class SendEmailHandler(tornado.web.RequestHandler):
             send(title, message, email_list, connected_clients=connected_clients)
 
             CustomPrint.print(
-                f"INGO - {self.request.remote_ip} initiated send email: {title}",
+                f"INFO - {self.request.remote_ip} initiated send email: {title}",
                 connected_clients=connected_clients,
             )
 
