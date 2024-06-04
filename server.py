@@ -479,13 +479,14 @@ class SendErrorReportHandler(tornado.web.RequestHandler):
             log_file_name = f'Error Log - {datetime.now().strftime("%B %d %A %Y %I_%M_%S %p")}.log'
             error_log_url = f"http://invi.go/logs#{quote(log_file_name, safe='')}"
 
-            send_error_log(body=f"{error_log_url}\n{error_log}", connected_clients=connected_clients)
             with open(
                 f"{os.path.dirname(os.path.realpath(__file__))}/logs/{log_file_name}",
                 "w",
                 encoding="utf-8",
             ) as error_file:
                 error_file.write(error_log)
+
+            send_error_log(body=f"{error_log_url}\n{error_log}", connected_clients=connected_clients)
         else:
             self.set_status(400)
 
