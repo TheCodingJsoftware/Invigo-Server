@@ -1,3 +1,4 @@
+import json
 import os
 
 
@@ -10,7 +11,7 @@ def create_directory(path):
 
 
 def main():
-    root_directories = ["data", "images", "logs", "backups"]
+    root_directories = ["data", "data/jobs", "data/workspace", "images", "logs", "backups"]
     quotes_subdirs = ["packing_slips", "quotes", "workorders"]
 
     for directory in root_directories:
@@ -30,7 +31,7 @@ def main():
 
     if not os.path.exists("order_number.json"):
         with open("order_number.json", "w", encoding="utf-8") as f:
-            f.write('{"order_number": 0}')
+            json.dump({"order_number": 0}, f)
 
 
 if __name__ == "__main__":

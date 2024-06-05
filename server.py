@@ -173,10 +173,10 @@ class FileSenderHandler(tornado.websocket.WebSocketHandler):
 
 
 class FileReceiveHandler(tornado.web.RequestHandler):
-    def get(self, filename):
-        if filename == "price_of_steel_information.json":
-            file_path = "price_of_steel_information.json"
-        else:
+    def get(self, filename: str):
+        if filename.endswith(".job"):
+            file_path = f"data/jobs/{filename}"
+        elif filename.endswith(".json"):
             file_path = f"data/{filename}"
         try:
             with open(file_path, "rb") as file:
@@ -225,6 +225,10 @@ class FileUploadHandler(tornado.web.RequestHandler):
 
             if file_name.lower().endswith(".json"):
                 with open(f"data/{file_name}", "wb") as file:
+                    file.write(file_data)
+                threading.Thread(target=update_inventory_file_to_pinecone, args=(file_name,)).start()
+            elif file_name.lower().endswith(".job"):
+                with open(f"data/jobs/{file_name}", "wb") as file:
                     file.write(file_data)
                 threading.Thread(target=update_inventory_file_to_pinecone, args=(file_name,)).start()
             elif file_name.lower().endswith(".jpeg") or file_name.lower().endswith(".jpg") or file_name.lower().endswith(".png"):
@@ -478,7 +482,7 @@ class SendErrorReportHandler(tornado.web.RequestHandler):
         if error_log is not None:
             log_file_name = f'Error Log - {datetime.now().strftime("%B %d %A %Y %I_%M_%S %p")}.log'
             error_log_url = f"http://invi.go/logs#{quote(log_file_name, safe='')}"
-
+            html_error_log_url = f'<a href="{error_log_url}">Error Log</a>'
             with open(
                 f"{os.path.dirname(os.path.realpath(__file__))}/logs/{log_file_name}",
                 "w",
@@ -486,7 +490,7 @@ class SendErrorReportHandler(tornado.web.RequestHandler):
             ) as error_file:
                 error_file.write(error_log)
 
-            send_error_log(body=f"{error_log_url}\n{error_log}", connected_clients=connected_clients)
+            send_error_log(body=f"{html_error_log_url}\n{error_log}", connected_clients=connected_clients)
         else:
             self.set_status(400)
 
