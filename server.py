@@ -104,9 +104,8 @@ class LogContentHandler(tornado.web.RequestHandler):
         log_file_path = os.path.join(log_dir, log_file_name)
 
         if os.path.isfile(log_file_path):
-            with open(log_file_path, "r") as log_file:
+            with open(log_file_path, "r", encoding="utf-8") as log_file:
                 lines = log_file.readlines()
-                reversed_lines = lines[::-1]
 
                 formatted_lines = []
                 ip_regex = re.compile(r"\b(?:\d{1,3}\.){3}\d{1,3}\b")
@@ -133,7 +132,7 @@ class LogContentHandler(tornado.web.RequestHandler):
                     color = keywords[keyword.upper()]
                     return f'<span style="color: {color}">{keyword}</span>'
 
-                for line in reversed_lines:
+                for line in lines:
                     match = re.match(r"(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d+) - (INFO|ERROR) - (.*)", line, re.IGNORECASE)
                     if match:
                         date, level, message = match.groups()
