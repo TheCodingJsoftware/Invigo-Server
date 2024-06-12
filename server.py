@@ -250,7 +250,7 @@ class WorkspaceFileUploader(tornado.web.RequestHandler):
     async def post(self):
         if file_info := self.request.files.get("file"):
             file_data = file_info[0]["body"]
-            file_name = os.path.basename(file_info[0]["filename"])
+            file_name: str = os.path.basename(file_info[0]["filename"])
             file_ext = os.path.splitext(file_name)[1].upper().replace(".", "")
             Path(f"data/workspace/{file_ext}").mkdir(parents=True, exist_ok=True)
             with open(f"data/workspace/{file_ext}/{file_name}", "wb") as file:
@@ -267,9 +267,9 @@ class WorkspaceFileUploader(tornado.web.RequestHandler):
 
 class WorkspaceFileHandler(tornado.web.RequestHandler):
     def get(self, file_name):
+        file_name: str = os.path.basename(file_name)
         file_ext = os.path.splitext(file_name)[1].upper().replace(".", "")
-        file_name = os.path.basename(file_name)
-        filepath = os.path.join("data/workspace", file_ext, file_name)
+        filepath = os.path.join("data\\workspace", file_ext, file_name)
         if os.path.exists(filepath):
             with open(filepath, "rb") as f:
                 self.write(f.read())
