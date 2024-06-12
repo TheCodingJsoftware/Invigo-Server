@@ -11,11 +11,16 @@ def create_directory(path):
 
 
 def main():
-    root_directories = ["data", "data/jobs", "data/workspace", "images", "logs", "backups"]
+    root_directories = ["data", "data/workspace", "images", "logs", "backups"]
     quotes_subdirs = ["packing_slips", "quotes", "workorders"]
+    jobs_subdirs = ["planning", "quoting", "quoted", "workspace", "archive"]
 
     for directory in root_directories:
         create_directory(directory)
+
+    jobs_dir = "saved_jobs"
+    for subdir in jobs_subdirs:
+        create_directory(os.path.join(jobs_dir, subdir))
 
     saved_quotes_path = "saved_quotes"
     create_directory(saved_quotes_path)

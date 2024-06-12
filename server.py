@@ -420,12 +420,11 @@ class DeleteCutoffSheetHandler(tornado.web.RequestHandler):
         self.redirect("/add_cutoff_sheet")
 
 
-executor = ThreadPoolExecutor(max_workers=4, thread_name_prefix="quote_gatherer")
+executor = ThreadPoolExecutor(max_workers=4, thread_name_prefix="file_directory_gatherer")
 
 
-async def gather_directories_info(base_directory: str):
+async def gather_quote_directories_info(base_directory: str, specific_dirs: list[str]):
     directories: dict[str, dict[str, str]] = {}
-    specific_dirs = ["quotes", "workorders", "packing_slips"]
 
     def blocking_io():
         gathered_data: dict[str, dict[str, str]] = {}
@@ -459,16 +458,72 @@ async def gather_directories_info(base_directory: str):
 
 class GetPreviousQuotesHandler(tornado.web.RequestHandler):
     async def get(self):
-        base_directory = "previous_quotes"
-        directories_info = await gather_directories_info(base_directory)
+        directories_info = await gather_quote_directories_info(base_directory="previous_quotes", specific_dirs=["quotes", "workorders", "packing_slips"])
         self.write(json.dumps(directories_info))
 
 
 class GetSavedQuotesHandler(tornado.web.RequestHandler):
     async def get(self):
-        base_directory = "saved_quotes"
-        directories_info = await gather_directories_info(base_directory)
+        directories_info = await gather_quote_directories_info(base_directory="saved_quotes", specific_dirs=["quotes", "workorders", "packing_slips"])
         self.write(json.dumps(directories_info))
+
+
+async def gather_job_directories_info(base_directory: str, specific_dirs: list[str]):
+    directories: dict[str, dict[str, str]] = {}
+
+    def blocking_io():
+        gathered_data: dict[str, dict[str, str]] = {}
+        for specific_dir in specific_dirs:
+            specific_path: str = os.path.join(base_directory, specific_dir)
+            for root, dirs, _ in os.walk(specific_path):
+                for dirname in dirs:
+                    dir_path = os.path.join(root, dirname)
+                    job_data_path = os.path.join(dir_path, "data.json")
+                    try:
+                        with open(job_data_path, "r", encoding="utf-8") as f:
+                            job_data = json.load(f)
+                        dir_info = {
+                            "name": dirname,
+                            "modified_date": os.path.getmtime(job_data_path),
+                            "type": job_data["job_data"]["type"],
+                            "order_number": job_data["job_data"]["order_number"],
+                            "ship_to": job_data["job_data"]["ship_to"],
+                            "date_shipped": job_data["job_data"]["date_shipped"],
+                            "date_expected": job_data["job_data"]["date_expected"],
+                        }
+                        dir_path = dir_path.replace(f"{base_directory}\\", "")
+                        gathered_data[dir_path] = dir_info
+                    except Exception as e:
+                        print(f"Error processing {dir_path}: {str(e)}")
+        return gathered_data
+
+    directories = await tornado.ioloop.IOLoop.current().run_in_executor(executor, blocking_io)
+    return directories
+
+
+class GetJobsHandler(tornado.web.RequestHandler):
+    async def get(self):
+        directories_info = await gather_job_directories_info(base_directory="saved_jobs", specific_dirs=["planning", "quoting", "quoted", "workspace", "archive"])
+        self.write(json.dumps(directories_info))
+
+
+class LoadJobHandler(tornado.web.RequestHandler):
+    def get(self, folder_name):
+        html_file_path = os.path.join(folder_name, "page.html")
+
+        if os.path.exists(html_file_path):
+            with open(html_file_path, "r", encoding="utf-8") as file:
+                html_content = file.read()
+
+            CustomPrint.print(
+                f"INFO - {self.request.remote_ip} loaded job: {folder_name}",
+                connected_clients=connected_clients,
+            )
+
+            self.write(html_content)
+        else:
+            self.set_status(404)
+            self.write("404: HTML file not found.")
 
 
 class SendErrorReportHandler(tornado.web.RequestHandler):
@@ -513,6 +568,62 @@ class SendEmailHandler(tornado.web.RequestHandler):
         except Exception as e:
             self.set_status(500, "Failed to send email")
             self.finish(f"Error sending email: {str(e)}")
+
+
+
+class UploadJobHandler(tornado.web.RequestHandler):
+    def post(self):
+        try:
+            folder = self.get_argument("folder")
+
+            job_data_json = self.request.files["job_data"][0]["body"]
+            job_data = json.loads(job_data_json)
+
+            html_file_contents = self.get_argument("html_file_contents")
+
+            os.makedirs(folder, exist_ok=True)
+
+            job_file_path = os.path.join(folder, "data.json")
+            with open(job_file_path, "w", encoding="utf-8") as f:
+                json.dump(job_data, f, ensure_ascii=False)
+
+            html_file_path = os.path.join(folder, "page.html")
+            with open(html_file_path, "w", encoding="utf-8") as f:
+                f.write(html_file_contents)
+
+            CustomPrint.print(
+                f"INFO - {self.request.remote_ip} uploaded job: {folder}",
+                connected_clients=connected_clients,
+            )
+
+            self.write({"status": "success", "message": "Job and HTML file uploaded successfully."})
+        except Exception as e:
+            self.set_status(500)
+            self.write({"status": "error", "message": str(e)})
+
+
+class DownloadJobHandler(tornado.web.RequestHandler):
+    def get(self, folder_name):
+        json_file_path = os.path.join(folder_name, "data.json")
+
+        if os.path.exists(json_file_path):
+            self.set_header("Content-Type", "application/octet-stream")
+            self.set_header("Content-Disposition", f'attachment; filename="{folder_name}_job.json"')
+
+            with open(json_file_path, "rb") as file:
+                while True:
+                    if data := file.read(16384):
+                        self.write(data)
+                    else:
+                        break
+            CustomPrint.print(
+                f"INFO - {self.request.remote_ip} downloaded job: {folder_name}",
+                connected_clients=connected_clients,
+            )
+            self.finish()
+        else:
+            self.set_status(404)
+            self.write("404: File not found")
 
 
 class UploadQuoteHandler(tornado.web.RequestHandler):
@@ -833,6 +944,10 @@ if __name__ == "__main__":
             (r"/send_error_report", SendErrorReportHandler),
             (r"/get_previous_quotes", GetPreviousQuotesHandler),
             (r"/get_saved_quotes", GetSavedQuotesHandler),
+            (r"/get_jobs", GetJobsHandler),
+            (r"/upload_job", UploadJobHandler),
+            (r"/download_job/(.*)", DownloadJobHandler),
+            (r"/load_job/(.*)", LoadJobHandler),
             (r"/upload_quote", UploadQuoteHandler),
             (r"/update_quote_settings", UpdateQuoteSettingsHandler),
             (r"/download_quote/(.*)", DownloadQuoteHandler),
