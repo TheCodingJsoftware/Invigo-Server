@@ -5,6 +5,9 @@ from email.mime import multipart, text
 from utils.custom_print import CustomPrint
 
 
+SMPT_HOST = "mail.pine.cone"
+SMPT_PORT = 587
+
 def send(subject: str, body: str, recipients: list[str], connected_clients):
     with open("credentials.json", "r", encoding="utf-8") as credentialsFile:
         credentials = json.load(credentialsFile)
@@ -20,7 +23,7 @@ def send(subject: str, body: str, recipients: list[str], connected_clients):
 
     msg.attach(text.MIMEText(body, "html"))
 
-    server = smtplib.SMTP("smtp.gmail.com", 587)
+    server = smtplib.SMTP(SMPT_HOST, SMPT_PORT)
     server.ehlo()
     server.starttls()
     server.ehlo()
@@ -46,7 +49,7 @@ def send_error_log(body: str, connected_clients):
 
     msg.attach(text.MIMEText(body, "html"))
 
-    server = smtplib.SMTP("smtp.gmail.com", 587)
+    server = smtplib.SMTP(SMPT_HOST, SMPT_PORT)
     server.ehlo()
     server.starttls()
     server.ehlo()
