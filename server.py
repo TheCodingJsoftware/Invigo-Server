@@ -665,7 +665,7 @@ class UploadQuoteHandler(tornado.web.RequestHandler):
         try:
             folder = self.get_argument("folder")
 
-            quote_data_json = self.request.files["quote_data"][0]["body"]
+            quote_data_json = self.request.files["quote_data"][0]["body"].decode('utf-8')
             quote_data = json.loads(quote_data_json)
 
             html_file_contents = self.get_argument("html_file_contents")
