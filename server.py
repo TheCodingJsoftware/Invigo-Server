@@ -231,7 +231,7 @@ class FileUploadHandler(tornado.web.RequestHandler):
                     file.write(file_data)
                 threading.Thread(target=update_inventory_file_to_pinecone, args=(file_name,)).start()
             elif file_name.lower().endswith(".jpeg") or file_name.lower().endswith(".jpg") or file_name.lower().endswith(".png"):
-                file_name = file_name.replace("images/", "")  # Just in case
+                file_name = os.path.basename(file_name)
                 with open(f"images/{file_name}", "wb") as file:
                     file.write(file_data)
             CustomPrint.print(
