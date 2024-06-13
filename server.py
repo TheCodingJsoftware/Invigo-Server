@@ -283,6 +283,7 @@ class WorkspaceFileHandler(tornado.web.RequestHandler):
 
 class ImageHandler(tornado.web.RequestHandler):
     def get(self, image_name: str):
+        image_name = os.path.basename(image_name)
         filepath = os.path.join("images", image_name)
         if os.path.exists(filepath):
             with open(filepath, "rb") as f:
