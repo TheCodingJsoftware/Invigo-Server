@@ -576,7 +576,7 @@ class UploadJobHandler(tornado.web.RequestHandler):
         try:
             folder = self.get_argument("folder")
 
-            job_data_json = self.request.files["job_data"][0]["body"]
+            job_data_json = self.request.files["job_data"][0]["body"].decode('utf-8')
             job_data = json.loads(job_data_json)
 
             html_file_contents = self.get_argument("html_file_contents")
@@ -624,6 +624,39 @@ class DownloadJobHandler(tornado.web.RequestHandler):
         else:
             self.set_status(404)
             self.write("404: File not found")
+
+
+class DeleteJobHandler(tornado.web.RequestHandler):
+    def post(self, folder_name):
+        CustomPrint.print(
+            f"INFO - Deleting - {folder_name}",
+            connected_clients=connected_clients,
+        )
+
+        json_file_path = os.path.join(folder_name, "data.json")
+        html_file_path = os.path.join(folder_name, "page.html")
+
+        try:
+            if os.path.exists(json_file_path):
+                os.remove(json_file_path)
+            else:
+                raise FileNotFoundError(f"No JSON file found for {folder_name}.")
+
+            if os.path.exists(html_file_path):
+                os.remove(html_file_path)
+
+            if not os.listdir(folder_name):
+                os.rmdir(folder_name)
+
+            CustomPrint.print(
+                f"INFO - {self.request.remote_ip} deleted job: {folder_name}",
+                connected_clients=connected_clients,
+            )
+
+            self.write({"status": "success", "message": "Quote deleted successfully."})
+        except Exception as e:
+            self.set_status(500)
+            self.write({"status": "error", "message": str(e)})
 
 
 class UploadQuoteHandler(tornado.web.RequestHandler):
@@ -923,39 +956,53 @@ if __name__ == "__main__":
     app = tornado.web.Application(
         [
             (r"/", MainHandler),
+
             (r"/server_log", ServerLogsHandler),
             (r"/logs", LogsHandler),
             (r"/fetch_log", LogContentHandler),
             (r"/delete_log", LogDeleteHandler),
+
             (r"/file/(.*)", FileReceiveHandler),
             (r"/command", CommandHandler),
             (r"/upload", FileUploadHandler),
             (r"/workspace_upload", WorkspaceFileUploader),
             (r"/workspace_get_file/(.*)", WorkspaceFileHandler),
+
             (r"/ws", FileSenderHandler),
+
             (r"/image/(.*)", ImageHandler),
             (r"/images/(.*)", ImageHandler),
+
             (r"/set_order_number/(\d+)", SetOrderNumberHandler),
             (r"/get_order_number", GetOrderNumberHandler),
+
+            (r"/inventory", InventoryHandler),
+            (r"/inventory/(.*)/(.*)", InventoryTablesHandler),
             (r"/sheets_in_inventory/(.*)", SheetQuantityHandler),
             (r"/sheet_qr_codes", QRCodePageHandler),
             (r"/add_cutoff_sheet", AddCutoffSheetHandler),
             (r"/delete_cutoff_sheet", DeleteCutoffSheetHandler),
+
             (r"/send_error_report", SendErrorReportHandler),
+            (r"/send_email", SendEmailHandler),
+
             (r"/get_previous_quotes", GetPreviousQuotesHandler),
             (r"/get_saved_quotes", GetSavedQuotesHandler),
+
             (r"/get_jobs", GetJobsHandler),
             (r"/upload_job", UploadJobHandler),
             (r"/download_job/(.*)", DownloadJobHandler),
             (r"/load_job/(.*)", LoadJobHandler),
+            (r"/delete_job/(.*)", DeleteJobHandler),
+
+            # NOTE These will be removed in favor of Job Handelers
             (r"/upload_quote", UploadQuoteHandler),
             (r"/update_quote_settings", UpdateQuoteSettingsHandler),
             (r"/download_quote/(.*)", DownloadQuoteHandler),
             (r"/load_quote/(.*)", LoadQuoteHandler),
             (r"/delete_quote/(.*)", DeleteQuoteHandler),
-            (r"/send_email", SendEmailHandler),
-            (r"/inventory", InventoryHandler),
-            (r"/inventory/(.*)/(.*)", InventoryTablesHandler),
+
+
         ]
     )
     # executor = concurrent.futures.ThreadPoolExecutor(max_workers=10)
