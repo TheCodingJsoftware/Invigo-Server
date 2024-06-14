@@ -252,13 +252,9 @@ class WorkspaceFileUploader(tornado.web.RequestHandler):
             file_data = file_info[0]["body"]
             file_name: str = os.path.basename(file_info[0]["filename"])
             file_ext = os.path.splitext(file_name)[1].upper().replace(".", "")
-            if file_ext in ["PNG", "JPEG", "JPG"]:
-                with open(f"images/{file_name}", "wb") as file:
-                    file.write(file_data)
-            else:
-                Path(f"data/workspace/{file_ext}").mkdir(parents=True, exist_ok=True)
-                with open(f"data/workspace/{file_ext}/{file_name}", "wb") as file:
-                    file.write(file_data)
+            Path(f"data/workspace/{file_ext}").mkdir(parents=True, exist_ok=True)
+            with open(f"data/workspace/{file_ext}/{file_name}", "wb") as file:
+                file.write(file_data)
             CustomPrint.print(
                 f'INFO - {self.request.remote_ip} uploaded "{file_name}"',
                 connected_clients=connected_clients,
