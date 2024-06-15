@@ -36,7 +36,11 @@ class CustomPrint:
 
     @staticmethod
     def log_to_file(message):
-        with open(f"logs/Server Log - {datetime.now().strftime('%A %B %d %Y')}.log", "a", encoding="utf-8") as log_file:
+        with open(
+            f"logs/Server Log - {datetime.now().strftime('%A %B %d %Y')}.log",
+            "a",
+            encoding="utf-8",
+        ) as log_file:
             log_file.write(f"{str(datetime.now())} - {message}\n")
 
 

@@ -10,7 +10,10 @@ class Pound:
         self.latest_change: str = latest_change
 
     def to_dict(self):
-        return {"pounds_per_square_foot": self.pounds_per_square_foot, "latest_change": self.latest_change}
+        return {
+            "pounds_per_square_foot": self.pounds_per_square_foot,
+            "latest_change": self.latest_change,
+        }
 
 
 class PoundsPerSquareFoot:

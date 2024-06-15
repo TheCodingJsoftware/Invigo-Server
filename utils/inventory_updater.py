@@ -26,7 +26,18 @@ def add_sheet(
     sheets_inventory.load_data()
     length = float(sheet_dim.split("x")[0].strip())
     width = float(sheet_dim.split("x")[1].strip())
-    new_sheet = Sheet(sheet_name, {"quantity": sheet_count, "thickness": thickness, "material": material, "length": length, "width": width, "categories": ["Cutoff"]}, sheets_inventory)
+    new_sheet = Sheet(
+        sheet_name,
+        {
+            "quantity": sheet_count,
+            "thickness": thickness,
+            "material": material,
+            "length": length,
+            "width": width,
+            "categories": ["Cutoff"],
+        },
+        sheets_inventory,
+    )
     new_sheet.latest_change_quantity = f"Item added at {datetime.now().strftime('%B %d %A %Y %I:%M:%S %p')} via server"
     sheets_inventory.add_sheet(new_sheet)
     sheets_inventory.save()
