@@ -122,6 +122,7 @@ class LogContentHandler(tornado.web.RequestHandler):
                 keywords = {
                     "INFO": "#2ead65",
                     "ERROR": "#bf382f",
+                    "Error": "#bf382f",
                     "ERRNO": "#bf382f",
                     "INVIGO SERVER STARTED": "#3daee9",
                     "HOURLY BACKUP COMPLETE": "#f1c234",
@@ -172,7 +173,7 @@ class LogContentHandler(tornado.web.RequestHandler):
             self.write("Log file not found")
 
 
-class FileSenderHandler(tornado.websocket.WebSocketHandler):
+class WebSocketHandler(tornado.websocket.WebSocketHandler):
     def open(self):
         connected_clients.add(self)
 
@@ -1033,7 +1034,7 @@ if __name__ == "__main__":
             (r"/workspace_upload", WorkspaceFileUploader),
             (r"/workspace_get_file/(.*)", WorkspaceFileHandler),
 
-            (r"/ws", FileSenderHandler),
+            (r"/ws", WebSocketHandler),
 
             (r"/image/(.*)", ImageHandler),
             (r"/images/(.*)", ImageHandler),
