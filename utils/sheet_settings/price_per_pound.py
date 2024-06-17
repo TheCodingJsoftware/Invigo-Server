@@ -9,7 +9,10 @@ class Price:
         self.latest_change: str = latest_change
 
     def to_dict(self) -> Dict[str, Union[float, str]]:
-        return {"price_per_pound": self.price_per_pound, "latest_change": self.latest_change}
+        return {
+            "price_per_pound": self.price_per_pound,
+            "latest_change": self.latest_change,
+        }
 
 
 class PricePerPound:

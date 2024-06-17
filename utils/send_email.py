@@ -7,6 +7,7 @@ from utils.custom_print import CustomPrint
 SMPT_HOST = "smtp.gmail.com"
 SMPT_PORT = 587
 
+
 def send(subject: str, body: str, recipients: list[str], connected_clients):
     with open("credentials.json", "r", encoding="utf-8") as credentialsFile:
         credentials = json.load(credentialsFile)
