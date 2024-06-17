@@ -4,8 +4,8 @@ from email.mime import multipart, text
 
 from utils.custom_print import CustomPrint
 
-SMPT_HOST = "smtp.gmail.com"
-SMPT_PORT = 587
+SMTP_HOST = "smtp.gmail.com"
+SMTP_PORT = 587
 
 
 def send(subject: str, body: str, recipients: list[str], connected_clients):
@@ -23,7 +23,7 @@ def send(subject: str, body: str, recipients: list[str], connected_clients):
 
     msg.attach(text.MIMEText(body, "html"))
 
-    server = smtplib.SMTP(SMPT_HOST, SMPT_PORT)
+    server = smtplib.SMTP(SMTP_HOST, SMTP_PORT)
     server.ehlo()
     server.starttls()
     server.ehlo()
@@ -49,7 +49,7 @@ def send_error_log(body: str, connected_clients):
 
     msg.attach(text.MIMEText(body, "html"))
 
-    server = smtplib.SMTP(SMPT_HOST, SMPT_PORT)
+    server = smtplib.SMTP(SMTP_HOST, SMTP_PORT)
     server.ehlo()
     server.starttls()
     server.ehlo()
