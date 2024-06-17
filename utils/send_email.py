@@ -4,7 +4,7 @@ from email.mime import multipart, text
 
 from utils.custom_print import CustomPrint
 
-SMPT_HOST = "smpt.gmail.com"
+SMPT_HOST = "smtp.gmail.com"
 SMPT_PORT = 587
 
 def send(subject: str, body: str, recipients: list[str], connected_clients):
