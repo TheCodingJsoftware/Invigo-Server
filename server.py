@@ -631,6 +631,11 @@ class UploadJobHandler(tornado.web.RequestHandler):
             with open(html_file_path, "w", encoding="utf-8") as f:
                 f.write(html_file_contents)
 
+            signal_clients_for_changes(
+                client_to_ignore=self.request.remote_ip,
+                changed_files=["reload_saved_jobs"],
+            )
+
             CustomPrint.print(
                 f"INFO - {self.request.remote_ip} uploaded job: {folder}",
                 connected_clients=connected_clients,
@@ -693,6 +698,11 @@ class DeleteJobHandler(tornado.web.RequestHandler):
             if not os.listdir(folder_name):
                 os.rmdir(folder_name)
 
+            signal_clients_for_changes(
+                client_to_ignore=self.request.remote_ip,
+                changed_files=["reload_saved_jobs"],
+            )
+
             CustomPrint.print(
                 f"INFO - {self.request.remote_ip} deleted job: {folder_name}",
                 connected_clients=connected_clients,
@@ -723,6 +733,11 @@ class UploadQuoteHandler(tornado.web.RequestHandler):
             html_file_path = os.path.join(folder, "page.html")
             with open(html_file_path, "w", encoding="utf-8") as f:
                 f.write(html_file_contents)
+
+            signal_clients_for_changes(
+                client_to_ignore=self.request.remote_ip,
+                changed_files=["reload_saved_quotes"],
+            )
 
             CustomPrint.print(
                 f"INFO - {self.request.remote_ip} uploaded quote: {folder}",
@@ -807,6 +822,11 @@ class DeleteQuoteHandler(tornado.web.RequestHandler):
 
             if not os.listdir(folder_name):
                 os.rmdir(folder_name)
+
+            signal_clients_for_changes(
+                client_to_ignore=self.request.remote_ip,
+                changed_files=["reload_saved_quotes"],
+            )
 
             CustomPrint.print(
                 f"INFO - {self.request.remote_ip} deleted quote: {folder_name}",
