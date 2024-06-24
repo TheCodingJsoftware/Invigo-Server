@@ -1,5 +1,4 @@
-import json
-
+import ujson as json
 from natsort import natsorted
 
 from utils.components_inventory.component import Component
@@ -38,11 +37,13 @@ class ComponentsInventory(Inventory):
 
     def get_total_stock_cost_for_similar_categories(self, text: str) -> float:
         total = 0.0
+        used_components: set[Component] = set()
         for category in self.get_categories():
             if text in category.name:
                 for component in self.components:
-                    if category in component.categories:
+                    if category in component.categories and component not in used_components:
                         total += component.get_total_cost_in_stock()
+                        used_components.add(component)
         return total
 
     def get_total_category_cost_in_stock(self, category: Category | str) -> float:
@@ -60,7 +61,7 @@ class ComponentsInventory(Inventory):
             category = self.get_category(category)
         for component in self.components:
             if category in component.categories:
-                total += component.get_total_unit_cost()
+                total += component.get_total_unit_cost(category)
         return total
 
     def add_component(self, component: Component):
@@ -98,15 +99,11 @@ class ComponentsInventory(Inventory):
         self.components = natsorted(self.components, key=lambda component: component.quantity, reverse=ascending)
 
     def sort_by_name(self, ascending: bool) -> list[Component]:
-        self.components = natsorted(
-            self.components,
-            key=lambda component: component.part_name,
-            reverse=ascending,
-        )
+        self.components = natsorted(self.components, key=lambda component: component.part_name, reverse=ascending)
 
     def save(self):
         with open(f"{self.FOLDER_LOCATION}/{self.filename}.json", "w", encoding="utf-8") as file:
-            json.dump(self.to_dict(), file, ensure_ascii=False)
+            json.dump(self.to_dict(), file, ensure_ascii=False, indent=4)
 
     def load_data(self):
         try:

@@ -47,7 +47,7 @@
         }
 
         details:hover {
-            border: 1px solid #8d48aa;
+            border: 1px solid #37cb77;
             box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.3), 0 6px 20px 0 rgba(0, 0, 0, 0.3);
         }
 
@@ -123,13 +123,13 @@
 
         button:hover {
             color: rgb(240, 244, 245);
-            border: 1px solid #8d48aa;
-            background-color: #8d48aa;
+            border: 1px solid #37cb77;
+            background-color: #37cb77;
             cursor: pointer;
         }
         .fixed-button {
-            border: 1px solid #8d48aa;
-            background-color: #8d48aa;
+            border: 1px solid #37cb77;
+            background-color: #37cb77;
             color: rgb(240, 244, 245);
             position: fixed;
             bottom: 20px;
@@ -150,6 +150,9 @@
 
         .radio-group {
             margin-bottom: 20px;
+            display: inline-grid;
+            text-align: left;
+            width: 380px;
         }
 
         .search-container {
@@ -162,16 +165,15 @@
 
         .search-container input[type="text"] {
             width: 300px;
-            padding: 10px;
+            padding: 12px;
             border-radius: 10px 0 0 10px;
-            border: 1px solid #8c8c8c;
             outline: none;
             color: #333;
         }
 
         .search-container button {
             padding: 10px 15px;
-            background-color: #8d48aa;
+            background-color: #37cb77;
             color: #f0f4f5;
             border-radius: 0 10px 10px 0;
             cursor: pointer;
@@ -179,13 +181,14 @@
         }
 
         .autocomplete-suggestions {
-            position: absolute;
             border: 1px solid #8c8c8c;
+            border-radius: 10px;
             background: #fff;
             max-height: 750px;
             overflow-y: auto;
             z-index: 1000;
-            width: 100%;
+            width: 50%;
+            margin: auto;
         }
 
         .autocomplete-suggestion {
@@ -196,8 +199,46 @@
         }
 
         .autocomplete-suggestion:hover {
-            background-color: #8d48aa;
+            background-color: #37cb77;
             color: #f0f4f5;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.5);
+            border-radius: 15px;
+        }
+
+        .modal-content {
+            background-color: black;
+            color: #f0f4f5;
+            margin: 15% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 400px;
+            text-align: center;
+            border-radius: 15px;
+        }
+
+        .close {
+            color: #f0f4f5;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: #f0f4f5;
+            text-decoration: none;
+            cursor: pointer;
         }
     </style>
     <body>
@@ -207,105 +248,217 @@
                 <button id="fetchButton">Fetch</button>
             </div>
             <div class="radio-group">
-                <input type="radio" id="components" name="inventory" value="components_inventory" checked>
-                <label for="components">Components</label>
-
-                <input type="radio" id="laser_cut_parts" name="inventory" value="laser_cut_inventory">
-                <label for="laser_cut_parts">Laser Cut Parts</label>
-
-                <input type="radio" id="sheets_inventory" name="inventory" value="sheets_inventory">
-                <label for="sheets_inventory">Sheets Inventory</label>
+                <div>
+                    <input type="radio" id="components" name="inventory" value="components_inventory" checked>
+                    <label for="components">Components</label>
+                </div>
+                <div>
+                    <input type="radio" id="laser_cut_parts" name="inventory" value="laser_cut_inventory">
+                    <label for="laser_cut_parts">Laser Cut Parts</label>
+                </div>
+                <div>
+                    <input type="radio" id="sheets_inventory" name="inventory" value="sheets_inventory">
+                    <label for="sheets_inventory">Sheets Inventory</label>
+                </div>
             </div>
             <div id="autocomplete-container" class="autocomplete-suggestions"></div>
             <canvas id="myChart" width="400" height="200"></canvas>
         </div>
 
-        <script>
-            document.addEventListener('DOMContentLoaded', function () {
-                const searchInput = document.getElementById('searchInput');
-                const fetchButton = document.getElementById('fetchButton');
-                const autocompleteContainer = document.getElementById('autocomplete-container');
-                let myChart = null;
-                const inventoryData = {{ inventory | tojson | safe }};
+        <button id="back_to_main" class="fixed-button"
+            onclick="goToMainUrl()"><i class="fa-solid fa-house"></i></button>
 
-                searchInput.addEventListener('input', function () {
-                    const query = searchInput.value.toLowerCase();
-                    const selectedInventory = document.querySelector('input[name="inventory"]:checked').value;
-                    const suggestions = getSuggestions(query, inventoryData[selectedInventory]);
-                    displaySuggestions(suggestions);
-                });
+    <!-- Error dialog -->
+    <div id="errorModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <p id="errorMessage">An error occurred while fetching data. Please try again.</p>
+        </div>
+    </div>
+    </body>
+    <script>
+        function goToMainUrl() {
+            window.location.href = "/"
+        }
 
-                fetchButton.addEventListener('click', function () {
+        document.addEventListener('DOMContentLoaded', function () {
+            const searchInput = document.getElementById('searchInput');
+            const fetchButton = document.getElementById('fetchButton');
+            const autocompleteContainer = document.getElementById('autocomplete-container');
+            const radioButtons = document.querySelectorAll('input[name="inventory"]');
+            let myChart = null;
+            const inventoryData = {{ inventory | tojson | safe }};
+            const errorModal = document.getElementById('errorModal');
+            const errorMessage = document.getElementById('errorMessage');
+            const closeModal = document.getElementsByClassName('close')[0];
+
+            searchInput.addEventListener('input', function () {
+                const query = searchInput.value.toLowerCase();
+                const selectedInventory = document.querySelector('input[name="inventory"]:checked').value;
+                const suggestions = getSuggestions(query, inventoryData[selectedInventory]);
+                displaySuggestions(suggestions);
+            });
+
+            fetchButton.addEventListener('click', function () {
+                const selectedInventory = document.querySelector('input[name="inventory"]:checked').value;
+                const selectedItem = searchInput.value;
+                updateUrl(selectedInventory, selectedItem);
+                fetchData(selectedInventory, selectedItem);
+            });
+
+            radioButtons.forEach(radio => {
+                radio.addEventListener('change', function () {
                     const selectedInventory = document.querySelector('input[name="inventory"]:checked').value;
                     const selectedItem = searchInput.value;
-
-                    fetch(`/fetch_data?inventory=${selectedInventory}&item=${selectedItem}`)
-                        .then(response => response.json())
-                        .then(data => {
-                            console.log(data);
-                            drawChart(data);
-                        })
-                        .catch(error => console.error('Error fetching data:', error));
+                    updateUrl(selectedInventory, selectedItem);
+                    if (selectedItem) {
+                        fetchData(selectedInventory, selectedItem);
+                    }
                 });
+            });
 
-                function getSuggestions(query, inventory) {
-                    if (!query) {
-                        return [];
-                    }
-                    return inventory.filter(name => name.toLowerCase().includes(query));
+            function getSuggestions(query, inventory) {
+                if (!query) {
+                    return [];
                 }
+                return inventory.filter(name => name.toLowerCase().includes(query));
+            }
 
-                function displaySuggestions(suggestions) {
-                    autocompleteContainer.innerHTML = '';
-                    suggestions.forEach(suggestion => {
-                        const div = document.createElement('div');
-                        div.className = 'autocomplete-suggestion';
-                        div.textContent = suggestion;
-                        div.addEventListener('click', function () {
-                            searchInput.value = suggestion;
-                            autocompleteContainer.innerHTML = '';
-                        });
-                        autocompleteContainer.appendChild(div);
+            function displaySuggestions(suggestions) {
+                autocompleteContainer.innerHTML = '';
+                suggestions.forEach(suggestion => {
+                    const div = document.createElement('div');
+                    div.className = 'autocomplete-suggestion';
+                    div.textContent = suggestion;
+                    div.addEventListener('click', function () {
+                        searchInput.value = suggestion;
+                        autocompleteContainer.innerHTML = '';
+                        const selectedInventory = document.querySelector('input[name="inventory"]:checked').value;
+                        updateUrl(selectedInventory, suggestion);
+                        fetchData(selectedInventory, suggestion);
                     });
-                }
+                    autocompleteContainer.appendChild(div);
+                });
+            }
 
-                function drawChart(data) {
-                    const ctx = document.getElementById('myChart').getContext('2d');
-                    if (myChart) {
-                        myChart.destroy();
-                    }
-                    myChart = new Chart(ctx, {
-                        type: 'line',
-                        data: {
-                            labels: data.dates,
-                            datasets: [{
-                                label: 'Quantity',
-                                data: data.quantities,
-                                borderColor: 'rgba(75, 192, 192, 1)',
-                                borderWidth: 1
-                            }, {
-                                label: 'Price',
-                                data: data.prices,
-                                borderColor: 'rgba(153, 102, 255, 1)',
-                                borderWidth: 1
-                            }]
+            function fetchData(inventory, item) {
+                fetch(`/fetch_data?inventory=${inventory}&item=${item}`)
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Network response was not ok');
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        console.log(data);
+                        drawChart(data);
+                    })
+                    .catch(error => {
+                        console.error('Error fetching data:', error);
+                        showErrorModal('An error occurred while fetching data. Please try again.');
+                    });
+            }
+
+            function updateUrl(inventory, item) {
+                const url = new URL(window.location);
+                url.searchParams.set('inventory', inventory);
+                if (item) {
+                    url.searchParams.set('item', item);
+                } else {
+                    url.searchParams.delete('item');
+                }
+                window.history.pushState({}, '', url);
+            }
+
+            function drawChart(data) {
+                const ctx = document.getElementById('myChart').getContext('2d');
+                if (myChart) {
+                    myChart.destroy();
+                }
+                myChart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: data.dates,
+                        datasets: [{
+                            label: 'Quantity',
+                            data: data.quantities,
+                            borderColor: 'rgba(75, 192, 192, 1)',
+                            borderWidth: 1
+                        }, {
+                            label: 'Price',
+                            data: data.prices,
+                            borderColor: 'rgba(153, 102, 255, 1)',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        scales: {
+                            x: {
+                                type: 'time',
+                                time: {
+                                    unit: 'day'
+                                }
+                            },
+                            y: {
+                                beginAtZero: true
+                            }
                         },
-                        options: {
-                            scales: {
-                                x: {
-                                    type: 'time',
-                                    time: {
-                                        unit: 'day'
+                        plugins: {
+                            tooltip: {
+                                callbacks: {
+                                    label: function (context) {
+                                        let label = context.dataset.label || '';
+
+                                        if (label) {
+                                            label += ': ';
+                                        }
+                                        if (context.parsed.y !== null) {
+                                            label += new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(context.parsed.y);
+                                        }
+                                        let additionalInfo = data.latest_changes[context.dataIndex];
+                                        if (additionalInfo) {
+                                            label += ' (' + additionalInfo + ')';
+                                        }
+                                        return label;
                                     }
-                                },
-                                y: {
-                                    beginAtZero: true
                                 }
                             }
                         }
-                    });
+                    }
+                });
+            }
+
+            function showErrorModal(message) {
+                errorMessage.textContent = message;
+                errorModal.style.display = "block";
+            }
+
+            closeModal.onclick = function () {
+                errorModal.style.display = "none";
+            }
+
+            window.onclick = function (event) {
+                if (event.target == errorModal) {
+                    errorModal.style.display = "none";
+                }
+            }
+
+            // Check if there are query parameters in the URL on page load and fetch data if they exist
+            window.addEventListener('load', function () {
+                const urlParams = new URLSearchParams(window.location.search);
+                const inventory = urlParams.get('inventory') || 'components_inventory';
+                const item = urlParams.get('item');
+
+                document.querySelector(`input[name="inventory"][value="${inventory}"]`).checked = true;
+
+                if (item) {
+                    searchInput.value = item;
+                    fetchData(inventory, item);
+                } else {
+                    updateUrl(inventory, '');
                 }
             });
-        </script>
-    </body>
+        });
+    </script>
+
 </html>
