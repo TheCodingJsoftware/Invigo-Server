@@ -36,6 +36,7 @@ from utils.send_email import send, send_error_log
 from utils.sheet_report import generate_sheet_report
 from utils.sheet_settings.sheet_settings import SheetSettings
 from utils.sheets_inventory.sheets_inventory import SheetsInventory
+from utils.workspace.job import JobStatus
 
 # Store connected clients
 connected_clients: set[tornado.websocket.WebSocketHandler] = set()
@@ -679,6 +680,7 @@ class DownloadJobHandler(tornado.web.RequestHandler):
 class UpdateJobSettingsHandler(tornado.web.RequestHandler):
     def post(self):
         folder = self.get_argument("folder")
+        job_name = os.path.basename(folder)
         key_to_change = self.get_argument("key")
         new_value = self.get_argument("value")
 
@@ -696,6 +698,10 @@ class UpdateJobSettingsHandler(tornado.web.RequestHandler):
 
                 with open(file_path, "w", encoding="utf-8") as file:
                     json.dump(data, file, indent=4)
+
+                if key_to_change == "type":
+                    destination = f"saved_jobs\\{JobStatus(new_value).name.lower()}\\{job_name}"
+                    shutil.move(folder, destination)
 
                 signal_clients_for_changes(
                     client_to_ignore=self.request.remote_ip,
