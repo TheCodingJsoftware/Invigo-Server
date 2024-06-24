@@ -697,7 +697,7 @@ class UpdateJobSettingsHandler(tornado.web.RequestHandler):
                 data["job_data"][key_to_change] = new_value
 
                 with open(file_path, "w", encoding="utf-8") as file:
-                    json.dump(data, file, indent=4)
+                    json.dump(data, file, ensure_ascii=True, indent=4)
 
                 if key_to_change == "type":
                     destination = f"saved_jobs\\{JobStatus(new_value).name.lower()}\\{job_name}"

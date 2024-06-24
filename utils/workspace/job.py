@@ -1,4 +1,4 @@
-from enum import Enum
+from enum import Enum, auto
 
 from utils.components_inventory.component import Component
 from utils.components_inventory.components_inventory import ComponentsInventory
@@ -12,13 +12,27 @@ from utils.workspace.workspace_settings import WorkspaceSettings
 
 
 class JobStatus(Enum):
-    PLANNING = 0
-    QUOTING = 1
-    QUOTED = 2
-    TEMPLATE = 3
-    WORKSPACE = 4
-    ARCHIVE = 5
+    PLANNING = auto()
+    QUOTING = auto()
+    QUOTED = auto()
+    TEMPLATE = auto()
+    WORKSPACE = auto()
+    ARCHIVE = auto()
 
+
+class JobColor(Enum):
+    PLANNING = ("#3daee9", JobStatus.PLANNING)
+    QUOTING = ("#eabf3e", JobStatus.QUOTING)
+    QUOTED = ("#eabf3e", JobStatus.QUOTED)
+    TEMPLATE = ("#ea693e", JobStatus.TEMPLATE)
+    WORKSPACE = ("#69ea3e", JobStatus.WORKSPACE)
+    ARCHIVE = ("#943eea", JobStatus.ARCHIVE)
+
+    @classmethod
+    def get_color(cls, job_status):
+        return next(
+            (color.value[0] for color in cls if color.value[1] == job_status), None
+        )
 
 class Job:
     def __init__(self, name: str, data: dict, job_manager) -> None:
