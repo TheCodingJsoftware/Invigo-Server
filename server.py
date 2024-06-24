@@ -689,7 +689,7 @@ class UpdateJobSettingsHandler(tornado.web.RequestHandler):
                 with open(file_path, "r", encoding="utf-8") as file:
                     data = json.load(file)
 
-                data["settings"][key_to_change] = new_value
+                data["job_data"][key_to_change] = new_value
 
                 with open(file_path, "w", encoding="utf-8") as file:
                     json.dump(data, file, indent=4)
