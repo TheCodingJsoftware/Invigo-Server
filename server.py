@@ -626,7 +626,7 @@ class UploadJobHandler(tornado.web.RequestHandler):
 
             job_file_path = os.path.join(folder, "data.json")
             with open(job_file_path, "w", encoding="utf-8") as f:
-                json.dump(job_data, f, ensure_ascii=False)
+                json.dump(job_data, f, ensure_ascii=False, indent=4)
 
             html_file_path = os.path.join(folder, "page.html")
             with open(html_file_path, "w", encoding="utf-8") as f:
