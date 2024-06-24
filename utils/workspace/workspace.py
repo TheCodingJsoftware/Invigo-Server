@@ -1,6 +1,6 @@
 import os
 
-import ujson as json
+import json
 
 from utils.workspace.job import Job
 from utils.workspace.workspace_settings import WorkspaceSettings

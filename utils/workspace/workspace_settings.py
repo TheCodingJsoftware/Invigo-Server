@@ -1,6 +1,6 @@
 import os
 
-import ujson as json
+import json
 
 from utils.workspace.flow_tag import FlowTag, Group
 from utils.workspace.flow_tags import FlowTags

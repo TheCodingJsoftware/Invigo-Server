@@ -1,7 +1,7 @@
 import glob
 import os
 
-import ujson as json
+import json
 
 from utils.components_inventory.components_inventory import ComponentsInventory
 from utils.laser_cut_inventory.laser_cut_inventory import LaserCutInventory
