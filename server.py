@@ -676,6 +676,48 @@ class DownloadJobHandler(tornado.web.RequestHandler):
             self.write("404: File not found")
 
 
+class UpdateJobSettingsHandler(tornado.web.RequestHandler):
+    def post(self):
+        folder = self.get_argument("folder")
+        key_to_change = self.get_argument("key")
+        new_value = self.get_argument("value")
+
+        file_path = os.path.join(folder, "data.json")
+
+        try:
+            if os.path.exists(file_path):
+                with open(file_path, "r", encoding="utf-8") as file:
+                    data = json.load(file)
+
+                data["settings"][key_to_change] = new_value
+
+                with open(file_path, "w", encoding="utf-8") as file:
+                    json.dump(data, file, indent=4)
+
+                signal_clients_for_changes(
+                    client_to_ignore=self.request.remote_ip,
+                    changed_files=["reload_saved_jobs"],
+                )
+
+                CustomPrint.print(
+                    f"INFO - {self.request.remote_ip} changed job setting '{key_to_change}' to '{new_value}': {folder}",
+                    connected_clients=connected_clients,
+                )
+
+                self.write(
+                    {
+                        "status": "success",
+                        "message": "Job settings updated successfully.",
+                    }
+                )
+            else:
+                self.set_status(404)
+                self.write({"status": "error", "message": "File not found."})
+        except Exception as e:
+            self.set_status(500)
+            self.write({"status": "error", "message": str(e)})
+
+
 class DeleteJobHandler(tornado.web.RequestHandler):
     def post(self, folder_name):
         CustomPrint.print(
@@ -1079,6 +1121,7 @@ if __name__ == "__main__":
             (r"/upload_job", UploadJobHandler),
             (r"/download_job/(.*)", DownloadJobHandler),
             (r"/load_job/(.*)", LoadJobHandler),
+            (r"/update_job_settings", UpdateJobSettingsHandler),
             (r"/delete_job/(.*)", DeleteJobHandler),
 
             # NOTE These will be removed in favor of Job Handelers
