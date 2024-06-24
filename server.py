@@ -541,7 +541,7 @@ class GetJobsHandler(tornado.web.RequestHandler):
     async def get(self):
         directories_info = await gather_job_directories_info(
             base_directory="saved_jobs",
-            specific_dirs=["planning", "quoting", "quoted", "workspace", "archive"],
+            specific_dirs=["planning", "template", "quoting", "quoted", "workspace", "archive"],
         )
         self.write(json.dumps(directories_info))
 
