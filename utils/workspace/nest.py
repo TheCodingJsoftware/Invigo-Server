@@ -5,7 +5,13 @@ from utils.sheets_inventory.sheet import Sheet
 
 
 class Nest:
-    def __init__(self, name: str, data: dict[str, object], sheet_settings: SheetSettings, laser_cut_inventory: LaserCutInventory):
+    def __init__(
+        self,
+        name: str,
+        data: dict[str, object],
+        sheet_settings: SheetSettings,
+        laser_cut_inventory: LaserCutInventory,
+    ):
         self.name: str = name
         self.sheet_settings = sheet_settings
         self.laser_cut_inventory = laser_cut_inventory
@@ -75,4 +81,11 @@ class Nest:
             )
 
     def to_dict(self) -> dict[str, float | int | str]:
-        return {"sheet_count": self.sheet_count, "scrape_percentage": self.scrape_percentage, "sheet_cut_time": self.sheet_cut_time, "image_path": self.image_path, "laser_cut_parts": {laser_cut_part.name: laser_cut_part.to_dict() for laser_cut_part in self.laser_cut_parts}, "sheet": {self.sheet.get_name(): self.sheet.to_dict()}}
+        return {
+            "sheet_count": self.sheet_count,
+            "scrape_percentage": self.scrape_percentage,
+            "sheet_cut_time": self.sheet_cut_time,
+            "image_path": self.image_path,
+            "laser_cut_parts": {laser_cut_part.name: laser_cut_part.to_dict() for laser_cut_part in self.laser_cut_parts},
+            "sheet": {self.sheet.get_name(): self.sheet.to_dict()},
+        }

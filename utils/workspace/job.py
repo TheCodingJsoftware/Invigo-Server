@@ -30,9 +30,8 @@ class JobColor(Enum):
 
     @classmethod
     def get_color(cls, job_status):
-        return next(
-            (color.value[0] for color in cls if color.value[1] == job_status), None
-        )
+        return next((color.value[0] for color in cls if color.value[1] == job_status), None)
+
 
 class Job:
     def __init__(self, name: str, data: dict, job_manager) -> None:
@@ -117,7 +116,7 @@ class Job:
         self.ship_to = job_data.get("ship_to", "")
         self.date_shipped = job_data.get("date_shipped", "")
         self.date_expected = job_data.get("date_expected", "")
-        self.job_status = JobStatus(int(job_data.get("type", 0))) # Just in case we cast, trust me
+        self.job_status = JobStatus(int(job_data.get("type", 0)))  # Just in case we cast, trust me
         self.color = self.get_color()
 
         nests_data = data.get("nests", {})

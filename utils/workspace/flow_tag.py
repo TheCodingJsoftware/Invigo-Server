@@ -1,10 +1,13 @@
 from enum import Enum
+
 from utils.workspace.tag import Tag
+
 
 class Group(Enum):
     ASSEMBLY = 0
     LASER_CUT_PART = 1
     COMPONENT = 2
+
 
 class FlowTag:
     def __init__(self, name: str, data: list[str], workspace_settings) -> None:
@@ -46,7 +49,11 @@ class FlowTag:
         return f"{self.name}: {self.get_name()}"
 
     def to_dict(self) -> dict[str]:
-        return {"name": self.name, "group": self.group.value, "tags": [tag.name for tag in self.tags]}
+        return {
+            "name": self.name,
+            "group": self.group.value,
+            "tags": [tag.name for tag in self.tags],
+        }
 
     def to_list(self) -> list[str]:
         return [tag.name for tag in self.tags]

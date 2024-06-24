@@ -160,7 +160,11 @@ class Assembly:
         self.laser_cut_parts.clear()
         laser_cut_parts = data.get("laser_cut_parts", {})
         for laser_cut_part_name, laser_cut_part_data in laser_cut_parts.items():
-            laser_cut_part = LaserCutPart(laser_cut_part_name, laser_cut_part_data, self.group.job.laser_cut_inventory)
+            laser_cut_part = LaserCutPart(
+                laser_cut_part_name,
+                laser_cut_part_data,
+                self.group.job.laser_cut_inventory,
+            )
             self.add_laser_cut_part(laser_cut_part)
 
         self.components.clear()

@@ -26,10 +26,7 @@ from natsort import natsorted
 
 from utils.components_inventory.components_inventory import ComponentsInventory
 from utils.custom_print import CustomPrint, print_clients
-from utils.inventory_updater import (add_sheet, get_cutoff_sheets,
-                                     get_sheet_pending_data,
-                                     get_sheet_quantity, remove_cutoff_sheet,
-                                     set_sheet_quantity, sheet_exists)
+from utils.inventory_updater import add_sheet, get_cutoff_sheets, get_sheet_pending_data, get_sheet_quantity, remove_cutoff_sheet, set_sheet_quantity, sheet_exists
 from utils.laser_cut_inventory.laser_cut_inventory import LaserCutInventory
 from utils.paint_inventory.paint_inventory import PaintInventory
 from utils.send_email import send, send_error_log
@@ -177,12 +174,12 @@ class LogContentHandler(tornado.web.RequestHandler):
 class WayBackMachineHandler(tornado.web.RequestHandler):
     def get(self):
         data = {}
-        with open('data/components_inventory.json', 'r', encoding="utf-8") as f:
-            data['components_inventory'] = list(json.load(f).get("components", {}))
-        with open('data/laser_cut_inventory.json', 'r', encoding="utf-8") as f:
-            data['laser_cut_inventory'] = list(json.load(f).get("laser_cut_parts", {}))
-        with open('data/sheets_inventory.json', 'r', encoding="utf-8") as f:
-            data['sheets_inventory'] = list(json.load(f).get("sheets", {}))
+        with open("data/components_inventory.json", "r", encoding="utf-8") as f:
+            data["components_inventory"] = list(json.load(f).get("components", {}))
+        with open("data/laser_cut_inventory.json", "r", encoding="utf-8") as f:
+            data["laser_cut_inventory"] = list(json.load(f).get("laser_cut_parts", {}))
+        with open("data/sheets_inventory.json", "r", encoding="utf-8") as f:
+            data["sheets_inventory"] = list(json.load(f).get("sheets", {}))
 
         template = env.get_template("way_back_machine.html")
         rendered_template = template.render(inventory=data)
@@ -191,24 +188,47 @@ class WayBackMachineHandler(tornado.web.RequestHandler):
 
 class FetchDataHandler(tornado.web.RequestHandler):
     def get(self):
-        inventory_type = self.get_argument('inventory')
-        item_name = self.get_argument('item')
-        dates, quantities, prices = [], [], []
+        inventory_type = self.get_argument("inventory")
+        item_name = self.get_argument("item")
+        dates, quantities, prices, latest_changes = [], [], [], []
 
         for root, _, files in sorted(os.walk("backups"), reverse=True):
             for file in sorted(files, reverse=True):
                 if file.startswith("Daily Backup") and file.endswith(".zip"):
-                    with zipfile.ZipFile(os.path.join(root, file), 'r') as zip_ref:
-                        with zip_ref.open(f"data/{inventory_type}.json") as f:
+                    file_path = os.path.join(root, file)
+                    creation_time = os.path.getctime(file_path)
+                    date = datetime.fromtimestamp(creation_time)
+                    with zipfile.ZipFile(os.path.join(root, file), "r") as zip_ref:
+                        with zip_ref.open(f"{inventory_type}.json") as f:
                             inventory = json.load(f)
-                            if item := next((i for i in inventory if i['name'] == item_name), None):
-                                date_str = file.split('-')[1].strip().replace('.zip', '')
-                                date = datetime.strptime(date_str, "%d %B %Y")
-                                dates.append(date.strftime("%Y-%m-%d"))
-                                quantities.append(item['quantity'])
-                                # prices.append(item['price'])
+                            try:
+                                if inventory_type == "components_inventory":
+                                    item = inventory["components"][item_name]
+                                elif inventory_type == "laser_cut_inventory":
+                                    item = inventory["laser_cut_parts"][item_name]
+                                elif inventory_type == "sheets_inventory":
+                                    item = inventory["sheets"][item_name]
+                            except KeyError:
+                                continue
+                            if item:
+                                dates.append(date)
+                                quantities.append(item["quantity"])
+                                try:
+                                    prices.append(item["price"])
+                                except KeyError:  # Sheets don't have prices
+                                    prices.append(None)
+
+        # Combine lists into a list of tuples and sort by date
+        combined = list(zip(dates, quantities, prices))
+        combined.sort(reverse=True, key=lambda x: x[0])
+
+        # Unpack sorted tuples back into separate lists
+        dates, quantities, prices = zip(*combined)
+
+        dates = [date.strftime("%Y-%m-%d") for date in dates]
 
         self.write({"dates": dates, "quantities": quantities, "prices": prices})
+
 
 class WebSocketHandler(tornado.websocket.WebSocketHandler):
     def open(self):
@@ -577,7 +597,14 @@ class GetJobsHandler(tornado.web.RequestHandler):
     async def get(self):
         directories_info = await gather_job_directories_info(
             base_directory="saved_jobs",
-            specific_dirs=["planning", "template", "quoting", "quoted", "workspace", "archive"],
+            specific_dirs=[
+                "planning",
+                "template",
+                "quoting",
+                "quoted",
+                "workspace",
+                "archive",
+            ],
         )
         self.write(json.dumps(directories_info))
 
@@ -720,7 +747,7 @@ class UpdateJobSettingsHandler(tornado.web.RequestHandler):
         key_to_change = self.get_argument("key")
         new_value = self.get_argument("value")
 
-        if key_to_change == "type": # For some reason it gets parsed as a string
+        if key_to_change == "type":  # For some reason it gets parsed as a string
             new_value = int(new_value)
 
         file_path = os.path.join(folder, "data.json")
@@ -1129,48 +1156,38 @@ if __name__ == "__main__":
     app = tornado.web.Application(
         [
             (r"/", MainHandler),
-
             (r"/server_log", ServerLogsHandler),
             (r"/logs", LogsHandler),
             (r"/fetch_log", LogContentHandler),
             (r"/delete_log", LogDeleteHandler),
-
             (r"/file/(.*)", FileReceiveHandler),
             (r"/command", CommandHandler),
             (r"/upload", FileUploadHandler),
             (r"/workspace_upload", WorkspaceFileUploader),
             (r"/workspace_get_file/(.*)", WorkspaceFileHandler),
-
             (r"/ws", WebSocketHandler),
-
             (r"/image/(.*)", ImageHandler),
             (r"/images/(.*)", ImageHandler),
-
             (r"/set_order_number/(\d+)", SetOrderNumberHandler),
             (r"/get_order_number", GetOrderNumberHandler),
-
             (r"/way_back_machine", WayBackMachineHandler),
-
+            (r"/fetch_data", FetchDataHandler),
             (r"/inventory", InventoryHandler),
             (r"/inventory/(.*)/(.*)", InventoryTablesHandler),
             (r"/sheets_in_inventory/(.*)", SheetQuantityHandler),
             (r"/sheet_qr_codes", QRCodePageHandler),
             (r"/add_cutoff_sheet", AddCutoffSheetHandler),
             (r"/delete_cutoff_sheet", DeleteCutoffSheetHandler),
-
             (r"/send_error_report", SendErrorReportHandler),
             (r"/send_email", SendEmailHandler),
-
             (r"/get_previous_quotes", GetPreviousQuotesHandler),
             (r"/get_saved_quotes", GetSavedQuotesHandler),
-
             (r"/get_jobs", GetJobsHandler),
             (r"/upload_job", UploadJobHandler),
             (r"/download_job/(.*)", DownloadJobHandler),
             (r"/load_job/(.*)", LoadJobHandler),
             (r"/update_job_settings", UpdateJobSettingsHandler),
             (r"/delete_job/(.*)", DeleteJobHandler),
-
             # NOTE These will be removed in favor of Job Handelers
             (r"/upload_quote", UploadQuoteHandler),
             (r"/update_quote_settings", UpdateQuoteSettingsHandler),

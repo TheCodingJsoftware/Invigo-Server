@@ -5,6 +5,8 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Inventory</title>
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
         <link href='https://fonts.googleapis.com/css?family=Varela Round'
             rel='stylesheet'>
         <script src="https://kit.fontawesome.com/b88fae5da2.js"
@@ -202,7 +204,7 @@
         <div class="container">
             <div class="search-container">
                 <input type="text" id="searchInput" placeholder="Search...">
-                <button id="searchButton">Fetch</button>
+                <button id="fetchButton">Fetch</button>
             </div>
             <div class="radio-group">
                 <input type="radio" id="components" name="inventory" value="components_inventory" checked>
@@ -223,7 +225,7 @@
                 const searchInput = document.getElementById('searchInput');
                 const fetchButton = document.getElementById('fetchButton');
                 const autocompleteContainer = document.getElementById('autocomplete-container');
-
+                let myChart = null;
                 const inventoryData = {{ inventory | tojson | safe }};
 
                 searchInput.addEventListener('input', function () {
@@ -269,7 +271,10 @@
 
                 function drawChart(data) {
                     const ctx = document.getElementById('myChart').getContext('2d');
-                    new Chart(ctx, {
+                    if (myChart) {
+                        myChart.destroy();
+                    }
+                    myChart = new Chart(ctx, {
                         type: 'line',
                         data: {
                             labels: data.dates,
