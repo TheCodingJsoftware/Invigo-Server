@@ -1,12 +1,14 @@
 <!DOCTYPE html>
 <html>
-    <meta name="viewport"
-        content="width=device-width,initial-scale=1,user-scalable=yes" />
-    <script
-        src="https://www.kryogenix.org/code/browser/sorttable/sorttable.js"></script>
-
     <head>
-        <style>
+        <meta name="viewport"
+            content="width=device-width,initial-scale=1,user-scalable=yes" />
+        <script
+        src="https://www.kryogenix.org/code/browser/sorttable/sorttable.js"></script>
+        <title>Add Cutoff Sheet</title>
+    </head>
+
+    <style>
         html {
             transition: background-color 0.3s ease-in-out, color 0.3s ease-in-out, border-color 0.3s ease-in-out, border 0.3s ease-in-out, transform 0.3s ease-in-out;
             background-color: #222222;
@@ -200,23 +202,6 @@
             padding: 5px;
         }
     </style>
-        <title>Add Cutoff Sheet</title>
-        <script>
-        function validateForm() {
-            var length = document.getElementById("length").value;
-            var width = document.getElementById("width").value;
-            var material = document.getElementById("material").value;
-            var thickness = document.getElementById("thickness").value;
-
-            if (length && width && material && thickness) {
-                document.getElementById("addButton").disabled = false;
-            } else {
-                document.getElementById("addButton").disabled = true;
-            }
-        }
-    </script>
-    </head>
-
     <body>
         <div class="content">
             <h1>Add Cutoff Sheet</h1>
@@ -293,5 +278,18 @@
             </table>
         </div>
     </body>
+    <script>
+        function validateForm() {
+            var length = document.getElementById("length").value;
+            var width = document.getElementById("width").value;
+            var material = document.getElementById("material").value;
+            var thickness = document.getElementById("thickness").value;
 
+            if (length && width && material && thickness) {
+                document.getElementById("addButton").disabled = false;
+            } else {
+                document.getElementById("addButton").disabled = true;
+            }
+        }
+    </script>
 </html>

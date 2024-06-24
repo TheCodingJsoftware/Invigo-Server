@@ -174,6 +174,42 @@ class LogContentHandler(tornado.web.RequestHandler):
             self.write("Log file not found")
 
 
+class WayBackMachineHandler(tornado.web.RequestHandler):
+    def get(self):
+        data = {}
+        with open('data/components_inventory.json', 'r', encoding="utf-8") as f:
+            data['components_inventory'] = list(json.load(f).get("components", {}))
+        with open('data/laser_cut_inventory.json', 'r', encoding="utf-8") as f:
+            data['laser_cut_inventory'] = list(json.load(f).get("laser_cut_parts", {}))
+        with open('data/sheets_inventory.json', 'r', encoding="utf-8") as f:
+            data['sheets_inventory'] = list(json.load(f).get("sheets", {}))
+
+        template = env.get_template("way_back_machine.html")
+        rendered_template = template.render(inventory=data)
+        self.write(rendered_template)
+
+
+class FetchDataHandler(tornado.web.RequestHandler):
+    def get(self):
+        inventory_type = self.get_argument('inventory')
+        item_name = self.get_argument('item')
+        dates, quantities, prices = [], [], []
+
+        for root, _, files in sorted(os.walk("backups"), reverse=True):
+            for file in sorted(files, reverse=True):
+                if file.startswith("Daily Backup") and file.endswith(".zip"):
+                    with zipfile.ZipFile(os.path.join(root, file), 'r') as zip_ref:
+                        with zip_ref.open(f"data/{inventory_type}.json") as f:
+                            inventory = json.load(f)
+                            if item := next((i for i in inventory if i['name'] == item_name), None):
+                                date_str = file.split('-')[1].strip().replace('.zip', '')
+                                date = datetime.strptime(date_str, "%d %B %Y")
+                                dates.append(date.strftime("%Y-%m-%d"))
+                                quantities.append(item['quantity'])
+                                # prices.append(item['price'])
+
+        self.write({"dates": dates, "quantities": quantities, "prices": prices})
+
 class WebSocketHandler(tornado.websocket.WebSocketHandler):
     def open(self):
         connected_clients.add(self)
@@ -1112,6 +1148,8 @@ if __name__ == "__main__":
 
             (r"/set_order_number/(\d+)", SetOrderNumberHandler),
             (r"/get_order_number", GetOrderNumberHandler),
+
+            (r"/way_back_machine", WayBackMachineHandler),
 
             (r"/inventory", InventoryHandler),
             (r"/inventory/(.*)/(.*)", InventoryTablesHandler),

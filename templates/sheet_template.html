@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html>
-    <meta name="viewport"
-        content="width=device-width,initial-scale=1,user-scalable=yes" />
-    <link href='https://fonts.googleapis.com/css?family=Varela Round'
-        rel='stylesheet'>
     <head>
-        <style>
+        <meta name="viewport"
+            content="width=device-width,initial-scale=1,user-scalable=yes" />
+        <link href='https://fonts.googleapis.com/css?family=Varela Round'
+            rel='stylesheet'>
+        <title>{{ sheet_name }}</title>
+    </head>
+    <style>
         html {
             align-items: center;
             text-align: center;
@@ -138,9 +140,6 @@
             margin: 0;
         }
     </style>
-        <title>{{ sheet_name }}</title>
-    </head>
-
     <body>
         <div class="content">
             {% if pending_data["is_order_pending"] == True %}

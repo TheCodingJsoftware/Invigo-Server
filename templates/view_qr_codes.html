@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html>
+    <head>
     <meta name="viewport"
         content="width=device-width,initial-scale=1,user-scalable=yes" />
     <script
@@ -12,8 +13,9 @@
         crossorigin="anonymous"></script>
     <title>View QR Codes</title>
 
-    <head>
-        <style>
+    </head>
+
+    <style>
         @import url("https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css");
         html {
             align-items: center;
@@ -90,8 +92,6 @@
             }
         }
     </style>
-    </head>
-
     <body>
         {% for category, sheets in sheet_data.items() %}
         <details class="category">

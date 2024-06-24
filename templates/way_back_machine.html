@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Inventory</title>
+        <link href='https://fonts.googleapis.com/css?family=Varela Round'
+            rel='stylesheet'>
+        <script src="https://kit.fontawesome.com/b88fae5da2.js"
+            crossorigin="anonymous"></script>
+            <title>Way Back Machine</title>
+    </head>
+    <style>
+        @import url("https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css");
+        * {
+            -webkit-box-sizing: border-box;
+            -moz-box-sizing: border-box;
+            box-sizing: border-box;
+        }
+
+
+        html {
+            scroll-behavior: smooth;
+            justify-content: center;
+            position: center;
+            text-align: center;
+            align-items: center;
+            margin: auto;
+            font-family: 'Varela Round';
+        }
+
+        details {
+            overflow-y: auto;
+            overflow-x: hidden;
+            text-align: center;
+            color: #fff;
+            font-size: 200%;
+            overflow: none;
+            background-color: #222222;
+            padding: 6px;
+            border-radius: 25px;
+            border: 1px solid #76797c;
+            transition: 0.3s ease-in-out;
+        }
+
+        details:hover {
+            border: 1px solid #8d48aa;
+            box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.3), 0 6px 20px 0 rgba(0, 0, 0, 0.3);
+        }
+
+        details span {
+            display: inline-block;
+            margin-top: 1rem;
+        }
+
+        details summary::-webkit-details-marker {
+            display: none;
+        }
+
+        details[open]>summary:before {
+            transform: rotate(90deg);
+        }
+
+        details[open] summary {
+            opacity: 0.8;
+            animation-name: fadeOut;
+            animation-duration: 5000ms;
+        }
+
+        details>summary {
+            padding: 2px 6px;
+            font-weight: 700;
+            border: none;
+            cursor: pointer;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        #group {
+            overflow-y: auto;
+            overflow-x: hidden;
+            background: rgb(32, 32, 32);
+            margin: 1%;
+            width: auto;
+        }
+
+        #group_name {
+            font-size: 32px;
+        }
+
+        .group_items {
+            overflow-y: auto;
+            text-align: center;
+            align-items: center;
+            padding: 10px;
+            width: 50%;
+            margin: auto;
+        }
+
+        body {
+            justify-content: center;
+            position: center;
+            align-items: center;
+            margin: auto;
+            height: 100%;
+            background-color: #1c1c1c;
+            text-decoration: none;
+            color: rgb(240, 244, 245);
+        }
+
+        button {
+            font-size: 16px;
+            color: #8C8C8C;
+            border: 1px solid transparent;
+            padding: 10px;
+            background-color: #1a1a1a;
+            border-radius: 10px;
+            transition: background-color 0.3s ease-in-out, color 0.3s ease-in-out, border-color 0.3s ease-in-out, border 0.3s ease-in-out, transform 0.3s ease-in-out;
+        }
+
+        button:hover {
+            color: rgb(240, 244, 245);
+            border: 1px solid #8d48aa;
+            background-color: #8d48aa;
+            cursor: pointer;
+        }
+        .fixed-button {
+            border: 1px solid #8d48aa;
+            background-color: #8d48aa;
+            color: rgb(240, 244, 245);
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            font-size: 16px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        .container {
+            text-align: center;
+        }
+
+        .radio-group {
+            margin-bottom: 20px;
+        }
+
+        .search-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 20px;
+            margin-bottom: 10px;
+        }
+
+        .search-container input[type="text"] {
+            width: 300px;
+            padding: 10px;
+            border-radius: 10px 0 0 10px;
+            border: 1px solid #8c8c8c;
+            outline: none;
+            color: #333;
+        }
+
+        .search-container button {
+            padding: 10px 15px;
+            background-color: #8d48aa;
+            color: #f0f4f5;
+            border-radius: 0 10px 10px 0;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .autocomplete-suggestions {
+            position: absolute;
+            border: 1px solid #8c8c8c;
+            background: #fff;
+            max-height: 750px;
+            overflow-y: auto;
+            z-index: 1000;
+            width: 100%;
+        }
+
+        .autocomplete-suggestion {
+            padding: 10px;
+            cursor: pointer;
+            background-color: #1c1c1c;
+            color: #f0f4f5;
+        }
+
+        .autocomplete-suggestion:hover {
+            background-color: #8d48aa;
+            color: #f0f4f5;
+        }
+    </style>
+    <body>
+        <div class="container">
+            <div class="search-container">
+                <input type="text" id="searchInput" placeholder="Search...">
+                <button id="searchButton">Fetch</button>
+            </div>
+            <div class="radio-group">
+                <input type="radio" id="components" name="inventory" value="components_inventory" checked>
+                <label for="components">Components</label>
+
+                <input type="radio" id="laser_cut_parts" name="inventory" value="laser_cut_inventory">
+                <label for="laser_cut_parts">Laser Cut Parts</label>
+
+                <input type="radio" id="sheets_inventory" name="inventory" value="sheets_inventory">
+                <label for="sheets_inventory">Sheets Inventory</label>
+            </div>
+            <div id="autocomplete-container" class="autocomplete-suggestions"></div>
+            <canvas id="myChart" width="400" height="200"></canvas>
+        </div>
+
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                const searchInput = document.getElementById('searchInput');
+                const fetchButton = document.getElementById('fetchButton');
+                const autocompleteContainer = document.getElementById('autocomplete-container');
+
+                const inventoryData = {{ inventory | tojson | safe }};
+
+                searchInput.addEventListener('input', function () {
+                    const query = searchInput.value.toLowerCase();
+                    const selectedInventory = document.querySelector('input[name="inventory"]:checked').value;
+                    const suggestions = getSuggestions(query, inventoryData[selectedInventory]);
+                    displaySuggestions(suggestions);
+                });
+
+                fetchButton.addEventListener('click', function () {
+                    const selectedInventory = document.querySelector('input[name="inventory"]:checked').value;
+                    const selectedItem = searchInput.value;
+
+                    fetch(`/fetch_data?inventory=${selectedInventory}&item=${selectedItem}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            console.log(data);
+                            drawChart(data);
+                        })
+                        .catch(error => console.error('Error fetching data:', error));
+                });
+
+                function getSuggestions(query, inventory) {
+                    if (!query) {
+                        return [];
+                    }
+                    return inventory.filter(name => name.toLowerCase().includes(query));
+                }
+
+                function displaySuggestions(suggestions) {
+                    autocompleteContainer.innerHTML = '';
+                    suggestions.forEach(suggestion => {
+                        const div = document.createElement('div');
+                        div.className = 'autocomplete-suggestion';
+                        div.textContent = suggestion;
+                        div.addEventListener('click', function () {
+                            searchInput.value = suggestion;
+                            autocompleteContainer.innerHTML = '';
+                        });
+                        autocompleteContainer.appendChild(div);
+                    });
+                }
+
+                function drawChart(data) {
+                    const ctx = document.getElementById('myChart').getContext('2d');
+                    new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels: data.dates,
+                            datasets: [{
+                                label: 'Quantity',
+                                data: data.quantities,
+                                borderColor: 'rgba(75, 192, 192, 1)',
+                                borderWidth: 1
+                            }, {
+                                label: 'Price',
+                                data: data.prices,
+                                borderColor: 'rgba(153, 102, 255, 1)',
+                                borderWidth: 1
+                            }]
+                        },
+                        options: {
+                            scales: {
+                                x: {
+                                    type: 'time',
+                                    time: {
+                                        unit: 'day'
+                                    }
+                                },
+                                y: {
+                                    beginAtZero: true
+                                }
+                            }
+                        }
+                    });
+                }
+            });
+        </script>
+    </body>
+</html>
