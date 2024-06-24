@@ -682,6 +682,9 @@ class UpdateJobSettingsHandler(tornado.web.RequestHandler):
         key_to_change = self.get_argument("key")
         new_value = self.get_argument("value")
 
+        if key_to_change == "type": # For some reason it gets parsed as a string
+            new_value = int(new_value)
+
         file_path = os.path.join(folder, "data.json")
 
         try:
