@@ -142,8 +142,14 @@
                 <tbody>
                     {% for item in data %}
                     <tr>
-                        {% for value in item.values() %}
+                        {% for idx, value in item.items() %}
+                        {% if loop.first %}
+                        <td>
+                            <a href="/way_back_machine?inventory={{ inventory_type.lower().replace(' ', '_') }}&item={{ value }}">{{ value }}</a>
+                        </td>
+                        {% else %}
                         <td>{{ value }}</td>
+                        {% endif %}
                         {% endfor %}
                     </tr>
                     {% endfor %}

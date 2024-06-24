@@ -26,7 +26,15 @@ from natsort import natsorted
 
 from utils.components_inventory.components_inventory import ComponentsInventory
 from utils.custom_print import CustomPrint, print_clients
-from utils.inventory_updater import add_sheet, get_cutoff_sheets, get_sheet_pending_data, get_sheet_quantity, remove_cutoff_sheet, set_sheet_quantity, sheet_exists
+from utils.inventory_updater import (
+    add_sheet,
+    get_cutoff_sheets,
+    get_sheet_pending_data,
+    get_sheet_quantity,
+    remove_cutoff_sheet,
+    set_sheet_quantity,
+    sheet_exists,
+)
 from utils.laser_cut_inventory.laser_cut_inventory import LaserCutInventory
 from utils.paint_inventory.paint_inventory import PaintInventory
 from utils.send_email import send, send_error_log
@@ -1057,21 +1065,21 @@ class InventoryTablesHandler(tornado.web.RequestHandler):
         sheet_settings = SheetSettings()
         sheets_inventory = SheetsInventory(sheet_settings)
         if inventory_type == "components_inventory":
-            data = [{"part_number": component.part_number} | component.to_dict() for component in components_inventory.get_components_by_category(category)]
+            data = [{"part_number": component.part_number, **component.to_dict()} for component in components_inventory.get_components_by_category(category)]
         elif inventory_type == "laser_cut_inventory":
-            data = [{"name": laser_cut_part.name} | laser_cut_part.to_dict() for laser_cut_part in laser_cut_inventory.get_laser_cut_parts_by_category(category)]
+            data = [{"name": laser_cut_part.name, **laser_cut_part.to_dict()} for laser_cut_part in laser_cut_inventory.get_laser_cut_parts_by_category(category)]
         elif inventory_type == "paint_inventory":
             if category == "primer":
-                data = [{"name": primer.name} | primer.to_dict() for primer in paint_inventory.primers]
+                data = [{"name": primer.name, **primer.to_dict()} for primer in paint_inventory.primers]
             elif category == "paint":
-                data = [{"name": paint.name} | paint.to_dict() for paint in paint_inventory.paints]
+                data = [{"name": paint.name, **paint.to_dict()} for paint in paint_inventory.paints]
             elif category == "powder":
-                data = [{"name": powder.name} | powder.to_dict() for powder in paint_inventory.powders]
+                data = [{"name": powder.name, **powder.to_dict()} for powder in paint_inventory.powders]
         elif inventory_type == "sheet_settings":
             if category == "price_per_pound":
                 data = [{material: sheet_settings.get_price_per_pound(material) for material in sheet_settings.get_materials()}]
         elif inventory_type == "sheets_inventory":
-            data = [{"name": sheet.get_name()} | sheet.to_dict() for sheet in sheets_inventory.get_sheets_by_category(category)]
+            data = [{"name": sheet.get_name(), **sheet.to_dict()} for sheet in sheets_inventory.get_sheets_by_category(category)]
         template = env.get_template("inventory_table.html")
         rendered_template = template.render(
             inventory_type=inventory_type.replace("_", " ").title(),
