@@ -309,11 +309,9 @@
             radioButtons.forEach(radio => {
                 radio.addEventListener('change', function () {
                     const selectedInventory = document.querySelector('input[name="inventory"]:checked').value;
+                    searchInput.value = "";
                     const selectedItem = searchInput.value;
                     updateUrl(selectedInventory, selectedItem);
-                    if (selectedItem) {
-                        fetchData(selectedInventory, selectedItem);
-                    }
                 });
             });
 
