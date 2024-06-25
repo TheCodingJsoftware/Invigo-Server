@@ -41,6 +41,7 @@ from utils.send_email import send, send_error_log
 from utils.sheet_report import generate_sheet_report
 from utils.sheet_settings.sheet_settings import SheetSettings
 from utils.sheets_inventory.sheets_inventory import SheetsInventory
+from utils.workspace.workspace_settings import WorkspaceSettings
 from utils.workspace.job import JobStatus
 
 # Store connected clients
@@ -1059,10 +1060,11 @@ class InventoryHandler(tornado.web.RequestHandler):
 class InventoryTablesHandler(tornado.web.RequestHandler):
     def get(self, inventory_type: str, category: str):
         data = []
+        sheet_settings = SheetSettings()
+        workspace_settings = WorkspaceSettings()
         components_inventory = ComponentsInventory()
         paint_inventory = PaintInventory(components_inventory)
-        laser_cut_inventory = LaserCutInventory(paint_inventory)
-        sheet_settings = SheetSettings()
+        laser_cut_inventory = LaserCutInventory(paint_inventory, workspace_settings)
         sheets_inventory = SheetsInventory(sheet_settings)
         if inventory_type == "components_inventory":
             data = [{"part_number": component.part_number, **component.to_dict()} for component in components_inventory.get_components_by_category(category)]

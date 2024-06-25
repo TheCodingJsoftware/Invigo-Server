@@ -9,11 +9,10 @@ from utils.workspace.workspace_settings import WorkspaceSettings
 
 
 class LaserCutInventory(Inventory):
-    def __init__(self, parent):
+    def __init__(self, paint_inventory: PaintInventory, workspace_settings: WorkspaceSettings):
         super().__init__("laser_cut_inventory")
-        self.parent = parent
-        self.paint_inventory: PaintInventory = self.parent.paint_inventory
-        self.workspace_settings: WorkspaceSettings = self.parent.workspace_settings
+        self.paint_inventory: PaintInventory = paint_inventory
+        self.workspace_settings: WorkspaceSettings = workspace_settings
 
         self.laser_cut_parts: list[LaserCutPart] = []
         self.recut_parts: list[LaserCutPart] = []
