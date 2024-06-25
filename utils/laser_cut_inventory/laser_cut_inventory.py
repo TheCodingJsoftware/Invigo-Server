@@ -1,18 +1,19 @@
-import json
-
+import ujson as json
 from natsort import natsorted
 
 from utils.inventory.category import Category
 from utils.inventory.inventory import Inventory
 from utils.laser_cut_inventory.laser_cut_part import LaserCutPart
 from utils.paint_inventory.paint_inventory import PaintInventory
+from utils.workspace.workspace_settings import WorkspaceSettings
 
 
 class LaserCutInventory(Inventory):
-    def __init__(self, paint_inventory: PaintInventory):
+    def __init__(self, parent):
         super().__init__("laser_cut_inventory")
-
-        self.paint_inventory = paint_inventory
+        self.parent = parent
+        self.paint_inventory: PaintInventory = self.parent.paint_inventory
+        self.workspace_settings: WorkspaceSettings = self.parent.workspace_settings
 
         self.laser_cut_parts: list[LaserCutPart] = []
         self.recut_parts: list[LaserCutPart] = []
@@ -93,7 +94,7 @@ class LaserCutInventory(Inventory):
 
     def save(self):
         with open(f"{self.FOLDER_LOCATION}/{self.filename}.json", "w", encoding="utf-8") as file:
-            json.dump(self.to_dict(), file, ensure_ascii=False)
+            json.dump(self.to_dict(), file, ensure_ascii=False, indent=4)
 
     def load_data(self):
         try:
