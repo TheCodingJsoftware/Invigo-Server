@@ -371,17 +371,20 @@ class WorkspaceFileHandler(tornado.web.RequestHandler):
 
 class ImageHandler(tornado.web.RequestHandler):
     def get(self, image_name: str):
-        image_name = os.path.basename(image_name)
-        filepath = os.path.join("images", image_name)
-        if os.path.exists(filepath):
-            with open(filepath, "rb") as f:
-                self.set_header("Content-Type", "image/jpeg")
-                self.write(f.read())
-            CustomPrint.print(
-                f'INFO - Sent "{image_name}" to {self.request.remote_ip}',
-                connected_clients=connected_clients,
-            )
-        else:
+        try:
+            image_name = os.path.basename(image_name)
+            filepath = os.path.join("images", image_name)
+            if os.path.exists(filepath):
+                with open(filepath, "rb") as f:
+                    self.set_header("Content-Type", "image/jpeg")
+                    self.write(f.read())
+                CustomPrint.print(
+                    f'INFO - Sent "{image_name}" to {self.request.remote_ip}',
+                    connected_clients=connected_clients,
+                )
+            else:
+                self.set_status(404)
+        except FileNotFoundError:
             self.set_status(404)
 
 
