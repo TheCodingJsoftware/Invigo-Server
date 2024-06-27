@@ -160,12 +160,9 @@
                 class="form-container">
                 <label for="new_quantity">New Quantity:</label>
                 {% if pending_data["is_order_pending"] == True %}
-                <input type="number" name="new_quantity" id="new_quantity"
-                    placeholder="0" value="{{pending_data["
-                    new_quantity"]}}">
+                <input type="number" name="new_quantity" id="new_quantity" placeholder="0" value="{{ pending_data["new_quantity"] }}">
                 {% else %}
-                <input type="number" name="new_quantity" id="new_quantity"
-                    placeholder="0">
+                <input type="number" name="new_quantity" id="new_quantity" placeholder="0">
                 {% endif %}
                 <button type="submit">Set</button>
             </form>
