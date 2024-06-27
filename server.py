@@ -1026,8 +1026,9 @@ class QRCodePageHandler(tornado.web.RequestHandler):
 class InventoryHandler(tornado.web.RequestHandler):
     def get(self):
         components_inventory = ComponentsInventory()
+        workspace_settings = WorkspaceSettings()
         paint_inventory = PaintInventory(components_inventory)
-        laser_cut_inventory = LaserCutInventory(paint_inventory)
+        laser_cut_inventory = LaserCutInventory(paint_inventory, workspace_settings)
         sheet_settings = SheetSettings()
         sheets_inventory = SheetsInventory(sheet_settings)
         data: dict[str, dict[str, str]] = dict({"Components Inventory": {}})
