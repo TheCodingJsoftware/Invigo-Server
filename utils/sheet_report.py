@@ -28,13 +28,14 @@ def generate_sheet_report(clients) -> None:
             if not notes:
                 notes: str = "No notes provided"
             stylesheet = "border-bottom: 1px solid #222; color: #EAE9FC; background-color: #3F1E25;" if sheet.quantity <= sheet.red_quantity_limit else "border-bottom: 1px solid #222; color: #EAE9FC; background-color: #413C28;"
-            order_pending: str = "No order is pending"
-            if sheet.is_order_pending:
-                order_pending = f"Order is pending since {sheet.order_pending_date} for {sheet.order_pending_quantity} sheets and expected to arrive at {sheet.expected_arrival_time}"
+            order_status = ""
+            if sheet.orders:
                 stylesheet = "border-bottom: 1px solid #222; color: #EAE9FC; background-color: #24793c;"
+                for order in sheet.orders:
+                    order_status += f"{order}<br>"
             else:
-                order_pending = "No order is pending"
-            message_to_send += f'<tr style="border-bottom: 1px solid; {stylesheet}"><td>{sheet.get_name()}</td><td style="{"font-weight: bold;" if sheet.is_order_pending else ""}">{order_pending}</td><td>{sheet.quantity}</td><td>{notes}</td></tr>'
+                order_status = "No order is pending"
+            message_to_send += f'<tr style="border-bottom: 1px solid; {stylesheet}"><td>{sheet.get_name()}</td><td style="{"font-weight: bold;" if sheet.orders else ""}">{order_status}</td><td>{sheet.quantity}</td><td>{notes}</td></tr>'
     message_to_send += '</tbody></table></div><br><p style="font-family: sans-serif;">Please remember to update the <b style="color: #3bba6d">"Order Pending"</b> status in the <b>"Sheet in Inventory"</b> tab after issuing a purchase order.<br>Wishing you a productive week ahead!</p>'
     CustomPrint.print("INFO - Sheet report generated", connected_clients=connected_clients)
     if sheets_low_in_quantity == 0:

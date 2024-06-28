@@ -4,6 +4,7 @@ from datetime import datetime
 from utils.custom_print import CustomPrint
 from utils.sheets_inventory.sheet import Sheet
 from utils.sheets_inventory.sheets_inventory import SheetsInventory
+from utils.inventory.order import Order
 
 sheets_inventory = SheetsInventory(None)
 
@@ -57,16 +58,10 @@ def remove_cutoff_sheet(sheet_name: str, _connected_clients):
     signal_clients_for_changes(_connected_clients, changed_files=["sheets_inventory.json"])
 
 
-def get_sheet_pending_data(sheet_name: str) -> dict[str, str]:
+def get_sheet_pending_data(sheet_name: str) -> list[Order]:
     sheets_inventory.load_data()
     if sheet := sheets_inventory.get_sheet_by_name(sheet_name):
-        return {
-            "is_order_pending": sheet.is_order_pending,
-            "expected_arrival_time": sheet.expected_arrival_time,
-            "order_pending_date": sheet.order_pending_date,
-            "order_pending_quantity": sheet.order_pending_quantity,
-            "new_quantity": sheet.order_pending_quantity + sheet.quantity,
-        }
+        return sheet.orders
 
 
 def get_sheet_quantity(sheet_name: str) -> float:
@@ -75,13 +70,26 @@ def get_sheet_quantity(sheet_name: str) -> float:
         return sheet.quantity
 
 
-def set_sheet_quantity(sheet_name: str, new_quantity: float, clients) -> None:
+def set_sheet_quantity(sheet_name: str, new_quantity: float, other_order: Order, clients) -> None:
     sheets_inventory.load_data()
     if sheet := sheets_inventory.get_sheet_by_name(sheet_name):
+        sheet_order_used = None
+        for order in sheet.orders:
+            if order == other_order:
+                sheet_order_used = order
+                break
+        if sheet_order_used:
+            old_quantity = sheet.quantity
+            quantity_to_add = new_quantity - old_quantity
+            remaining_order_quantity = sheet_order_used.quantity - quantity_to_add
+            sheet_order_used.quantity = remaining_order_quantity
+            if remaining_order_quantity <= 0:
+                sheet.remove_order(sheet_order_used)
+            sheet.latest_change_quantity = f'Set to {new_quantity} with Add Incoming Order Quantity ({quantity_to_add}) with QR code at {datetime.now().strftime("%B %d %A %Y %I:%M:%S %p")}'
+        else:
+            sheet.latest_change_quantity = f'Set to {new_quantity} with QR code at {datetime.now().strftime("%B %d %A %Y %I:%M:%S %p")}'
         sheet.quantity = new_quantity
-        sheet.latest_change_quantity = f'Set to {new_quantity} with QR code at {datetime.now().strftime("%B %d %A %Y %I:%M:%S %p")}'
         if new_quantity >= sheet.red_quantity_limit:
-            sheet.is_order_pending = False
             sheet.has_sent_warning = False
     sheets_inventory.save()
     signal_clients_for_changes(clients, changed_files=["sheets_inventory.json"])

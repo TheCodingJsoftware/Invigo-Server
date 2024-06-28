@@ -43,7 +43,7 @@ from utils.sheet_settings.sheet_settings import SheetSettings
 from utils.sheets_inventory.sheets_inventory import SheetsInventory
 from utils.workspace.workspace_settings import WorkspaceSettings
 from utils.workspace.job import JobStatus
-
+from utils.inventory.order import Order
 # Store connected clients
 connected_clients: set[tornado.websocket.WebSocketHandler] = set()
 
@@ -374,6 +374,8 @@ class ImageHandler(tornado.web.RequestHandler):
         try:
             image_name = os.path.basename(image_name)
             filepath = os.path.join("images", image_name)
+            if not filepath.endswith(".jpeg"):
+                filepath += ".jpeg"
             if os.path.exists(filepath):
                 with open(filepath, "rb") as f:
                     self.set_header("Content-Type", "image/jpeg")
@@ -458,14 +460,23 @@ class SheetQuantityHandler(tornado.web.RequestHandler):
             self.set_status(404)
 
     def post(self, sheet_name):
+        new_quantity = float(self.get_argument("new_quantity"))
         try:
-            new_quantity = float(self.get_argument("new_quantity"))
-        except ValueError:
-            self.write("Not a number")
-            self.set_status(500)
-            return
+            order_pending_quantity = float(self.get_argument("order_pending_quantity"))
+        except ValueError: # Add Incoming Quanttiy was NOT used
+            order_pending_quantity = 0.0
+        order_pending_date = self.get_argument("order_pending_date")
+        expected_arrival_time = self.get_argument("expected_arrival_time")
+        notes = self.get_argument("notes")
 
-        set_sheet_quantity(sheet_name=sheet_name, new_quantity=new_quantity, clients=connected_clients)
+        order = Order({
+            "expected_arrival_time": expected_arrival_time,
+            "order_pending_quantity": order_pending_quantity,
+            "order_pending_date": order_pending_date,
+            "notes": notes
+        })
+
+        set_sheet_quantity(sheet_name, new_quantity, order, connected_clients)
 
         self.redirect(f"/sheets_in_inventory/{sheet_name}")
 
@@ -1208,7 +1219,7 @@ if __name__ == "__main__":
             (r"/download_quote/(.*)", DownloadQuoteHandler),
             (r"/load_quote/(.*)", LoadQuoteHandler),
             (r"/delete_quote/(.*)", DeleteQuoteHandler),
-        ]
+        ], static_path=os.path.join(os.path.dirname(__file__), "static")
     )
     # executor = concurrent.futures.ThreadPoolExecutor(max_workers=10)
     # app.executor = executor
