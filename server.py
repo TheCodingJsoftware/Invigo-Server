@@ -472,6 +472,7 @@ class SheetQuantityHandler(tornado.web.RequestHandler):
             else:
                 template = env.get_template("sheet_template_read_only.html")
             rendered_template = template.render(sheet_name=sheet_name, quantity=quantity, pending_data=pending_data)
+            self.set_status(200)
             self.write(rendered_template)
         else:
             self.set_status(404)
