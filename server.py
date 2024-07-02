@@ -374,8 +374,9 @@ class ImageHandler(tornado.web.RequestHandler):
         try:
             image_name = os.path.basename(image_name)
             filepath = os.path.join("images", image_name)
-            if not filepath.endswith(".jpeg"):
-                filepath += ".jpeg"
+            if not filepath.endswith(".png"):
+                if not filepath.endswith(".jpeg"):
+                    filepath += ".jpeg"
             if os.path.exists(filepath):
                 with open(filepath, "rb") as f:
                     self.set_header("Content-Type", "image/jpeg")
