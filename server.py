@@ -58,6 +58,13 @@ class MainHandler(tornado.web.RequestHandler):
         rendered_template = template.render()
         self.write(rendered_template)
 
+class ThemeHandler(tornado.web.RequestHandler):
+    def get(self):
+        self.set_header('Content-Type', 'text/css')
+        with open("static/theme.css", "rb") as file:
+            data = file.read()
+            self.write(data)
+
 
 class ServerLogsHandler(tornado.web.RequestHandler):
     def get(self):
@@ -1182,6 +1189,7 @@ if __name__ == "__main__":
     app = tornado.web.Application(
         [
             (r"/", MainHandler),
+            (r"/static/theme.css", ThemeHandler),
             (r"/server_log", ServerLogsHandler),
             (r"/logs", LogsHandler),
             (r"/fetch_log", LogContentHandler),
