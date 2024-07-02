@@ -474,8 +474,8 @@ class SheetQuantityHandler(tornado.web.RequestHandler):
             rendered_template = template.render(sheet_name=sheet_name, quantity=quantity, pending_data=pending_data)
             self.write(rendered_template)
         else:
-            self.write("Sheet not found")
             self.set_status(404)
+            self.write("Sheet not found")
 
     def post(self, sheet_name):
         new_quantity = float(self.get_argument("new_quantity"))
