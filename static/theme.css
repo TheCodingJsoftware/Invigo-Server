@@ -71,13 +71,13 @@ body.light {
     --shadow: #000000;
     --scrim: #000000;
     --inverse-surface: #2f3033;
-    --inverse-on-surface: #f1f0f4;
+    --inverse-on-surface: #ffffff;
     --inverse-primary: #9ecaff;
-    --surface-dim: #dadadd;
-    --surface-bright: #faf9fc;
+    --surface-dim: #ffffff;
+    --surface-bright: #ffffff;
     --surface-container-lowest: #ffffff;
-    --surface-container-low: #f4f3f7;
-    --surface-container: #eeedf1;
-    --surface-container-high: #e8e8eb;
-    --surface-container-highest: #e2e2e6;
+    --surface-container-low: #ffffff;
+    --surface-container: #ffffff;
+    --surface-container-high: #ffffff;
+    --surface-container-highest: #ffffff;
 }
