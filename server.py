@@ -2,7 +2,6 @@
 import json
 import os
 import re
-import requests
 import shutil
 import sys
 import threading
@@ -51,19 +50,6 @@ connected_clients: set[tornado.websocket.WebSocketHandler] = set()
 # Configure Jinja2 template environment
 loader = jinja2.FileSystemLoader("templates")
 env = jinja2.Environment(loader=loader)
-
-
-class CheckUrlHandler(tornado.web.RequestHandler):
-    def get(self):
-        url = self.get_argument("url")
-        try:
-            response = requests.get(url)
-            if response.status_code == 200:
-                self.write({"status": "valid"})
-            else:
-                self.write({"status": "invalid"})
-        except requests.exceptions.RequestException:
-            self.write({"status": "invalid"})
 
 
 class MainHandler(tornado.web.RequestHandler):
@@ -1200,7 +1186,6 @@ if __name__ == "__main__":
     app = tornado.web.Application(
         [
             (r"/", MainHandler),
-            (r"/check_url", CheckUrlHandler),
             (r"/static/theme.css", ThemeHandler),
             (r"/server_log", ServerLogsHandler),
             (r"/logs", LogsHandler),
