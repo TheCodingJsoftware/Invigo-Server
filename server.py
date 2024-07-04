@@ -468,7 +468,7 @@ class SheetQuantityHandler(tornado.web.RequestHandler):
         new_quantity = float(self.get_argument("new_quantity"))
         try:
             order_pending_quantity = float(self.get_argument("order_pending_quantity"))
-        except ValueError: # Add Incoming Quanttiy was NOT used
+        except ValueError: # Add Incoming Quantity was NOT used
             order_pending_quantity = 0.0
         order_pending_date = self.get_argument("order_pending_date")
         expected_arrival_time = self.get_argument("expected_arrival_time")

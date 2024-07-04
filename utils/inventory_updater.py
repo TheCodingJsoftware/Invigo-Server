@@ -1,14 +1,13 @@
 import json
 from datetime import datetime
-
 from utils.custom_print import CustomPrint
 from utils.sheets_inventory.sheet import Sheet
 from utils.sheets_inventory.sheets_inventory import SheetsInventory
 from utils.inventory.order import Order
 
-sheets_inventory = SheetsInventory(None)
+import tornado.websocket
 
-connected_clients = set()
+sheets_inventory = SheetsInventory(None)
 
 
 def get_cutoff_sheets() -> list[Sheet]:
@@ -21,7 +20,7 @@ def add_sheet(
     material: str,
     sheet_dim: str,
     sheet_count: float,
-    _connected_clients,
+    _connected_clients: set[tornado.websocket.WebSocketHandler],
 ) -> None:
     sheet_name: str = f"{thickness} {material} {sheet_dim}"
     sheets_inventory.load_data()
@@ -100,18 +99,12 @@ def sheet_exists(sheet_name: str) -> bool:
     return bool(_ := sheets_inventory.get_sheet_by_name(sheet_name))
 
 
-def signal_clients_for_changes(client_to_ignore, changed_files: list[str]) -> None:
+def signal_clients_for_changes(connected_clients: set[tornado.websocket.WebSocketHandler], changed_files: list[str]) -> None:
     CustomPrint.print(
         f"INFO - Signaling {len(connected_clients)} clients",
         connected_clients=connected_clients,
     )
     for client in connected_clients:
-        if client.request.remote_ip == client_to_ignore:
-            CustomPrint.print(
-                f"INFO - Ignoring {client.request.remote_ip} since it sent {changed_files}",
-                connected_clients=connected_clients,
-            )
-            continue
         if client.ws_connection and client.ws_connection.stream.socket:
             message = json.dumps({"action": "download", "files": changed_files})
             client.write_message(message)
