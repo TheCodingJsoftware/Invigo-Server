@@ -119,7 +119,8 @@ body.workorder {
     --surface-container-high: #ffffff;
     --surface-container-highest: #ffffff;
 }
-body.packingslip {--primary:#6f43c0;
+body.packing-slip {
+    --primary:#6f43c0;
     --on-primary:#ffffff;
     --primary-container:#ebddff;
     --on-primary-container:#250059;
