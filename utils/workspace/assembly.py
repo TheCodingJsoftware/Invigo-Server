@@ -1,19 +1,20 @@
-import copy
-from typing import Any, Union
+from typing import TYPE_CHECKING, Any, Union
 
-from utils.components_inventory.component import Component
-from utils.laser_cut_inventory.laser_cut_part import LaserCutPart
-from utils.paint_inventory.paint import Paint
-from utils.paint_inventory.powder import Powder
-from utils.paint_inventory.primer import Primer
+from utils.inventory.component import Component
+from utils.inventory.laser_cut_part import LaserCutPart
+from utils.inventory.paint import Paint
+from utils.inventory.powder import Powder
+from utils.inventory.primer import Primer
 from utils.workspace.flow_tag import FlowTag
 from utils.workspace.workspace_settings import WorkspaceSettings
+
+if TYPE_CHECKING:
+    from utils.workspace.group import Group
 
 
 class Assembly:
     def __init__(self, name: str, assembly_data: dict[str, object], group) -> None:
         self.name = name
-        from utils.workspace.group import Group
 
         self.group: Group = group
         self.paint_inventory = self.group.job.job_manager.paint_inventory
@@ -47,6 +48,8 @@ class Assembly:
         self.has_sub_assemblies: bool = False
         self.flow_tag: FlowTag = None
         self.assembly_image: str = None
+        self.quantity: int = 1
+
         # NOTE Used by user workspace
         self.timers: dict[str, dict] = {}
         self.display_name: str = ""
@@ -125,6 +128,7 @@ class Assembly:
         self.flow_tag: FlowTag = FlowTag("", assembly_data.get("flow_tag", {}), self.workspace_settings)
         self.assembly_image: str = assembly_data.get("assembly_image")
         self.assembly_files: list[str] = assembly_data.get("assembly_files", [])
+        self.quantity: int = assembly_data.get("quantity", 1)
 
         self.uses_primer: bool = assembly_data.get("uses_primer", False)
         self.primer_name: str = assembly_data.get("primer_name")
@@ -192,6 +196,7 @@ class Assembly:
                 "has_sub_assemblies": self.has_sub_assemblies,
                 "flow_tag": self.flow_tag.to_dict(),
                 "assembly_image": self.assembly_image,
+                "quantity": self.quantity,
                 "assembly_files": self.assembly_files,
                 "timers": self.timers,
                 "completed": self.completed,

@@ -1,5 +1,5 @@
-import json
 import os
+import msgspec
 
 from utils.sheet_settings.collection import Collection
 from utils.sheet_settings.material import Material
@@ -69,6 +69,9 @@ class SheetSettings:
     def get_cost_for_laser(self, material: str) -> float:
         return self.cost_for_laser["Nitrogen"] if material in {"304 SS", "409 SS", "Aluminium"} else self.cost_for_laser["CO2"]
 
+    def get_laser_cost(self, cutting_method: str) -> float:
+        return self.cost_for_laser[cutting_method]
+
     def get_pounds_per_square_foot(self, material_name: str, thickness_name: str) -> float:
         if material := self.materials.get(material_name):
             if thickness := self.thicknesses.get(thickness_name):
@@ -77,12 +80,12 @@ class SheetSettings:
         return 0.0
 
     def save_data(self):
-        with open(f"{self.FOLDER_LOCATION}/{self.filename}.json", "w", encoding="utf-8") as file:
-            json.dump(self.to_dict(), file, ensure_ascii=False, indent=4)
+        with open(f"{self.FOLDER_LOCATION}/{self.filename}.json", "wb") as file:
+            file.write(msgspec.json.encode(self.to_dict()))
 
     def load_data(self):
-        with open(f"{self.FOLDER_LOCATION}/{self.filename}.json", "r", encoding="utf-8") as file:
-            data = json.load(file)
+        with open(f"{self.FOLDER_LOCATION}/{self.filename}.json", "rb") as file:
+            data = msgspec.json.decode(file.read())
 
         self.cost_for_laser.clear()
         for cutting_method in data["cost_for_laser"]:

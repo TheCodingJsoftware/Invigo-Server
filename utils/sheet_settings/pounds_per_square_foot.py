@@ -1,4 +1,4 @@
-from typing import Dict, Generic, Iterator, List, Tuple, Union
+from typing import Dict, Iterator, Tuple, Union
 
 from utils.sheet_settings.material import Material
 from utils.sheet_settings.thickness import Thickness

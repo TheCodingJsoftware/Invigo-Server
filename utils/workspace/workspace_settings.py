@@ -1,6 +1,6 @@
 import os
 
-import json
+import msgspec
 
 from utils.workspace.flow_tag import FlowTag, Group
 from utils.workspace.flow_tags import FlowTags
@@ -46,10 +46,8 @@ class WorkspaceSettings:
             statuses.extend(status.name for status in tag.statuses)
         return statuses
 
-    def get_tag(self, tag_name: str) -> Tag:
-        for tag in self.tags:
-            if tag.name == tag_name:
-                return tag
+    def get_tag(self, tag_name: str) -> Tag | None:
+        return next((tag for tag in self.tags if tag.name == tag_name), None)
 
     def create_tag(self, name: str) -> Tag:
         tag = Tag(name, {"attribute": {}, "statuses": {}})
@@ -89,8 +87,8 @@ class WorkspaceSettings:
         flow_tags.remove_flow_tag(flow_tag)
 
     def save(self):
-        with open(f"{self.FOLDER_LOCATION}/{self.filename}.json", "w", encoding="utf-8") as file:
-            json.dump(self.to_dict(), file, ensure_ascii=False, indent=4)
+        with open(f"{self.FOLDER_LOCATION}/{self.filename}.json", "wb") as file:
+            file.write(msgspec.json.encode(self.to_dict()))
 
     def __create_file(self):
         if not os.path.exists(f"{self.FOLDER_LOCATION}/{self.filename}.json"):
@@ -102,12 +100,13 @@ class WorkspaceSettings:
 
     def load_data(self):
         try:
-            with open(f"{self.FOLDER_LOCATION}/{self.filename}.json", "r", encoding="utf-8") as file:
-                data: dict[str, dict[str, object]] = json.load(file)
+            with open(f"{self.FOLDER_LOCATION}/{self.filename}.json", "rb") as file:
+                data: dict[str, dict[str, object]] = msgspec.json.decode(file.read())
         except KeyError:  # Inventory was just created
             return
-        except json.JSONDecodeError:  # Inventory file got cleared
+        except msgspec.DecodeError:  # Inventory file got cleared
             self._reset_file()
+            self.load_data()
 
         self.notes = data.get(
             "notes",

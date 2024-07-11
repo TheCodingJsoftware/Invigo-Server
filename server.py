@@ -1,5 +1,3 @@
-# import concurrent.futures
-import json
 import os
 import re
 import shutil
@@ -21,6 +19,7 @@ import tornado.ioloop
 import tornado.web
 import tornado.websocket
 from ansi2html import Ansi2HTMLConverter
+import msgspec
 from markupsafe import Markup
 import markdown2
 from natsort import natsorted
@@ -45,6 +44,7 @@ from utils.sheets_inventory.sheets_inventory import SheetsInventory
 from utils.workspace.workspace_settings import WorkspaceSettings
 from utils.workspace.job import JobStatus
 from utils.inventory.order import Order
+
 # Store connected clients
 connected_clients: set[tornado.websocket.WebSocketHandler] = set()
 
@@ -59,9 +59,10 @@ class MainHandler(tornado.web.RequestHandler):
         rendered_template = template.render()
         self.write(rendered_template)
 
+
 class ThemeHandler(tornado.web.RequestHandler):
     def get(self):
-        self.set_header('Content-Type', 'text/css')
+        self.set_header("Content-Type", "text/css")
         with open("static/theme.css", "rb") as file:
             data = file.read()
             self.write(data)
@@ -75,21 +76,22 @@ class ServerLogsHandler(tornado.web.RequestHandler):
         logs = Markup(logs)  # Mark the logs as safe HTML
         self.write(logs)
 
+
 class WikiHandler(tornado.web.RequestHandler):
     def convert_markdown_to_html(self, markdown_text):
         html = markdown2.markdown(markdown_text)
-        html = re.sub(r'<h2>(.*?)</h2>', r'<br><h2>\1</h2><div class="divider"><br>', html)
-        html = re.sub(r'<h3>(.*?)</h3>', r'<h6 id="\1">\1</h6>', html)
+        html = re.sub(r"<h2>(.*?)</h2>", r'<br><h2>\1</h2><div class="divider"><br>', html)
+        html = re.sub(r"<h3>(.*?)</h3>", r'<h6 id="\1">\1</h6>', html)
         sections = re.findall(r'(<h2>.*?</h2>)|(<h6 id=".*?">.*?</h6>)', html, re.DOTALL)
         faq_section = ""
         for section in sections:
             if section[0]:
                 # This is a <h3> heading
-                heading_text = re.sub(r'<.*?>', '', section[0])
+                heading_text = re.sub(r"<.*?>", "", section[0])
                 faq_section += f'<div class="divider"></div><label>{heading_text}</label><br>'
             elif section[1]:
                 # This is a <h6> heading
-                heading_text = re.sub(r'<.*?>', '', section[1])
+                heading_text = re.sub(r"<.*?>", "", section[1])
                 faq_section += f'<a class="link tiny-padding" href="#{heading_text}"><span class="wrap">{heading_text}</span></a><br>'
 
         full_html = f"""
@@ -129,7 +131,7 @@ class WikiHandler(tornado.web.RequestHandler):
         return full_html
 
     def get(self):
-        with open("WIKI.md", 'r', encoding="utf-8") as f:
+        with open("WIKI.md", "r", encoding="utf-8") as f:
             markdown_content = f.read()
         html_content = self.convert_markdown_to_html(markdown_content)
         self.write(html_content)
@@ -250,12 +252,12 @@ class LogContentHandler(tornado.web.RequestHandler):
 class WayBackMachineHandler(tornado.web.RequestHandler):
     def get(self):
         data = {}
-        with open("data/components_inventory.json", "r", encoding="utf-8") as f:
-            data["components_inventory"] = list(json.load(f).get("components", {}))
-        with open("data/laser_cut_inventory.json", "r", encoding="utf-8") as f:
-            data["laser_cut_inventory"] = list(json.load(f).get("laser_cut_parts", {}))
-        with open("data/sheets_inventory.json", "r", encoding="utf-8") as f:
-            data["sheets_inventory"] = list(json.load(f).get("sheets", {}))
+        with open("data/components_inventory.json", "rb") as f:
+            data["components_inventory"] = list(msgspec.json.decode(f.read()).get("components", {}))
+        with open("data/laser_cut_inventory.json", "rb") as f:
+            data["laser_cut_inventory"] = list(msgspec.json.decode(f.read()).get("laser_cut_parts", {}))
+        with open("data/sheets_inventory.json", "rb") as f:
+            data["sheets_inventory"] = list(msgspec.json.decode(f.read()).get("sheets", {}))
 
         template = env.get_template("way_back_machine.html")
         rendered_template = template.render(inventory=data)
@@ -274,9 +276,9 @@ class FetchDataHandler(tornado.web.RequestHandler):
                     file_path = os.path.join(root, file)
                     creation_time = os.path.getctime(file_path)
                     date = datetime.fromtimestamp(creation_time)
-                    with zipfile.ZipFile(os.path.join(root, file), "r") as zip_ref:
+                    with zipfile.ZipFile(file_path, "r") as zip_ref:
                         with zip_ref.open(f"{inventory_type}.json") as f:
-                            inventory = json.load(f)
+                            inventory = msgspec.json.decode(f.read())
                             try:
                                 if inventory_type == "components_inventory":
                                     item = inventory["components"][item_name]
@@ -299,7 +301,7 @@ class FetchDataHandler(tornado.web.RequestHandler):
         combined.sort(reverse=True, key=lambda x: x[0])
 
         # Unpack sorted tuples back into separate lists
-        dates, quantities, prices = zip(*combined)
+        dates, quantities, prices = zip(*combined) if combined else ([], [], [])
 
         dates = [date.strftime("%Y-%m-%d") for date in dates]
 
@@ -437,9 +439,8 @@ class ImageHandler(tornado.web.RequestHandler):
         try:
             image_name = os.path.basename(image_name)
             filepath = os.path.join("images", image_name)
-            if not filepath.endswith(".png"):
-                if not filepath.endswith(".jpeg"):
-                    filepath += ".jpeg"
+            if not filepath.endswith(".png") and not filepath.endswith(".jpeg"):
+                filepath += ".jpeg"
             if os.path.exists(filepath):
                 with open(filepath, "rb") as f:
                     self.set_header("Content-Type", "image/jpeg")
@@ -471,14 +472,14 @@ class SetOrderNumberHandler(tornado.web.RequestHandler):
             order_number = int(order_number)
             file_path = "order_number.json"
             if os.path.exists(file_path):
-                with open(file_path, "r", encoding="utf-8") as file:
-                    json_file = json.load(file)
+                with open(file_path, "rb") as file:
+                    json_file = msgspec.json.decode(file.read())
             else:
                 json_file = {}
 
             json_file["order_number"] = order_number
-            with open(file_path, "w", encoding="utf-8") as file:
-                json.dump(json_file, file)
+            with open(file_path, "wb") as file:
+                file.write(msgspec.json.encode(json_file))
 
             CustomPrint.print(
                 f"INFO - {self.request.remote_ip} set order number to {order_number})",
@@ -492,8 +493,8 @@ class SetOrderNumberHandler(tornado.web.RequestHandler):
 
 class GetOrderNumberHandler(tornado.web.RequestHandler):
     def get(self):
-        with open("order_number.json", "r", encoding="utf-8") as file:
-            order_number = json.load(file)["order_number"]
+        with open("order_number.json", "rb") as file:
+            order_number = msgspec.json.decode(file.read())["order_number"]
 
         CustomPrint.print(
             f"INFO - Sent order number ({order_number}) to {self.request.remote_ip}",
@@ -506,40 +507,40 @@ class SheetQuantityHandler(tornado.web.RequestHandler):
     def get(self, sheet_name):
         sheet_name = sheet_name.replace("_", " ")
         if sheet_exists(sheet_name=sheet_name):
-            quantity = get_sheet_quantity(sheet_name=sheet_name)
-            pending_data = get_sheet_pending_data(sheet_name=sheet_name)
-            if self.request.remote_ip in [
+            self.load_page(sheet_name)
+        else:
+            self.set_status(404)
+            self.write("Sheet not found")
+
+    def load_page(self, sheet_name):
+        quantity = get_sheet_quantity(sheet_name=sheet_name)
+        pending_data = get_sheet_pending_data(sheet_name=sheet_name)
+        template = (
+            env.get_template("sheet_template.html")
+            if self.request.remote_ip
+            in [
                 "10.0.0.11",
                 "10.0.0.64",
                 "10.0.0.217",
                 "10.0.0.155",
-            ]:
-                template = env.get_template("sheet_template.html")
-            else:
-                template = env.get_template("sheet_template_read_only.html")
-            rendered_template = template.render(sheet_name=sheet_name, quantity=quantity, pending_data=pending_data)
-            self.set_status(200)
-            self.write(rendered_template)
-        else:
-            self.set_status(404)
-            self.write("Sheet not found")
+            ]
+            else env.get_template("sheet_template_read_only.html")
+        )
+        rendered_template = template.render(sheet_name=sheet_name, quantity=quantity, pending_data=pending_data)
+        self.set_status(200)
+        self.write(rendered_template)
 
     def post(self, sheet_name):
         new_quantity = float(self.get_argument("new_quantity"))
         try:
             order_pending_quantity = float(self.get_argument("order_pending_quantity"))
-        except ValueError: # Add Incoming Quantity was NOT used
+        except ValueError:  # Add Incoming Quantity was NOT used
             order_pending_quantity = 0.0
         order_pending_date = self.get_argument("order_pending_date")
         expected_arrival_time = self.get_argument("expected_arrival_time")
         notes = self.get_argument("notes")
 
-        order = Order({
-            "expected_arrival_time": expected_arrival_time,
-            "order_pending_quantity": order_pending_quantity,
-            "order_pending_date": order_pending_date,
-            "notes": notes
-        })
+        order = Order({"expected_arrival_time": expected_arrival_time, "order_pending_quantity": order_pending_quantity, "order_pending_date": order_pending_date, "notes": notes})
 
         set_sheet_quantity(sheet_name, new_quantity, order, connected_clients)
 
@@ -608,8 +609,8 @@ async def gather_quote_directories_info(base_directory: str, specific_dirs: list
                     dir_path = os.path.join(root, dirname)
                     quote_data_path = os.path.join(dir_path, "data.json")
                     try:
-                        with open(quote_data_path, "r", encoding="utf-8") as f:
-                            quote_data = json.load(f)
+                        with open(quote_data_path, "rb") as f:
+                            quote_data = msgspec.json.decode(f.read())
                         dir_info = {
                             "name": dirname,
                             "modified_date": os.path.getmtime(quote_data_path),
@@ -635,7 +636,7 @@ class GetPreviousQuotesHandler(tornado.web.RequestHandler):
             base_directory="previous_quotes",
             specific_dirs=["quotes", "workorders", "packing_slips"],
         )
-        self.write(json.dumps(directories_info))
+        self.write(msgspec.json.encode(directories_info))
 
 
 class GetSavedQuotesHandler(tornado.web.RequestHandler):
@@ -644,7 +645,7 @@ class GetSavedQuotesHandler(tornado.web.RequestHandler):
             base_directory="saved_quotes",
             specific_dirs=["quotes", "workorders", "packing_slips"],
         )
-        self.write(json.dumps(directories_info))
+        self.write(msgspec.json.encode(directories_info))
 
 
 async def gather_job_directories_info(base_directory: str, specific_dirs: list[str]):
@@ -659,8 +660,8 @@ async def gather_job_directories_info(base_directory: str, specific_dirs: list[s
                     dir_path = os.path.join(root, dirname)
                     job_data_path = os.path.join(dir_path, "data.json")
                     try:
-                        with open(job_data_path, "r", encoding="utf-8") as f:
-                            job_data = json.load(f)
+                        with open(job_data_path, "rb") as f:
+                            job_data = msgspec.json.decode(f.read())
                         dir_info = {
                             "name": dirname,
                             "modified_date": os.path.getmtime(job_data_path),
@@ -694,7 +695,7 @@ class GetJobsHandler(tornado.web.RequestHandler):
                 "archive",
             ],
         )
-        self.write(json.dumps(directories_info))
+        self.write(msgspec.json.encode(directories_info))
 
 
 class LoadJobHandler(tornado.web.RequestHandler):
@@ -768,16 +769,16 @@ class UploadJobHandler(tornado.web.RequestHandler):
         try:
             folder = self.get_argument("folder")
 
-            job_data_json = self.request.files["job_data"][0]["body"].decode("utf-8")
-            job_data = json.loads(job_data_json)
+            job_data_json = self.request.files["job_data"][0]["body"]
+            job_data = msgspec.json.decode(job_data_json)
 
             html_file_contents = self.get_argument("html_file_contents")
 
             os.makedirs(folder, exist_ok=True)
 
             job_file_path = os.path.join(folder, "data.json")
-            with open(job_file_path, "w", encoding="utf-8") as f:
-                json.dump(job_data, f, ensure_ascii=False, indent=4)
+            with open(job_file_path, "wb") as f:
+                f.write(msgspec.json.encode(job_data))
 
             html_file_path = os.path.join(folder, "page.html")
             with open(html_file_path, "w", encoding="utf-8") as f:
@@ -842,13 +843,13 @@ class UpdateJobSettingsHandler(tornado.web.RequestHandler):
 
         try:
             if os.path.exists(file_path):
-                with open(file_path, "r", encoding="utf-8") as file:
-                    data = json.load(file)
+                with open(file_path, "rb") as file:
+                    data = msgspec.json.decode(file.read())
 
                 data["job_data"][key_to_change] = new_value
 
-                with open(file_path, "w", encoding="utf-8") as file:
-                    json.dump(data, file, ensure_ascii=True, indent=4)
+                with open(file_path, "wb") as file:
+                    file.write(msgspec.json.encode(data))
 
                 if key_to_change == "type":
                     destination = f"saved_jobs\\{JobStatus(new_value).name.lower()}\\{job_name}"
@@ -889,31 +890,34 @@ class DeleteJobHandler(tornado.web.RequestHandler):
         html_file_path = os.path.join(folder_name, "page.html")
 
         try:
-            if os.path.exists(json_file_path):
-                os.remove(json_file_path)
-            else:
-                raise FileNotFoundError(f"No JSON file found for {folder_name}.")
-
-            if os.path.exists(html_file_path):
-                os.remove(html_file_path)
-
-            if not os.listdir(folder_name):
-                os.rmdir(folder_name)
-
-            signal_clients_for_changes(
-                client_to_ignore=self.request.remote_ip,
-                changed_files=["reload_saved_jobs"],
-            )
-
-            CustomPrint.print(
-                f"INFO - {self.request.remote_ip} deleted job: {folder_name}",
-                connected_clients=connected_clients,
-            )
-
-            self.write({"status": "success", "message": "Quote deleted successfully."})
+            self.delete_data(json_file_path, folder_name, html_file_path)
         except Exception as e:
             self.set_status(500)
             self.write({"status": "error", "message": str(e)})
+
+    def delete_data(self, json_file_path, folder_name, html_file_path):
+        if os.path.exists(json_file_path):
+            os.remove(json_file_path)
+        else:
+            raise FileNotFoundError(f"No JSON file found for {folder_name}.")
+
+        if os.path.exists(html_file_path):
+            os.remove(html_file_path)
+
+        if not os.listdir(folder_name):
+            os.rmdir(folder_name)
+
+        signal_clients_for_changes(
+            client_to_ignore=self.request.remote_ip,
+            changed_files=["reload_saved_jobs"],
+        )
+
+        CustomPrint.print(
+            f"INFO - {self.request.remote_ip} deleted job: {folder_name}",
+            connected_clients=connected_clients,
+        )
+
+        self.write({"status": "success", "message": "Quote deleted successfully."})
 
 
 class UploadQuoteHandler(tornado.web.RequestHandler):
@@ -921,16 +925,16 @@ class UploadQuoteHandler(tornado.web.RequestHandler):
         try:
             folder = self.get_argument("folder")
 
-            quote_data_json = self.request.files["quote_data"][0]["body"].decode("utf-8")
-            quote_data = json.loads(quote_data_json)
+            quote_data_json = self.request.files["quote_data"][0]["body"]
+            quote_data = msgspec.json.decode(quote_data_json)
 
             html_file_contents = self.get_argument("html_file_contents")
 
             os.makedirs(folder, exist_ok=True)
 
             quote_file_path = os.path.join(folder, "data.json")
-            with open(quote_file_path, "w", encoding="utf-8") as f:
-                json.dump(quote_data, f, ensure_ascii=False)
+            with open(quote_file_path, "wb") as f:
+                f.write(msgspec.json.encode(quote_data))
 
             html_file_path = os.path.join(folder, "page.html")
             with open(html_file_path, "w", encoding="utf-8") as f:
@@ -1014,31 +1018,34 @@ class DeleteQuoteHandler(tornado.web.RequestHandler):
         html_file_path = os.path.join(folder_name, "page.html")
 
         try:
-            if os.path.exists(json_file_path):
-                os.remove(json_file_path)
-            else:
-                raise FileNotFoundError(f"No JSON file found for {folder_name}.")
-
-            if os.path.exists(html_file_path):
-                os.remove(html_file_path)
-
-            if not os.listdir(folder_name):
-                os.rmdir(folder_name)
-
-            signal_clients_for_changes(
-                client_to_ignore=self.request.remote_ip,
-                changed_files=["reload_saved_quotes"],
-            )
-
-            CustomPrint.print(
-                f"INFO - {self.request.remote_ip} deleted quote: {folder_name}",
-                connected_clients=connected_clients,
-            )
-
-            self.write({"status": "success", "message": "Quote deleted successfully."})
+            self.delete_data(json_file_path, folder_name, html_file_path)
         except Exception as e:
             self.set_status(500)
             self.write({"status": "error", "message": str(e)})
+
+    def delete_data(self, json_file_path, folder_name, html_file_path):
+        if os.path.exists(json_file_path):
+            os.remove(json_file_path)
+        else:
+            raise FileNotFoundError(f"No JSON file found for {folder_name}.")
+
+        if os.path.exists(html_file_path):
+            os.remove(html_file_path)
+
+        if not os.listdir(folder_name):
+            os.rmdir(folder_name)
+
+        signal_clients_for_changes(
+            client_to_ignore=self.request.remote_ip,
+            changed_files=["reload_saved_quotes"],
+        )
+
+        CustomPrint.print(
+            f"INFO - {self.request.remote_ip} deleted quote: {folder_name}",
+            connected_clients=connected_clients,
+        )
+
+        self.write({"status": "success", "message": "Quote deleted successfully."})
 
 
 class UpdateQuoteSettingsHandler(tornado.web.RequestHandler):
@@ -1051,36 +1058,39 @@ class UpdateQuoteSettingsHandler(tornado.web.RequestHandler):
 
         try:
             if os.path.exists(file_path):
-                with open(file_path, "r", encoding="utf-8") as file:
-                    data = json.load(file)
-
-                data["settings"][key_to_change] = new_value
-
-                with open(file_path, "w", encoding="utf-8") as file:
-                    json.dump(data, file, indent=4)
-
-                signal_clients_for_changes(
-                    client_to_ignore=self.request.remote_ip,
-                    changed_files=["reload_saved_quotes"],
-                )
-
-                CustomPrint.print(
-                    f"INFO - {self.request.remote_ip} changed quote setting '{key_to_change}' to '{new_value}': {folder}",
-                    connected_clients=connected_clients,
-                )
-
-                self.write(
-                    {
-                        "status": "success",
-                        "message": "Quote settings updated successfully.",
-                    }
-                )
+                self.save_data(file_path, new_value, key_to_change, folder)
             else:
                 self.set_status(404)
                 self.write({"status": "error", "message": "File not found."})
         except Exception as e:
             self.set_status(500)
             self.write({"status": "error", "message": str(e)})
+
+    def save_data(self, file_path, new_value, key_to_change, folder):
+        with open(file_path, "rb") as file:
+            data = msgspec.json.decode(file.read())
+
+        data["settings"][key_to_change] = new_value
+
+        with open(file_path, "wb") as file:
+            file.write(msgspec.json.encode(data))
+
+        signal_clients_for_changes(
+            client_to_ignore=self.request.remote_ip,
+            changed_files=["reload_saved_quotes"],
+        )
+
+        CustomPrint.print(
+            f"INFO - {self.request.remote_ip} changed quote setting '{key_to_change}' to '{new_value}': {folder}",
+            connected_clients=connected_clients,
+        )
+
+        self.write(
+            {
+                "status": "success",
+                "message": "Quote settings updated successfully.",
+            }
+        )
 
 
 class QRCodePageHandler(tornado.web.RequestHandler):
@@ -1185,7 +1195,7 @@ def signal_clients_for_changes(client_to_ignore, changed_files: list[str]) -> No
             )
             continue
         if client.ws_connection and client.ws_connection.stream.socket:
-            message = json.dumps({"action": "download", "files": changed_files})
+            message = msgspec.json.encode({"action": "download", "files": changed_files})
             client.write_message(message)
             CustomPrint.print(
                 f"INFO - Signaling {client.request.remote_ip} to download {changed_files}",
@@ -1286,7 +1296,8 @@ if __name__ == "__main__":
             (r"/download_quote/(.*)", DownloadQuoteHandler),
             (r"/load_quote/(.*)", LoadQuoteHandler),
             (r"/delete_quote/(.*)", DeleteQuoteHandler),
-        ], static_path=os.path.join(os.path.dirname(__file__), "static")
+        ],
+        static_path=os.path.join(os.path.dirname(__file__), "static"),
     )
     # executor = concurrent.futures.ThreadPoolExecutor(max_workers=10)
     # app.executor = executor

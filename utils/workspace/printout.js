@@ -1,48 +1,60 @@
-function clearImageBorders() {
-    window.location.href = "";
-    const allImages = document.querySelectorAll('.popup-trigger img');
-    allImages.forEach(image => {
-        image.style.border = '2px solid transparent';
-        image.style.borderRadius = '0';
-        image.style.filter = 'sepia(0)';
-    });
-}
-function highlightImage(imageName, imageId) {
-    const allImages = document.querySelectorAll('.popup-trigger img');
-    allImages.forEach(image => {
-        image.style.border = '2px solid transparent';
-        image.style.borderRadius = '0';
-        image.style.filter = 'sepia(0)';
-    });
-    window.location.href = "#" + imageName;
+const checkboxConfig = {
+    "quote": {
+        "picture": true,
+        "part-#": true,
+        "qty": true,
+        "unit-qty": false,
+        "material": true,
+        "thickness": true,
+        "part": true,
+        "price": true,
+        "unit-price": true,
+        "shelf-#": false,
+        "process": false,
+        "paint": true,
+    },
+    "workorder": {
+        "picture": true,
+        "part-#": true,
+        "qty": true,
+        "unit-qty": false,
+        "material": true,
+        "thickness": true,
+        "part": true,
+        "price": false,
+        "unit-price": false,
+        "shelf-#": false,
+        "process": true,
+        "paint": true,
+    },
+    "packingslip": {
+        "picture": true,
+        "part-#": true,
+        "qty": true,
+        "unit-qty": false,
+        "material": true,
+        "thickness": true,
+        "part": true,
+        "price": false,
+        "unit-price": false,
+        "shelf-#": false,
+        "process": false,
+        "paint": true,
+    }
+};
 
-    const image = document.getElementById(imageId);
-    image.style.border = '2px solid lime';
-    image.style.borderRadius = '5px';
-    image.style.filter = 'sepia(1)';
-}
+const baseUrl = "http://invi.go/";
+const mediaQueryList = window.matchMedia('print');
+const navCheckBoxLinks = document.querySelectorAll('nav.tabbed.primary-container a');
+const checkboxes = document.querySelectorAll('#printout-controls .checkbox input[type="checkbox"]');
+const pageBreakDivs = document.querySelectorAll('#page-break');
+const usePageBreakcheckbox = document.getElementById('usePageBreaks');
+const lastSegment = window.location.pathname.split('/').pop();
+const getStorageKey = (key) => `${lastSegment}_${key}`;
 
-$(document).ready(function () {
-    $('details.assembly_details').each(function () {
-        const summary = $(this).children('summary');
-        const summaryText = summary.text();
-        const span = $('<span>').text(summaryText);
-        summary.text('').append(span);
+window.addEventListener('beforeprint', hideUncheckedColumns);
+window.addEventListener('afterprint', restoreAllColumns);
 
-        // Initially hide the summary text if the details element is open
-        if (this.open) {
-            span.hide();
-        }
-
-        $(this).on('toggle', function () {
-            if (this.open) {
-                span.hide();
-            } else {
-                span.show();
-            }
-        });
-    });
-});
 
 class Accordion {
     constructor(el) {
@@ -123,4 +135,194 @@ class Accordion {
 
 document.querySelectorAll('details').forEach((el) => {
     new Accordion(el);
+});
+
+
+navCheckBoxLinks.forEach(link => {
+    link.addEventListener('click', function (event) {
+        event.preventDefault();
+        const targetColumn = this.getAttribute('data-target');
+        localStorage.setItem(getStorageKey('selectedTargetColumn'), targetColumn);
+        toggleCheckboxes(targetColumn, navCheckBoxLinks);
+        document.body.className = targetColumn;
+    });
+});
+
+
+checkboxes.forEach(checkbox => {
+    const layoutId = checkbox.getAttribute('data-layout');
+    const layoutDiv = document.getElementById(layoutId);
+    const storedState = localStorage.getItem(getStorageKey(checkbox.id));
+
+    if (storedState === 'true') {
+        checkbox.checked = true;
+        layoutDiv.classList.remove('hidden');
+    } else if (storedState === 'false') {
+        checkbox.checked = false;
+        layoutDiv.classList.add('hidden');
+    } else {
+        checkbox.checked = true;
+        layoutDiv.classList.add('hidden');
+    }
+
+    checkbox.addEventListener('change', function () {
+        localStorage.setItem(getStorageKey(checkbox.id), this.checked);
+        if (this.checked) {
+            layoutDiv.classList.remove('hidden');
+        } else {
+            layoutDiv.classList.add('hidden');
+        }
+    });
+});
+
+const storedTargetColumn = localStorage.getItem(getStorageKey('selectedTargetColumn'));
+
+if (storedTargetColumn) {
+    toggleCheckboxes(storedTargetColumn, navCheckBoxLinks);
+    document.body.className = storedTargetColumn;
+} else {
+    const defaultTarget = navCheckBoxLinks[0].getAttribute('data-target');
+    toggleCheckboxes(defaultTarget, navCheckBoxLinks);
+    document.body.className = defaultTarget;
+}
+
+checkboxes.forEach(checkbox => {
+    const layoutId = checkbox.getAttribute('data-layout');
+    const layoutDiv = document.getElementById(layoutId);
+    if (checkbox.checked) {
+        layoutDiv.classList.remove('hidden');
+    } else {
+        layoutDiv.classList.add('hidden');
+    }
+});
+
+window.addEventListener('load', function() {
+    setTimeout(function() {
+        document.querySelectorAll('img').forEach(function(img) {
+            img.onerror = function() {
+                this.classList.add('hidden');
+            };
+            if (!img.complete || img.naturalWidth === 0) {
+                img.onerror();
+            }
+        });
+    }, 1000); // 1000 milliseconds = 1 second
+});
+
+$('details.assembly_details').each(function () {
+    const summary = $(this).children('summary');
+    const summaryText = summary.text();
+    const span = $('<span>').text(summaryText);
+    summary.text('').append(span);
+
+    // Initially hide the summary text if the details element is open
+    if (this.open) {
+        span.hide();
+    }
+
+    $(this).on('toggle', function () {
+        if (this.open) {
+            span.hide();
+        } else {
+            span.show();
+        }
+    });
+});
+
+mediaQueryList.addListener((mql) => {
+    if (mql.matches) {
+        hideUncheckedColumns();
+    } else {
+        restoreAllColumns();
+    }
+});
+
+document.querySelectorAll('.qr-item').forEach(async item => {
+    const name = item.getAttribute('data-name');
+    let encodedUrl;
+    let qrDiv = item.querySelector('.qr-code');
+
+    sheetsUrl = baseUrl + "sheets_in_inventory/";
+    encodedUrl = encodeURI(sheetsUrl + name.replace(/ /g, "_"));
+    new QRCode(qrDiv, {
+        text: encodedUrl,
+        width: 256,
+        height: 256,
+        colorDark: "#000000",
+        colorLight: "#ffffff",
+        correctLevel: QRCode.CorrectLevel.H
+    });
+
+    qrDiv.style.cursor = 'pointer';
+    qrDiv.addEventListener('click', function () {
+        window.open(encodedUrl, '_blank');
+    });
+
+});
+
+function toggleCheckboxes(targetColumn, navLinks) {
+    navLinks.forEach(link => {
+        if (link.getAttribute('data-target') === targetColumn) {
+            link.classList.add('active');
+            link.classList.add('primary');
+        } else {
+            link.classList.remove('active');
+            link.classList.remove('primary');
+        }
+    });
+    const config = checkboxConfig[targetColumn];
+    if (config) {
+        for (const [column, shouldCheck] of Object.entries(config)) {
+            const checkboxes = document.querySelectorAll(`input[data-name="${column}"]`);
+            checkboxes.forEach(checkbox => {
+                if (checkbox) {
+                    checkbox.checked = shouldCheck;
+                }
+            })
+        }
+    }
+}
+
+function hideUncheckedColumns() {
+    const checkboxes = document.querySelectorAll('.column-toggle');
+    checkboxes.forEach(checkbox => {
+        if (!checkbox.checked) {
+            const column = checkbox.getAttribute('data-column');
+            const table = checkbox.closest('table');
+            const thCells = table.querySelectorAll(`th:nth-child(${parseInt(column) + 1})`);
+            const tdCells = table.querySelectorAll(`td[data-column="${column}"]`);
+
+            thCells.forEach(cell => {
+                cell.classList.add('hidden-column');
+            });
+
+            tdCells.forEach(cell => {
+                cell.classList.add('hidden-column');
+            });
+        }
+    });
+}
+
+function restoreAllColumns() {
+    const tables = document.querySelectorAll('.dynamic-table');
+    tables.forEach(table => {
+        const hiddenCells = table.querySelectorAll('.hidden-column');
+        hiddenCells.forEach(cell => {
+            cell.classList.remove('hidden-column');
+        });
+    });
+}
+
+if (usePageBreakcheckbox.checked) {
+    pageBreakDivs.forEach(div => div.classList.add('page-break'));
+} else {
+    pageBreakDivs.forEach(div => div.classList.remove('page-break'));
+}
+
+usePageBreakcheckbox.addEventListener('change', function () {
+    if (usePageBreakcheckbox.checked) {
+        pageBreakDivs.forEach(div => div.classList.add('page-break'));
+    } else {
+        pageBreakDivs.forEach(div => div.classList.remove('page-break'));
+    }
 });
