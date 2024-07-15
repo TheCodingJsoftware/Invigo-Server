@@ -77,66 +77,6 @@ class ServerLogsHandler(tornado.web.RequestHandler):
         self.write(logs)
 
 
-class WikiHandler(tornado.web.RequestHandler):
-    def convert_markdown_to_html(self, markdown_text):
-        html = markdown2.markdown(markdown_text)
-        html = re.sub(r"<h2>(.*?)</h2>", r'<br><h2>\1</h2><div class="divider"><br>', html)
-        html = re.sub(r"<h3>(.*?)</h3>", r'<h6 id="\1">\1</h6>', html)
-        sections = re.findall(r'(<h2>.*?</h2>)|(<h6 id=".*?">.*?</h6>)', html, re.DOTALL)
-        faq_section = ""
-        for section in sections:
-            if section[0]:
-                # This is a <h3> heading
-                heading_text = re.sub(r"<.*?>", "", section[0])
-                faq_section += f'<div class="divider"></div><label>{heading_text}</label><br>'
-            elif section[1]:
-                # This is a <h6> heading
-                heading_text = re.sub(r"<.*?>", "", section[1])
-                faq_section += f'<a class="link tiny-padding" href="#{heading_text}"><span class="wrap">{heading_text}</span></a><br>'
-
-        full_html = f"""
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <meta charset="UTF-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1">
-            <meta http-equiv="X-UA-Compatible" content="ie=edge">
-            <meta name="google" content="notranslate">
-            <link href="https://cdn.jsdelivr.net/npm/beercss@3.6.7/dist/cdn/beer.min.css" rel="stylesheet">
-            <script type="module" src="https://cdn.jsdelivr.net/npm/beercss@3.6.7/dist/cdn/beer.min.js"></script>
-            <script type="module"
-                src="https://cdn.jsdelivr.net/npm/material-dynamic-colors@1.1.2/dist/cdn/material-dynamic-colors.min.js">
-            </script>
-            <link href="/static/theme.css" rel="stylesheet">
-            <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=yes" />
-            <script src="https://www.kryogenix.org/code/browser/sorttable/sorttable.js"></script>
-            <title>Wiki</title>
-        </head>
-        <body class="dark">
-            <div class="grid">
-                <div class="s4 m4 l3 padding">
-                    <div class="divider"></div>
-                    <label>Frequently Asked Questions</label>
-                    {faq_section}
-                </div>
-                <div class="s8 m8 l9">
-                    <main class="padding">
-                        {html}
-                    </main>
-                </div>
-            </div>
-        </body>
-</html>
-        """
-        return full_html
-
-    def get(self):
-        with open("WIKI.md", "r", encoding="utf-8") as f:
-            markdown_content = f.read()
-        html_content = self.convert_markdown_to_html(markdown_content)
-        self.write(html_content)
-
-
 class LogsHandler(tornado.web.RequestHandler):
     def get(self):
         log_dir = "logs/"
@@ -1259,7 +1199,6 @@ if __name__ == "__main__":
             (r"/static/theme.css", ThemeHandler),
             (r"/server_log", ServerLogsHandler),
             (r"/logs", LogsHandler),
-            (r"/wiki", WikiHandler),
             (r"/fetch_log", LogContentHandler),
             (r"/delete_log", LogDeleteHandler),
             (r"/file/(.*)", FileReceiveHandler),
