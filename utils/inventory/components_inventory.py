@@ -122,7 +122,7 @@ class ComponentsInventory(Inventory):
                     component = Component(component_data, self)
                 except AttributeError: # Old inventory format
                     component = Component(data["components"][component_data], self)
-                    component.name = component_data
+                    component.part_number = component_data
                 self.add_component(component)
         except KeyError:  # Inventory was just created
             return

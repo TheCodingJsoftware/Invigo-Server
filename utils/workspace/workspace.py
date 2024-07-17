@@ -3,12 +3,12 @@ import os
 import msgspec
 from natsort import natsorted
 
-from utils.inventory.component import Component
-from utils.inventory.laser_cut_part import LaserCutPart
-from utils.workspace.assembly import Assembly
 from utils.workspace.job import Job
-from utils.workspace.job_manager import JobManager
 from utils.workspace.workspace_settings import WorkspaceSettings
+from utils.inventory.laser_cut_part import LaserCutPart
+from utils.inventory.component import Component
+from utils.workspace.assembly import Assembly
+from utils.workspace.job_manager import JobManager
 
 
 class Workspace:
@@ -88,12 +88,12 @@ class Workspace:
         return components
 
     def to_list(self) -> list[dict[str, object]]:
-        return [{job.name: job.to_dict()} for job in self.jobs]
+        return [job.to_dict() for job in self.jobs]
 
     def __create_file(self) -> None:
         if not os.path.exists(f"{self.FOLDER_LOCATION}/{self.filename}.json"):
             with open(f"{self.FOLDER_LOCATION}/{self.filename}.json", "w", encoding="utf-8") as json_file:
-                json_file.write("{}")
+                json_file.write("[]")
 
     def save(self) -> None:
         with open(f"{self.FOLDER_LOCATION}/{self.filename}.json", "wb") as file:
@@ -109,6 +109,6 @@ class Workspace:
         self.jobs.clear()
 
         for job in data:
-            for job_name, job_data in job.items():
-                job = Job(job_name, job_data, self.job_manager)
+            for job_data in job:
+                job = Job(job_data, self.job_manager)
                 self.jobs.append(job)

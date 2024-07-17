@@ -1,5 +1,5 @@
 import copy
-from typing import TYPE_CHECKING, Union
+from typing import TYPE_CHECKING, Union, Optional
 
 from utils.inventory.category import Category
 from utils.inventory.inventory_item import InventoryItem
@@ -88,7 +88,7 @@ class LaserCutPart(InventoryItem):
 
         self.load_data(data)
 
-    def get_current_tag(self) -> Union[Tag, None]:
+    def get_current_tag(self) -> Optional[Tag]:
         try:
             return self.flow_tag.tags[self.current_flow_tag_index]
         except IndexError:

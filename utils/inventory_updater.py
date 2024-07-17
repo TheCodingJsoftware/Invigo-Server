@@ -27,9 +27,7 @@ def add_sheet(
     sheets_inventory.load_data()
     length = float(sheet_dim.split("x")[0].strip())
     width = float(sheet_dim.split("x")[1].strip())
-    new_sheet = Sheet(
-        sheet_name,
-        {
+    new_sheet = Sheet({
             "quantity": sheet_count,
             "thickness": thickness,
             "material": material,

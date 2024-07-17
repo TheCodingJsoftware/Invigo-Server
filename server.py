@@ -1041,7 +1041,8 @@ class UpdateQuoteSettingsHandler(tornado.web.RequestHandler):
 
 class QRCodePageHandler(tornado.web.RequestHandler):
     def get(self):
-        sheets_inventory = SheetsInventory(None)
+        sheet_settings = SheetSettings()
+        sheets_inventory = SheetsInventory(sheet_settings)
         sheet_data: dict[str, list[str]] = {}
         for category in sheets_inventory.get_categories():
             if category.name == "Cutoff":

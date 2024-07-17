@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Any, Union
+from typing import TYPE_CHECKING, Any, Union, Optional
 
 from utils.inventory.component import Component
 from utils.inventory.laser_cut_part import LaserCutPart
@@ -6,8 +6,8 @@ from utils.inventory.paint import Paint
 from utils.inventory.powder import Powder
 from utils.inventory.primer import Primer
 from utils.workspace.flow_tag import FlowTag
-from utils.workspace.tag import Tag
 from utils.workspace.workspace_settings import WorkspaceSettings
+from utils.workspace.tag import Tag
 
 if TYPE_CHECKING:
     from utils.workspace.job import Job
@@ -79,7 +79,7 @@ class Assembly:
     def remove_component(self, component: Component):
         self.components.remove(component)
 
-    def get_current_tag(self) -> Union[Tag, None]:
+    def get_current_tag(self) -> Optional[Tag]:
         try:
             return self.flow_tag.tags[self.current_flow_tag_index]
         except IndexError:
@@ -208,5 +208,5 @@ class Assembly:
             },
             "laser_cut_parts": [laser_cut_part.to_dict() for laser_cut_part in self.laser_cut_parts],
             "components": [component.to_dict() for component in self.components],
-            "sub_assemblies": {sub_assembly.to_dict() for sub_assembly in self.sub_assemblies},
+            "sub_assemblies": [sub_assembly.to_dict() for sub_assembly in self.sub_assemblies],
         }

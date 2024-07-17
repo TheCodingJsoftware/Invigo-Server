@@ -31,13 +31,13 @@ class JobColor(Enum):
     ARCHIVE = ("#943eea", JobStatus.ARCHIVE)
 
     @classmethod
-    def get_color(cls, job_status):
+    def get_color(cls, job_status: JobStatus):
         return next((color.value[0] for color in cls if color.value[1] == job_status), None)
 
 
 class Job:
-    def __init__(self, name: str, data: dict, job_manager) -> None:
-        self.name: str = name
+    def __init__(self, data: dict, job_manager) -> None:
+        self.name: str = ""
         self.order_number: float = 0.0
         self.ship_to: str = ""
         self.date_shipped: str = ""
@@ -164,18 +164,19 @@ class Job:
             return
 
         job_data = data.get("job_data", {})
+        self.name = job_data.get("name", "")
         self.order_number = job_data.get("order_number", 0.0)
         self.ship_to = job_data.get("ship_to", "")
         self.date_shipped = job_data.get("date_shipped", "")
         self.date_expected = job_data.get("date_expected", "")
-        self.status = JobStatus(int(job_data.get("type", 0)))  # Just in case we cast, trust me
+        self.status = JobStatus(int(job_data.get("type", 0)))  # We cast just in case, trust me
         self.color = JobColor.get_color(self.status)
         self.price_calculator.load_settings(job_data.get("price_settings", {}))
 
         nests_data = data.get("nests", [])
 
         self.nests.clear()
-        for nest_data in nests_data.items():
+        for nest_data in nests_data:
             nest = Nest(nest_data, self.sheet_settings, self.laser_cut_inventory)
             self.add_nest(nest)
 
@@ -218,6 +219,7 @@ class Job:
 
         return {
             "job_data": {
+                "name": self.name,
                 "type": self.status.value,
                 "order_number": self.order_number,
                 "ship_to": self.ship_to,

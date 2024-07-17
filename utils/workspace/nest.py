@@ -66,14 +66,11 @@ class Nest:
         try:
             sheet_name = list(data["sheet"].keys())[0]
             self.sheet = Sheet(
-                sheet_name,
                 data["sheet"][sheet_name],
                 None,
             )
         except KeyError:  # Generated from load_nests.py
-            self.sheet = Sheet(
-                "nest_sheet",
-                {
+            self.sheet = Sheet({
                     "thickness": data.get("gauge", ""),
                     "material": data.get("material", ""),
                 },

@@ -102,13 +102,7 @@ class JobPreferences:
         except Exception:
             return True
 
-    def nest_widget_toolbox_toggled(
-        self,
-        nest: Nest,
-        setting_button: QPushButton,
-        laser_cut_button: QPushButton,
-        image_button: QPushButton,
-    ):
+    def nest_widget_toolbox_toggled(self, nest: Nest, setting_button: QPushButton, laser_cut_button: QPushButton, image_button: QPushButton):
         self.closed_toolboxes.setdefault(
             nest.get_name(),
             {
