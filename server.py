@@ -14,18 +14,21 @@ from urllib.parse import quote
 
 import coloredlogs
 import jinja2
+import msgspec
 import schedule
 import tornado.ioloop
 import tornado.web
 import tornado.websocket
 from ansi2html import Ansi2HTMLConverter
-import msgspec
 from markupsafe import Markup
-import markdown2
 from natsort import natsorted
 
-from utils.components_inventory.components_inventory import ComponentsInventory
 from utils.custom_print import CustomPrint, print_clients
+from utils.inventory.components_inventory import ComponentsInventory
+from utils.inventory.laser_cut_inventory import LaserCutInventory
+from utils.inventory.order import Order
+from utils.inventory.paint_inventory import PaintInventory
+from utils.inventory.sheets_inventory import SheetsInventory
 from utils.inventory_updater import (
     add_sheet,
     get_cutoff_sheets,
@@ -35,15 +38,11 @@ from utils.inventory_updater import (
     set_sheet_quantity,
     sheet_exists,
 )
-from utils.laser_cut_inventory.laser_cut_inventory import LaserCutInventory
-from utils.paint_inventory.paint_inventory import PaintInventory
 from utils.send_email import send, send_error_log
 from utils.sheet_report import generate_sheet_report
 from utils.sheet_settings.sheet_settings import SheetSettings
-from utils.sheets_inventory.sheets_inventory import SheetsInventory
-from utils.workspace.workspace_settings import WorkspaceSettings
 from utils.workspace.job import JobStatus
-from utils.inventory.order import Order
+from utils.workspace.workspace_settings import WorkspaceSettings
 
 # Store connected clients
 connected_clients: set[tornado.websocket.WebSocketHandler] = set()
@@ -480,7 +479,14 @@ class SheetQuantityHandler(tornado.web.RequestHandler):
         expected_arrival_time = self.get_argument("expected_arrival_time")
         notes = self.get_argument("notes")
 
-        order = Order({"expected_arrival_time": expected_arrival_time, "order_pending_quantity": order_pending_quantity, "order_pending_date": order_pending_date, "notes": notes})
+        order = Order(
+            {
+                "expected_arrival_time": expected_arrival_time,
+                "order_pending_quantity": order_pending_quantity,
+                "order_pending_date": order_pending_date,
+                "notes": notes,
+            }
+        )
 
         set_sheet_quantity(sheet_name, new_quantity, order, connected_clients)
 

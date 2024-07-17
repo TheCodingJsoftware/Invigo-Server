@@ -6,8 +6,8 @@ from utils.inventory.paint import Paint
 from utils.inventory.powder import Powder
 from utils.inventory.primer import Primer
 from utils.workspace.flow_tag import FlowTag
-from utils.workspace.workspace_settings import WorkspaceSettings
 from utils.workspace.tag import Tag
+from utils.workspace.workspace_settings import WorkspaceSettings
 
 if TYPE_CHECKING:
     from utils.workspace.job import Job

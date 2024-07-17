@@ -3,8 +3,8 @@ from datetime import datetime
 
 from utils.colors import Colors
 from utils.custom_print import CustomPrint
+from utils.inventory.sheets_inventory import Sheet, SheetsInventory
 from utils.send_email import send
-from utils.sheets_inventory.sheets_inventory import Sheet, SheetsInventory
 
 connected_clients = set()
 
@@ -16,7 +16,9 @@ def generate_sheet_report(clients) -> None:
     if datetime.now().strftime("%A") != "Monday":
         return
     sheets_low_in_quantity: int = 0
-    message_to_send: str = '<div class="tg-wrap"><table style="font-family: sans-serif; table-layout: fixed; width: 633px; border-collapse: collapse; text-align: center; vertical-align: middle; background-color: #222; color: #EAE9FC;"><colgroup><col style="width: 200px"><col style="width: 270px"><col style="width: 146px"><col style="width: 340px"></colgroup><thead><tr><th>Sheet Name</th><th>Order Status</th><th>Current Quantity</th><th>Description</th></tr></thead><tbody>'
+    message_to_send: str = (
+        '<div class="tg-wrap"><table style="font-family: sans-serif; table-layout: fixed; width: 633px; border-collapse: collapse; text-align: center; vertical-align: middle; background-color: #222; color: #EAE9FC;"><colgroup><col style="width: 200px"><col style="width: 270px"><col style="width: 146px"><col style="width: 340px"></colgroup><thead><tr><th>Sheet Name</th><th>Order Status</th><th>Current Quantity</th><th>Description</th></tr></thead><tbody>'
+    )
 
     for sheet in sheets_in_inventory.sheets:
         sheet_categories = [category.name for category in sheet.categories]
