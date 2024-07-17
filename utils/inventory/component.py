@@ -10,13 +10,12 @@ if TYPE_CHECKING:
 
 
 class Component(InventoryItem):
-    def __init__(self, name: str, data: dict, components_inventory):
-        super().__init__(name)
-
+    def __init__(self, data: dict, components_inventory):
+        super().__init__()
         self.components_inventory: ComponentsInventory = components_inventory
         self.quantity: float = 0.0
         self.category_quantities: dict[Category, float] = {}
-        self.part_number: str = self.name
+        self.part_number: str = ""
         self.part_name: str = ""
         self.price: float = 0.0
         self.use_exchange_rate: bool = False
@@ -113,10 +112,10 @@ class Component(InventoryItem):
 
     def to_dict(self) -> dict[str, dict]:
         return {
-            "quantity": round(self.quantity, 2),
-            "category_quantities": {category.name: self.category_quantities.get(category, 1.0) for category in self.categories},
-            "latest_change_quantity": self.latest_change_quantity,
+            "name": self.part_number,
             "part_name": self.part_name,
+            "quantity": round(self.quantity, 2),
+            "latest_change_quantity": self.latest_change_quantity,
             "price": round(self.price, 2),
             "latest_change_price": self.latest_change_price,
             "use_exchange_rate": self.use_exchange_rate,
@@ -128,4 +127,5 @@ class Component(InventoryItem):
             "yellow_quantity_limit": self.yellow_quantity_limit,
             "orders": [order.to_dict() for order in self.orders],
             "categories": [category.name for category in self.categories],
+            "category_quantities": {category.name: self.category_quantities.get(category, 1.0) for category in self.categories},
         }

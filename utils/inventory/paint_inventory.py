@@ -1,5 +1,5 @@
 import contextlib
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Union
 
 import msgspec
 
@@ -87,7 +87,7 @@ class PaintInventory(Inventory):
         return [powder.name for powder in self.powders]
 
     def get_powder_cost(self, laser_cut_part: LaserCutPart, mil_thickness: float) -> float:
-        with contextlib.suppress(ZeroDivisionError):
+        with contextlib.suppress(ZeroDivisionError, AttributeError):
             if laser_cut_part.uses_powder:
                 if powder := self.get_powder(laser_cut_part.powder_name):
                     estimated_sq_ft_coverage = (192.3 / (powder.gravity * mil_thickness)) * (laser_cut_part.powder_transfer_efficiency / 100)
@@ -107,29 +107,37 @@ class PaintInventory(Inventory):
             self.primers.clear()
             self.paints.clear()
             self.powders.clear()
-            for primer_name, primer_data in data["primers"].items():
-                self.add_primer(Primer(primer_name, primer_data, self))
-            for paint_name, paint_data in data["paints"].items():
-                self.add_paint(Paint(paint_name, paint_data, self))
-            for powder_name, powder_data in data["powders"].items():
-                self.add_powder(Powder(powder_name, powder_data, self))
+            for primer_data in data["primers"]:
+                try:
+                    primer = Primer(primer_data, self)
+                except AttributeError: # Old inventory format
+                    primer = Primer(data["primers"][primer_data], self)
+                    primer.name = primer_data
+                self.add_primer(primer)
+            for paint_data in data["paints"]:
+                try:
+                    paint = Paint(paint_data, self)
+                except AttributeError: # Old inventory format
+                    paint = Paint(data["paints"][paint_data], self)
+                    paint.name = paint_data
+                self.add_paint(paint)
+            for powder_data in data["powders"]:
+                try:
+                    powder = Powder(powder_data, self)
+                except AttributeError: # Old inventory format
+                    powder = Powder(data["powders"][powder_data], self)
+                    powder.name = powder_data
+                self.add_powder(powder)
         except KeyError:  # Inventory was just created
             return
         except msgspec.DecodeError:  # Inventory file got cleared
             self._reset_file()
             self.load_data()
 
-    def to_dict(self) -> dict:
-        data: dict[str, dict[str, object]] = {
+    def to_dict(self) -> dict[str, Union[dict[str, object], list[object]]]:
+        return {
             "categories": self.categories.to_dict(),
-            "primers": {},
-            "paints": {},
-            "powders": {},
+            "primers": [primer.to_dict() for primer in self.primers],
+            "paints": [paint.to_dict() for paint in self.paints],
+            "powders": [powder.to_dict() for powder in self.powders],
         }
-        for primer in self.primers:
-            data["primers"][primer.name] = primer.to_dict()
-        for paint in self.paints:
-            data["paints"][paint.name] = paint.to_dict()
-        for powder in self.powders:
-            data["powders"][powder.name] = powder.to_dict()
-        return data
