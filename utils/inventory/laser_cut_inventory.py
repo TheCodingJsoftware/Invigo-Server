@@ -1,7 +1,6 @@
-from typing import Union
-
 import msgspec
 from natsort import natsorted
+from typing import Union
 
 from utils.inventory.category import Category
 from utils.inventory.inventory import Inventory
@@ -11,11 +10,10 @@ from utils.workspace.workspace_settings import WorkspaceSettings
 
 
 class LaserCutInventory(Inventory):
-    def __init__(self, parent):
+    def __init__(self, paint_inventory: PaintInventory, workspace_settings: WorkspaceSettings):
         super().__init__("laser_cut_inventory")
-        self.parent = parent
-        self.paint_inventory: PaintInventory = self.parent.paint_inventory
-        self.workspace_settings: WorkspaceSettings = self.parent.workspace_settings
+        self.paint_inventory = paint_inventory
+        self.workspace_settings = workspace_settings
 
         self.laser_cut_parts: list[LaserCutPart] = []
         self.recut_parts: list[LaserCutPart] = []
@@ -108,7 +106,7 @@ class LaserCutInventory(Inventory):
             for laser_cut_part_data in data["laser_cut_parts"]:
                 try:
                     laser_cut_part = LaserCutPart(laser_cut_part_data, self)
-                except AttributeError:  # Old inventory format
+                except AttributeError: # Old inventory format
                     laser_cut_part = LaserCutPart(data["laser_cut_parts"][laser_cut_part_data], self)
                     laser_cut_part.name = laser_cut_part_data
                 self.add_laser_cut_part(laser_cut_part)
@@ -116,7 +114,7 @@ class LaserCutInventory(Inventory):
             for recut_part_data in data["recut_parts"]:
                 try:
                     recut_part = LaserCutPart(recut_part_data, self)
-                except AttributeError:  # Old inventory format
+                except AttributeError: # Old inventory format
                     recut_part = LaserCutPart(data["recut_parts"][recut_part_data], self)
                     recut_part.name = recut_part_data
                 self.add_recut_part(recut_part)

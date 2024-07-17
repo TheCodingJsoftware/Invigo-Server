@@ -7,21 +7,17 @@ from utils.inventory.paint import Paint
 from utils.inventory.powder import Powder
 from utils.inventory.primer import Primer
 from utils.workspace.flow_tag import FlowTag
-from utils.workspace.tag import Tag
 from utils.workspace.workspace_settings import WorkspaceSettings
+from utils.workspace.tag import Tag
 
 if TYPE_CHECKING:
     from utils.inventory.laser_cut_inventory import LaserCutInventory
-    from utils.inventory.nest import Nest
     from utils.inventory.paint_inventory import PaintInventory
+    from utils.inventory.nest import Nest
 
 
 class LaserCutPart(InventoryItem):
-    def __init__(
-        self,
-        data: dict[str, Union[str, float, int, dict[str, object], list[object]]],
-        laser_cut_inventory,
-    ):
+    def __init__(self, data: dict[str, Union[str, float, int, dict[str, object], list[object]]], laser_cut_inventory):
         super().__init__()
 
         self.laser_cut_inventory: LaserCutInventory = laser_cut_inventory
@@ -135,7 +131,7 @@ class LaserCutPart(InventoryItem):
 
     def load_data(self, data: dict[str, Union[str, int, float, bool]]):
         self.name = data.get("name", "")
-        self.quantity: int = data.get("quantity", 0)  # In the context of assemblies, quantity is unit_quantity
+        self.quantity: int = data.get("quantity", 0) # In the context of assemblies, quantity is unit_quantity
         self.red_quantity_limit: int = data.get("red_quantity_limit", 10)
         self.yellow_quantity_limit: int = data.get("yellow_quantity_limit", 20)
         self.category_quantities.clear()

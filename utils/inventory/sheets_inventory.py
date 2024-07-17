@@ -1,7 +1,6 @@
-from typing import Union
-
 import msgspec
 from natsort import natsorted
+from typing import Union
 
 from utils.inventory.category import Category
 from utils.inventory.inventory import Inventory
@@ -10,11 +9,10 @@ from utils.sheet_settings.sheet_settings import SheetSettings
 
 
 class SheetsInventory(Inventory):
-    def __init__(self, parent):
+    def __init__(self, sheet_settings: SheetSettings):
         super().__init__("sheets_inventory")
-        self.parent = parent
         self.sheets: list[Sheet] = []
-        self.sheet_settings: SheetSettings = self.parent.sheet_settings
+        self.sheet_settings = sheet_settings
         self.load_data()
 
     def get_all_sheets_material(self, sheets: list[Sheet] = None) -> list[str]:

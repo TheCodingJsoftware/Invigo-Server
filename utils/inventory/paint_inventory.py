@@ -1,5 +1,5 @@
 import contextlib
-from typing import TYPE_CHECKING, Union
+from typing import Union
 
 import msgspec
 
@@ -10,15 +10,11 @@ from utils.inventory.paint import Paint
 from utils.inventory.powder import Powder
 from utils.inventory.primer import Primer
 
-if TYPE_CHECKING:
-    from main import MainWindow
-
 
 class PaintInventory(Inventory):
-    def __init__(self, parent):
+    def __init__(self, components_inventory: ComponentsInventory):
         super().__init__("paint_inventory")
-        self.parent: MainWindow = parent
-        self.components_inventory: ComponentsInventory = self.parent.components_inventory
+        self.components_inventory = components_inventory
 
         self.primers: list[Primer] = []
         self.paints: list[Paint] = []
@@ -110,21 +106,21 @@ class PaintInventory(Inventory):
             for primer_data in data["primers"]:
                 try:
                     primer = Primer(primer_data, self)
-                except AttributeError:  # Old inventory format
+                except AttributeError: # Old inventory format
                     primer = Primer(data["primers"][primer_data], self)
                     primer.name = primer_data
                 self.add_primer(primer)
             for paint_data in data["paints"]:
                 try:
                     paint = Paint(paint_data, self)
-                except AttributeError:  # Old inventory format
+                except AttributeError: # Old inventory format
                     paint = Paint(data["paints"][paint_data], self)
                     paint.name = paint_data
                 self.add_paint(paint)
             for powder_data in data["powders"]:
                 try:
                     powder = Powder(powder_data, self)
-                except AttributeError:  # Old inventory format
+                except AttributeError: # Old inventory format
                     powder = Powder(data["powders"][powder_data], self)
                     powder.name = powder_data
                 self.add_powder(powder)

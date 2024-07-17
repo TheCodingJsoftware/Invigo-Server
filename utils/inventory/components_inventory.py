@@ -1,7 +1,6 @@
-from typing import Union
-
 import msgspec
 from natsort import natsorted
+from typing import Union
 
 from utils.inventory.category import Category
 from utils.inventory.component import Component
@@ -121,7 +120,7 @@ class ComponentsInventory(Inventory):
             for component_data in data["components"]:
                 try:
                     component = Component(component_data, self)
-                except AttributeError:  # Old inventory format
+                except AttributeError: # Old inventory format
                     component = Component(data["components"][component_data], self)
                     component.name = component_data
                 self.add_component(component)
