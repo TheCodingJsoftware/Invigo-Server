@@ -451,7 +451,7 @@ class SheetQuantityHandler(tornado.web.RequestHandler):
             self.set_status(404)
             self.write("Sheet not found")
 
-    def load_trusted_users(file_path: str):
+    def load_trusted_users(self, file_path: str):
         with open(file_path, 'r', encoding="utf-8") as file:
             return [line.strip() for line in file if line.strip()]
 
