@@ -464,6 +464,7 @@ class SheetQuantityHandler(tornado.web.RequestHandler):
                 "10.0.0.155",
                 "10.0.1.250",
                 "10.0.1.251",
+                "10.0.1.20",
             ]
             else env.get_template("sheet_template_read_only.html")
         )
