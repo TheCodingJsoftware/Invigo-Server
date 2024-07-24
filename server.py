@@ -443,7 +443,7 @@ class GetOrderNumberHandler(tornado.web.RequestHandler):
 
 
 class SheetQuantityHandler(tornado.web.RequestHandler):
-    def get(self, sheet_name):
+    def get(self, sheet_name: str):
         sheet_name = sheet_name.replace("_", " ")
         if sheet_exists(sheet_name=sheet_name):
             self.load_page(sheet_name)
@@ -451,24 +451,24 @@ class SheetQuantityHandler(tornado.web.RequestHandler):
             self.set_status(404)
             self.write("Sheet not found")
 
+    def load_trusted_users(file_path: str):
+        with open(file_path, 'r', encoding="utf-8") as file:
+            return [line.strip() for line in file if line.strip()]
+
     def load_page(self, sheet_name):
+
+        trusted_users = self.load_trusted_users('trusted_users.txt')
+
         quantity = get_sheet_quantity(sheet_name=sheet_name)
         pending_data = get_sheet_pending_data(sheet_name=sheet_name)
         template = (
             env.get_template("sheet_template.html")
-            if self.request.remote_ip
-            in [
-                "10.0.0.11",
-                "10.0.0.64",
-                "10.0.0.217",
-                "10.0.0.155",
-                "10.0.1.250",
-                "10.0.1.251",
-                "10.0.1.20",
-            ]
+            if self.request.remote_ip in trusted_users
             else env.get_template("sheet_template_read_only.html")
         )
+
         rendered_template = template.render(sheet_name=sheet_name, quantity=quantity, pending_data=pending_data)
+
         self.set_status(200)
         self.write(rendered_template)
 

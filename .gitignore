@@ -173,3 +173,4 @@ run.bat
 *.zip
 *.json
 *.log
+trusted_users.txt
