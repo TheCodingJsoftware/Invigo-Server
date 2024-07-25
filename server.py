@@ -250,13 +250,16 @@ class FetchDataHandler(tornado.web.RequestHandler):
                                                 item = sheet_data
                             except KeyError: # The part might not exist yet in older backups
                                 continue
-                            if item:
-                                dates.append(date)
-                                quantities.append(item["quantity"])
-                                try:
-                                    prices.append(item["price"])
-                                except KeyError:  # Sheets don't have prices
-                                    prices.append(None)
+                            try:
+                                if item:
+                                    dates.append(date)
+                                    quantities.append(item["quantity"])
+                                    try:
+                                        prices.append(item["price"])
+                                    except KeyError:  # Sheets don't have prices
+                                        prices.append(None)
+                            except UnboundLocalError:
+                                continue
 
         # Combine lists into a list of tuples and sort by date
         combined = list(zip(dates, quantities, prices))
