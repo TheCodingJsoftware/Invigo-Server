@@ -243,8 +243,12 @@ class FetchDataHandler(tornado.web.RequestHandler):
                                 elif inventory_type == "sheets_inventory":
                                     item = inventory["sheets"][item_name]
                                     for sheet_data in inventory["sheets"]:
-                                        if item_name == sheet_data["name"]:
-                                            item = sheet_data
+                                        try:
+                                            if item_name == sheet_data["name"]:
+                                                item = sheet_data
+                                        except KeyError: # Have to generate name
+                                            if item_name == f"{sheet_data['thickness']} {sheet_data['material']} {sheet_data['length']:.3f}x{sheet_data['width']:.3f}":
+                                                item = sheet_data
                             except KeyError: # The part might not exist yet in older backups
                                 continue
                             if item:
