@@ -241,7 +241,6 @@ class FetchDataHandler(tornado.web.RequestHandler):
                                         if item_name == laser_cut_part_data["name"]:
                                             item = laser_cut_part_data
                                 elif inventory_type == "sheets_inventory":
-                                    item = inventory["sheets"][item_name]
                                     for sheet_data in inventory["sheets"]:
                                         try:
                                             if item_name == sheet_data["name"]:
