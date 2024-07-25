@@ -228,7 +228,7 @@ class FetchDataHandler(tornado.web.RequestHandler):
                             except TypeError: # New inventory format
                                 if inventory_type == "components_inventory":
                                     for component_data in inventory["components"]:
-                                        if item == component_data["name"]:
+                                        if item == component_data["part_name"]:
                                             item = component_data
                                 elif inventory_type == "laser_cut_inventory":
                                     for laser_cut_part_data in inventory["laser_cut_parts"]:
