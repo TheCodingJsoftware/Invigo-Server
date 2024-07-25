@@ -258,7 +258,7 @@ class FetchDataHandler(tornado.web.RequestHandler):
                                         prices.append(item["price"])
                                     except KeyError:  # Sheets don't have prices
                                         prices.append(None)
-                            except UnboundLocalError:
+                            except UnboundLocalError: # Item has not been found
                                 continue
 
         # Combine lists into a list of tuples and sort by date
