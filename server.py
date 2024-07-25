@@ -190,13 +190,19 @@ class LogContentHandler(tornado.web.RequestHandler):
 
 class WayBackMachineHandler(tornado.web.RequestHandler):
     def get(self):
-        data = {}
+        data: dict[str, list[str]] = {}
         with open("data/components_inventory.json", "rb") as f:
-            data["components_inventory"] = list(msgspec.json.decode(f.read()).get("components", {}))
+            data["components_inventory"] = []
+            for component_data in msgspec.json.decode(f.read()):
+                data["components_inventory"].append(component_data["part_name"])
         with open("data/laser_cut_inventory.json", "rb") as f:
-            data["laser_cut_inventory"] = list(msgspec.json.decode(f.read()).get("laser_cut_parts", {}))
+            data["laser_cut_inventory"] = []
+            for laser_cut_part_data in msgspec.json.decode(f.read()):
+                data["laser_cut_inventory"].append(laser_cut_part_data["name"])
         with open("data/sheets_inventory.json", "rb") as f:
-            data["sheets_inventory"] = list(msgspec.json.decode(f.read()).get("sheets", {}))
+            data["sheets_inventory"] = []
+            for sheet_data in msgspec.json.decode(f.read()):
+                data["sheets_inventory"].append(sheet_data["name"])
 
         template = env.get_template("way_back_machine.html")
         rendered_template = template.render(inventory=data)
