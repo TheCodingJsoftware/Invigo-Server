@@ -218,14 +218,28 @@ class FetchDataHandler(tornado.web.RequestHandler):
                     with zipfile.ZipFile(file_path, "r") as zip_ref:
                         with zip_ref.open(f"{inventory_type}.json") as f:
                             inventory = msgspec.json.decode(f.read())
-                            try:
+                            try: # Old inventory format
                                 if inventory_type == "components_inventory":
                                     item = inventory["components"][item_name]
                                 elif inventory_type == "laser_cut_inventory":
                                     item = inventory["laser_cut_parts"][item_name]
                                 elif inventory_type == "sheets_inventory":
                                     item = inventory["sheets"][item_name]
-                            except KeyError:
+                            except TypeError: # New inventory format
+                                if inventory_type == "components_inventory":
+                                    for component_data in inventory["components"]:
+                                        if item == component_data["name"]:
+                                            item = component_data
+                                elif inventory_type == "laser_cut_inventory":
+                                    for laser_cut_part_data in inventory["laser_cut_parts"]:
+                                        if item == laser_cut_part_data["name"]:
+                                            item = laser_cut_part_data
+                                elif inventory_type == "sheets_inventory":
+                                    item = inventory["sheets"][item_name]
+                                    for sheet_data in inventory["sheets"]:
+                                        if item == sheet_data["name"]:
+                                            item = sheet_data
+                            except KeyError: # The part might not exist yet in older backups
                                 continue
                             if item:
                                 dates.append(date)
