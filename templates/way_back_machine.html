@@ -1,441 +1,215 @@
 <!DOCTYPE html>
 <html lang="en">
 
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Inventory</title>
-        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
-        <link href='https://fonts.googleapis.com/css?family=Varela Round'
-            rel='stylesheet'>
-        <script src="https://kit.fontawesome.com/b88fae5da2.js"
-            crossorigin="anonymous"></script>
-            <title>Way Back Machine</title>
-    </head>
-    <style>
-        @import url("https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css");
-        * {
-            -webkit-box-sizing: border-box;
-            -moz-box-sizing: border-box;
-            box-sizing: border-box;
-        }
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <meta name="google" content="notranslate">
+    <link href="https://cdn.jsdelivr.net/npm/beercss@3.6.0/dist/cdn/beer.min.css" rel="stylesheet">
+    <script type="module" src="https://cdn.jsdelivr.net/npm/beercss@3.6.0/dist/cdn/beer.min.js"></script>
+    <script type="module"
+        src="https://cdn.jsdelivr.net/npm/material-dynamic-colors@1.1.2/dist/cdn/material-dynamic-colors.min.js">
+    </script>
+    <link href="/static/theme.css" rel="stylesheet">
+    <link rel="icon" href="/static/icon.png">
+    <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=yes" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
+    <script src="https://kit.fontawesome.com/b88fae5da2.js" crossorigin="anonymous"></script>
+    <title>Way Back Machine</title>
+</head>
 
-
-        html {
-            scroll-behavior: smooth;
-            justify-content: center;
-            position: center;
-            text-align: center;
-            align-items: center;
-            margin: auto;
-            font-family: 'Varela Round';
-        }
-
-        details {
-            overflow-y: auto;
-            overflow-x: hidden;
-            text-align: center;
-            color: #fff;
-            font-size: 200%;
-            overflow: none;
-            background-color: #222222;
-            padding: 6px;
-            border-radius: 25px;
-            border: 1px solid #76797c;
-            transition: 0.3s ease-in-out;
-        }
-
-        details:hover {
-            border: 1px solid #37cb77;
-            box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.3), 0 6px 20px 0 rgba(0, 0, 0, 0.3);
-        }
-
-        details span {
-            display: inline-block;
-            margin-top: 1rem;
-        }
-
-        details summary::-webkit-details-marker {
-            display: none;
-        }
-
-        details[open]>summary:before {
-            transform: rotate(90deg);
-        }
-
-        details[open] summary {
-            opacity: 0.8;
-            animation-name: fadeOut;
-            animation-duration: 5000ms;
-        }
-
-        details>summary {
-            padding: 2px 6px;
-            font-weight: 700;
-            border: none;
-            cursor: pointer;
-            margin-left: auto;
-            margin-right: auto;
-        }
-
-        #group {
-            overflow-y: auto;
-            overflow-x: hidden;
-            background: rgb(32, 32, 32);
-            margin: 1%;
-            width: auto;
-        }
-
-        #group_name {
-            font-size: 32px;
-        }
-
-        .group_items {
-            overflow-y: auto;
-            text-align: center;
-            align-items: center;
-            padding: 10px;
-            width: 50%;
-            margin: auto;
-        }
-
-        body {
-            justify-content: center;
-            position: center;
-            align-items: center;
-            margin: auto;
-            height: 100%;
-            background-color: #1c1c1c;
-            text-decoration: none;
-            color: rgb(240, 244, 245);
-        }
-
-        button {
-            font-size: 16px;
-            color: #8C8C8C;
-            border: 1px solid transparent;
-            padding: 10px;
-            background-color: #1a1a1a;
-            border-radius: 10px;
-            transition: background-color 0.3s ease-in-out, color 0.3s ease-in-out, border-color 0.3s ease-in-out, border 0.3s ease-in-out, transform 0.3s ease-in-out;
-        }
-
-        button:hover {
-            color: rgb(240, 244, 245);
-            border: 1px solid #37cb77;
-            background-color: #37cb77;
-            cursor: pointer;
-        }
-        .fixed-button {
-            border: 1px solid #37cb77;
-            background-color: #37cb77;
-            color: rgb(240, 244, 245);
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            font-size: 16px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            cursor: pointer;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-        }
-        .container {
-            text-align: center;
-        }
-
-        .radio-group {
-            margin-bottom: 20px;
-            display: inline-grid;
-            text-align: left;
-            width: 380px;
-        }
-
-        .search-container {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            margin-top: 20px;
-            margin-bottom: 10px;
-        }
-
-        .search-container input[type="text"] {
-            width: 300px;
-            padding: 12px;
-            border-radius: 10px 0 0 10px;
-            outline: none;
-            color: #333;
-        }
-
-        .search-container button {
-            padding: 10px 15px;
-            background-color: #37cb77;
-            color: #f0f4f5;
-            border-radius: 0 10px 10px 0;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-        }
-
-        .autocomplete-suggestions {
-            border: 1px solid #8c8c8c;
-            border-radius: 10px;
-            background: #fff;
-            max-height: 750px;
-            overflow-y: auto;
-            z-index: 1000;
-            width: 50%;
-            margin: auto;
-        }
-
-        .autocomplete-suggestion {
-            padding: 10px;
-            cursor: pointer;
-            background-color: #1c1c1c;
-            color: #f0f4f5;
-        }
-
-        .autocomplete-suggestion:hover {
-            background-color: #37cb77;
-            color: #f0f4f5;
-        }
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            overflow: auto;
-            background-color: rgba(0, 0, 0, 0.5);
-            border-radius: 15px;
-        }
-
-        .modal-content {
-            background-color: black;
-            color: #f0f4f5;
-            margin: 15% auto;
-            padding: 20px;
-            border: 1px solid #888;
-            width: 80%;
-            max-width: 400px;
-            text-align: center;
-            border-radius: 15px;
-        }
-
-        .close {
-            color: #f0f4f5;
-            float: right;
-            font-size: 28px;
-            font-weight: bold;
-        }
-
-        .close:hover,
-        .close:focus {
-            color: #f0f4f5;
-            text-decoration: none;
-            cursor: pointer;
-        }
-    </style>
-    <body>
-        <div class="container">
-            <div class="search-container">
+<body class="dark">
+    <header class="fixed primary" style="height: 60px;">
+        <nav>
+            <button class="circle transparent" onclick="goToMainUrl()">
+                <i>arrow_back</i>
+            </button>
+            <h5 class="max">Way Back Machine</h5>
+        </nav>
+    </header>
+    <main class="padding">
+        <nav class="no-space center-align padding">
+            <div class="prefix field border left-round left-align" style="width: 80%;">
+                <i>search</i>
                 <input type="text" id="searchInput" placeholder="Search...">
-                <button id="fetchButton">Fetch</button>
             </div>
-            <div class="radio-group">
-                <div>
-                    <input type="radio" id="components" name="inventory" value="components_inventory" checked>
-                    <label for="components">Components</label>
-                </div>
-                <div>
-                    <input type="radio" id="laser_cut_parts" name="inventory" value="laser_cut_inventory">
-                    <label for="laser_cut_parts">Laser Cut Parts</label>
-                </div>
-                <div>
-                    <input type="radio" id="sheets_inventory" name="inventory" value="sheets_inventory">
-                    <label for="sheets_inventory">Sheets Inventory</label>
-                </div>
-            </div>
-            <div id="autocomplete-container" class="autocomplete-suggestions"></div>
-            <canvas id="myChart" width="400" height="200"></canvas>
+            <button class="large right-round" id="fetchButton">Fetch</button>
+        </nav>
+        <div class="field center-align">
+            <label class="radio">
+                <input type="radio" id="components" name="inventory" value="components_inventory" checked>
+                <span>Components Inventory</span>
+            </label>
+            <br>
+            <label class="radio">
+                <input type="radio" id="laser_cut_parts" name="inventory" value="laser_cut_inventory">
+                <span>Laser Cut Parts</span>
+            </label>
+            <br>
+            <label class="radio">
+                <input type="radio" id="sheets_inventory" name="inventory" value="sheets_inventory">
+                <span>Sheets Inventory</span>
+            </label>
         </div>
-
-        <button id="back_to_main" class="fixed-button"
-            onclick="goToMainUrl()"><i class="fa-solid fa-house"></i></button>
-
-    <!-- Error dialog -->
-    <div id="errorModal" class="modal">
-        <div class="modal-content">
-            <span class="close">&times;</span>
-            <p id="errorMessage">An error occurred while fetching data. Please try again.</p>
+        <article id="autocomplete-container" class="transparent"></article>
+        <canvas id="myChart" width="400" height="200"></canvas>
         </div>
-    </div>
-    </body>
-    <script>
-        function goToMainUrl() {
-            window.location.href = "/"
-        }
+        <!-- Error dialog -->
+        <div class="snackbar error" id="snackbar-error">An error occurred while fetching data. Please try again.</div>
+</body>
+<script>
+    function goToMainUrl() {
+        window.location.href = "/";
+    }
+    document.addEventListener('DOMContentLoaded', function () {
+        const searchInput = document.getElementById('searchInput');
+        const fetchButton = document.getElementById('fetchButton');
+        const autocompleteContainer = document.getElementById('autocomplete-container');
+        const radioButtons = document.querySelectorAll('input[name="inventory"]');
+        let myChart = null;
+        const inventoryData = {{inventory | tojson | safe}};
 
-        document.addEventListener('DOMContentLoaded', function () {
-            const searchInput = document.getElementById('searchInput');
-            const fetchButton = document.getElementById('fetchButton');
-            const autocompleteContainer = document.getElementById('autocomplete-container');
-            const radioButtons = document.querySelectorAll('input[name="inventory"]');
-            let myChart = null;
-            const inventoryData = {{ inventory | tojson | safe }};
-            const errorModal = document.getElementById('errorModal');
-            const errorMessage = document.getElementById('errorMessage');
-            const closeModal = document.getElementsByClassName('close')[0];
+        searchInput.addEventListener('input', function () {
+            const query = searchInput.value.toLowerCase();
+            const selectedInventory = document.querySelector('input[name="inventory"]:checked').value;
+            const suggestions = getSuggestions(query, inventoryData[selectedInventory]);
+            displaySuggestions(suggestions);
+        });
 
-            searchInput.addEventListener('input', function () {
-                const query = searchInput.value.toLowerCase();
-                const selectedInventory = document.querySelector('input[name="inventory"]:checked').value;
-                const suggestions = getSuggestions(query, inventoryData[selectedInventory]);
-                displaySuggestions(suggestions);
-            });
+        fetchButton.addEventListener('click', function () {
+            const selectedInventory = document.querySelector('input[name="inventory"]:checked').value;
+            const selectedItem = searchInput.value;
+            updateUrl(selectedInventory, selectedItem);
+            fetchData(selectedInventory, selectedItem);
+        });
 
-            fetchButton.addEventListener('click', function () {
-                const selectedInventory = document.querySelector('input[name="inventory"]:checked').value;
+        radioButtons.forEach(radio => {
+            radio.addEventListener('change', function () {
+                const selectedInventory = document.querySelector(
+                    'input[name="inventory"]:checked').value;
+                searchInput.value = "";
                 const selectedItem = searchInput.value;
                 updateUrl(selectedInventory, selectedItem);
-                fetchData(selectedInventory, selectedItem);
-            });
-
-            radioButtons.forEach(radio => {
-                radio.addEventListener('change', function () {
-                    const selectedInventory = document.querySelector('input[name="inventory"]:checked').value;
-                    searchInput.value = "";
-                    const selectedItem = searchInput.value;
-                    updateUrl(selectedInventory, selectedItem);
-                });
-            });
-
-            function getSuggestions(query, inventory) {
-                if (!query) {
-                    return [];
-                }
-                return inventory.filter(name => name.toLowerCase().includes(query));
-            }
-
-            function displaySuggestions(suggestions) {
-                autocompleteContainer.innerHTML = '';
-                suggestions.forEach(suggestion => {
-                    const div = document.createElement('div');
-                    div.className = 'autocomplete-suggestion';
-                    div.textContent = suggestion;
-                    div.addEventListener('click', function () {
-                        searchInput.value = suggestion;
-                        autocompleteContainer.innerHTML = '';
-                        const selectedInventory = document.querySelector('input[name="inventory"]:checked').value;
-                        updateUrl(selectedInventory, suggestion);
-                        fetchData(selectedInventory, suggestion);
-                    });
-                    autocompleteContainer.appendChild(div);
-                });
-            }
-
-            function fetchData(inventory, item) {
-                fetch(`/fetch_data?inventory=${inventory}&item=${item}`)
-                    .then(response => {
-                        if (!response.ok) {
-                            throw new Error('Network response was not ok');
-                        }
-                        return response.json();
-                    })
-                    .then(data => {
-                        console.log(data);
-                        drawChart(data);
-                    })
-                    .catch(error => {
-                        console.error('Error fetching data:', error);
-                        showErrorModal('An error occurred while fetching data. Please try again.');
-                    });
-            }
-
-            function updateUrl(inventory, item) {
-                const url = new URL(window.location);
-                url.searchParams.set('inventory', inventory);
-                if (item) {
-                    url.searchParams.set('item', item);
-                } else {
-                    url.searchParams.delete('item');
-                }
-                window.history.pushState({}, '', url);
-            }
-
-            function drawChart(data) {
-                const ctx = document.getElementById('myChart').getContext('2d');
-                if (myChart) {
-                    myChart.destroy();
-                }
-                myChart = new Chart(ctx, {
-                    type: 'line',
-                    data: {
-                        labels: data.dates,
-                        datasets: [{
-                            label: 'Quantity',
-                            data: data.quantities,
-                            borderColor: 'rgba(75, 192, 192, 1)',
-                            borderWidth: 1
-                        }, {
-                            label: 'Price',
-                            data: data.prices,
-                            borderColor: 'rgba(153, 102, 255, 1)',
-                            borderWidth: 1
-                        }]
-                    },
-                    options: {
-                        scales: {
-                            x: {
-                                type: 'time',
-                                time: {
-                                    unit: 'day'
-                                }
-                            },
-                            y: {
-                                beginAtZero: true
-                            }
-                        }
-                    }
-                });
-            }
-
-            function showErrorModal(message) {
-                errorMessage.textContent = message;
-                errorModal.style.display = "block";
-            }
-
-            closeModal.onclick = function () {
-                errorModal.style.display = "none";
-            }
-
-            window.onclick = function (event) {
-                if (event.target == errorModal) {
-                    errorModal.style.display = "none";
-                }
-            }
-
-            // Check if there are query parameters in the URL on page load and fetch data if they exist
-            window.addEventListener('load', function () {
-                const urlParams = new URLSearchParams(window.location.search);
-                const inventory = urlParams.get('inventory') || 'components_inventory';
-                const item = urlParams.get('item');
-
-                document.querySelector(`input[name="inventory"][value="${inventory}"]`).checked = true;
-
-                if (item) {
-                    searchInput.value = item;
-                    fetchData(inventory, item);
-                } else {
-                    updateUrl(inventory, '');
-                }
             });
         });
-    </script>
+
+        function getSuggestions(query, inventory) {
+            if (!query) {
+                return [];
+            }
+            return inventory.filter(name => name.toLowerCase().includes(query));
+        }
+
+        function displaySuggestions(suggestions) {
+            autocompleteContainer.innerHTML = '';
+            suggestions.forEach(suggestion => {
+                const divider = document.createElement('div');
+                divider.className = 'divider';
+                const div = document.createElement('a');
+                div.className = 'row wave';
+                div.textContent = suggestion;
+                div.addEventListener('click', function () {
+                    searchInput.value = suggestion;
+                    autocompleteContainer.innerHTML = '';
+                    const selectedInventory = document.querySelector(
+                        'input[name="inventory"]:checked').value;
+                    updateUrl(selectedInventory, suggestion);
+                    fetchData(selectedInventory, suggestion);
+                });
+                autocompleteContainer.appendChild(div);
+                autocompleteContainer.appendChild(divider);
+            });
+        }
+
+        function fetchData(inventory, item) {
+            fetch(`/fetch_data?inventory=${inventory}&item=${item}`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log(data);
+                    drawChart(data);
+                })
+                .catch(error => {
+                    console.error('Error fetching data:', error);
+                    showErrorModal();
+                });
+        }
+
+        function updateUrl(inventory, item) {
+            const url = new URL(window.location);
+            url.searchParams.set('inventory', inventory);
+            if (item) {
+                url.searchParams.set('item', item);
+            } else {
+                url.searchParams.delete('item');
+            }
+            window.history.pushState({}, '', url);
+        }
+
+        function drawChart(data) {
+            const ctx = document.getElementById('myChart').getContext('2d');
+            if (myChart) {
+                myChart.destroy();
+            }
+            myChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: data.dates,
+                    datasets: [{
+                        label: 'Quantity',
+                        data: data.quantities,
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        borderWidth: 1
+                    }, {
+                        label: 'Price',
+                        data: data.prices,
+                        borderColor: 'rgba(153, 102, 255, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    scales: {
+                        x: {
+                            type: 'time',
+                            time: {
+                                unit: 'day'
+                            }
+                        },
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+
+        function showErrorModal() {
+            ui("#snackbar-error");
+        }
+
+
+        // Check if there are query parameters in the URL on page load and fetch data if they exist
+        window.addEventListener('load', function () {
+            const urlParams = new URLSearchParams(window.location.search);
+            const inventory = urlParams.get('inventory') || 'components_inventory';
+            const item = urlParams.get('item');
+
+            document.querySelector(`input[name="inventory"][value="${inventory}"]`).checked = true;
+
+            if (item) {
+                searchInput.value = item;
+                fetchData(inventory, item);
+            } else {
+                updateUrl(inventory, '');
+            }
+        });
+    });
+</script>
 
 </html>

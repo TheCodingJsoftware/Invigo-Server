@@ -637,10 +637,16 @@ async def gather_job_directories_info(base_directory: str, specific_dirs: list[s
                     try:
                         with open(job_data_path, "rb") as f:
                             job_data = msgspec.json.decode(f.read())
+
+                        modified_timestamp = os.path.getmtime(job_data_path)
+                        formatted_modified_date = datetime.fromtimestamp(modified_timestamp).strftime('%Y-%m-%d %I:%M:%S %p')
+
                         dir_info = {
                             "name": dirname,
-                            "modified_date": os.path.getmtime(job_data_path),
+                            "modified_date": modified_timestamp,
+                            "formated_modified_date": formatted_modified_date,
                             "type": job_data["job_data"]["type"],
+                            "dir": root.replace("\\", '/'),
                             "order_number": job_data["job_data"]["order_number"],
                             "ship_to": job_data["job_data"]["ship_to"],
                             "date_shipped": job_data["job_data"]["date_shipped"],
@@ -671,6 +677,28 @@ class GetJobsHandler(tornado.web.RequestHandler):
             ],
         )
         self.write(msgspec.json.encode(directories_info))
+
+
+class JobPrintoutsHandler(tornado.web.RequestHandler):
+    async def get(self):
+        specific_dirs = [
+            "planning",
+            "template",
+            "quoting",
+            "quoted",
+            "workspace",
+            "archive",
+        ]
+        directories_info = await gather_job_directories_info(
+            base_directory="saved_jobs",
+            specific_dirs=specific_dirs,
+        )
+        template = env.get_template("job_printouts.html")
+        rendered_template = template.render(
+            directories_info=directories_info,
+            specific_dirs=specific_dirs,
+        )
+        self.write(rendered_template)
 
 
 class LoadJobHandler(tornado.web.RequestHandler):
@@ -1265,6 +1293,7 @@ if __name__ == "__main__":
             (r"/load_job/(.*)", LoadJobHandler),
             (r"/update_job_settings", UpdateJobSettingsHandler),
             (r"/delete_job/(.*)", DeleteJobHandler),
+            (r"/jobs", JobPrintoutsHandler),
             # NOTE These will be removed in favor of Job Handelers
             (r"/upload_quote", UploadQuoteHandler),
             (r"/update_quote_settings", UpdateQuoteSettingsHandler),

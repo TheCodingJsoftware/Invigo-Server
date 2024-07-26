@@ -12,17 +12,19 @@
         src="https://cdn.jsdelivr.net/npm/material-dynamic-colors@1.1.2/dist/cdn/material-dynamic-colors.min.js">
     </script>
     <link href="/static/theme.css" rel="stylesheet">
+    <link rel="icon" href="/static/icon.png">
     <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=yes" />
     <script src="https://www.kryogenix.org/code/browser/sorttable/sorttable.js"></script>
     <title>Add Cutoff Sheet</title>
 </head>
 
 <body class="dark">
-    <header class="fixed primary">
+    <header class="fixed primary" style="height: 60px;">
         <nav>
-            <h5 class="max center-align small">
-                Add Cutoff Sheet
-            </h5>
+            <button class="circle transparent" onclick="goToMainUrl()">
+                <i>arrow_back</i>
+            </button>
+            <h5 class="max">Add Cutoff Sheet</h5>
         </nav>
     </header>
     <main class="padding">
@@ -34,7 +36,7 @@
                         <input type="number" step="0.001" id="length" name="length" oninput="validateForm()">
                         <label>Length</label>
                     </div>
-                    <span>X</span>
+                    <i>close</i>
                     <div class="max field label border">
                         <input type="number" step="0.001" id="width" name="width" oninput="validateForm()">
                         <label>Width</label>
@@ -67,7 +69,9 @@
                     <input type="number" step="0.001" id="quantity" name="quantity" oninput="validateForm()" value="1">
                     <label>Quantity</label>
                 </div>
-                <button class="small-round max" type="submit" id="addButton" disabled><i>add</i>Add Cutoff</button>
+                <div class="center-align">
+                    <button class="small-round" type="submit" id="addButton" disabled><i>add</i>Add Cutoff</button>
+                </div>
             </form>
             <div style="margin-top: 50px;"></div>
             <h4 class="center-align">Current Cutoff Sheets</h4>
@@ -83,20 +87,14 @@
                 <tbody>
                     {% for sheet in cutoff_sheets %}
                     <tr>
-                        <td class="min">{{ sheet.thickness }}</td>
-                        <td class="min">{{ sheet.material }}</td>
-                        <td class="min">{{ sheet.get_sheet_dimension() }}</td>
+                        <td class="min"><p style="font-size: 9pt;">{{ sheet.thickness }}</p></td>
+                        <td class="min"><p style="font-size: 9pt;">{{ sheet.material }}</p></td>
+                        <td class="min"><p style="font-size: 9pt;">{{ sheet.get_sheet_dimension() }}</p></td>
                         <td class="min">
                             <form action="/delete_cutoff_sheet" method="post">
                                 <input type="hidden" name="sheet_id" value="{{ sheet.get_name() }}">
-                                <button class="border circle small error" type="submit">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"
-                                            fill="currentColor" class="bi bi-trash" viewBox="0 0 16 16">
-                                            <path
-                                                d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z" />
-                                            <path
-                                                d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z" />
-                                        </svg>
+                                <button class="square round error" type="submit">
+                                    <i>delete_forever</i>
                                 </button>
                             </form>
                         </td>
@@ -108,6 +106,9 @@
     </main>
 </body>
 <script>
+    function goToMainUrl() {
+        window.location.href = "/";
+    }
     function validateForm() {
         var length = document.getElementById("length").value;
         var width = document.getElementById("width").value;

@@ -12,8 +12,7 @@
     <script type="module"
         src="https://cdn.jsdelivr.net/npm/material-dynamic-colors@1.1.2/dist/cdn/material-dynamic-colors.min.js">
     </script>
-    <script
-    src="https://www.kryogenix.org/code/browser/sorttable/sorttable.js"></script>
+    <script src="https://www.kryogenix.org/code/browser/sorttable/sorttable.js"></script>
     <link href="/static/theme.css" rel="stylesheet">
     <link rel="icon" href="/static/icon.png">
     <title>{{inventory_type}} - {{category}}</title>
@@ -22,11 +21,12 @@
 </head>
 
 <body class="dark" style="overflow-y: hidden;">
-    <header class="fixed" style="height: 60px;">
+    <header class="fixed primary" style="height: 60px;">
         <nav>
             <button class="circle transparent" onclick="goToMainUrl()">
                 <i>arrow_back</i>
             </button>
+            <h5 class="max">{{inventory_type}} - {{category}}</h5>
         </nav>
     </header>
     <main stlye="padding-top: 60px;">

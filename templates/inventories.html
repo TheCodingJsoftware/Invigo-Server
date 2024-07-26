@@ -1,250 +1,65 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Inventory</title>
-        <link href='https://fonts.googleapis.com/css?family=Varela Round'
-            rel='stylesheet'>
-        <script src="https://kit.fontawesome.com/b88fae5da2.js"
-            crossorigin="anonymous"></script>
-    </head>
 
-    <style>
-        @import url("https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css");
-        * {
-            -webkit-box-sizing: border-box;
-            -moz-box-sizing: border-box;
-            box-sizing: border-box;
-        }
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <meta name="google" content="notranslate">
+    <link href="https://cdn.jsdelivr.net/npm/beercss@3.6.0/dist/cdn/beer.min.css" rel="stylesheet">
+    <script type="module" src="https://cdn.jsdelivr.net/npm/beercss@3.6.0/dist/cdn/beer.min.js"></script>
+    <script type="module"
+        src="https://cdn.jsdelivr.net/npm/material-dynamic-colors@1.1.2/dist/cdn/material-dynamic-colors.min.js">
+    </script>
+    <link href="/static/theme.css" rel="stylesheet">
+    <link rel="icon" href="/static/icon.png">
+    <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=yes" />
+    <script src="https://www.kryogenix.org/code/browser/sorttable/sorttable.js"></script>
+    <title>Inventory</title>
+</head>
 
+<style>
+.items{
+    display: grid;
+    gap: 10px;
+    grid-template-columns: repeat(auto-fit, minmax(20em, 0px));
+}
+</style>
 
-        html {
-            scroll-behavior: smooth;
-            justify-content: center;
-            position: center;
-            text-align: center;
-            align-items: center;
-            margin: auto;
-            font-family: 'Varela Round';
-        }
-
-        details {
-            overflow-y: auto;
-            overflow-x: hidden;
-            text-align: center;
-            color: #fff;
-            font-size: 200%;
-            overflow: none;
-            background-color: #222222;
-            padding: 6px;
-            border-radius: 25px;
-            border: 1px solid #76797c;
-            transition: 0.3s ease-in-out;
-        }
-
-        details:hover {
-            border: 1px solid #8d48aa;
-            box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.3), 0 6px 20px 0 rgba(0, 0, 0, 0.3);
-        }
-
-        details span {
-            display: inline-block;
-            margin-top: 1rem;
-        }
-
-        details summary::-webkit-details-marker {
-            display: none;
-        }
-
-        details[open]>summary:before {
-            transform: rotate(90deg);
-        }
-
-        details[open] summary {
-            opacity: 0.8;
-            animation-name: fadeOut;
-            animation-duration: 5000ms;
-        }
-
-        details>summary {
-            padding: 2px 6px;
-            font-weight: 700;
-            border: none;
-            cursor: pointer;
-            margin-left: auto;
-            margin-right: auto;
-        }
-
-        #group {
-            overflow-y: auto;
-            overflow-x: hidden;
-            background: rgb(32, 32, 32);
-            margin: 1%;
-            width: auto;
-        }
-
-        #group_name {
-            font-size: 32px;
-        }
-
-        .group_items {
-            overflow-y: auto;
-            text-align: center;
-            align-items: center;
-            padding: 10px;
-            width: 50%;
-            margin: auto;
-        }
-
-        body {
-            justify-content: center;
-            position: center;
-            align-items: center;
-            margin: auto;
-            height: 100%;
-            background-color: #1c1c1c;
-            text-decoration: none;
-            color: rgb(240, 244, 245);
-        }
-
-        button {
-            font-size: 16px;
-            color: #8C8C8C;
-            border: 1px solid transparent;
-            padding: 10px;
-            margin-top: 10px;
-            background-color: #1a1a1a;
-            border-radius: 10px;
-            transition: background-color 0.3s ease-in-out, color 0.3s ease-in-out, border-color 0.3s ease-in-out, border 0.3s ease-in-out, transform 0.3s ease-in-out;
-        }
-
-        button:hover {
-            color: rgb(240, 244, 245);
-            border: 1px solid #8d48aa;
-            background-color: #8d48aa;
-            cursor: pointer;
-        }
-        .fixed-button {
-            border: 1px solid #8d48aa;
-            background-color: #8d48aa;
-            color: rgb(240, 244, 245);
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            font-size: 16px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            cursor: pointer;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-        }
-    </style>
-    <body>
+<body class="dark">
+    <header class="fixed primary">
+        <nav>
+            <button class="circle transparent" onclick="goToMainUrl()">
+                <i>arrow_back</i>
+            </button>
+            <h5 class="max">
+                Inventory
+            </h5>
+        </nav>
+    </header>
+    <main class="padding">
         {% for inventory, category_data in data.items() %}
-        <details id="group" open>
-            <summary id="group_name">
+        <article>
+            <h5 class="max center-align">
                 {{ inventory }}
-            </summary>
-            <div class="group_items">
+            </h5>
+            <br>
+            <div class="items center-align">
                 {% for category_name, category_url in category_data.items() %}
-                <a href="{{ category_url }}" style="text-decoration: none;">
-                    <button>{{ category_name }}</button>
+                <a href="{{ category_url }}" class="chip fill">
+                    {{ category_name }}
                 </a>
                 {% endfor %}
             </div>
-        </details>
+        </article>
         {% endfor %}
-        <button id="back_to_main" class="fixed-button"
-            onclick="goToMainUrl()"><i class="fa-solid fa-house"></i></button>
-    </body>
+    </main>
+</body>
 
-    <script>
-    function goToMainUrl(){
+<script>
+    function goToMainUrl() {
         window.location.href = "/"
     }
-    class Accordion {
-        constructor(el) {
-            this.el = el;
-            this.summary = el.querySelector('summary');
-            this.content = el.querySelector('.group_items');
-
-            this.animation = null;
-            this.isClosing = false;
-            this.isExpanding = false;
-            this.summary.addEventListener('click', (e) => this.onClick(e));
-        }
-
-        onClick(e) {
-            e.preventDefault();
-            this.el.style.overflow = 'hidden';
-            if (this.isClosing || !this.el.open) {
-                this.open();
-            } else if (this.isExpanding || this.el.open) {
-                this.shrink();
-            }
-        }
-
-        shrink() {
-            this.isClosing = true;
-
-            const startHeight = `${this.el.offsetHeight}px`;
-            const endHeight = `${this.summary.offsetHeight+15}px`;
-
-            if (this.animation) {
-                this.animation.cancel();
-            }
-
-            this.animation = this.el.animate({
-                height: [startHeight, endHeight]
-            }, {
-                duration: 400,
-                easing: 'ease-out'
-            });
-
-            this.animation.onfinish = () => this.onAnimationFinish(false);
-            this.animation.oncancel = () => this.isClosing = false;
-        }
-
-        open() {
-            this.el.style.height = `${this.el.offsetHeight+10}px`;
-            this.el.open = true;
-            window.requestAnimationFrame(() => this.expand());
-        }
-
-        expand() {
-            this.isExpanding = true;
-            const startHeight = `${this.el.offsetHeight}px`;
-            const endHeight = `${this.summary.offsetHeight + this.content.offsetHeight+10}px`;
-
-            if (this.animation) {
-                this.animation.cancel();
-            }
-
-            this.animation = this.el.animate({
-                height: [startHeight, endHeight]
-            }, {
-                duration: 400,
-                easing: 'ease-out'
-            });
-            this.animation.onfinish = () => this.onAnimationFinish(true);
-            this.animation.oncancel = () => this.isExpanding = false;
-        }
-
-        onAnimationFinish(open) {
-            this.el.open = open;
-            this.animation = null;
-            this.isClosing = false;
-            this.isExpanding = false;
-            this.el.style.height = this.el.style.overflow = '';
-        }
-    }
-
-    document.querySelectorAll('details').forEach((el) => {
-        new Accordion(el);
-    });
 </script>
+
 </html>

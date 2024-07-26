@@ -1,126 +1,122 @@
 <!DOCTYPE html>
 <html>
-    <head>
-    <meta name="viewport"
-        content="width=device-width,initial-scale=1,user-scalable=yes" />
-    <script
-        src="https://www.kryogenix.org/code/browser/sorttable/sorttable.js"></script>
-    <script
-    src="https://cdn.jsdelivr.net/gh/davidshimjs/qrcodejs/qrcode.min.js"></script>
-    <link href='https://fonts.googleapis.com/css?family=Varela Round'
-        rel='stylesheet'>
-    <script src="https://kit.fontawesome.com/b88fae5da2.js"
-        crossorigin="anonymous"></script>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <meta name="google" content="notranslate">
+    <link href="https://cdn.jsdelivr.net/npm/beercss@3.6.0/dist/cdn/beer.min.css" rel="stylesheet">
+    <script type="module" src="https://cdn.jsdelivr.net/npm/beercss@3.6.0/dist/cdn/beer.min.js"></script>
+    <script type="module"
+        src="https://cdn.jsdelivr.net/npm/material-dynamic-colors@1.1.2/dist/cdn/material-dynamic-colors.min.js">
+    </script>
+    <script src="https://www.kryogenix.org/code/browser/sorttable/sorttable.js"></script>
+    <link href="/static/theme.css" rel="stylesheet">
+    <link rel="icon" href="/static/icon.png">
+    <script src="https://cdn.jsdelivr.net/gh/davidshimjs/qrcodejs/qrcode.min.js"></script>
+    <script src="https://kit.fontawesome.com/b88fae5da2.js" crossorigin="anonymous"></script>
     <title>View QR Codes</title>
 
-    </head>
+</head>
 
-    <style>
-        @import url("https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css");
-        html {
-            align-items: center;
-            text-align: center;
-            transition: background-color 0.3s ease-in-out, color 0.3s ease-in-out, border-color 0.3s ease-in-out, border 0.3s ease-in-out, transform 0.3s ease-in-out;
-            font-family: 'Varela Round';
+<style>
+    summary{
+        font-size: 22pt;
+        padding: 0.2em;
+    }
+    .qr-container{
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(25em, 0));
+    }
+    .qr-code {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        cursor: pointer;
+        padding-top: 5em;
+    }
+    .qr-code img {
+        display: block; /* Ensures the image behaves as a block-level element */
+    }
+    .qr-code-add-cut-off{
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        cursor: pointer;
+    }
+    .qr-code-add-cut-off img{
+        width: 50%;
+    }
+    .qr-container > * {
+        border: 1px dashed black; /* or any other color you prefer */
+    }
+    .fixed-button {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+    }
+
+    @media print {
+        header {
+            display: none;
         }
 
-        .content {
-            display: inline-block;
-            text-align: center;
+        details:not([open]) {
+            display: none;
         }
 
         summary {
-            font-size: 20px;
-            text-align: center;
-            padding-bottom: 5px;
+            display: none;
         }
+        .qr-code-add-cut-off img{
+            width: 100%;
+        }
+    }
+    .page-break {
+        page-break-after: always;
+    }
+</style>
 
-        p {
-            font-size: 26px;
-            margin-bottom: 5px;
-            text-align: center;
-            font-size: 16px;
-        }
-
-        .qr-container {
-            display: grid;
-            grid-template-columns: auto auto;
-            flex-wrap: wrap;
-            justify-content: space-around;
-        }
-
-        .qr-item {
-            break-inside: avoid;
-            flex: 0 1 48%;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            text-align: center;
-            margin-bottom: 20px;
-        }
-
-        .qr-item img {
-            border: 1px solid transparent;
-            max-width: 100%;
-            height: auto;
-        }
-
-        .fixed-button {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            font-size: 16px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            cursor: pointer;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-        }
-
-        @media print {
-            .fixed-button{
-                display: none;
-            }
-            details:not([open]) {
-                display: none;
-            }
-            summary{
-                display: none;
-            }
-        }
-    </style>
-    <body>
+<body class="dark">
+    <header class="fixed primary" style="height: 60px;">
+        <nav>
+            <button class="circle transparent" onclick="goToMainUrl()">
+                <i>arrow_back</i>
+            </button>
+            <h5 class="max">Sheet QR Codes</h5>
+        </nav>
+    </header>
+    <main>
         {% for category, sheets in sheet_data.items() %}
-        <details class="category">
+        <details class="center-align">
             <summary>{{ category }}</summary>
-            <div class="qr-container">
+            <div class="qr-container center-align">
                 {% for sheet in sheets %}
-                <div class="qr-item" data-name="{{ sheet }}">
+                <div class="qr-item center-align" data-name="{{ sheet }}">
                     <div class="qr-code"></div>
-                    <p>{{ sheet }}</p>
+                    <p class="center-align">{{ sheet }}</p>
                 </div>
                 {% endfor %}
             </div>
         </details>
         {% endfor %}
-        <details class="category">
+        <div class="page-break"></div>
+        <details class="center-align">
             <summary>Add Cut Off</summary>
-            <div class="qr-container">
-                <div class="qr-item" data-name="add_cutoff_sheet">
-                    <div class="qr-code"></div>
-                    <p style="font-size: 56px;">Add Remnant to Database</p>
+            <div class="center-align center-align">
+                <div class="qr-item center-align" data-name="add_cutoff_sheet">
+                    <div class="qr-code-add-cut-off" style="width: 100%;"></div>
+                    <br>
+                    <p class="center-align" style="font-size: 56px;">Add Remnant to Database</p>
                 </div>
             </div>
         </details>
-        <button id="back_to_main" class="fixed-button"
-            onclick="goToMainUrl()"><i class="fa-solid fa-house"></i></button>
-    </body>
+    </main>
+</body>
 
-    <script>
-    function goToMainUrl(){
+<script>
+    function goToMainUrl() {
         window.location.href = "/"
     }
     document.addEventListener('DOMContentLoaded', function () {
@@ -129,7 +125,7 @@
             const name = item.getAttribute('data-name');
             if (name == "add_cutoff_sheet") {
                 const encodedUrl = encodeURI(baseUrl + name.replace(/ /g, "_"));
-                const qrDiv = item.querySelector('.qr-code');
+                const qrDiv = item.querySelector('.qr-code-add-cut-off');
                 new QRCode(qrDiv, {
                     text: encodedUrl,
                     width: 2048,
@@ -159,9 +155,17 @@
                     window.open(encodedUrl, '_blank');
                 });
             }
-
-
         });
+    });
+
+    window.addEventListener('beforeprint', function () {
+        document.body.classList.remove('dark');
+        document.body.classList.add('light');
+    });
+
+    window.addEventListener('afterprint', function () {
+        document.body.classList.remove('light');
+        document.body.classList.add('dark');
     });
 </script>
 
