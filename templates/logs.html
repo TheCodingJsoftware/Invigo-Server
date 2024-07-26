@@ -18,7 +18,7 @@
     <title>Logs</title>
 </head>
 <style>
-    .log_content{
+    .log_content {
         padding: 5px;
         overflow-y: scroll;
         overflow-x: scroll;
@@ -29,29 +29,36 @@
         background-color: #000;
         border-radius: 10px;
     }
-    #log_content{
+
+    #log_content {
         font-size: 8pt;
         text-align: left;
         font-family: "Fira Code";
     }
 </style>
+
 <body class="dark">
     <header class="fixed primary">
         <nav>
             <button class="circle transparent" onclick="goToMainUrl()">
                 <i>arrow_back</i>
             </button>
-            <h5 class="max">
-                Logs
-            </h5>
+            <h5 class="max">Logs</h5>
         </nav>
     </header>
-    <main class="padding">
-    {% if error_logs %}
-        <article>
-            <h5 class="max center-align">
-                Error Logs
-            </h5>
+    <main>
+        <div class="tabs">
+            <a data-ui="#error_logs" class="active">
+                <i>error</i>
+                <span>Error Logs</span>
+            </a>
+            <a data-ui="#server_logs">
+                <i>dns</i>
+                <span>Server Logs</span>
+            </a>
+        </div>
+
+        <div class="page padding active" id="error_logs">
             {% for error_log_file_name in error_logs %}
             <div class="row">
                 <button class="max border small-round" onclick="fetchLogContent('{{ error_log_file_name }}')">{{ error_log_file_name }}</button>
@@ -60,14 +67,9 @@
                 </button>
             </div>
             {% endfor %}
-        </article>
-    {% endif %}
-    <br>
-    <article>
-        <h5 class="max center-align">
-            Server Logs
-        </h5>
-        <div class="group_items">
+        </div>
+
+        <div class="page padding" id="server_logs">
             <br>
             <div class="center-align">
                 <a href="/server_log">
@@ -87,19 +89,19 @@
             </div>
             {% endfor %}
         </div>
-    </article>
-    <div class="overlay blur"></div>
-    <dialog id="log_dialog" data-ui="dialog-log_dialog" >
-      <div class="log_content">
-          <pre id="log_content"></pre>
-      </div>
-    </dialog>
+
+        <div class="overlay blur"></div>
+        <dialog id="log_dialog" data-ui="dialog-log_dialog">
+            <div class="log_content">
+                <pre id="log_content"></pre>
+            </div>
+        </dialog>
     </main>
 </body>
 
 <script>
     function goToMainUrl() {
-        window.location.href = "/"
+        window.location.href = "/";
     }
 
     function fetchLogContent(file_name) {
@@ -147,12 +149,6 @@
         }
     }
 
-    function closeLogDialog() {
-        const logDialog = document.getElementById('log_dialog');
-        if (logDialog) {
-            window.location.hash = "";
-        }
-    }
     document.addEventListener("DOMContentLoaded", function() {
         checkForHash();
 
