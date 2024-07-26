@@ -54,7 +54,7 @@
             </h5>
             {% for error_log_file_name in error_logs %}
             <div class="row">
-                <button class="max small-round" onclick="fetchLogContent('{{ error_log_file_name }}')">{{ error_log_file_name }}</button>
+                <button class="max border small-round" onclick="fetchLogContent('{{ error_log_file_name }}')">{{ error_log_file_name }}</button>
                 <button class="square round error" onclick="deleteLog('{{ error_log_file_name }}', this)">
                     <i>delete_forever</i>
                 </button>
@@ -71,7 +71,7 @@
             <br>
             <div class="center-align">
                 <a href="/server_log">
-                    <button class="border small-round">
+                    <button class="small-round">
                         <i>adjust</i>
                         <span>Live Server Log</span>
                     </button>
@@ -80,7 +80,7 @@
             <br>
             {% for server_log_file_name in server_logs %}
             <div class="row">
-                <button class="max small-round" onclick="fetchLogContent('{{ server_log_file_name }}')">{{ server_log_file_name }}</button>
+                <button class="max border small-round" onclick="fetchLogContent('{{ server_log_file_name }}')">{{ server_log_file_name }}</button>
                 <button class="square round error" onclick="deleteLog('{{ server_log_file_name }}', this)">
                     <i>delete_forever</i>
                 </button>
