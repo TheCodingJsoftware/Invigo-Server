@@ -13,7 +13,7 @@ def create_directory(path):
 def main():
     root_directories = ["data", "data/workspace", "images", "logs", "backups"]
     quotes_subdirs = ["packing_slips", "quotes", "workorders"]
-    jobs_subdirs = ["planning", "template", "quoting", "quoted", "workspace", "archive"]
+    jobs_subdirs = ["planning", "template", "quoting", "quoted"]
 
     for directory in root_directories:
         create_directory(directory)
