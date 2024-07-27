@@ -958,7 +958,7 @@ class UploadWorkorderHandler(tornado.web.RequestHandler):
 
 class LoadWorkorderHandler(tornado.web.RequestHandler):
     def get(self, folder_name):
-        html_file_path = os.path.join(folder_name, "page.html")
+        html_file_path = os.path.join("workorders", folder_name, "page.html")
 
         if os.path.exists(html_file_path):
             with open(html_file_path, "r", encoding="utf-8") as file:
