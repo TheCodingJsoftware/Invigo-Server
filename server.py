@@ -1,9 +1,11 @@
+import base64
 import os
 import re
 import shutil
 import sys
 import threading
 import time
+import uuid
 import zipfile
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
@@ -919,6 +921,81 @@ class DeleteJobHandler(tornado.web.RequestHandler):
         self.write({"status": "success", "message": "Quote deleted successfully."})
 
 
+class UploadWorkorderHandler(tornado.web.RequestHandler):
+
+    def post(self):
+        try:
+            folder = self.get_argument("folder")
+
+            workorder_data_json = self.request.files["workorder_data"][0]["body"]
+            workorder_data = msgspec.json.decode(workorder_data_json)
+
+            html_file_contents = self.get_argument("html_file_contents")
+
+            os.makedirs(folder, exist_ok=True)
+
+            workorder_file_path = os.path.join(folder, "data.json")
+            with open(workorder_file_path, "wb") as f:
+                f.write(msgspec.json.encode(workorder_data))
+
+            html_file_path = os.path.join(folder, "page.html")
+            with open(html_file_path, "w", encoding="utf-8") as f:
+                f.write(html_file_contents)
+
+            CustomPrint.print(
+                f"INFO - {self.request.remote_ip} uploaded workorder: {folder}",
+                connected_clients=connected_clients,
+            )
+
+            self.write(
+                {
+                    "status": "success",
+                    "message": "Workorder and HTML file uploaded successfully.",
+                }
+            )
+        except Exception as e:
+            self.set_status(500)
+            self.write({"status": "error", "message": str(e)})
+
+
+class LoadWorkorderHandler(tornado.web.RequestHandler):
+    def get(self, folder_name):
+        html_file_path = os.path.join(folder_name, "page.html")
+
+        if os.path.exists(html_file_path):
+            with open(html_file_path, "r", encoding="utf-8") as file:
+                html_content = file.read()
+
+            CustomPrint.print(
+                f"INFO - {self.request.remote_ip} loaded workorder printout: {folder_name}",
+                connected_clients=connected_clients,
+            )
+
+            self.write(html_content)
+        else:
+            self.set_status(404)
+            self.write("404: HTML file not found.")
+
+
+class WorkorderHandler(tornado.web.RequestHandler):
+    def get(self, folder_name):
+        data_file_path = os.path.join(folder_name, "data.json")
+
+        if os.path.exists(data_file_path):
+            with open(data_file_path, "r", encoding="utf-8") as file:
+                data = file.read()
+
+            CustomPrint.print(
+                f"INFO - {self.request.remote_ip} loaded workorder: {folder_name}",
+                connected_clients=connected_clients,
+            )
+
+            self.write(data)
+        else:
+            self.set_status(404)
+            self.write("404: HTML file not found.")
+
+
 class UploadQuoteHandler(tornado.web.RequestHandler):
     def post(self):
         try:
@@ -1256,33 +1333,41 @@ if __name__ == "__main__":
     app = tornado.web.Application(
         [
             (r"/", MainHandler),
+            (r"/ws", WebSocketHandler),
             (r"/static/theme.css", ThemeHandler),
+            # Log handlers
             (r"/server_log", ServerLogsHandler),
             (r"/logs", LogsHandler),
             (r"/fetch_log", LogContentHandler),
             (r"/delete_log", LogDeleteHandler),
-            (r"/file/(.*)", FileReceiveHandler),
+            # NOTE deprecated
             (r"/command", CommandHandler),
+            # Upload/download handlers
+            (r"/file/(.*)", FileReceiveHandler),
             (r"/upload", FileUploadHandler),
             (r"/workspace_upload", WorkspaceFileUploader),
             (r"/workspace_get_file/(.*)", WorkspaceFileHandler),
-            (r"/ws", WebSocketHandler),
+            # Image handlers
             (r"/image/(.*)", ImageHandler),
             (r"/images/(.*)", ImageHandler),
+            # Order number habdlers
             (r"/set_order_number/(\d+)", SetOrderNumberHandler),
             (r"/get_order_number", GetOrderNumberHandler),
+            # Way back machine habdlers
             (r"/way_back_machine", WayBackMachineHandler),
             (r"/fetch_data", FetchDataHandler),
+            # Inventory handlers
             (r"/inventory", InventoryHandler),
             (r"/inventory/(.*)/(.*)", InventoryTablesHandler),
+            # Sheet handlers
             (r"/sheets_in_inventory/(.*)", SheetQuantityHandler),
             (r"/sheet_qr_codes", QRCodePageHandler),
             (r"/add_cutoff_sheet", AddCutoffSheetHandler),
             (r"/delete_cutoff_sheet", DeleteCutoffSheetHandler),
+            # Email handlers
             (r"/send_error_report", SendErrorReportHandler),
             (r"/send_email", SendEmailHandler),
-            (r"/get_previous_quotes", GetPreviousQuotesHandler),
-            (r"/get_saved_quotes", GetSavedQuotesHandler),
+            # Job handlers
             (r"/get_jobs", GetJobsHandler),
             (r"/upload_job", UploadJobHandler),
             (r"/download_job/(.*)", DownloadJobHandler),
@@ -1290,7 +1375,13 @@ if __name__ == "__main__":
             (r"/update_job_settings", UpdateJobSettingsHandler),
             (r"/delete_job/(.*)", DeleteJobHandler),
             (r"/jobs", JobPrintoutsHandler),
-            # NOTE These will be removed in favor of Job Handelers
+            # Workorder handlers
+            (r"/upload_workorder", UploadWorkorderHandler),
+            (r"/load_workorder/(.*)", LoadWorkorderHandler),
+            (r"/workorder/(.*)", WorkorderHandler),
+            # Quote handlers NOTE These will be removed in favor of Job Handelers
+            (r"/get_previous_quotes", GetPreviousQuotesHandler),
+            (r"/get_saved_quotes", GetSavedQuotesHandler),
             (r"/upload_quote", UploadQuoteHandler),
             (r"/update_quote_settings", UpdateQuoteSettingsHandler),
             (r"/download_quote/(.*)", DownloadQuoteHandler),

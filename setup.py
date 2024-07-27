@@ -22,6 +22,9 @@ def main():
     for subdir in jobs_subdirs:
         create_directory(os.path.join(jobs_dir, subdir))
 
+    workorders_path = "workorders"
+    create_directory(workorders_path)
+
     saved_quotes_path = "saved_quotes"
     create_directory(saved_quotes_path)
 
@@ -29,7 +32,7 @@ def main():
         create_directory(os.path.join(saved_quotes_path, subdir))
 
     previous_quotes_path = "previous_quotes"
-    create_directory(saved_quotes_path)
+    create_directory(previous_quotes_path)
 
     for subdir in quotes_subdirs:
         create_directory(os.path.join(previous_quotes_path, subdir))
