@@ -685,8 +685,8 @@ class Printout:
                         <meta http-equiv="X-UA-Compatible" content="ie=edge">
                         <meta name="google" content="notranslate">
                         <script src="https://cdn.jsdelivr.net/gh/davidshimjs/qrcodejs/qrcode.min.js"></script>
-                        <link href="https://cdn.jsdelivr.net/npm/beercss@3.6.0/dist/cdn/beer.min.css" rel="stylesheet">
-                        <script type="module" src="https://cdn.jsdelivr.net/npm/beercss@3.6.0/dist/cdn/beer.min.js"></script>
+                        <link href="https://cdn.jsdelivr.net/npm/beercss@3.6.8/dist/cdn/beer.min.css" rel="stylesheet">
+                        <script type="module" src="https://cdn.jsdelivr.net/npm/beercss@3.6.8/dist/cdn/beer.min.js"></script>
                         <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
                         <script type="module" src="https://cdn.jsdelivr.net/npm/material-dynamic-colors@1.1.2/dist/cdn/material-dynamic-colors.min.js"></script>
                         <link rel="stylesheet" type="text/css" href="/static/theme.css">
