@@ -1,11 +1,9 @@
-import base64
 import os
 import re
 import shutil
 import sys
 import threading
 import time
-import uuid
 import zipfile
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
