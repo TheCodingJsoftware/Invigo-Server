@@ -923,7 +923,7 @@ class UploadWorkorderHandler(tornado.web.RequestHandler):
 
     def post(self):
         try:
-            folder = self.get_argument("folder")
+            folder = os.path.join("workorder", self.get_argument("folder"))
 
             workorder_data_json = self.request.files["workorder_data"][0]["body"]
             workorder_data = msgspec.json.decode(workorder_data_json)
