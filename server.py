@@ -977,7 +977,7 @@ class LoadWorkorderHandler(tornado.web.RequestHandler):
 
 class WorkorderHandler(tornado.web.RequestHandler):
     def get(self, folder_name):
-        data_file_path = os.path.join(folder_name, "data.json")
+        data_file_path = os.path.join("workorders", folder_name, "data.json")
 
         if os.path.exists(data_file_path):
             with open(data_file_path, "r", encoding="utf-8") as file:
@@ -988,7 +988,11 @@ class WorkorderHandler(tornado.web.RequestHandler):
                 connected_clients=connected_clients,
             )
 
-            self.write(data)
+            template = env.get_template("workorder.html")
+            rendered_template = template.render(
+                workorder_data=data,
+            )
+            self.write(rendered_template)
         else:
             self.set_status(404)
             self.write("404: HTML file not found.")
