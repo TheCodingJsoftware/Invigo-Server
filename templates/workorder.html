@@ -79,7 +79,14 @@
                                     <div><i>tag</i>{{laser_cut_part.part_number}}</div>
                                 </div>
                                 <div class="max">
-                                    <div><i>tag</i>{{laser_cut_part.flow_tag.tags[laser_cut_part.current_flow_tag_index + 2]}}</div>
+                                    {% set next_index = laser_cut_part.current_flow_tag_index + 2 %}
+                                    <div>
+                                        {% if next_index >= laser_cut_part.flow_tag.tags | length %}
+                                            Done
+                                        {% else %}
+                                            {{ laser_cut_part.flow_tag.tags[next_index] }}
+                                        {% endif %}
+                                    </div>
                                 </div>
                                 <label>
                                     × {{laser_cut_part.quantity_in_nest * nest_data.sheet_count}}
