@@ -74,9 +74,12 @@
                         <summary class="none no-padding">
                             <a class="row wave padding surface-container">
                                 <img class="round" src="/{{laser_cut_part.image_index}}">
-                                <div class="max">
+                                <div>
                                     <h6 class="small">{{laser_cut_part.name}}</h6>
                                     <div><i>tag</i>{{laser_cut_part.part_number}}</div>
+                                </div>
+                                <div class="max">
+                                    <div><i>tag</i>{{laser_cut_part.flow_tag.tags[laser_cut_part.current_flow_tag_index]}}</div>
                                 </div>
                                 <label>
                                     × {{laser_cut_part.quantity_in_nest * nest_data.sheet_count}}
