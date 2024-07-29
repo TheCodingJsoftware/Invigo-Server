@@ -980,8 +980,8 @@ class WorkorderHandler(tornado.web.RequestHandler):
         data_file_path = os.path.join("workorders", folder_name, "data.json")
 
         if os.path.exists(data_file_path):
-            with open(data_file_path, "r", encoding="utf-8") as file:
-                data = file.read()
+            with open(data_file_path, "rb") as file:
+                data = msgspec.json.decode(file.read())
 
             CustomPrint.print(
                 f"INFO - {self.request.remote_ip} loaded workorder: {folder_name}",
@@ -990,6 +990,7 @@ class WorkorderHandler(tornado.web.RequestHandler):
 
             template = env.get_template("workorder.html")
             rendered_template = template.render(
+                workorder_id=folder_name,
                 workorder_data=data,
             )
             self.write(rendered_template)

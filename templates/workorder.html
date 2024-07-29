@@ -19,11 +19,13 @@
 </head>
 
 <style>
-.items{
-    display: grid;
-    gap: 10px;
-    grid-template-columns: repeat(auto-fit, minmax(20em, 0px));
-}
+    .hidden{
+        display: none;
+    }
+    img {
+        -webkit-filter: invert(1);
+        filter: invert(1);
+    }
 </style>
 
 <body class="dark">
@@ -35,16 +37,205 @@
             <h5 class="max">
                 Workorder
             </h5>
+            <a href="/load_workorder/{{workorder_id}}">
+                <i>print</i>
+            </a>
         </nav>
     </header>
-    <main class="padding">
+    <main class="responsive">
+        <div class="center-align padding">
+            <button class="small-round extra" onclick='markWorkorderAsDone({{workorder_data | tojson | safe }})'>
+                <i>done_all</i>
+                <span>Picked All Sheets</span>
+            </button>
+        </div>
+        {% for nest_data in workorder_data %}
+            <article class="border no-padding">
+                <img src="/image/{{nest_data.image_path}}" class="responsive">
+                <div class="padding">
+                    <h5>
+                        {{nest_data.name}}
+                        {% if nest_data.sheet_count > 1 %}
+                            × {{nest_data.sheet_count}}
+                        {% endif %}
+                    </h5>
+                    <div class="right-align padding">
+                        <button class="small-round" onclick='markNestAsDone({{nest_data | tojson | safe }})'>
+                            <i>check</i>
+                            {% if nest_data.sheet_count > 1 %}
+                                <span>{{nest_data.sheet_count}} Sheets Picked</span>
+                            {% else %}
+                                <span>Sheet Picked</span>
+                            {% endif %}
+                        </button>
+                    </div>
+                    {% for laser_cut_part in nest_data.laser_cut_parts %}
+                    <details>
+                        <summary class="none no-padding">
+                            <a class="row wave padding surface-container">
+                                <img class="round" src="/{{laser_cut_part.image_index}}">
+                                <div class="max">
+                                    <h6 class="small">{{laser_cut_part.name}}</h6>
+                                    <div><i>tag</i>{{laser_cut_part.part_number}}</div>
+                                </div>
+                                <label>
+                                    × {{laser_cut_part.quantity_in_nest * nest_data.sheet_count}}
+                                </label>
+                            </a>
+                        </summary>
+                        <article class="small-padding no-round no-margin right-align">
+                            <button class="small-round" onclick='openRecutDialog({{nest_data | tojson | safe }}, {{laser_cut_part | tojson | safe }})'>
+                                <span class="small-text no-wrap no-padding">Recut</span>
+                            </button>
+                        </article>
+                        </details>
+                        <div class="divider"></div>
+                    {% endfor %}
+                </div>
+            </article>
+        {% endfor %}
     </main>
+    <div class="overlay blur"></div>
+    <dialog class="bottom" id="recut-dialog">
+        <h3 class="center-align" id="recut-part-name"></p>
+        <h6 class="center-align">How many need to be recut?</h6>
+        <div class="row padding" id="recut-quantity-div">
+            <div class="field label border max valid">
+                <input type="number" id="recut-quantity-input" oninput="validateRecutQuantity()">
+                <label>Quantity</label>
+                <span class="error hidden" id="recut-quantity-input-error">There are not that many parts cut.</span>
+            </div>
+            <button class="small-round" id="recut-button-submit" onclick='submitRecutPart()'>
+                <i>check</i>
+                <span>Submit</span>
+            </button>
+        </div>
+        <article>
+            <h6 class="center-align">Quick Select</h6>
+            <div class="grid">
+                <div class="s6 center-align">
+                    <button class="round square extra" id="recut-count-1" onclick='recutPart(1)'>
+                        <span class="no-wrap">1</span>
+                    </button>
+                </div>
+                <div class="s6 center-align">
+                    <button class="round square extra" id="recut-count-2" onclick='recutPart(2)'>
+                        <span class="no-wrap">2</span>
+                    </button>
+                </div>
+                <div class="s6 center-align">
+                    <button class="round square extra" id="recut-count-3" onclick='recutPart(3)'>
+                        <span class="no-wrap">3</span>
+                    </button>
+                </div>
+                <div class="s6 center-align">
+                    <button class="round square extra" id="recut-count-all" onclick='recutPart("All")'>
+                        <span class="no-wrap">All</span>
+                    </button>
+                </div>
+            </div>
+    </article>
+    </dialog>
+    <div class="snackbar top" id="recut-submitted">Recut submitted.</div>
+    <div class="snackbar error top" id="snackbar-error"></div>
 </body>
 
 <script>
+    var recut_laser_cut_part;
+    var recut_nest;
+    var recut_max_quantity;
+
+    function markWorkorderAsDone(workorder_data){
+        console.log(workorder_data);
+    }
+    function markNestAsDone(nest_data){
+        console.log(nest_data);
+    }
+    function markPartAsDone(nest_data, laser_cut_part){
+        console.log(nest_data, laser_cut_part);
+    }
+    function validateRecutQuantity() {
+        var input = document.getElementById('recut-quantity-input');
+        var parentDiv = input.parentElement;
+        console.log(input.value, recut_max_quantity)
+
+        if (input.value > recut_max_quantity) {
+            parentDiv.classList.add('invalid');
+            document.getElementById('recut-quantity-input-error').classList.remove("hidden")
+        } else {
+            parentDiv.classList.remove('invalid');
+            document.getElementById('recut-quantity-input-error').classList.add("hidden")
+        }
+    }
+
+    function openRecutDialog(nest_data, laser_cut_part){
+        recut_laser_cut_part = laser_cut_part;
+        recut_nest = nest_data;
+
+        recut_max_quantity = nest_data.sheet_count * laser_cut_part.quantity_in_nest;
+        document.getElementById('recut-part-name').innerText = `${laser_cut_part.name}`;
+        document.getElementById('recut-quantity-input').value = '1';
+        document.getElementById('recut-quantity-input').max = recut_max_quantity;
+
+        if (recut_max_quantity == 1){
+            document.getElementById('recut-count-1').classList.remove("hidden");
+            document.getElementById('recut-count-2').classList.add("hidden");
+            document.getElementById('recut-count-3').classList.add("hidden");
+            document.getElementById('recut-count-all').classList.add("hidden");
+            document.getElementById('recut-quantity-div').classList.add("hidden");
+        } else if (recut_max_quantity == 2){
+            document.getElementById('recut-count-1').classList.remove("hidden");
+            document.getElementById('recut-count-2').classList.remove("hidden");
+            document.getElementById('recut-count-3').classList.add("hidden");
+            document.getElementById('recut-count-all').classList.add("hidden");
+            document.getElementById('recut-quantity-div').classList.add("hidden");
+        } else if (recut_max_quantity == 3){
+            document.getElementById('recut-count-1').classList.remove("hidden");
+            document.getElementById('recut-count-2').classList.remove("hidden");
+            document.getElementById('recut-count-3').classList.remove("hidden");
+            document.getElementById('recut-count-all').classList.add("hidden");
+            document.getElementById('recut-quantity-div').classList.add("hidden");
+        } else if (recut_max_quantity > 3){
+            document.getElementById('recut-count-1').classList.remove("hidden");
+            document.getElementById('recut-count-2').classList.remove("hidden");
+            document.getElementById('recut-count-3').classList.remove("hidden");
+            document.getElementById('recut-count-all').classList.remove("hidden");
+            document.getElementById('recut-quantity-div').classList.remove("hidden");
+        }
+        ui('#recut-dialog');
+    }
+    function recutPart(quantity){
+        var recut_quantity = quantity
+        if (quantity === "All"){
+            recut_quantity = recut_nest.sheet_count * recut_laser_cut_part.quantity_in_nest;
+        }
+        document.getElementById('recut-quantity-input').value = recut_quantity;
+        if (recut_quantity <= recut_max_quantity){
+            submitRecutPart();
+        }
+    }
+    function submitRecutPart() {
+        var recut_quantity = document.getElementById('recut-quantity-input').value;
+        console.log(recut_quantity);
+        ui('#recut-dialog');
+        ui("#recut-submitted");
+    }
     function goToMainUrl() {
         window.location.href = "/"
     }
+
+    window.addEventListener('load', function () {
+        setTimeout(function () {
+            document.querySelectorAll('img').forEach(function (img) {
+                img.onerror = function () {
+                    this.classList.add('hidden');
+                };
+                if (!img.complete || img.naturalWidth === 0) {
+                    img.onerror();
+                }
+            });
+        }, 1000); // 1000 milliseconds = 1 second
+    });
 </script>
 
 </html>
