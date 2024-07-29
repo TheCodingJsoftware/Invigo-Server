@@ -82,9 +82,9 @@
                                     {% set next_index = laser_cut_part.current_flow_tag_index + 2 %}
                                     <div>
                                         {% if next_index >= laser_cut_part.flow_tag.tags | length %}
-                                            Done
+                                        ➜ Done
                                         {% else %}
-                                            {{ laser_cut_part.flow_tag.tags[next_index] }}
+                                        ➜ {{ laser_cut_part.flow_tag.tags[next_index] }}
                                         {% endif %}
                                     </div>
                                 </div>
