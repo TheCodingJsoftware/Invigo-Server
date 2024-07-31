@@ -173,6 +173,5 @@ run.bat
 *.zip
 *.json
 *.log
-*.html
 trusted_users.txt
 workorders

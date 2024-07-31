@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <meta name="google" content="notranslate">
+    <link href="https://cdn.jsdelivr.net/npm/beercss@3.6.8/dist/cdn/beer.min.css" rel="stylesheet">
+    <script type="module" src="https://cdn.jsdelivr.net/npm/beercss@3.6.8/dist/cdn/beer.min.js"></script>
+    <script type="module"
+        src="https://cdn.jsdelivr.net/npm/material-dynamic-colors@1.1.2/dist/cdn/material-dynamic-colors.min.js">
+    </script>
+    <link href="/static/theme.css" rel="stylesheet">
+    <link rel="icon" href="/static/icon.png">
+    <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=yes" />
+    <script src="https://www.kryogenix.org/code/browser/sorttable/sorttable.js"></script>
+    <title>Dashboard</title>
+</head>
+
+<style>
+    .hidden{
+        display: none;
+    }
+</style>
+<body class="dark">
+    <header class="fixed primary">
+        <nav>
+            <button class="circle transparent" onclick="goToMainUrl()">
+                <i>arrow_back</i>
+            </button>
+            <h5 class="max">
+                Dashboard
+            </h5>
+        </nav>
+    </header>
+    <main class="responsive">
+        {% for job in workspace_archive.jobs %}
+            <article class="border no-padding">
+                <div class="padding">
+                    <h5>
+                        {{job.name}}
+                    </h5>
+                    {% for assembly in job.get_all_assemblies() %}
+                        <img src="/image/{{assembly.assembly_image}}" class="responsive">
+                        {{assembly.name}}
+                    {% endfor %}
+                </div>
+            </article>
+        {% endfor %}
+    </main>
+</body>
+
+<script>
+    function goToMainUrl() {
+        window.location.href = "/"
+    }
+
+    window.addEventListener('load', function () {
+        setTimeout(function () {
+            document.querySelectorAll('img').forEach(function (img) {
+                img.onerror = function () {
+                    this.classList.add('hidden');
+                };
+                if (!img.complete || img.naturalWidth === 0) {
+                    img.onerror();
+                }
+            });
+        }, 1000); // 1000 milliseconds = 1 second
+    });
+</script>
+
+</html>
