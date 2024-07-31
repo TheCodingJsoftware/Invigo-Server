@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from utils.colors import Colors
+from utils.server_colors import Colors
 
 messages = []
 connected_clients = []

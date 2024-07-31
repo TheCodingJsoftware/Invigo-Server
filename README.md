@@ -22,7 +22,7 @@ It also hosts various web pages that are designed with [beercss](https://beercss
 2. Create a virtual environment with `virtualenv`, activate it, and install the following requirements:
 
     ```bash
-    pip install tornado aiotools coloredlogs jinja2 schedule natsort ansi2html markupsafe colorama markdown2 msgspec
+    pip install tornado aiotools coloredlogs jinja2 schedule natsort ansi2html markupsafe colorama markdown2 msgspec colormap
     ```
 
 3. Create a json file called `credentials.json` then set your email credentials in order send emails via SMTP:
