@@ -11,6 +11,7 @@ from datetime import datetime
 from functools import partial
 from io import StringIO
 from pathlib import Path
+from typing import Union
 from urllib.parse import quote
 
 import coloredlogs
@@ -1010,15 +1011,31 @@ class WorkorderHandler(tornado.web.RequestHandler):
             self.write("404: HTML file not found.")
 
 
-async def update_laser_cut_parts_process(laser_cut_parts: list[LaserCutPart], workspace: Workspace):
+def check_if_assemblies_are_ready_to_start_timer(workspace: Workspace):
+    for assembly in workspace.get_all_assemblies():
+        if assembly.all_laser_cut_parts_complete() and not assembly.timer.has_started_timer():
+            assembly.timer.start_timer()
+
+
+async def update_laser_cut_parts_process(nest_or_workorder: Union[Workorder, Nest], workspace: Workspace):
+    if isinstance(nest_or_workorder, Workorder):
+        nests_to_update = nest_or_workorder.nests
+    elif isinstance(nest_or_workorder, Nest):
+        nests_to_update = [nest_or_workorder]
+
     if workspace_part_groups := workspace.get_grouped_laser_cut_parts(workspace.get_all_laser_cut_parts_with_similar_tag("picking")):
-        for workspace_part_group in workspace_part_groups:
-            for laser_cut_part in laser_cut_parts:
-                if workspace_part_group.base_part.name == laser_cut_part.name:
-                    workspace_part_group.move_to_next_process()
-                    break
+        for nest in nests_to_update:
+            for workspace_part_group in workspace_part_groups:
+                for nested_laser_cut_part in nest.laser_cut_parts:
+                    if workspace_part_group.base_part.name == nested_laser_cut_part.name:
+                        workspace_part_group.move_to_next_process(nest.sheet_count * nested_laser_cut_part.quantity_in_nest)
+                        break
+
+    check_if_assemblies_are_ready_to_start_timer(workspace)
+
     workspace.save()
     workspace.laser_cut_inventory.save()
+
     signal_clients_for_changes(client_to_ignore=None, changed_files=[f"{workspace.filename}.json", f"{workspace.laser_cut_inventory.filename}.json"])
 
 
@@ -1041,7 +1058,7 @@ class MarkWorkorderDoneHandler(tornado.web.RequestHandler):
 
                 self.workorder = Workorder(self.workorder_data, self.sheet_settings, self.laser_cut_inventory)
 
-                await update_laser_cut_parts_process(self.workorder.get_all_laser_cut_parts(), self.workspace)
+                await update_laser_cut_parts_process(self.workorder, self.workspace)
 
                 self.workorder.nests = []
 
@@ -1075,7 +1092,7 @@ class MarkNestDoneHandler(tornado.web.RequestHandler):
 
                 self.nest = Nest(self.nest_data, self.sheet_settings, self.laser_cut_inventory)
 
-                await update_laser_cut_parts_process(self.nest.laser_cut_parts, self.workspace)
+                await update_laser_cut_parts_process(self.nest, self.workspace)
 
                 workorder_data_path = os.path.join("workorders", workorder_id, "data.json")
 
