@@ -53,10 +53,20 @@
                 <span>Sheet QR Codes</span>
                 <div class="tooltip bottom">All sheets in inventory with their respective QR codes in a ready-to-print layout.</div>
             </button>
+            <button class="border small-round extra vertical" onclick="window.location.href='/dashboard'">
+                <i>analytics</i>
+                <span>Dashboard</span>
+                <div class="tooltip bottom">Analytics for workspace and workspace archive.</div>
+            </button>
             <button class="border small-round extra vertical" onclick="window.location.href='/jobs'">
                 <i>note_stack</i>
                 <span>Jobs</span>
-                <div class="tooltip bottom">View all saved job.</div>
+                <div class="tooltip bottom">View all saved jobs.</div>
+            </button>
+            <button class="border small-round extra vertical" onclick="window.location.href='/workorders'">
+                <i>list_alt</i>
+                <span>Workorders</span>
+                <div class="tooltip bottom">View all active workorders.</div>
             </button>
             <button class="border small-round extra vertical" onclick="window.location.href='/way_back_machine'">
                 <i>history</i>
@@ -126,11 +136,27 @@
                 </div>
             </a>
             <div class="divider"></div>
+            <a class="row padding surface-container wave" href="/dashboard">
+                <i>analytics</i>
+                <div class="max">
+                    <h6 class="small">Dashboard</h6>
+                <div>Analytics for workspace and workspace archive.</div>
+                </div>
+            </a>
+            <div class="divider"></div>
             <a class="row padding surface-container wave" href="/jobs">
                 <i>note_stack</i>
                 <div class="max">
                     <h6 class="small">Jobs</h6>
-                <div>View all saved job.</div>
+                <div>View all saved jobs.</div>
+                </div>
+            </a>
+            <div class="divider"></div>
+            <a class="row padding surface-container wave" href="/jobs">
+                <i>list_alt</i>
+                <div class="max">
+                    <h6 class="small">Workorders</h6>
+                <div>View all active workorders.</div>
                 </div>
             </a>
             <div class="divider"></div>
