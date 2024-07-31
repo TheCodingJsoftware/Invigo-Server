@@ -1158,7 +1158,7 @@ class RecutPartHandler(tornado.web.RequestHandler):
 
                 self.recut_nest = Nest(self.recut_data['nest'], self.sheet_settings, self.laser_cut_inventory)
 
-                self.recut_quantity = self.recut_data['quantity']
+                self.recut_quantity = int(self.recut_data['quantity'])
 
                 for workspace_part_group in self.workspace.get_grouped_laser_cut_parts(self.workspace.get_all_laser_cut_parts_with_similar_tag("picking")):
                     if workspace_part_group.base_part.name == self.laser_cut_part_to_recut.name:
