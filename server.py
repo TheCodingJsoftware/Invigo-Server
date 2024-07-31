@@ -1380,8 +1380,8 @@ if __name__ == "__main__":
             (r"/jobs", JobPrintoutsHandler),
             # Workorder handlers
             (r"/upload_workorder", UploadWorkorderHandler),
-            (r"/load_workorder/(.*)", LoadWorkorderHandler),
             (r"/workorder/(.*)", WorkorderHandler),
+            (r"/workorder_printout/(.*)", LoadWorkorderHandler),
             # Quote handlers NOTE These will be removed in favor of Job Handelers
             (r"/get_previous_quotes", GetPreviousQuotesHandler),
             (r"/get_saved_quotes", GetSavedQuotesHandler),
