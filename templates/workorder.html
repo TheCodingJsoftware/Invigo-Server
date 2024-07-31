@@ -219,7 +219,6 @@
     function validateRecutQuantity() {
         var input = document.getElementById('recut-quantity-input');
         var parentDiv = input.parentElement;
-        console.log(input.value, recut_max_quantity)
 
         if (input.value > recut_max_quantity) {
             parentDiv.classList.add('invalid');
@@ -234,7 +233,8 @@
         recut_laser_cut_part = laser_cut_part;
         recut_nest = nest_data;
 
-        recut_max_quantity = nest_data.sheet_count * laser_cut_part.quantity_in_nest;
+        recut_max_quantity = nest_data.sheet_count * laser_cut_part.quantity_in_nest - laser_cut_part.recut_count;
+
         document.getElementById('recut-part-name').innerText = `${laser_cut_part.name}`;
         document.getElementById('recut-quantity-input').value = '1';
         document.getElementById('recut-quantity-input').max = recut_max_quantity;
