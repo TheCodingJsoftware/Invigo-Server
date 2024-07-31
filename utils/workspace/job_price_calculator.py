@@ -1,11 +1,11 @@
 import math
 from typing import TYPE_CHECKING
 
-from utils.inventory.sheet import Sheet
 from utils.inventory.component import Component
 from utils.inventory.laser_cut_part import LaserCutPart
-from utils.inventory.paint_inventory import PaintInventory
 from utils.inventory.nest import Nest
+from utils.inventory.paint_inventory import PaintInventory
+from utils.inventory.sheet import Sheet
 from utils.sheet_settings.sheet_settings import SheetSettings
 from utils.workspace.assembly import Assembly
 
@@ -14,7 +14,7 @@ if TYPE_CHECKING:
 
 
 class JobPriceCalculator:
-    def __init__(self, job, sheet_settings: SheetSettings, paint_inventory: PaintInventory, settings: dict[str, float]) -> None:
+    def __init__(self, job, sheet_settings: SheetSettings, paint_inventory: PaintInventory, settings: dict[str, float]):
         self.job: Job = job
 
         # These are percentages

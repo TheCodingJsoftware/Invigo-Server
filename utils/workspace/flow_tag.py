@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import TYPE_CHECKING, Union
+from typing import TYPE_CHECKING, Iterator, Union
 
 from utils.workspace.tag import Tag
 
@@ -15,7 +15,7 @@ if TYPE_CHECKING:
 
 
 class FlowTag:
-    def __init__(self, name: str, data: list[str], workspace_settings) -> None:
+    def __init__(self, name: str, data: list[str], workspace_settings):
         self.name = name
         self.tags: list[Tag] = []
         self.group: Group = Group.LASER_CUT_PART
@@ -65,6 +65,9 @@ class FlowTag:
 
     def __str__(self):
         return f"{self.name}: {self.get_name()}"
+
+    def __iter__(self) -> Iterator[Tag]:
+        return iter(self.tags)
 
     def to_dict(self) -> dict[str]:
         try:

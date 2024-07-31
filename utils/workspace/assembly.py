@@ -1,4 +1,5 @@
-from typing import TYPE_CHECKING, Any, Union, Optional
+import copy
+from typing import TYPE_CHECKING, Optional, Union
 
 from utils.inventory.component import Component
 from utils.inventory.laser_cut_part import LaserCutPart
@@ -6,15 +7,16 @@ from utils.inventory.paint import Paint
 from utils.inventory.powder import Powder
 from utils.inventory.primer import Primer
 from utils.workspace.flow_tag import FlowTag
-from utils.workspace.workspace_settings import WorkspaceSettings
 from utils.workspace.tag import Tag
+from utils.workspace.workspace_settings import WorkspaceSettings
+from utils.workspace.workspace_timer import WorkspaceTimer
 
 if TYPE_CHECKING:
     from utils.workspace.job import Job
 
 
 class Assembly:
-    def __init__(self, assembly_data: dict[str, object], job) -> None:
+    def __init__(self, assembly_data: dict[str, object], job):
         self.job: Job = job
 
         self.name = ""
@@ -46,26 +48,35 @@ class Assembly:
         self.cost_for_powder_coating: float = 0.0
 
         self.expected_time_to_complete: float = 0.0
-        self.has_items: bool = False
-        self.has_sub_assemblies: bool = False
         self.flow_tag: FlowTag = None
         self.current_flow_tag_index: int = 0
+        self.current_flow_tag_status_index: int = 0
         self.assembly_image: str = None
         self.quantity: int = 1
 
-        self.timers: dict[str, dict] = {}
+        self.timer: WorkspaceTimer = None
 
         # NOTE Non serializable variables
         self.workspace_settings: WorkspaceSettings = self.job.workspace_settings
-        self.show = True
 
         self.load_data(assembly_data)
 
-    def set_parent_assembly_value(self, key: str, value: Any) -> None:
-        if key == "show":
-            self.show = value
-            if self.parent_assembly is not None:
-                self.parent_assembly.show = value
+    def is_assembly_finished(self) -> bool:
+        return self.current_flow_tag_index >= len(self.flow_tag.tags)
+
+    def move_to_next_process(self):
+        self.timer.stop(self.get_current_tag())
+        if not self.is_assembly_finished():
+            self.current_flow_tag_index += 1
+            self.current_flow_tag_status_index = 0
+            self.recut = False
+            self.timer.start(self.get_current_tag())
+
+    def all_laser_cut_parts_complete(self) -> bool:
+        for laser_cut_part in self.laser_cut_parts:
+            if not laser_cut_part.is_process_finished():
+                return False
+        return True
 
     def add_laser_cut_part(self, laser_cut_part: LaserCutPart):
         self.laser_cut_parts.append(laser_cut_part)
@@ -84,6 +95,22 @@ class Assembly:
             return self.flow_tag.tags[self.current_flow_tag_index]
         except IndexError:
             return None
+
+    def get_all_paints(self) -> str:
+        name = ""
+        if self.uses_primer and self.primer_item:
+            name += f"{self.primer_item.name}\n"
+        if self.uses_paint and self.paint_item:
+            name += f"{self.paint_item.name}\n"
+        if self.uses_powder and self.powder_item:
+            name += f"{self.powder_item.name}\n"
+        return name
+
+    def get_weight(self) -> float:
+        weight: float = 0.0
+        for laser_cut_part in self.laser_cut_parts:
+            weight += laser_cut_part.weight
+        return weight
 
     def get_master_assembly(self) -> "Assembly":
         master_assembly = self
@@ -108,7 +135,7 @@ class Assembly:
             None,
         )
 
-    def rename(self, new_name: str) -> None:
+    def rename(self, new_name: str):
         self.name = new_name
 
     def get_all_sub_assemblies(self) -> list["Assembly"]:
@@ -118,18 +145,21 @@ class Assembly:
             assemblies.extend(sub_assembly.get_all_sub_assemblies())
         return assemblies
 
-    def load_data(self, data: dict[str, Union[float, bool, str, dict]]):
+    def load_settings(self, data: dict[str, Union[float, bool, str, dict]]):
         assembly_data = data.get("assembly_data", {})
         self.name = assembly_data.get("name", "Assembly")
         self.expected_time_to_complete: float = assembly_data.get("expected_time_to_complete", 0.0)
-        self.has_items: bool = assembly_data.get("has_items", False)
-        self.has_sub_assemblies: bool = assembly_data.get("has_sub_assemblies", True)
-        self.flow_tag: FlowTag = FlowTag("", assembly_data.get("flow_tag", {}), self.workspace_settings)
-        self.current_flow_tag_index = data.get("current_flow_tag_index", 0)
+        self.flow_tag = FlowTag("", assembly_data.get("flow_tag", {}), self.workspace_settings)
+        self.current_flow_tag_index = assembly_data.get("current_flow_tag_index", 0)
+        self.current_flow_tag_status_index = assembly_data.get("current_flow_tag_status_index", 0)
         self.assembly_image: str = assembly_data.get("assembly_image")
         self.assembly_files: list[str] = assembly_data.get("assembly_files", [])
         self.quantity: int = assembly_data.get("quantity", 1)
         self.color = assembly_data.get("color", "#3daee9")
+        # If deepcopy is not done, than a reference is kept in the original object it was copied from
+        # and then it messes everything up, specifically it will mess up laser cut parts
+        # when you add a job to workspace
+        self.timer = WorkspaceTimer(copy.deepcopy(assembly_data.get("timer", {})), self.flow_tag)
 
         self.uses_primer: bool = assembly_data.get("uses_primer", False)
         self.primer_name: str = assembly_data.get("primer_name")
@@ -152,8 +182,8 @@ class Assembly:
             self.powder_item = self.paint_inventory.get_powder(self.powder_name)
         self.cost_for_powder_coating = assembly_data.get("cost_for_powder_coating", 0.0)
 
-        # NOTE Used by user workspace
-        self.timers: dict[str, dict[str, object]] = assembly_data.get("timers", {})
+    def load_data(self, data: dict[str, Union[float, bool, str, dict]]):
+        self.load_settings(data)
 
         self.laser_cut_parts.clear()
         laser_cut_parts = data.get("laser_cut_parts", [])
@@ -176,23 +206,14 @@ class Assembly:
             sub_assembly = Assembly(sub_assembly_data, self.job)
             self.sub_assemblies.append(sub_assembly)
 
-    def set_timer(self, flow_tag: str, time: object) -> None:
-        self.timers[flow_tag]["time_to_complete"] = time.value()
-
     def to_dict(self) -> dict:
         return {
             "assembly_data": {
                 "name": self.name,
                 "color": self.color,
                 "expected_time_to_complete": self.expected_time_to_complete,
-                "has_items": self.has_items,
-                "has_sub_assemblies": self.has_sub_assemblies,
-                "flow_tag": self.flow_tag.to_dict(),
-                "current_flow_tag_index": self.current_flow_tag_index,
                 "assembly_image": self.assembly_image,
                 "quantity": self.quantity,
-                "assembly_files": self.assembly_files,
-                "timers": self.timers,
                 "uses_primer": self.uses_primer,
                 "primer_name": None if self.primer_name == "None" else self.primer_name,
                 "primer_overspray": self.primer_overspray,
@@ -205,6 +226,11 @@ class Assembly:
                 "powder_name": None if self.powder_name == "None" else self.powder_name,
                 "powder_transfer_efficiency": self.powder_transfer_efficiency,
                 "cost_for_powder_coating": self.cost_for_powder_coating,
+                "assembly_files": self.assembly_files,
+                "flow_tag": self.flow_tag.to_dict(),
+                "current_flow_tag_index": self.current_flow_tag_index,
+                "current_flow_tag_status_index": self.current_flow_tag_status_index,
+                "timer": self.timer.to_dict(),
             },
             "laser_cut_parts": [laser_cut_part.to_dict() for laser_cut_part in self.laser_cut_parts],
             "components": [component.to_dict() for component in self.components],

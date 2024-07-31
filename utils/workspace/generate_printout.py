@@ -13,15 +13,18 @@ from utils.workspace.job import Job
 
 
 class CoverPage:
-    def __init__(self, job: Job) -> None:
-        self.job = job
+    def __init__(self, order_number: float, date_shipped: str, date_expected: str, ship_to: str):
+        self.order_number = order_number
+        self.date_shipped = date_shipped
+        self.date_expected = date_expected
+        self.ship_to = ship_to
         self.server_directory = f"http://{get_server_ip_address()}:{get_server_port()}"
 
     def generate(self) -> str:
         return f"""<div id="cover-page">
                 <div class="field label prefix border max">
                     <i>numbers</i>
-                    <input type="number" id="order-number" value={int(self.job.order_number)}>
+                    <input type="number" id="order-number" value={int(self.order_number)}>
                     <label>Order Number</label>
                 </div>
 
@@ -29,18 +32,18 @@ class CoverPage:
                     <article class="border max">
                         <div class="field label prefix border">
                             <i>today</i>
-                            <input type="date" value="{self.job.date_shipped}">
+                            <input type="date" value="{self.date_shipped}">
                             <label>Date Shipped</label>
                         </div>
                         <div class="field label prefix border">
                             <i>today</i>
-                            <input type="date" value="{self.job.date_expected}">
+                            <input type="date" value="{self.date_expected}">
                             <label>Date Expected</label>
                         </div>
                     </article>
                     <article class="border max">
                         <div class="field textarea label border">
-                            <textarea>{self.job.ship_to}</textarea>
+                            <textarea>{self.ship_to}</textarea>
                             <label>Ship To</label>
                         </div>
                         <div class="field border">
@@ -53,8 +56,16 @@ class CoverPage:
         </div><br>"""
 
 
+class WorkorderID:
+    def __init__(self, workorder_id: str):
+        self.workorder_id = workorder_id
+
+    def generate(self) -> str:
+        return f"""<h5 class="center-align">Scan to Open Workorder</h5><div class='padding' id='workorder-id' data-workorder-id={self.workorder_id}></div><div id="page-break" class="page-break"></div>"""
+
+
 class NestsTable:
-    def __init__(self, job: Job) -> None:
+    def __init__(self, nests: list[Nest]):
         self.headers = [
             "Nest Name",
             "Thickness",
@@ -63,7 +74,7 @@ class NestsTable:
             "Sheet Cut Time",
             "Nest Cut Time",
         ]
-        self.job = job
+        self.nests = nests
         self.grand_total_cut_time = 0.0
 
     def get_formatted_time(self, total_seconds: float) -> tuple[int, int, int]:
@@ -74,13 +85,13 @@ class NestsTable:
         )
 
     def get_total_sheet_count(self) -> int:
-        return sum(nest.sheet_count for nest in self.job.nests)
+        return sum(nest.sheet_count for nest in self.nests)
 
     def generate(self) -> str:
         html = """<div id="nests-layout">
                 <h5 class="center-align">Nests:</h5>
                 <article class="sheets-table border">"""
-        if not self.job.nests:
+        if not self.nests:
             html += "Nothing here"
         else:
             html += '<table class="small-text no-space border dynamic-table">'
@@ -88,7 +99,7 @@ class NestsTable:
             for i, header in enumerate(self.headers):
                 html += f'<th data-column="{i}"><label class="checkbox"><input type="checkbox" class="column-toggle" data-column="{i}" checked><span></span></label>{header}</th>'
             html += "</tr></thead><tbody>"
-            for nest in self.job.nests:
+            for nest in self.nests:
                 single_hours, single_minutes, single_seconds = self.get_formatted_time(nest.sheet_cut_time)
                 nest_hours, nest_minutes, nest_seconds = self.get_formatted_time(nest.get_machining_time())
                 self.grand_total_cut_time += nest.get_machining_time()
@@ -116,11 +127,11 @@ class NestsTable:
 
 
 class SheetImages:
-    def __init__(self, job: Job):
-        self.job = job
+    def __init__(self, nests: list[Nest]):
+        self.nests = nests
         self.server_directory = f"http://{get_server_ip_address()}:{get_server_port()}"
         self.laser_cut_parts: list[LaserCutPart] = []
-        for nest in self.job.nests:
+        for nest in self.nests:
             self.laser_cut_parts.extend(nest.laser_cut_parts)
 
     def format_filename(self, s: str):
@@ -169,10 +180,10 @@ class SheetImages:
         html = """<div id="sheets-layout">
                 <h5 class="center-align">Sheets:</h5>
                 <article class="border"><div class="grid">"""
-        if not self.job.nests:
+        if not self.nests:
             html += "Nothing here"
         else:
-            for i, nest in enumerate(self.job.nests):
+            for i, nest in enumerate(self.nests):
                 single_hours, single_minutes, single_seconds = self.get_hours_minutes_seconds(nest.sheet_cut_time)
                 nest_hours, nest_minutes, nest_seconds = self.get_hours_minutes_seconds(nest.get_machining_time())
                 if nest.sheet_count == 1:
@@ -182,7 +193,7 @@ class SheetImages:
                                 <div class="small-text">Nest Cut Time: {nest_hours:02d}h {nest_minutes:02d}m {nest_seconds:02d}s</div>"""
                 parts_list = '<article class="no-padding" style="width: 300px;">'
                 for part in nest.laser_cut_parts:
-                    parts_list += f'''
+                    parts_list += f"""
                     <a class="row padding surface-container wave" onclick="ui('#NEST-{self.format_filename(part.name)}');">
                         <img class="round" src="{self.server_directory}/{part.image_index}">
                         <div class="max">
@@ -191,8 +202,8 @@ class SheetImages:
                         </div>
                         <div class="badge none">#{part.part_number}</div>
                     </a>
-                    <div class="divider"></div>'''
-                parts_list += '</article>'
+                    <div class="divider"></div>"""
+                parts_list += "</article>"
                 html += f"""
                 <div class="s6">
                     <article class="nest no-padding border">
@@ -235,15 +246,10 @@ class SheetImages:
 
 
 class NestedLaserCutParts:
-    def __init__(self, job: Job):
-        self.job = job
+    def __init__(self, nests: list[Nest]):
+        self.nests = nests
         self.server_directory = f"http://{get_server_ip_address()}:{get_server_port()}"
-        self.headers = [
-            "Part",
-            "Material",
-            "Sheet Qty",
-            "Qty"
-        ]
+        self.headers = ["Part", "Part #", "Sheet Qty", "Qty"]
 
     def format_filename(self, s: str):
         valid_chars = f"-_.() {string.ascii_letters}{string.digits}"
@@ -258,43 +264,44 @@ class NestedLaserCutParts:
         html += "</thead>"
         html += "<tbody>"
         for laser_cut_part in nest.laser_cut_parts:
-            html += f'''<tr>
+            html += f"""<tr>
             <td class="min" data-column="0" data-name="part">
                 <button class="extra transparent small-round" onclick="ui('#NEST-{self.format_filename(laser_cut_part.name)}');">
                 <img class="responsive" src="{self.server_directory}/{laser_cut_part.image_index}">
                 <span class="small-text">{laser_cut_part.name}</span>
+                </button>
             </td>
-            <td class="small-text" data-column="1" data-name="material">{laser_cut_part.gauge} {laser_cut_part.material}</td>
-            <td class="small-text" data-column="2" data-name="sheet-qty">{laser_cut_part.quantity}</td>
-            <td class="small-text" data-column="3" data-name="qty">{(laser_cut_part.quantity * nest.sheet_count):,.2f}</td>
-            </tr>'''
-        html += '''<tr>
-                <th class="small-text" data-column="0" data-name="part"></th>
-                <th class="small-text" data-column="1" data-name="material"></th>
-                <th class="small-text" data-column="2" data-name="sheet-qty"></th>
-                <th class="small-text" data-column="3" data-name="qty"></th>
-            </tr></tbody></table>'''
+            <td class="small-text" data-column="2" data-name="part-#"><i>tag</i>{laser_cut_part.part_number}</td>
+            <td class="small-text" data-column="3" data-name="sheet-qty">{int(laser_cut_part.quantity)}</td>
+            <td class="small-text" data-column="4" data-name="qty">{int(laser_cut_part.quantity * nest.sheet_count):,.2f}</td>
+            </tr>"""
+        html += """<tr>
+            <th class="small-text" data-column="0" data-name="part"></th>
+            <th class="small-text" data-column="1" data-name="part-#"></th>
+            <th class="small-text" data-column="3" data-name="sheet-qty"></th>
+            <th class="small-text" data-column="4" data-name="qty"></th>
+        </tr></tbody></table>"""
         return html
 
     def generate(self) -> str:
         html = '<div id="nested-parts-layout"><h5 class="center-align">Nested Laser Cut Parts:</h5>'
-        if not self.job.nests:
+        if not self.nests:
             html += '<article class="border nest-summary">Nothing here</article>'
         else:
-            for i, nest in enumerate(self.job.nests):
+            for i, nest in enumerate(self.nests):
                 html += '<article class="border nest-summary"><div class="center-align">'
                 html += f'<h6 class="center-align">{nest.get_name()}</h6><br>'
                 html += f'<img style="margin-bottom: -80px; margin-top: -100px; z-index: -1; height: auto;" src="{self.server_directory}/image/{nest.image_path}" class="responsive nest_image"></div>'
                 html += self.generate_laser_cut_part_table(nest)
-                html += '</article>'
-                if i < len(self.job.nests) - 1:  # Check if it's not the last item
+                html += "</article>"
+                if i < len(self.nests) - 1:  # Check if it's not the last item
                     html += '<div id="page-break" class="page-break"></div>'
-        html += '</div>'
+        html += "</div>"
         return html
 
 
 class LaserCutPartsTable:
-    def __init__(self, job: Job, assembly_quantity: int, laser_cut_parts: list[LaserCutPart]) -> None:
+    def __init__(self, job: Job, assembly_quantity: int, laser_cut_parts: list[LaserCutPart]):
         self.job = job
         self.assembly_quantity = assembly_quantity
         self.laser_cut_parts = laser_cut_parts
@@ -360,7 +367,7 @@ class LaserCutPartsTable:
             html += f'<div class="row no-margin"><div style="height: 20px; width: 20px; background-color: {laser_cut_part.powder_item.color}; border-radius: 5px;"></div>{laser_cut_part.powder_item.name}</div>'
         if not (laser_cut_part.uses_primer or laser_cut_part.uses_paint or laser_cut_part.uses_powder):
             html = ""
-        html += '</div>'
+        html += "</div>"
         return html
 
     def generate(self) -> str:
@@ -372,7 +379,7 @@ class LaserCutPartsTable:
         html += "<tbody>"
         for laser_cut_part in self.laser_cut_parts:
             unit_price = self.job.price_calculator.get_laser_cut_part_cost(laser_cut_part)
-            html += f'''<tr>
+            html += f"""<tr>
             <td class="min" data-column="0" data-name="part">
                 <button class="extra transparent small-round" onclick="ui('#LCP-{self.format_filename(laser_cut_part.name)}');">
                     <img class="responsive" src="{self.server_directory}/{laser_cut_part.image_index}">
@@ -386,8 +393,8 @@ class LaserCutPartsTable:
             <td class="small-text min" data-column="5" data-name="qty">{(laser_cut_part.quantity * self.assembly_quantity):,.2f}</td>
             <td class="small-text min" data-column="6" data-name="unit-price">${unit_price:,.2f}</td>
             <td class="small-text" data-column="7" data-name="price">${(unit_price * laser_cut_part.quantity * self.assembly_quantity):,.2f}</td>
-            </tr>'''
-        html += f'''<tr>
+            </tr>"""
+        html += f"""<tr>
                 <th class="small-text" data-column="0" data-name="part"></th>
                 <th class="small-text" data-column="1" data-name="material"></th>
                 <th class="small-text" data-column="2" data-name="process"></th>
@@ -396,12 +403,12 @@ class LaserCutPartsTable:
                 <th class="small-text" data-column="5" data-name="qty"></th>
                 <th class="small-text" data-column="6" data-name="unit-price"></th>
                 <th class="small-text min" data-column="7" data-name="price">Total: ${self.get_total_cost():,.2f}</th>
-            </tr></tbody></table>'''
+            </tr></tbody></table>"""
         return html
 
 
 class ComponentsTable:
-    def __init__(self, job: Job, assembly_quantity: int, components: list[Component]) -> None:
+    def __init__(self, job: Job, assembly_quantity: int, components: list[Component]):
         self.job = job
         self.assembly_quantity = assembly_quantity
         self.components = components
@@ -533,7 +540,7 @@ class AssemblyTable:
                     <img src="{self.server_directory}/image/{assembly.assembly_image}" class="assembly_image round">
                     <div class="max">
                         <h6 class="small">{assembly.name}</h6>
-                        <div>{assembly.flow_tag.get_name()}</div>
+                        <div id="assembly-proess-layout">{assembly.flow_tag.get_name()}</div>
                     </div>
                     <h5>× {int(assembly.quantity)}</h5>
                 </a><div class="divider"></div>"""
@@ -542,7 +549,7 @@ class AssemblyTable:
 
 
 class JobDiv:
-    def __init__(self, job: Job) -> None:
+    def __init__(self, job: Job):
         self.job = job
 
     def generate(self) -> str:
@@ -554,7 +561,7 @@ class JobDiv:
 
 
 class AssemblyDiv:
-    def __init__(self, job: Job, assembly: Assembly, use_recursion=True) -> None:
+    def __init__(self, job: Job, assembly: Assembly, use_recursion=True):
         self.job = job
         self.assembly = assembly
         self.use_recursion = use_recursion
@@ -565,7 +572,7 @@ class AssemblyDiv:
         image_html = f'<img src="{self.server_directory}/image/{self.assembly.assembly_image}" class="assembly_image">' if self.assembly.assembly_image else ""
         html += image_html
         html += '<div class="padding">'
-        html += f'<h5>{self.assembly.name}</h5>'
+        html += f"<h5>{self.assembly.name}</h5>"
         html += f'<p class="small-text">Assembly Quantity: {self.assembly.quantity}</p>'
         html += f'<p class="small-text">Process: {self.assembly.flow_tag.get_name()}</p>'
         html += "</div>"
@@ -574,7 +581,7 @@ class AssemblyDiv:
 
     def generate(self) -> str:
         html = '<details class="assembly_details" open>'
-        html += f'<summary>{self.assembly.name} × {int(self.assembly.quantity)}</summary>'
+        html += f"<summary>{self.assembly.name} × {int(self.assembly.quantity)}</summary>"
         html += '<div class="assembly">'
         html += self.get_assembly_data_html()
 
@@ -615,7 +622,7 @@ class AssemblyDiv:
 
 
 class JobParts:
-    def __init__(self, job: Job) -> None:
+    def __init__(self, job: Job):
         self.job = job
 
     def generate(self) -> str:
@@ -623,19 +630,15 @@ class JobParts:
 
 
 class PrintoutHeader:
-    def __init__(
-        self,
-        job: Job,
-        printout_type: Literal["QUOTE", "WORKORDER", "PACKINGSLIP"] = "QUOTE"
-    ) -> None:
-        self.job = job
+    def __init__(self, name: str, printout_type: Literal["QUOTE", "WORKORDER", "PACKINGSLIP"] = "QUOTE"):
+        self.name = name
         self.printout_type = printout_type
         self.server_directory = f"http://{get_server_ip_address()}:{get_server_port()}"
-        self.html = f'''<header>
+        self.html = f"""<header>
             <nav>
                 <img class="logo" src="{self.server_directory}/images/logo.png">
                 <h5 class="max center-align small">
-                    {self.job.name}
+                    {self.name}
                 </h5>
                 <div class="date">
                     {str(datetime.now().strftime("%I:%M:%S %p %A %B %d, %Y"))}
@@ -655,15 +658,11 @@ class PrintoutHeader:
                     <span>Packing Slip</span>
                 </a>
             </nav>
-        </header>'''
+        </header>"""
 
 
-class Printout:
-    def __init__(
-        self,
-        job: Job,
-        printout_type: Literal["QUOTE", "WORKORDER", "PACKINGSLIP"] = "QUOTE"
-    ) -> None:
+class WorkspaceJobPrintout:
+    def __init__(self, job: Job, printout_type: Literal["QUOTE", "WORKORDER", "PACKINGSLIP"] = "QUOTE"):
         self.job = job
         self.printout_type = printout_type
         self.program_directory = os.path.dirname(os.path.realpath(sys.argv[0]))
@@ -676,7 +675,7 @@ class Printout:
             self.printout_js = printout_js_file.read()
 
     def generate(self) -> str:
-        header_html = PrintoutHeader(self.job, self.printout_type).html
+        header_html = PrintoutHeader(self.job.name, self.printout_type).html
         html = f"""<!DOCTYPE html>
                 <html>
                     <head>
@@ -685,9 +684,9 @@ class Printout:
                         <meta http-equiv="X-UA-Compatible" content="ie=edge">
                         <meta name="google" content="notranslate">
                         <script src="https://cdn.jsdelivr.net/gh/davidshimjs/qrcodejs/qrcode.min.js"></script>
+                        <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
                         <link href="https://cdn.jsdelivr.net/npm/beercss@3.6.8/dist/cdn/beer.min.css" rel="stylesheet">
                         <script type="module" src="https://cdn.jsdelivr.net/npm/beercss@3.6.8/dist/cdn/beer.min.js"></script>
-                        <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
                         <script type="module" src="https://cdn.jsdelivr.net/npm/material-dynamic-colors@1.1.2/dist/cdn/material-dynamic-colors.min.js"></script>
                         <link rel="stylesheet" type="text/css" href="/static/theme.css">
                         <title>{self.printout_type.title()} {self.job.name}</title>
@@ -698,7 +697,7 @@ class Printout:
             {self.printout_css}
         </style>
         <body class="quote">
-        <nav class="left l" id="printout-controls" style="width: 8vw;">
+        <nav class="left l" id="printout-controls">
             <div class="left-align">
                 <label class="checkbox">
                     <input type="checkbox" id="showCoverPage" data-name="show-cover-page" data-layout="cover-page" checked>
@@ -707,6 +706,10 @@ class Printout:
                 <label class="checkbox">
                     <input type="checkbox" id="showAssemblies" data-name="show-assemblies" data-layout="assemblies-list-layout" {"checked" if self.job.assemblies else ""}>
                     <span>Show Assemblies</span>
+                </label>
+                <label class="checkbox">
+                    <input type="checkbox" id="showAssemblyProcess" data-name="show-assembly-process" data-layout="assembly-proess-layout" checked>
+                    <span>Show Assembly Process</span>
                 </label>
                 <label class="checkbox">
                     <input type="checkbox" id="showNests" data-name="show-nests" data-layout="nests-layout" {"checked" if self.job.nests else ""}>
@@ -737,7 +740,7 @@ class Printout:
         <main class="responsive">
         {header_html}<br>"""
 
-        cover_page = CoverPage(self.job)
+        cover_page = CoverPage(self.job.order_number, self.job.date_shipped, self.job.date_expected, self.job.ship_to)
 
         html += cover_page.generate()
 
@@ -746,13 +749,13 @@ class Printout:
         assembly_table = AssemblyTable(self.job)
         html += assembly_table.generate()
 
-        sheets_table = NestsTable(self.job)
+        sheets_table = NestsTable(self.job.nests)
         html += sheets_table.generate()
 
-        nests_table = SheetImages(self.job)
+        nests_table = SheetImages(self.job.nests)
         html += nests_table.generate()
 
-        nested_parts = NestedLaserCutParts(self.job)
+        nested_parts = NestedLaserCutParts(self.job.nests)
         html += nested_parts.generate()
 
         html += '<div id="parts-layout">'
@@ -761,7 +764,7 @@ class Printout:
             <a class="active" data-ui="#assemblies-list"> <i>data_table</i>Assemblies List</a>
             <a data-ui="#parts-list"> <i>format_list_bulleted</i>Grouped Parts List</a>
         </div>"""
-        html += '<div class="page right hidden" id="assemblies-layout">'
+        html += '<div class="page hidden" id="assemblies-layout">'
         if self.job.assemblies:
             job_div = JobDiv(self.job)
             html += job_div.generate()
@@ -769,7 +772,7 @@ class Printout:
             html += "Nothing here"
         html += "</div>"
 
-        html += '<div class="page top active" id="assemblies-list" >'
+        html += '<div class="page active" id="assemblies-list" >'
         if all_assemblies:
             for index, assembly in enumerate(all_assemblies):
                 assembly_div = AssemblyDiv(self.job, assembly, False)
@@ -786,7 +789,7 @@ class Printout:
         grouped_components = self.job.get_grouped_components()
         grouped_components_table = ComponentsTable(self.job, 1, grouped_components)
 
-        html += '<div class="page left hidden" id="parts-list">'
+        html += '<div class="page hidden" id="parts-list">'
         if grouped_laser_cut_parts or grouped_components:
             if grouped_laser_cut_parts:
                 html += '<h5 class="center-align">Laser Cut Parts:</h5>'
@@ -797,7 +800,7 @@ class Printout:
         else:
             html += "Nothing here"
         html += "</div>"
-        html += "</div>" # for the tabs
+        html += "</div>"  # for the tabs
 
         if grouped_components or grouped_laser_cut_parts:
             html += f"""
@@ -815,7 +818,90 @@ class Printout:
         html += nests_table.generate_laser_cut_part_popups()
 
         html += "</main></body>"
-        html += f'''<script>
+        html += f"""<script>
             {self.printout_js}
-        </script>'''
+        </script>"""
+        return html
+
+
+class WorkorderPrintout:
+    def __init__(self, nests: list[Nest], workorder_id: str, should_include_qr_to_workorder: bool, printout_type: Literal["QUOTE", "WORKORDER", "PACKINGSLIP"] = "WORKORDER"):
+        self.nests = nests
+        self.workorder_id = workorder_id
+        self.printout_type = printout_type
+        self.program_directory = os.path.dirname(os.path.realpath(sys.argv[0]))
+        self.server_directory = f"http://{get_server_ip_address()}:{get_server_port()}"
+        self.should_include_qr_to_workorder = should_include_qr_to_workorder
+
+        with open("utils/workspace/printout.css", "r", encoding="utf-8") as printout_css_file:
+            self.printout_css = printout_css_file.read()
+
+        with open("utils/workspace/printout.js", "r", encoding="utf-8") as printout_js_file:
+            self.printout_js = printout_js_file.read()
+
+    def generate(self) -> str:
+        header_html = PrintoutHeader("Nested Parts", self.printout_type).html
+        html = f"""<!DOCTYPE html>
+                <html>
+                    <head>
+                        <meta charset="UTF-8">
+                        <meta name="viewport" content="width=device-width, initial-scale=1">
+                        <meta http-equiv="X-UA-Compatible" content="ie=edge">
+                        <meta name="google" content="notranslate">
+                        <script src="https://cdn.jsdelivr.net/gh/davidshimjs/qrcodejs/qrcode.min.js"></script>
+                        <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+                        <link href="https://cdn.jsdelivr.net/npm/beercss@3.6.8/dist/cdn/beer.min.css" rel="stylesheet">
+                        <script type="module" src="https://cdn.jsdelivr.net/npm/beercss@3.6.8/dist/cdn/beer.min.js"></script>
+                        <script type="module" src="https://cdn.jsdelivr.net/npm/material-dynamic-colors@1.1.2/dist/cdn/material-dynamic-colors.min.js"></script>
+                        <link rel="stylesheet" type="text/css" href="/static/theme.css">
+                        <title>{self.printout_type.title()} Workspace Nests Printout</title>
+                        <meta property="og:title" content="{self.printout_type.title()} -  Workspace Nests Printout" />
+                        <meta property="og:description" content="Workspace Nests Printout" />
+                    </head>
+        <style>
+            {self.printout_css}
+        </style>
+        <body class="quote">
+        <nav class="left l" id="printout-controls">
+            <div class="left-align">
+                <label class="checkbox">
+                    <input type="checkbox" id="showNests" data-name="show-nests" data-layout="nests-layout" {"checked" if self.nests else ""}>
+                    <span>Show Nests</span>
+                </label>
+                <label class="checkbox">
+                    <input type="checkbox" id="showSheets" data-name="show-sheets" data-layout="sheets-layout" {"checked" if self.nests else ""}>
+                    <span>Show Sheets</span>
+                </label>
+                <label class="checkbox">
+                    <input type="checkbox" id="showNestedParts" data-name="show-nested-parts" data-layout="nested-parts-layout">
+                    <span>Show Nested Parts</span>
+                </label>
+                <label class="checkbox">
+                    <input type="checkbox" id="usePageBreaks" data-name="use-page-breaks" data-layout="page-break" checked>
+                    <span>Use Page Breaks</span>
+                </label>
+            </div>
+        </nav>
+        <main class="responsive">
+        {header_html}<br>"""
+
+        if self.should_include_qr_to_workorder:
+            workorder_id = WorkorderID(self.workorder_id)
+            html += workorder_id.generate()
+
+        sheets_table = NestsTable(self.nests)
+        html += sheets_table.generate()
+
+        nests_table = SheetImages(self.nests)
+        html += nests_table.generate()
+
+        nested_parts = NestedLaserCutParts(self.nests)
+        html += nested_parts.generate()
+
+        html += nests_table.generate_laser_cut_part_popups()
+
+        html += "</main></body>"
+        html += f"""<script>
+            {self.printout_js}
+        </script>"""
         return html

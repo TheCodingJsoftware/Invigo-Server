@@ -1,4 +1,5 @@
 import os
+from typing import Optional
 
 import msgspec
 
@@ -9,7 +10,7 @@ from utils.workspace.tag import Tag
 
 
 class WorkspaceSettings:
-    def __init__(self) -> None:
+    def __init__(self):
         self.filename: str = "workspace_settings"
         self.FOLDER_LOCATION: str = f"{os.getcwd()}/data"
         self.notes: str = ""
@@ -64,7 +65,7 @@ class WorkspaceSettings:
             flow_tags.extend(iter(flow_tag_group))
         return flow_tags
 
-    def get_flow_tag_by_name(self, name: str) -> FlowTag:
+    def get_flow_tag_by_name(self, name: str) -> Optional[FlowTag]:
         for flow_tag_group in self.flow_tags_group:
             for flow_tag in flow_tag_group:
                 if str(flow_tag) == name:

@@ -43,67 +43,73 @@
         </nav>
     </header>
     <main class="responsive">
-        <div class="center-align padding">
-            <button class="small-round extra" onclick='markWorkorderAsDone({{workorder_data | tojson | safe }})'>
-                <i>done_all</i>
-                <span>Picked All Sheets</span>
-            </button>
-        </div>
-        {% for nest_data in workorder_data %}
-            <article class="border no-padding">
-                <img src="/image/{{nest_data.image_path}}" class="responsive">
-                <div class="padding">
-                    <h5>
-                        {{nest_data.name}}
-                        {% if nest_data.sheet_count > 1 %}
-                            × {{nest_data.sheet_count}}
-                        {% endif %}
-                    </h5>
-                    <div class="right-align padding">
-                        <button class="small-round" onclick='markNestAsDone({{nest_data | tojson | safe }})'>
-                            <i>check</i>
+        {% if workorder_data %}
+            <div class="center-align padding">
+                <button class="small-round extra" onclick='markWorkorderAsDone({{workorder_data | tojson | safe }})'>
+                    <i>done_all</i>
+                    <span>Picked All Sheets</span>
+                </button>
+            </div>
+            {% for nest_data in workorder_data %}
+                <article class="border no-padding">
+                    <img src="/image/{{nest_data.image_path}}" class="responsive">
+                    <div class="padding">
+                        <h5>
+                            {{nest_data.name}}
                             {% if nest_data.sheet_count > 1 %}
-                                <span>{{nest_data.sheet_count}} Sheets Picked</span>
-                            {% else %}
-                                <span>Sheet Picked</span>
+                                × {{nest_data.sheet_count}}
                             {% endif %}
-                        </button>
-                    </div>
-                    {% for laser_cut_part in nest_data.laser_cut_parts %}
-                    <details>
-                        <summary class="none no-padding">
-                            <a class="row wave padding surface-container">
-                                <img class="round" src="/{{laser_cut_part.image_index}}">
-                                <div>
-                                    <h6 class="small">{{laser_cut_part.name}}</h6>
-                                    <div><i>tag</i>{{laser_cut_part.part_number}}</div>
-                                </div>
-                                <div class="max">
-                                    {% set next_index = laser_cut_part.current_flow_tag_index + 2 %}
-                                    <div>
-                                        {% if next_index >= laser_cut_part.flow_tag.tags | length %}
-                                        ➜ Done
-                                        {% else %}
-                                        ➜ {{ laser_cut_part.flow_tag.tags[next_index] }}
-                                        {% endif %}
-                                    </div>
-                                </div>
-                                <label>
-                                    × {{laser_cut_part.quantity_in_nest * nest_data.sheet_count}}
-                                </label>
-                            </a>
-                        </summary>
-                        <article class="small-padding no-round no-margin right-align">
-                            <button class="small-round" onclick='openRecutDialog({{nest_data | tojson | safe }}, {{laser_cut_part | tojson | safe }})'>
-                                <span class="small-text no-wrap no-padding">Recut</span>
+                        </h5>
+                        <div class="right-align padding">
+                            <button class="small-round" onclick='markNestAsDone({{nest_data | tojson | safe }})'>
+                                <i>check</i>
+                                {% if nest_data.sheet_count > 1 %}
+                                    <span>{{nest_data.sheet_count}} Sheets Picked</span>
+                                {% else %}
+                                    <span>Sheet Picked</span>
+                                {% endif %}
                             </button>
-                        </article>
-                        </details>
-                        <div class="divider"></div>
-                    {% endfor %}
-                </div>
-            </article>
-        {% endfor %}
+                        </div>
+                        {% for laser_cut_part in nest_data.laser_cut_parts %}
+                        <details>
+                            <summary class="none no-padding">
+                                <a class="row wave padding surface-container">
+                                    <img class="round" src="/{{laser_cut_part.image_index}}">
+                                    <div>
+                                        <h6 class="small">{{laser_cut_part.name}}</h6>
+                                        <div><i>tag</i>{{laser_cut_part.part_number}}</div>
+                                    </div>
+                                    <div class="max">
+                                        {% set next_index = laser_cut_part.current_flow_tag_index + 2 %}
+                                        <div>
+                                            {% if next_index >= laser_cut_part.flow_tag.tags | length %}
+                                            ➜ Done
+                                            {% else %}
+                                            ➜ {{ laser_cut_part.flow_tag.tags[next_index] }}
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <label>
+                                        × {{laser_cut_part.quantity_in_nest * nest_data.sheet_count}}
+                                    </label>
+                                </a>
+                            </summary>
+                            <article class="small-padding no-round no-margin right-align">
+                                <button class="small-round" onclick='openRecutDialog({{nest_data | tojson | safe }}, {{laser_cut_part | tojson | safe }})'>
+                                    <span class="small-text no-wrap no-padding">Recut</span>
+                                </button>
+                            </article>
+                            </details>
+                            <div class="divider"></div>
+                        {% endfor %}
+                    </div>
+                </article>
+            {% endfor %}
+        {% else %}
+        <h5 class="center-align padding">
+            Sheets are all picked.
+        </h5>
+        {% endif %}
     </main>
     <div class="overlay blur"></div>
     <dialog class="bottom" id="recut-dialog">
@@ -155,15 +161,58 @@
     var recut_nest;
     var recut_max_quantity;
 
-    function markWorkorderAsDone(workorder_data){
-        console.log(workorder_data);
+    function getWorkorderNameFromUrl() {
+        const url = window.location.href;
+        const parts = url.split('/');
+        return parts[parts.length - 1]; // Assuming the workorder name is the last part of the URL
     }
-    function markNestAsDone(nest_data){
-        console.log(nest_data);
+
+    async function markWorkorderAsDone(workorder_data) {
+        const workorder_name = getWorkorderNameFromUrl();
+        try {
+            const response = await fetch(`/mark_workorder_done/${workorder_name}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(workorder_data),
+            });
+
+            if (response.ok) {
+                const result = await response.json();
+                window.location.reload();
+                console.log('Success:', result);
+            } else {
+                console.error('Error:', response.statusText);
+            }
+        } catch (error) {
+            console.error('Error:', error);
+        }
     }
-    function markPartAsDone(nest_data, laser_cut_part){
-        console.log(nest_data, laser_cut_part);
+
+    async function markNestAsDone(nest_data) {
+        const workorder_name = getWorkorderNameFromUrl();
+        try {
+            const response = await fetch(`/mark_nest_done/${workorder_name}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(nest_data),
+            });
+
+            if (response.ok) {
+                const result = await response.json();
+                window.location.reload();
+                console.log('Success:', result);
+            } else {
+                console.error('Error:', response.statusText);
+            }
+        } catch (error) {
+            console.error('Error:', error);
+        }
     }
+
     function validateRecutQuantity() {
         var input = document.getElementById('recut-quantity-input');
         var parentDiv = input.parentElement;

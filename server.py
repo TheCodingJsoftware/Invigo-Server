@@ -1,3 +1,4 @@
+import asyncio
 import os
 import re
 import shutil
@@ -26,6 +27,7 @@ from natsort import natsorted
 from utils.custom_print import CustomPrint, print_clients
 from utils.inventory.components_inventory import ComponentsInventory
 from utils.inventory.laser_cut_inventory import LaserCutInventory
+from utils.inventory.laser_cut_part import LaserCutPart
 from utils.inventory.order import Order
 from utils.inventory.paint_inventory import PaintInventory
 from utils.inventory.sheets_inventory import SheetsInventory
@@ -43,6 +45,11 @@ from utils.sheet_report import generate_sheet_report
 from utils.sheet_settings.sheet_settings import SheetSettings
 from utils.workspace.job import JobStatus
 from utils.workspace.workspace_settings import WorkspaceSettings
+from utils.workspace.workspace import Workspace
+from utils.workspace.workspace_item_group import WorkspaceItemGroup
+from utils.inventory.nest import Nest
+from utils.workspace.job_manager import JobManager
+from utils.workspace.workorder import Workorder
 
 # Store connected clients
 connected_clients: set[tornado.websocket.WebSocketHandler] = set()
@@ -936,6 +943,10 @@ class UploadWorkorderHandler(tornado.web.RequestHandler):
             with open(workorder_file_path, "wb") as f:
                 f.write(msgspec.json.encode(workorder_data))
 
+            workorder_backup_file_path = os.path.join(folder, "data_backup.json")
+            with open(workorder_backup_file_path, "wb") as f:
+                f.write(msgspec.json.encode(workorder_data))
+
             html_file_path = os.path.join(folder, "page.html")
             with open(html_file_path, "w", encoding="utf-8") as f:
                 f.write(html_file_contents)
@@ -997,6 +1008,96 @@ class WorkorderHandler(tornado.web.RequestHandler):
         else:
             self.set_status(404)
             self.write("404: HTML file not found.")
+
+
+async def update_laser_cut_parts_process(laser_cut_parts: list[LaserCutPart], workspace: Workspace):
+    if workspace_part_groups := workspace.get_grouped_laser_cut_parts(workspace.get_all_laser_cut_parts_with_similar_tag("picking")):
+        for workspace_part_group in workspace_part_groups:
+            for laser_cut_part in laser_cut_parts:
+                if workspace_part_group.base_part.name == laser_cut_part.name:
+                    workspace_part_group.move_to_next_process()
+                    break
+    workspace.save()
+    workspace.laser_cut_inventory.save()
+    signal_clients_for_changes(client_to_ignore=None, changed_files=[f"{workspace.filename}.json", f"{workspace.laser_cut_inventory.filename}.json"])
+
+
+class MarkWorkorderDoneHandler(tornado.web.RequestHandler):
+    lock = asyncio.Lock()
+
+    async def post(self, workorder_id: str):
+        async with self.lock:
+            try:
+                self.workorder_data = msgspec.json.decode(self.request.body)
+
+                self.components_inventory = ComponentsInventory()
+                self.sheet_settings = SheetSettings()
+                self.workspace_settings = WorkspaceSettings()
+                self.paint_inventory = PaintInventory(self.components_inventory)
+                self.sheets_inventory = SheetsInventory(self.sheet_settings)
+                self.laser_cut_inventory = LaserCutInventory(self.paint_inventory, self.workspace_settings)
+                self.job_manager = JobManager(self.sheet_settings, self.sheets_inventory, self.workspace_settings, self.components_inventory, self.laser_cut_inventory, self.paint_inventory, self)
+                self.workspace = Workspace(self.workspace_settings, self.job_manager)
+
+                self.workorder = Workorder(self.workorder_data, self.sheet_settings, self.laser_cut_inventory)
+
+                await update_laser_cut_parts_process(self.workorder.get_all_laser_cut_parts(), self.workspace)
+
+                self.workorder.nests = []
+
+                workorder_data_path = os.path.join("workorders", workorder_id, "data.json")
+
+                with open(workorder_data_path, 'wb') as f:
+                    f.write(msgspec.json.encode(self.workorder.to_dict()))
+
+                self.write({"status": "success", "message": "Workorder marked as done."})
+            except Exception as e:
+                self.set_status(500)
+                self.write({"status": "error", "message": str(e)})
+
+
+class MarkNestDoneHandler(tornado.web.RequestHandler):
+    lock = asyncio.Lock()
+
+    async def post(self, workorder_id: str):
+        async with self.lock:
+            try:
+                self.nest_data = msgspec.json.decode(self.request.body)
+
+                self.components_inventory = ComponentsInventory()
+                self.sheet_settings = SheetSettings()
+                self.workspace_settings = WorkspaceSettings()
+                self.paint_inventory = PaintInventory(self.components_inventory)
+                self.sheets_inventory = SheetsInventory(self.sheet_settings)
+                self.laser_cut_inventory = LaserCutInventory(self.paint_inventory, self.workspace_settings)
+                self.job_manager = JobManager(self.sheet_settings, self.sheets_inventory, self.workspace_settings, self.components_inventory, self.laser_cut_inventory, self.paint_inventory, self)
+                self.workspace = Workspace(self.workspace_settings, self.job_manager)
+
+                self.nest = Nest(self.nest_data, self.sheet_settings, self.laser_cut_inventory)
+
+                await update_laser_cut_parts_process(self.nest.laser_cut_parts, self.workspace)
+
+                workorder_data_path = os.path.join("workorders", workorder_id, "data.json")
+
+                with open(workorder_data_path, "rb") as f:
+                    workorder_data: dict = msgspec.json.decode(f.read())
+
+                self.workorder = Workorder(workorder_data, self.sheet_settings, self.laser_cut_inventory)
+                new_nests: list[Nest] = []
+
+                for nest in self.workorder.nests:
+                    if nest.get_name() != self.nest.get_name():
+                        new_nests.append(nest)
+
+                self.workorder.nests = new_nests
+
+                with open(workorder_data_path, 'wb') as f:
+                    f.write(msgspec.json.encode(self.workorder.to_dict()))
+
+                self.write({"status": "success", "message": "Nest marked as done."})
+            except Exception as e:
+                self.set_status(500)
+                self.write({"status": "error", "message": str(e)})
 
 
 class UploadQuoteHandler(tornado.web.RequestHandler):
@@ -1382,6 +1483,8 @@ if __name__ == "__main__":
             (r"/upload_workorder", UploadWorkorderHandler),
             (r"/workorder/(.*)", WorkorderHandler),
             (r"/workorder_printout/(.*)", LoadWorkorderHandler),
+            (r"/mark_workorder_done/(.*)", MarkWorkorderDoneHandler),
+            (r"/mark_nest_done/(.*)", MarkNestDoneHandler),
             # Quote handlers NOTE These will be removed in favor of Job Handelers
             (r"/get_previous_quotes", GetPreviousQuotesHandler),
             (r"/get_saved_quotes", GetSavedQuotesHandler),

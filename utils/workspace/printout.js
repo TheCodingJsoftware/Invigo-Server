@@ -13,6 +13,7 @@ const checkboxConfig = {
         "process": false,
         "paint": true,
         "show-total-cost": true,
+        "show-assembly-process": true,
     },
     "workorder": {
         "picture": true,
@@ -28,6 +29,7 @@ const checkboxConfig = {
         "process": true,
         "paint": true,
         "show-total-cost": false,
+        "show-assembly-process": true,
     },
     "packingslip": {
         "picture": true,
@@ -43,6 +45,7 @@ const checkboxConfig = {
         "process": false,
         "paint": true,
         "show-total-cost": false,
+        "show-assembly-process": false,
     }
 };
 
@@ -151,31 +154,33 @@ navCheckBoxLinks.forEach(link => {
     });
 });
 
-
 checkboxes.forEach(checkbox => {
     const layoutId = checkbox.getAttribute('data-layout');
-    const layoutDiv = document.getElementById(layoutId);
+    const layoutDivs = document.querySelectorAll(`#${layoutId}`);
     const storedState = localStorage.getItem(getStorageKey(checkbox.id));
 
     if (storedState === 'true') {
         checkbox.checked = true;
-        layoutDiv.classList.remove('hidden');
+        layoutDivs.forEach(layoutDiv => layoutDiv.classList.remove('hidden'));
     } else if (storedState === 'false') {
         checkbox.checked = false;
-        layoutDiv.classList.add('hidden');
+        layoutDivs.forEach(layoutDiv => layoutDiv.classList.add('hidden'));
     } else {
         checkbox.checked = true;
     }
 
     checkbox.addEventListener('change', function () {
         localStorage.setItem(getStorageKey(checkbox.id), this.checked);
-        if (this.checked) {
-            layoutDiv.classList.remove('hidden');
-        } else {
-            layoutDiv.classList.add('hidden');
-        }
+        layoutDivs.forEach(layoutDiv => {
+            if (this.checked) {
+                layoutDiv.classList.remove('hidden');
+            } else {
+                layoutDiv.classList.add('hidden');
+            }
+        });
     });
 });
+
 
 const storedTargetColumn = localStorage.getItem(getStorageKey('selectedTargetColumn'));
 
@@ -183,7 +188,15 @@ if (storedTargetColumn) {
     toggleCheckboxes(storedTargetColumn, navCheckBoxLinks);
     document.body.className = storedTargetColumn;
 } else {
-    const defaultTarget = navCheckBoxLinks[0].getAttribute('data-target');
+    let defaultTarget = null;
+    navCheckBoxLinks.forEach(link => {
+        if (link.classList.contains('active') && link.classList.contains('primary')) {
+            defaultTarget = link.getAttribute('data-target');
+        }
+    });
+    if (!defaultTarget) {
+        defaultTarget = navCheckBoxLinks[0].getAttribute('data-target');
+    }
     toggleCheckboxes(defaultTarget, navCheckBoxLinks);
     document.body.className = defaultTarget;
 }
@@ -252,6 +265,38 @@ document.querySelectorAll('.qr-item').forEach(async item => {
 
 });
 
+
+const workorderDiv = document.getElementById('workorder-id');
+
+if (workorderDiv) {
+    const workorderId = workorderDiv.getAttribute('data-workorder-id');
+    const qrUrl = `http://invi.go/workorder/${workorderId}`;
+
+    // Create a new div for the QR code
+    const qrDiv = document.createElement('div');
+    qrDiv.classList.add('qr-code');
+    workorderDiv.appendChild(qrDiv);
+
+    // Generate the QR code
+    new QRCode(qrDiv, {
+        text: qrUrl,
+        width: 256,
+        height: 256,
+        colorDark: "#000000",
+        colorLight: "#ffffff",
+        correctLevel: QRCode.CorrectLevel.H
+    });
+    var imgElement = qrDiv.querySelector('img');
+    if (imgElement) {
+        // Add the desired class to the img element
+        imgElement.classList.add('responsive');
+    }
+    // Set cursor to pointer and add click event to open the URL in a new tab
+    qrDiv.addEventListener('click', function () {
+        window.open(qrUrl);
+    });
+}
+
 function toggleCheckboxes(targetColumn, navLinks) {
     navLinks.forEach(link => {
         if (link.getAttribute('data-target') === targetColumn) {
@@ -262,6 +307,7 @@ function toggleCheckboxes(targetColumn, navLinks) {
             link.classList.remove('primary');
         }
     });
+
     const config = checkboxConfig[targetColumn];
     if (config) {
         for (const [column, shouldCheck] of Object.entries(config)) {
@@ -272,18 +318,22 @@ function toggleCheckboxes(targetColumn, navLinks) {
                     // This is for the nav selection show-total-cost checkbox
                     try {
                         const layoutId = checkbox.getAttribute('data-layout');
-                        const layoutDiv = document.getElementById(layoutId);
-                        if (shouldCheck) {
-                            layoutDiv.classList.remove('hidden');
-                        } else {
-                            layoutDiv.classList.add('hidden');
-                        }
+                        const layoutDivs = document.querySelectorAll(`#${layoutId}`);
+                        layoutDivs.forEach(layoutDiv => {
+                            if (shouldCheck) {
+                                layoutDiv.classList.remove('hidden');
+                            } else {
+                                layoutDiv.classList.add('hidden');
+                            }
+                        });
                     } catch (error) { }
                 }
-            })
+            });
         }
     }
 }
+
+
 
 function hideUncheckedColumns() {
     const checkboxes = document.querySelectorAll('.column-toggle');
