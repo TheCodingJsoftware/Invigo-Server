@@ -51,6 +51,7 @@ from utils.workspace.workspace_item_group import WorkspaceItemGroup
 from utils.inventory.nest import Nest
 from utils.workspace.job_manager import JobManager
 from utils.workspace.workorder import Workorder
+from utils.workspace.workspace_history import WorkspaceHistory
 
 # Store connected clients
 connected_clients: set[tornado.websocket.WebSocketHandler] = set()
@@ -927,8 +928,26 @@ class DeleteJobHandler(tornado.web.RequestHandler):
         self.write({"status": "success", "message": "Quote deleted successfully."})
 
 
-class UploadWorkorderHandler(tornado.web.RequestHandler):
+class DashboardHandler(tornado.web.RequestHandler):
+    def get(self):
+        self.components_inventory = ComponentsInventory()
+        self.sheet_settings = SheetSettings()
+        self.workspace_settings = WorkspaceSettings()
+        self.paint_inventory = PaintInventory(self.components_inventory)
+        self.sheets_inventory = SheetsInventory(self.sheet_settings)
+        self.laser_cut_inventory = LaserCutInventory(self.paint_inventory, self.workspace_settings)
+        self.job_manager = JobManager(self.sheet_settings, self.sheets_inventory, self.workspace_settings, self.components_inventory, self.laser_cut_inventory, self.paint_inventory, self)
 
+        self.workspace_archive = WorkspaceHistory(self.job_manager)
+
+        template = env.get_template("dashboard.html")
+        rendered_template = template.render(
+            workspace_archive=self.workspace_archive
+        )
+        self.write(rendered_template)
+
+
+class UploadWorkorderHandler(tornado.web.RequestHandler):
     def post(self):
         try:
             folder = os.path.join("workorders", self.get_argument("folder"))
@@ -1112,6 +1131,63 @@ class MarkNestDoneHandler(tornado.web.RequestHandler):
                     f.write(msgspec.json.encode(self.workorder.to_dict()))
 
                 self.write({"status": "success", "message": "Nest marked as done."})
+            except Exception as e:
+                self.set_status(500)
+                self.write({"status": "error", "message": str(e)})
+
+
+class RecutPartHandler(tornado.web.RequestHandler):
+    lock = asyncio.Lock()
+
+    async def post(self, workorder_id: str):
+        async with self.lock:
+            try:
+                self.recut_data = msgspec.json.decode(self.request.body)
+
+                self.components_inventory = ComponentsInventory()
+                self.sheet_settings = SheetSettings()
+                self.workspace_settings = WorkspaceSettings()
+                self.paint_inventory = PaintInventory(self.components_inventory)
+                self.sheets_inventory = SheetsInventory(self.sheet_settings)
+                self.laser_cut_inventory = LaserCutInventory(self.paint_inventory, self.workspace_settings)
+                self.job_manager = JobManager(self.sheet_settings, self.sheets_inventory, self.workspace_settings, self.components_inventory, self.laser_cut_inventory, self.paint_inventory, self)
+                self.workspace = Workspace(self.workspace_settings, self.job_manager)
+
+                self.laser_cut_part_to_recut = LaserCutPart(self.recut_data['laser_cut_part'], self.laser_cut_inventory)
+                self.laser_cut_part_to_recut.recut = True
+
+                self.recut_nest = Nest(self.recut_data['nest'], self.sheet_settings, self.laser_cut_inventory)
+
+                self.recut_quantity = self.recut_data['quantity']
+
+                for workspace_part_group in self.workspace.get_grouped_laser_cut_parts(self.workspace.get_all_laser_cut_parts_with_similar_tag("picking")):
+                    if workspace_part_group.base_part.name == self.laser_cut_part_to_recut.name:
+                        workspace_part_group.mark_as_recut(self.recut_quantity)
+                        self.laser_cut_inventory.add_or_update_laser_cut_part(self.laser_cut_part_to_recut)
+                        break
+
+                workorder_data_path = os.path.join("workorders", workorder_id, "data.json")
+
+                with open(workorder_data_path, "rb") as f:
+                    workorder_data: dict = msgspec.json.decode(f.read())
+
+                self.workorder = Workorder(workorder_data, self.sheet_settings, self.laser_cut_inventory)
+                for nested_laser_cut_part in self.recut_nest.laser_cut_parts:
+                    if nested_laser_cut_part.name == self.laser_cut_part_to_recut.name:
+                        nested_laser_cut_part.quantity -= self.recut_quantity
+                        if nested_laser_cut_part.quantity <= 0:
+                            self.recut_nest.remove_laser_cut_part(nested_laser_cut_part)
+                        break
+
+                with open(workorder_data_path, 'wb') as f:
+                    f.write(msgspec.json.encode(self.workorder.to_dict()))
+
+                self.workspace.save()
+                self.workspace.laser_cut_inventory.save()
+
+                signal_clients_for_changes(client_to_ignore=None, changed_files=[f"{self.workspace.filename}.json", f"{self.workspace.laser_cut_inventory.filename}.json"])
+
+                self.write({"status": "success", "message": "Recut part processed successfully."})
             except Exception as e:
                 self.set_status(500)
                 self.write({"status": "error", "message": str(e)})
@@ -1496,12 +1572,15 @@ if __name__ == "__main__":
             (r"/update_job_settings", UpdateJobSettingsHandler),
             (r"/delete_job/(.*)", DeleteJobHandler),
             (r"/jobs", JobPrintoutsHandler),
+            # Dashboard handlers
+            (r"/dashboard", DashboardHandler),
             # Workorder handlers
             (r"/upload_workorder", UploadWorkorderHandler),
             (r"/workorder/(.*)", WorkorderHandler),
             (r"/workorder_printout/(.*)", LoadWorkorderHandler),
             (r"/mark_workorder_done/(.*)", MarkWorkorderDoneHandler),
             (r"/mark_nest_done/(.*)", MarkNestDoneHandler),
+            (r"/recut_part/(.*)", RecutPartHandler),
             # Quote handlers NOTE These will be removed in favor of Job Handelers
             (r"/get_previous_quotes", GetPreviousQuotesHandler),
             (r"/get_saved_quotes", GetSavedQuotesHandler),

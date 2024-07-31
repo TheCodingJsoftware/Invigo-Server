@@ -273,12 +273,38 @@
             submitRecutPart();
         }
     }
-    function submitRecutPart() {
-        var recut_quantity = document.getElementById('recut-quantity-input').value;
-        console.log(recut_quantity);
-        ui('#recut-dialog');
-        ui("#recut-submitted");
+
+    async function submitRecutPart() {
+        const workorder_name = getWorkorderNameFromUrl();
+        const recut_quantity = document.getElementById('recut-quantity-input').value;
+
+        const recut_data = {
+            laser_cut_part: recut_laser_cut_part,
+            nest: recut_nest,
+            quantity: recut_quantity
+        };
+
+        try {
+            const response = await fetch(`/recut_part/${workorder_name}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(recut_data),
+            });
+
+            if (response.ok) {
+                const result = await response.json();
+                console.log('Success:', result);
+                window.location.reload(); // Refresh the page
+            } else {
+                console.error('Error:', response.statusText);
+            }
+        } catch (error) {
+            console.error('Error:', error);
+        }
     }
+
     function goToMainUrl() {
         window.location.href = "/"
     }
