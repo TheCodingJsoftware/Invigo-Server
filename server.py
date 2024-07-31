@@ -1174,8 +1174,8 @@ class RecutPartHandler(tornado.web.RequestHandler):
                 self.workorder = Workorder(workorder_data, self.sheet_settings, self.laser_cut_inventory)
                 for nested_laser_cut_part in self.recut_nest.laser_cut_parts:
                     if nested_laser_cut_part.name == self.laser_cut_part_to_recut.name:
-                        nested_laser_cut_part.quantity -= self.recut_quantity
-                        if nested_laser_cut_part.quantity <= 0:
+                        nested_laser_cut_part.quantity_in_nest -= self.recut_quantity
+                        if nested_laser_cut_part.quantity_in_nest <= 0:
                             self.recut_nest.remove_laser_cut_part(nested_laser_cut_part)
                         break
 
