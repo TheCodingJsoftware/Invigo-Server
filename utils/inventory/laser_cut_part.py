@@ -1,5 +1,5 @@
 import copy
-from typing import TYPE_CHECKING, Union, Optional
+from typing import TYPE_CHECKING, Optional, Union
 
 from utils.inventory.category import Category
 from utils.inventory.inventory_item import InventoryItem
@@ -7,13 +7,14 @@ from utils.inventory.paint import Paint
 from utils.inventory.powder import Powder
 from utils.inventory.primer import Primer
 from utils.workspace.flow_tag import FlowTag
-from utils.workspace.workspace_settings import WorkspaceSettings
 from utils.workspace.tag import Tag
+from utils.workspace.workspace_settings import WorkspaceSettings
+from utils.workspace.workspace_timer import WorkspaceTimer
 
 if TYPE_CHECKING:
     from utils.inventory.laser_cut_inventory import LaserCutInventory
-    from utils.inventory.paint_inventory import PaintInventory
     from utils.inventory.nest import Nest
+    from utils.inventory.paint_inventory import PaintInventory
 
 
 class LaserCutPart(InventoryItem):
@@ -41,7 +42,6 @@ class LaserCutPart(InventoryItem):
         self.gauge: str = ""
         self.material: str = ""
         self.recut: bool = False
-        self.custom: bool = False
         self.recut_count: int = 0
         self.shelf_number: str = ""
         self.sheet_dim: str = ""
@@ -76,17 +76,45 @@ class LaserCutPart(InventoryItem):
 
         self.flow_tag: FlowTag = None
         self.current_flow_tag_index: int = 0
+        self.current_flow_tag_status_index: int = 0
         self.bending_files: list[str] = []
         self.welding_files: list[str] = []
         self.cnc_milling_files: list[str] = []
+        self.timer: WorkspaceTimer = None
 
         # NOTE Only for Quote Generator and load_nest.py
         self.nest: Nest = None
-        self.quoted_price: float = 0.0
         self.quantity_in_nest: int = None
         self.matched_to_sheet_cost_price: float = 0.0
 
         self.load_data(data)
+
+    def is_process_finished(self) -> bool:
+        return self.current_flow_tag_index >= len(self.flow_tag.tags)
+
+    def mark_as_recut(self):
+        self.current_flow_tag_index = 0
+        self.current_flow_tag_status_index = 0
+        self.recut = True
+        self.recut_count += 1
+
+    def unmark_as_recut(self):
+        self.recut = False
+
+    def move_to_next_process(self):
+        self.timer.stop(self.get_current_tag())
+        if not self.is_process_finished():
+            self.current_flow_tag_index += 1
+            self.current_flow_tag_status_index = 0
+            self.recut = False
+            self.timer.start(self.get_current_tag())
+            self.check_update_quantity_tags()
+
+    def check_update_quantity_tags(self):
+        if self.flow_tag.add_quantity_tag and self.get_current_tag().name == self.flow_tag.add_quantity_tag.name:
+            self.laser_cut_inventory.add_or_update_laser_cut_part(self, f"workspace tag: {self.get_current_tag().name}")
+        if self.flow_tag.remove_quantity_tag and self.get_current_tag().name == self.flow_tag.remove_quantity_tag.name:
+            self.laser_cut_inventory.remove_laser_cut_part_quantity(self, f"workspace tag: {self.get_current_tag().name}")
 
     def get_current_tag(self) -> Optional[Tag]:
         try:
@@ -94,14 +122,20 @@ class LaserCutPart(InventoryItem):
         except IndexError:
             return None
 
+    def get_next_tag_name(self) -> str:
+        try:
+            return self.flow_tag.tags[self.current_flow_tag_index + 1].name
+        except IndexError:
+            return "Done"
+
     def get_all_paints(self) -> str:
         name = ""
         if self.uses_primer and self.primer_item:
-            name += f"{self.primer_item.name}"
+            name += f"{self.primer_item.name}\n"
         if self.uses_paint and self.paint_item:
-            name += f"{self.paint_item.name}"
+            name += f"{self.paint_item.name}\n"
         if self.uses_powder and self.powder_item:
-            name += f"{self.powder_item.name}"
+            name += f"{self.powder_item.name}\n"
         return name
 
     def move_to_category(self, from_category: Category, to_category: Category):
@@ -131,7 +165,7 @@ class LaserCutPart(InventoryItem):
 
     def load_data(self, data: dict[str, Union[str, int, float, bool]]):
         self.name = data.get("name", "")
-        self.quantity: int = data.get("quantity", 0) # In the context of assemblies, quantity is unit_quantity
+        self.quantity: int = data.get("quantity", 0)  # In the context of assemblies, quantity is unit_quantity
         self.red_quantity_limit: int = data.get("red_quantity_limit", 10)
         self.yellow_quantity_limit: int = data.get("yellow_quantity_limit", 20)
         self.category_quantities.clear()
@@ -152,7 +186,6 @@ class LaserCutPart(InventoryItem):
         self.price: float = data.get("price", 0.0)
         self.cost_of_goods: float = data.get("cost_of_goods", 0.0)
         self.recut: bool = data.get("recut", False)
-        self.custom: bool = data.get("custom", False)
         self.recut_count: int = data.get("recut_count", 0)
         self.shelf_number: str = data.get("shelf_number", "")
         self.sheet_dim: str = data.get("sheet_dim", "")
@@ -186,12 +219,17 @@ class LaserCutPart(InventoryItem):
 
         self.flow_tag = FlowTag("", data.get("flow_tag", {"name": "", "tags": []}), self.workspace_settings)
         self.current_flow_tag_index = data.get("current_flow_tag_index", 0)
+        self.current_flow_tag_status_index = data.get("current_flow_tag_status_index", 0)
         self.bending_files.clear()
         self.bending_files = data.get("bending_files", [])
         self.welding_files.clear()
         self.welding_files = data.get("welding_files", [])
         self.cnc_milling_files.clear()
         self.cnc_milling_files = data.get("cnc_milling_files", [])
+        # If deepcopy is not done, than a reference is kept in the original object it was copied from
+        # and then it messes everything up, specifically it will mess up laser cut parts
+        # when you add a job to workspace
+        self.timer = WorkspaceTimer(copy.deepcopy(data.get("timer", {})), self.flow_tag)
 
         self.quantity_in_nest = data.get("quantity_in_nest")
 
@@ -226,23 +264,15 @@ class LaserCutPart(InventoryItem):
         return {
             "name": self.name,
             "part_number": self.part_number,
-            "quantity": self.quantity,
             "gauge": self.gauge,
             "material": self.material,
             "part_dim": self.part_dim,
-            "red_quantity_limit": self.red_quantity_limit,
-            "yellow_quantity_limit": self.yellow_quantity_limit,
             "machine_time": self.machine_time,
             "weight": self.weight,
             "surface_area": self.surface_area,
             "cutting_length": self.cutting_length,
             "piercing_time": self.piercing_time,
             "piercing_points": self.piercing_points,
-            "price": self.price,
-            "cost_of_goods": self.cost_of_goods,
-            "custom": self.custom,
-            "recut": self.recut,
-            "recut_count": self.recut_count,
             "shelf_number": self.shelf_number,
             "sheet_dim": self.sheet_dim,
             "file_name": self.file_name,
@@ -250,8 +280,12 @@ class LaserCutPart(InventoryItem):
             "modified_date": self.modified_date,
             "notes": self.notes,
             "image_index": self.image_index,
+            "price": self.price,
+            "cost_of_goods": self.cost_of_goods,
             "bend_cost": self.bend_cost,
             "labor_cost": self.labor_cost,
+            "recut": self.recut,
+            "recut_count": self.recut_count,
             "uses_primer": self.uses_primer,
             "primer_name": None if self.primer_name == "None" else self.primer_name,
             "primer_overspray": self.primer_overspray,
@@ -264,12 +298,17 @@ class LaserCutPart(InventoryItem):
             "powder_name": None if self.powder_name == "None" else self.powder_name,
             "powder_transfer_efficiency": self.powder_transfer_efficiency,
             "cost_for_powder_coating": self.cost_for_powder_coating,
-            "quantity_in_nest": self.quantity_in_nest,
-            "flow_tag": self.flow_tag.to_dict(),
-            "current_flow_tag_index": self.current_flow_tag_index,
             "bending_files": self.bending_files,
             "welding_files": self.welding_files,
             "cnc_milling_files": self.cnc_milling_files,
             "categories": [category.name for category in self.categories],
             "category_quantities": {category.name: self.category_quantities.get(category, 1.0) for category in self.categories},
+            "quantity": self.quantity,
+            "quantity_in_nest": self.quantity_in_nest,
+            "red_quantity_limit": self.red_quantity_limit,
+            "yellow_quantity_limit": self.yellow_quantity_limit,
+            "flow_tag": self.flow_tag.to_dict(),
+            "current_flow_tag_index": self.current_flow_tag_index,
+            "current_flow_tag_status_index": self.current_flow_tag_status_index,
+            "timer": self.timer.to_dict(),
         }

@@ -6,8 +6,9 @@ from utils.inventory.inventory_item import InventoryItem
 if TYPE_CHECKING:
     from utils.inventory.paint_inventory import PaintInventory
 
+
 class Paint(InventoryItem):
-    def __init__(self, data: dict[str, str | float], paint_inventory) -> None:
+    def __init__(self, data: dict[str, str | float], paint_inventory):
         super().__init__()
         self.paint_inventory: PaintInventory = paint_inventory
         self.component: Component = None
