@@ -1,9 +1,7 @@
-import contextlib
 from datetime import datetime
 
-from utils.colors import Colors
 from utils.custom_print import CustomPrint
-from utils.inventory.sheets_inventory import Sheet, SheetsInventory
+from utils.inventory.sheets_inventory import SheetsInventory
 from utils.send_email import send
 
 connected_clients = set()
