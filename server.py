@@ -1163,7 +1163,7 @@ class RecutPartHandler(tornado.web.RequestHandler):
                 for workspace_part_group in self.workspace.get_grouped_laser_cut_parts(self.workspace.get_all_laser_cut_parts_with_similar_tag("picking")):
                     if workspace_part_group.base_part.name == self.laser_cut_part_to_recut.name:
                         workspace_part_group.mark_as_recut(self.recut_quantity)
-                        self.laser_cut_inventory.add_or_update_laser_cut_part(self.laser_cut_part_to_recut)
+                        self.laser_cut_inventory.add_or_update_laser_cut_part(self.laser_cut_part_to_recut, f"Workorder recut: {self.recut_nest.get_name()}")
                         break
 
                 workorder_data_path = os.path.join("workorders", workorder_id, "data.json")
