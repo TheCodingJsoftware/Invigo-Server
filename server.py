@@ -1169,7 +1169,7 @@ class RecutPartHandler(tornado.web.RequestHandler):
                 workorder_data_path = os.path.join("workorders", workorder_id, "data.json")
 
                 with open(workorder_data_path, "rb") as f:
-                    workorder_data: dict = msgspec.json.decode(f.read())
+                    workorder_data: list[dict[str, object]] = msgspec.json.decode(f.read())
 
                 self.workorder = Workorder(workorder_data, self.sheet_settings, self.laser_cut_inventory)
 
@@ -1180,9 +1180,8 @@ class RecutPartHandler(tornado.web.RequestHandler):
                         for nested_laser_cut_part in workorder_nest.laser_cut_parts:
                             if nested_laser_cut_part.name == self.laser_cut_part_to_recut.name:
                                 found_recut_part = True
-                                nested_laser_cut_part.quantity_in_nest -= self.recut_quantity
-                                if nested_laser_cut_part.quantity_in_nest <= 0:
-                                    workorder_nest.remove_laser_cut_part(nested_laser_cut_part)
+                                nested_laser_cut_part.recut_count += self.recut_quantity
+                                nested_laser_cut_part.recut = True
                                 break
                     if found_recut_part:
                         break

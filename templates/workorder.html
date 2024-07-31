@@ -90,11 +90,14 @@
                                         </div>
                                     </div>
                                     <label>
-                                        × {{laser_cut_part.quantity_in_nest * nest_data.sheet_count}}
+                                        × {{laser_cut_part.quantity_in_nest * nest_data.sheet_count - laser_cut_part.recut_count}}
                                     </label>
                                 </a>
                             </summary>
                             <article class="small-padding no-round no-margin right-align">
+                                {% if laser_cut_part.recut %}
+                                <p>Recut count: {{laser_cut_part.recut_count}}</p>
+                                {% endif %}
                                 <button class="small-round" onclick='openRecutDialog({{nest_data | tojson | safe }}, {{laser_cut_part | tojson | safe }})'>
                                     <span class="small-text no-wrap no-padding">Recut</span>
                                 </button>
