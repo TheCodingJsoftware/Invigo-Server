@@ -108,6 +108,14 @@ class WorkspaceJsonHandler(tornado.web.RequestHandler):
             self.write(data)
 
 
+class WorkspaceSettingsJsonHandler(tornado.web.RequestHandler):
+    def get(self):
+        self.set_header("Content-Type", "application/json")
+        with open("data/workspace_settings.json", "rb") as file:
+            data = msgspec.json.decode(file.read())
+            self.write(data)
+
+
 class ServerLogsHandler(tornado.web.RequestHandler):
     def get(self):
         logs = print_clients() + sys.stdout.getvalue()
@@ -823,6 +831,8 @@ class UploadJobHandler(tornado.web.RequestHandler):
             html_file_path = os.path.join(folder, "page.html")
             with open(html_file_path, "w", encoding="utf-8") as f:
                 f.write(html_file_contents)
+
+            print(folder, job_file_path, html_file_path)
 
             signal_clients_for_changes(
                 client_to_ignore=self.request.remote_ip,
@@ -1622,7 +1632,8 @@ if __name__ == "__main__":
             (r"/static/js/workspace_archives_dashboard.js", WorkspaceArchivesScriptHandler),
             (r"/schedule_planner", SchedulePlannerHandler),
             (r"/static/js/schedule_planner.js", SchedulePlannerScriptHandler),
-            (r"/workspace.json", WorkspaceJsonHandler),
+            (r"/data/workspace.json", WorkspaceJsonHandler),
+            (r"/data/workspace_settings.json", WorkspaceSettingsJsonHandler),
             # Workorder handlers
             (r"/upload_workorder", UploadWorkorderHandler),
             (r"/workorder/(.*)", WorkorderHandler),
