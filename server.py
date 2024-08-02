@@ -883,6 +883,7 @@ class DownloadJobHandler(tornado.web.RequestHandler):
 class UpdateJobSettingsHandler(tornado.web.RequestHandler):
     def post(self):
         folder = self.get_argument("folder")
+        folder = folder.replace("\\", "/")
         job_name = os.path.basename(folder)
         key_to_change = self.get_argument("key")
         new_value = self.get_argument("value")
