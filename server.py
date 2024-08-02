@@ -902,9 +902,10 @@ class UpdateJobSettingsHandler(tornado.web.RequestHandler):
 
                 with open(file_path, "wb") as file:
                     file.write(msgspec.json.encode(data))
-
                 if key_to_change == "type":
                     destination = f"saved_jobs\\{JobStatus(new_value).name.lower()}\\{job_name}"
+                    if os.path.exists(destination):
+                        shutil.rmtree(destination)
                     shutil.move(folder, destination)
 
                 signal_clients_for_changes(
