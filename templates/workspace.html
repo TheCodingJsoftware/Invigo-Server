@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <meta name="google" content="notranslate">
+    <link href="https://cdn.jsdelivr.net/npm/beercss@3.6.8/dist/cdn/beer.min.css" rel="stylesheet">
+    <script type="module" src="https://cdn.jsdelivr.net/npm/beercss@3.6.8/dist/cdn/beer.min.js"></script>
+    <script type="module"
+        src="https://cdn.jsdelivr.net/npm/material-dynamic-colors@1.1.2/dist/cdn/material-dynamic-colors.min.js">
+    </script>
+    <link href="/static/css/theme.css" rel="stylesheet">
+    <link rel="icon" href="/static/icon.png">
+    <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=yes" />
+    <script src="https://www.kryogenix.org/code/browser/sorttable/sorttable.js"></script>
+    <script src="/static/js/workspace.js"></script>
+    <title>Workspace</title>
+</head>
+
+<style>
+    .hidden{
+        display: none;
+    }
+</style>
+<body class="dark">
+    <header class="fixed primary">
+        <nav>
+            <button class="circle transparent" onclick="goToMainUrl()">
+                <i>arrow_back</i>
+            </button>
+            <h5 class="max">
+                Workspace
+            </h5>
+        </nav>
+    </header>
+    <main class="responsive" id="workspace-container">
+        <!-- Jobs will be dynamically loaded here by workspace.js -->
+    </main>
+</body>
+</html>

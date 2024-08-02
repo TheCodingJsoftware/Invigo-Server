@@ -11,7 +11,7 @@
     <script type="module"
         src="https://cdn.jsdelivr.net/npm/material-dynamic-colors@1.1.2/dist/cdn/material-dynamic-colors.min.js">
     </script>
-    <link href="/static/theme.css" rel="stylesheet">
+    <link href="/static/css/theme.css" rel="stylesheet">
     <link rel="icon" href="/static/icon.png">
     <title>Invigo</title>
     <meta property="og:title" content="Invigo" />
@@ -53,10 +53,20 @@
                 <span>Sheet QR Codes</span>
                 <div class="tooltip bottom">All sheets in inventory with their respective QR codes in a ready-to-print layout.</div>
             </button>
-            <button class="border small-round extra vertical" onclick="window.location.href='/dashboard'">
+            <button class="border small-round extra vertical" onclick="window.location.href='/scedule_planner'">
+                <i>edit_calendar</i>
+                <span>Scedule Planner</span>
+                <div class="tooltip bottom">Plan and manage workspace's daily schedule.</div>
+            </button>
+            <button class="border small-round extra vertical" onclick="window.location.href='/workspace_dashboard'">
                 <i>analytics</i>
-                <span>Dashboard</span>
-                <div class="tooltip bottom">Analytics for workspace and workspace archive.</div>
+                <span>Workspace</span>
+                <div class="tooltip bottom">Analytics for workspace.</div>
+            </button>
+            <button class="border small-round extra vertical" onclick="window.location.href='/workspace_archives_dashboard'">
+                <i>analytics</i>
+                <span>Workspace Archives</span>
+                <div class="tooltip bottom">Analytics for workspace archives.</div>
             </button>
             <button class="border small-round extra vertical" onclick="window.location.href='/jobs'">
                 <i>note_stack</i>
@@ -136,11 +146,27 @@
                 </div>
             </a>
             <div class="divider"></div>
-            <a class="row padding surface-container wave" href="/dashboard">
+            <a class="row padding surface-container wave" href="/scedule_planner">
+                <i>edit_calendar</i>
+                <div class="max">
+                    <h6 class="small">Scedule Planner</h6>
+                <div>Plan and manage workspace's daily schedule.</div>
+                </div>
+            </a>
+            <div class="divider"></div>
+            <a class="row padding surface-container wave" href="/workspace_dashboard">
                 <i>analytics</i>
                 <div class="max">
-                    <h6 class="small">Dashboard</h6>
-                <div>Analytics for workspace and workspace archive.</div>
+                    <h6 class="small">Workspace</h6>
+                <div>Analytics for workspace.</div>
+                </div>
+            </a>
+            <div class="divider"></div>
+            <a class="row padding surface-container wave" href="/workspace_archives_dashboard">
+                <i>analytics</i>
+                <div class="max">
+                    <h6 class="small">Workspace Archives</h6>
+                <div>Analytics for workspace archives.</div>
                 </div>
             </a>
             <div class="divider"></div>

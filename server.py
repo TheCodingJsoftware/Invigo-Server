@@ -68,11 +68,43 @@ class MainHandler(tornado.web.RequestHandler):
         self.write(rendered_template)
 
 
-class ThemeHandler(tornado.web.RequestHandler):
+class ThemeFileHandler(tornado.web.RequestHandler):
     def get(self):
         self.set_header("Content-Type", "text/css")
-        with open("static/theme.css", "rb") as file:
+        with open("static/css/theme.css", "rb") as file:
             data = file.read()
+            self.write(data)
+
+
+class WorkspaceScriptHandler(tornado.web.RequestHandler):
+    def get(self):
+        self.set_header("Content-Type", "text/javascript")
+        with open("static/js/workspace.js", "rb") as file:
+            data = file.read()
+            self.write(data)
+
+
+class WorkspaceArchivesScriptHandler(tornado.web.RequestHandler):
+    def get(self):
+        self.set_header("Content-Type", "text/javascript")
+        with open("static/js/workspace_archives.js", "rb") as file:
+            data = file.read()
+            self.write(data)
+
+
+class SchedulePlannerScriptHandler(tornado.web.RequestHandler):
+    def get(self):
+        self.set_header("Content-Type", "text/javascript")
+        with open("static/js/schedule_planner.js", "rb") as file:
+            data = file.read()
+            self.write(data)
+
+
+class WorkspaceJsonHandler(tornado.web.RequestHandler):
+    def get(self):
+        self.set_header("Content-Type", "application/json")
+        with open("data/workspace.json", "rb") as file:
+            data = msgspec.json.decode(file.read())
             self.write(data)
 
 
@@ -665,7 +697,7 @@ async def gather_job_directories_info(base_directory: str, specific_dirs: list[s
                         dir_path = dir_path.replace(f"{base_directory}\\", "")
                         gathered_data[dir_path] = dir_info
                     except Exception as e:
-                        print(f"Error processing {dir_path}: {str(e)}")
+                        print(f"Gather Job Info - Error processing {dir_path}: {str(e)}")
         return gathered_data
 
     directories = await tornado.ioloop.IOLoop.current().run_in_executor(executor, blocking_io)
@@ -814,7 +846,8 @@ class UploadJobHandler(tornado.web.RequestHandler):
 
 
 class DownloadJobHandler(tornado.web.RequestHandler):
-    def get(self, folder_name):
+    def get(self, folder_name: str):
+        folder_name = folder_name.replace("\\", "/")
         json_file_path = os.path.join(folder_name, "data.json")
 
         if os.path.exists(json_file_path):
@@ -888,12 +921,13 @@ class UpdateJobSettingsHandler(tornado.web.RequestHandler):
 
 
 class DeleteJobHandler(tornado.web.RequestHandler):
-    def post(self, folder_name):
+    def post(self, folder_name: str):  # saved_jobs/[PATH]/[JOB_NAME]
         CustomPrint.print(
             f"INFO - Deleting - {folder_name}",
             connected_clients=connected_clients,
         )
 
+        folder_name = folder_name.replace("\\", "/")
         json_file_path = os.path.join(folder_name, "data.json")
         html_file_path = os.path.join(folder_name, "page.html")
 
@@ -928,22 +962,24 @@ class DeleteJobHandler(tornado.web.RequestHandler):
         self.write({"status": "success", "message": "Quote deleted successfully."})
 
 
-class DashboardHandler(tornado.web.RequestHandler):
+class SchedulePlannerHandler(tornado.web.RequestHandler):
     def get(self):
-        self.components_inventory = ComponentsInventory()
-        self.sheet_settings = SheetSettings()
-        self.workspace_settings = WorkspaceSettings()
-        self.paint_inventory = PaintInventory(self.components_inventory)
-        self.sheets_inventory = SheetsInventory(self.sheet_settings)
-        self.laser_cut_inventory = LaserCutInventory(self.paint_inventory, self.workspace_settings)
-        self.job_manager = JobManager(self.sheet_settings, self.sheets_inventory, self.workspace_settings, self.components_inventory, self.laser_cut_inventory, self.paint_inventory, self)
+        template = env.get_template("scedule_planner.html")
+        rendered_template = template.render()
+        self.write(rendered_template)
 
-        self.workspace_archive = WorkspaceHistory(self.job_manager)
 
-        template = env.get_template("dashboard.html")
-        rendered_template = template.render(
-            workspace_archive=self.workspace_archive
-        )
+class WorkspaceDashboardHandler(tornado.web.RequestHandler):
+    def get(self):
+        template = env.get_template("workspace.html")
+        rendered_template = template.render()
+        self.write(rendered_template)
+
+
+class WorkspaceArchivesDashboardHandler(tornado.web.RequestHandler):
+    def get(self):
+        template = env.get_template("workspace_archives.html")
+        rendered_template = template.render()
         self.write(rendered_template)
 
 
@@ -1538,7 +1574,7 @@ if __name__ == "__main__":
         [
             (r"/", MainHandler),
             (r"/ws", WebSocketHandler),
-            (r"/static/theme.css", ThemeHandler),
+            (r"/static/css/theme.css", ThemeFileHandler),
             # Log handlers
             (r"/server_log", ServerLogsHandler),
             (r"/logs", LogsHandler),
@@ -1580,7 +1616,13 @@ if __name__ == "__main__":
             (r"/delete_job/(.*)", DeleteJobHandler),
             (r"/jobs", JobPrintoutsHandler),
             # Dashboard handlers
-            (r"/dashboard", DashboardHandler),
+            (r"/workspace_dashboard", WorkspaceDashboardHandler),
+            (r"/static/js/workspace_dashboard.js", WorkspaceScriptHandler),
+            (r"/workspace_archives_dashboard", WorkspaceArchivesDashboardHandler),
+            (r"/static/js/workspace_archives_dashboard.js", WorkspaceArchivesScriptHandler),
+            (r"/schedule_planner", SchedulePlannerHandler),
+            (r"/static/js/schedule_planner.js", SchedulePlannerScriptHandler),
+            (r"/workspace.json", WorkspaceJsonHandler),
             # Workorder handlers
             (r"/upload_workorder", UploadWorkorderHandler),
             (r"/workorder/(.*)", WorkorderHandler),
