@@ -691,16 +691,16 @@ async def gather_job_directories_info(base_directory: str, specific_dirs: list[s
                         formatted_modified_date = datetime.fromtimestamp(modified_timestamp).strftime('%Y-%m-%d %I:%M:%S %p')
 
                         dir_info = {
+                            "dir": root.replace("\\", '/'),
                             "name": dirname,
                             "modified_date": modified_timestamp,
                             "formated_modified_date": formatted_modified_date,
-                            "type": job_data["job_data"]["type"],
-                            "dir": root.replace("\\", '/'),
-                            "order_number": job_data["job_data"]["order_number"],
-                            "ship_to": job_data["job_data"]["ship_to"],
-                            "date_shipped": job_data["job_data"]["date_shipped"],
-                            "date_expected": job_data["job_data"]["date_expected"],
-                            "color": job_data["job_data"]["color"],
+                            "type": job_data["job_data"].get("type", 0),
+                            "order_number": job_data["job_data"].get("order_number", 0),
+                            "ship_to": job_data["job_data"].get("ship_to", ""),
+                            "date_shipped": job_data["job_data"].get("starting_date", ""),
+                            "date_expected": job_data["job_data"].get("ending_date", ""),
+                            "color": job_data["job_data"].get("color", ""),
                         }
                         dir_path = dir_path.replace(f"{base_directory}\\", "")
                         gathered_data[dir_path] = dir_info
@@ -1628,12 +1628,12 @@ if __name__ == "__main__":
             (r"/delete_job/(.*)", DeleteJobHandler),
             (r"/jobs", JobPrintoutsHandler),
             # Dashboard handlers
-            (r"/workspace_dashboard", WorkspaceDashboardHandler),
-            (r"/static/js/workspace_dashboard.js", WorkspaceScriptHandler),
-            (r"/workspace_archives_dashboard", WorkspaceArchivesDashboardHandler),
-            (r"/static/js/workspace_archives_dashboard.js", WorkspaceArchivesScriptHandler),
             (r"/workspace_scheduler", WorkspaceSchedulerHandler),
+            (r"/workspace_dashboard", WorkspaceDashboardHandler),
+            (r"/workspace_archives_dashboard", WorkspaceArchivesDashboardHandler),
             (r"/static/js/workspace_scheduler.js", WorkspaceSchedulerScriptHandler),
+            (r"/static/js/workspace_dashboard.js", WorkspaceScriptHandler),
+            (r"/static/js/workspace_archives_dashboard.js", WorkspaceArchivesScriptHandler),
             (r"/data/workspace.json", WorkspaceJsonHandler),
             (r"/data/workspace_settings.json", WorkspaceSettingsJsonHandler),
             # Workorder handlers
