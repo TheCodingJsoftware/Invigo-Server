@@ -36,19 +36,6 @@
         </nav>
     </header>
     <main class="responsive">
-        {% for job in workspace_archive.jobs %}
-            <article class="border no-padding">
-                <div class="padding">
-                    <h5>
-                        {{job.name}}
-                    </h5>
-                    {% for assembly in job.get_all_assemblies() %}
-                        <img src="/image/{{assembly.assembly_image}}" class="responsive">
-                        {{assembly.name}}
-                    {% endfor %}
-                </div>
-            </article>
-        {% endfor %}
     </main>
 </body>
 </html>

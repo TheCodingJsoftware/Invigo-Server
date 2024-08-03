@@ -15,7 +15,7 @@
     <link rel="icon" href="/static/icon.png">
     <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=yes" />
     <script src="https://www.kryogenix.org/code/browser/sorttable/sorttable.js"></script>
-    <script src="/static/js/workspace_dashboard.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <title>Workspace</title>
 </head>
 
@@ -37,6 +37,9 @@
     </header>
     <main class="responsive" id="workspace-container">
         <!-- Jobs will be dynamically loaded here by workspace.js -->
+
+        <div id="chart-container" style="width: 400px; height: 200px;"></div>
     </main>
+    <script src="/static/js/workspace_dashboard.js"></script>
 </body>
 </html>

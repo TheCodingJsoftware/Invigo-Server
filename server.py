@@ -78,7 +78,7 @@ class ThemeFileHandler(tornado.web.RequestHandler):
 
 class WorkspaceScriptHandler(tornado.web.RequestHandler):
     def get(self):
-        self.set_header("Content-Type", "text/javascript")
+        self.set_header("Content-Type", "application/javascript")
         with open("static/js/workspace.js", "rb") as file:
             data = file.read()
             self.write(data)
@@ -86,23 +86,23 @@ class WorkspaceScriptHandler(tornado.web.RequestHandler):
 
 class WorkspaceArchivesScriptHandler(tornado.web.RequestHandler):
     def get(self):
-        self.set_header("Content-Type", "text/javascript")
+        self.set_header("Content-Type", "application/javascript")
         with open("static/js/workspace_archives.js", "rb") as file:
             data = file.read()
             self.write(data)
 
 
-class SchedulePlannerScriptHandler(tornado.web.RequestHandler):
+class WorkspaceSchedulerScriptHandler(tornado.web.RequestHandler):
     def get(self):
-        self.set_header("Content-Type", "text/javascript")
-        with open("static/js/schedule_planner.js", "rb") as file:
+        self.set_header("Content-Type", "application/javascript")
+        with open("static/js/workspace_scheduler.js", "rb") as file:
             data = file.read()
             self.write(data)
 
 
 class WorkspaceJsonHandler(tornado.web.RequestHandler):
     def get(self):
-        self.set_header("Content-Type", "application/json")
+        self.set_header("Content-Type", "application/javascript")
         with open("data/workspace.json", "rb") as file:
             data = msgspec.json.decode(file.read())
             self.write(data)
@@ -974,9 +974,9 @@ class DeleteJobHandler(tornado.web.RequestHandler):
         self.write({"status": "success", "message": "Quote deleted successfully."})
 
 
-class SchedulePlannerHandler(tornado.web.RequestHandler):
+class WorkspaceSchedulerHandler(tornado.web.RequestHandler):
     def get(self):
-        template = env.get_template("scedule_planner.html")
+        template = env.get_template("workspace_scheduler.html")
         rendered_template = template.render()
         self.write(rendered_template)
 
@@ -1632,8 +1632,8 @@ if __name__ == "__main__":
             (r"/static/js/workspace_dashboard.js", WorkspaceScriptHandler),
             (r"/workspace_archives_dashboard", WorkspaceArchivesDashboardHandler),
             (r"/static/js/workspace_archives_dashboard.js", WorkspaceArchivesScriptHandler),
-            (r"/schedule_planner", SchedulePlannerHandler),
-            (r"/static/js/schedule_planner.js", SchedulePlannerScriptHandler),
+            (r"/workspace_scheduler", WorkspaceSchedulerHandler),
+            (r"/static/js/workspace_scheduler.js", WorkspaceSchedulerScriptHandler),
             (r"/data/workspace.json", WorkspaceJsonHandler),
             (r"/data/workspace_settings.json", WorkspaceSettingsJsonHandler),
             # Workorder handlers

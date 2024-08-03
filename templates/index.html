@@ -53,18 +53,18 @@
                 <span>Sheet QR Codes</span>
                 <div class="tooltip bottom">All sheets in inventory with their respective QR codes in a ready-to-print layout.</div>
             </button>
-            <button class="border small-round extra vertical" onclick="window.location.href='/scedule_planner'">
+            <button class="border small-round extra vertical" onclick="window.location.href='/workspace_scheduler'">
                 <i>edit_calendar</i>
-                <span>Scedule Planner</span>
-                <div class="tooltip bottom">Plan and manage workspace's daily schedule.</div>
+                <span>Workspace Scheduler</span>
+                <div class="tooltip bottom">Plan and manage workspaces schedule.</div>
             </button>
             <button class="border small-round extra vertical" onclick="window.location.href='/workspace_dashboard'">
-                <i>analytics</i>
+                <i>construction</i>
                 <span>Workspace</span>
                 <div class="tooltip bottom">Analytics for workspace.</div>
             </button>
             <button class="border small-round extra vertical" onclick="window.location.href='/workspace_archives_dashboard'">
-                <i>archive</i>
+                <i>analytics</i>
                 <span>Workspace Archives</span>
                 <div class="tooltip bottom">Analytics for workspace archives.</div>
             </button>
@@ -98,11 +98,6 @@
                 <span>Logs</span>
                 <div class="tooltip bottom">All daily server logs and user error logs.</div>
             </button>
-            <button class="border small-round extra vertical" onclick="window.location.href='http://10.0.0.10:5051/download'">
-                <i>download</i>
-                <span>Download</span>
-                <div class="tooltip bottom">Downloads Invigo.zip from Invigo-Web portal.</div>
-            </button>
             <button class="border small-round extra vertical" onclick="window.location.href='https://github.com/TheCodingJsoftware/Inventory-Manager'">
                 <i>code</i>
                 <span>Invigo</span>
@@ -117,6 +112,11 @@
                 <i>code</i>
                 <span>Invigo-Web</span>
                 <div class="tooltip bottom">View source code for Invigo-Web.</div>
+            </button>
+            <button class="border small-round extra vertical" onclick="window.location.href='http://10.0.0.10:5051/download'">
+                <i>download</i>
+                <span>Download</span>
+                <div class="tooltip bottom">Downloads Invigo.zip from Invigo-Web portal.</div>
             </button>
         </div>
     </main>
@@ -146,16 +146,16 @@
                 </div>
             </a>
             <div class="divider"></div>
-            <a class="row padding surface-container wave" href="/scedule_planner">
+            <a class="row padding surface-container wave" href="/workspace_scheduler">
                 <i>edit_calendar</i>
                 <div class="max">
-                    <h6 class="small">Scedule Planner</h6>
-                <div>Plan and manage workspace's daily schedule.</div>
+                    <h6 class="small">Workspace Scheduler</h6>
+                <div>Plan and manage workspaces schedule.</div>
                 </div>
             </a>
             <div class="divider"></div>
             <a class="row padding surface-container wave" href="/workspace_dashboard">
-                <i>analytics</i>
+                <i>construction</i>
                 <div class="max">
                     <h6 class="small">Workspace</h6>
                 <div>Analytics for workspace.</div>
@@ -163,7 +163,7 @@
             </a>
             <div class="divider"></div>
             <a class="row padding surface-container wave" href="/workspace_archives_dashboard">
-                <i>archive</i>
+                <i>analytics</i>
                 <div class="max">
                     <h6 class="small">Workspace Archives</h6>
                 <div>Analytics for workspace archives.</div>
@@ -218,14 +218,6 @@
                 </div>
             </a>
             <div class="divider"></div>
-            <a class="row padding surface-container wave" href="http://10.0.0.10:5051/download">
-                <i>download</i>
-                <div class="max">
-                    <h6 class="small">Download</h6>
-                <div>Downloads Invigo.zip from Invigo-Web portal.</div>
-                </div>
-            </a>
-            <div class="divider"></div>
             <a class="row padding surface-container wave" href="https://github.com/TheCodingJsoftware/Inventory-Manager">
                 <i>code</i>
                 <div class="max">
@@ -246,7 +238,15 @@
                 <i>code</i>
                 <div class="max">
                     <h6 class="small">Invigo-Web</h6>
-                <div>View source code for Invigo-Web.</div>
+                    <div>View source code for Invigo-Web.</div>
+                </div>
+            </a>
+            <div class="divider"></div>
+            <a class="row padding surface-container wave" href="http://10.0.0.10:5051/download">
+                <i>download</i>
+                <div class="max">
+                    <h6 class="small">Download</h6>
+                <div>Downloads Invigo.zip from Invigo-Web portal.</div>
                 </div>
             </a>
         </article>
