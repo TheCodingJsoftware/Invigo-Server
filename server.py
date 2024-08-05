@@ -1563,14 +1563,14 @@ def signal_clients_for_changes(client_to_ignore, changed_files: list[str], clien
     clients = connected_clients if client_type == 'software' else web_connected_clients
 
     CustomPrint.print(
-        f"INFO - Signaling {len(connected_clients)} clients",
+        f"INFO - Signaling {len(connected_clients)} {client_type} clients",
         connected_clients=connected_clients,
     )
     for client in clients:
         if client.request.remote_ip == client_to_ignore:
             CustomPrint.print(
                 f"INFO - Ignoring {client.request.remote_ip} since it sent {changed_files}",
-                connected_clients=connected_clients,
+                connected_clients=clients,
             )
             continue
         if client.ws_connection and client.ws_connection.stream.socket:
@@ -1578,7 +1578,7 @@ def signal_clients_for_changes(client_to_ignore, changed_files: list[str], clien
             client.write_message(message)
             CustomPrint.print(
                 f"INFO - Signaling {client.request.remote_ip} to download {changed_files}",
-                connected_clients=connected_clients,
+                connected_clients=clients,
             )
 
 

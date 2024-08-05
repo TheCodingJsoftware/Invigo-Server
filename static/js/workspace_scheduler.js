@@ -233,7 +233,7 @@ class WorkspaceScheduler {
         this.socket = new WebSocket(`ws://${window.location.host}/ws/web`);
         this.socket.onmessage = (event) => {
             const message = JSON.parse(event.data);
-            if (message.action === 'download' && message.files.includes('workspace')) {
+            if (message.action === 'download' && message.files.includes('workspace.json')) {
                 console.log('Workspace update received. Reloading...');
                 this.loadWorkspace().then(() => {
                     this.reloadGanttGraph();
