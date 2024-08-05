@@ -55,6 +55,7 @@ from utils.workspace.workspace_history import WorkspaceHistory
 
 # Store connected clients
 connected_clients: set[tornado.websocket.WebSocketHandler] = set()
+web_connected_clients = set()
 
 # Configure Jinja2 template environment
 loader = jinja2.FileSystemLoader("templates")
@@ -66,6 +67,39 @@ class MainHandler(tornado.web.RequestHandler):
         template = env.get_template("index.html")
         rendered_template = template.render()
         self.write(rendered_template)
+
+
+class WebSocketHandler(tornado.websocket.WebSocketHandler):
+    def open(self):
+        connected_clients.add(self)
+
+        CustomPrint.print(
+            f"INFO - Connection established with: {self.request.remote_ip}",
+            connected_clients=connected_clients,
+        )
+
+    def on_close(self):
+        connected_clients.remove(self)
+        CustomPrint.print(
+            f"INFO - Connection ended with: {self.request.remote_ip}",
+            connected_clients=connected_clients,
+        )
+
+
+class WebSocketWebHandler(tornado.websocket.WebSocketHandler):
+    def open(self):
+        web_connected_clients.add(self)
+        CustomPrint.print(
+            f"INFO - Web connection established with: {self.request.remote_ip}",
+            connected_clients=web_connected_clients,
+        )
+
+    def on_close(self):
+        web_connected_clients.remove(self)
+        CustomPrint.print(
+            f"INFO - Web connection ended with: {self.request.remote_ip}",
+            connected_clients=web_connected_clients,
+        )
 
 
 class ThemeFileHandler(tornado.web.RequestHandler):
@@ -322,23 +356,6 @@ class FetchDataHandler(tornado.web.RequestHandler):
         self.write({"dates": dates, "quantities": quantities, "prices": prices})
 
 
-class WebSocketHandler(tornado.websocket.WebSocketHandler):
-    def open(self):
-        connected_clients.add(self)
-
-        CustomPrint.print(
-            f"INFO - Connection established with: {self.request.remote_ip}",
-            connected_clients=connected_clients,
-        )
-
-    def on_close(self):
-        connected_clients.remove(self)
-        CustomPrint.print(
-            f"INFO - Connection ended with: {self.request.remote_ip}",
-            connected_clients=connected_clients,
-        )
-
-
 class FileReceiveHandler(tornado.web.RequestHandler):
     def get(self, filename: str):
         if filename.endswith(".job"):
@@ -404,7 +421,8 @@ class FileUploadHandler(tornado.web.RequestHandler):
             )
             should_signal_connect_clients = True
             if should_signal_connect_clients and file_name.lower().endswith(".json"):
-                signal_clients_for_changes(client_to_ignore=self.request.remote_ip, changed_files=[file_name])
+                signal_clients_for_changes(self.request.remote_ip, [file_name], client_type='software')
+                signal_clients_for_changes(self.request.remote_ip, [file_name], client_type='web')
         else:
             self.write("No file received.")
             CustomPrint.print(
@@ -1511,12 +1529,14 @@ class InventoryTablesHandler(tornado.web.RequestHandler):
         self.write(rendered_template)
 
 
-def signal_clients_for_changes(client_to_ignore, changed_files: list[str]):
+def signal_clients_for_changes(client_to_ignore, changed_files: list[str], client_type: str = 'software'):
+    clients = connected_clients if client_type == 'software' else web_connected_clients
+
     CustomPrint.print(
         f"INFO - Signaling {len(connected_clients)} clients",
         connected_clients=connected_clients,
     )
-    for client in connected_clients:
+    for client in clients:
         if client.request.remote_ip == client_to_ignore:
             CustomPrint.print(
                 f"INFO - Ignoring {client.request.remote_ip} since it sent {changed_files}",
@@ -1586,6 +1606,7 @@ if __name__ == "__main__":
         [
             (r"/", MainHandler),
             (r"/ws", WebSocketHandler),
+            (r"/ws/web", WebSocketWebHandler),  # New WebSocket handler for web clients
             (r"/static/css/theme.css", ThemeFileHandler),
             # Log handlers
             (r"/server_log", ServerLogsHandler),

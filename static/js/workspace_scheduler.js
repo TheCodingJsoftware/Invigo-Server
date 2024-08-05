@@ -230,7 +230,7 @@ class WorkspaceScheduler {
     }
 
     setupWebSocket() {
-        this.socket = new WebSocket(`ws://${window.location.host}/ws`);
+        this.socket = new WebSocket(`ws://${window.location.host}/ws/web`);
         this.socket.onmessage = (event) => {
             const message = JSON.parse(event.data);
             if (message.action === 'download' && message.files.includes('workspace')) {
@@ -245,7 +245,12 @@ class WorkspaceScheduler {
 
 window.addEventListener('load', async function () {
     const workspace_dashboard = new WorkspaceScheduler();
-    await workspace_dashboard.initialize(); // Wait for initialization to complete
+    try {
+        await workspace_dashboard.initialize(); // Wait for initialization to complete
+    } catch (error) {
+        console.error('Error initializing workspace:', error);
+        alert('Error loading workspace. Please try again later.');
+    }
 
     document.getElementById('submit-button').onclick = function () {
         workspace_dashboard.uploadWorkspace();
