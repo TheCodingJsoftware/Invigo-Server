@@ -62,59 +62,57 @@ function isAssemblyComplete(assembly) {
     return current_flow_tag_index === flow_tag.tags.length;
 }
 
+function calculateAssemblyProgress(assembly) {
+    let totalSteps = assembly.assembly_data.flow_tag.tags.length;
+    let currentSteps = assembly.assembly_data.current_flow_tag_index;
+
+    assembly.laser_cut_parts.forEach(part => {
+        totalSteps += part.flow_tag.tags.length;
+        currentSteps += part.current_flow_tag_index;
+    });
+
+    if (assembly.sub_assemblies && assembly.sub_assemblies.length > 0) {
+        assembly.sub_assemblies.forEach(subAssembly => {
+            const subAssemblyProgress = calculateAssemblyProgress(subAssembly);
+            totalSteps += subAssemblyProgress.totalSteps;
+            currentSteps += subAssemblyProgress.currentSteps;
+        });
+    }
+
+    return {
+        totalSteps: totalSteps,
+        currentSteps: currentSteps
+    };
+}
 /**
  * Calculates the progress to complete an assembly.
  * @param {Object} assembly - The assembly object to calculate.
  * @returns {number} - The total time in days.
  */
 function getAssemblyCompletionProgress(assembly) {
-    function calculateAssemblyProgress(assembly) {
-        let totalSteps = assembly.assembly_data.flow_tag.tags.length;
-        let currentSteps = assembly.assembly_data.current_flow_tag_index;
-
-        assembly.laser_cut_parts.forEach(part => {
-            totalSteps += part.flow_tag.tags.length;
-            currentSteps += part.current_flow_tag_index;
-        });
-
-        if (assembly.sub_assemblies && assembly.sub_assemblies.length > 0) {
-            assembly.sub_assemblies.forEach(subAssembly => {
-                const subAssemblyProgress = calculateAssemblyProgress(subAssembly);
-                totalSteps += subAssemblyProgress.totalSteps;
-                currentSteps += subAssemblyProgress.currentSteps;
-            });
-        }
-
-        return {
-            totalSteps: totalSteps,
-            currentSteps: currentSteps
-        };
-    }
-
     const progress = calculateAssemblyProgress(assembly);
     return progress.totalSteps > 0 ? progress.currentSteps / progress.totalSteps : 0;
 }
 
+function calculateJobProgress(job) {
+    let totalSteps = 0;
+    let currentSteps = 0;
+
+    job.assemblies.forEach(assembly => {
+        const assemblyProgress = calculateAssemblyProgress(assembly);
+        const assemblyTotalSteps = assemblyProgress.totalSteps;
+        const assemblyCurrentSteps = assemblyProgress.currentSteps;
+
+        totalSteps += assemblyTotalSteps;
+        currentSteps += assemblyCurrentSteps;
+    });
+
+    return {
+        totalSteps: totalSteps,
+        currentSteps: currentSteps
+    };
+}
 function getJobCompletionProgress(job) {
-    function calculateJobProgress(job) {
-        let totalSteps = 0;
-        let currentSteps = 0;
-
-        job.assemblies.forEach(assembly => {
-            const assemblyProgress = getAssemblyCompletionProgress(assembly);
-            const assemblyTotalSteps = assemblyProgress.totalSteps;
-            const assemblyCurrentSteps = assemblyProgress.currentSteps;
-
-            totalSteps += assemblyTotalSteps;
-            currentSteps += assemblyCurrentSteps;
-        });
-
-        return {
-            totalSteps: totalSteps,
-            currentSteps: currentSteps
-        };
-    }
-
     const progress = calculateJobProgress(job);
     return progress.totalSteps > 0 ? progress.currentSteps / progress.totalSteps : 0;
 }
