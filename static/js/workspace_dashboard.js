@@ -112,7 +112,7 @@ class WorkspaceDashboard {
     }
 }
 window.addEventListener('load', async function () {
-    const workspace_dashboard = new WorkspaceDashboard();
+    const workspace_dashboard = new WorkspaceScheduler();
     await workspace_dashboard.initialize(); // Wait for initialization to complete
     setTimeout(function () {
         document.querySelectorAll('img').forEach(function (img) {

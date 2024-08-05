@@ -8,19 +8,18 @@
     <meta name="google" content="notranslate">
     <link href="https://cdn.jsdelivr.net/npm/beercss@3.6.8/dist/cdn/beer.min.css" rel="stylesheet">
     <script type="module" src="https://cdn.jsdelivr.net/npm/beercss@3.6.8/dist/cdn/beer.min.js"></script>
-    <script type="module"
-        src="https://cdn.jsdelivr.net/npm/material-dynamic-colors@1.1.2/dist/cdn/material-dynamic-colors.min.js">
-    </script>
-    <link href="/static/css/theme.css" rel="stylesheet">
+    <script type="module" src="https://cdn.jsdelivr.net/npm/material-dynamic-colors@1.1.2/dist/cdn/material-dynamic-colors.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/frappe-gantt@latest/dist/frappe-gantt.css">
+    <script src="https://cdn.jsdelivr.net/npm/frappe-gantt@latest/dist/frappe-gantt.js"></script>
     <link rel="icon" href="/static/icon.png">
     <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=yes" />
     <script src="https://www.kryogenix.org/code/browser/sorttable/sorttable.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/gantt-schedule-timeline-calendar/dist/gstc.wasm.umd.min.js"></script>
+    <link href="/static/css/theme.css" rel="stylesheet">
     <title>Workspace Scheduler</title>
 </head>
 
 <style>
-    .hidden{
+    .hidden, .handle.progress{
         display: none;
     }
 </style>
@@ -35,9 +34,30 @@
             </h5>
         </nav>
     </header>
-    <main class="responsive">
-        <div id="gstc"></div>
+    <main>
+        <nav class="tabbed large">
+            <a id="day-button">
+                <i>today</i>
+                <span>Day</span>
+            </a>
+            <a id="week-button">
+                <i>date_range</i>
+                <span>Week</span>
+            </a>
+            <a id="month-button" class="active">
+                <i>calendar_month</i>
+                <span>Month</span>
+            </a>
+            <a id="year-button">
+                <i>calendar_view_week</i>
+                <span>Year</span>
+            </a>
+        </nav>
+        <div id="charts" class="gantt-container"></div>
+        <div class="row">
+            <button class="small-round right-align" id="submit-button"><i>save</i><span>Submit</span></button>
+        </div>
     </main>
-    <script src="/static/js/workspace_scheduler.js"></script>
+    <script type="module" src="/static/js/workspace_scheduler.js"></script>
 </body>
 </html>

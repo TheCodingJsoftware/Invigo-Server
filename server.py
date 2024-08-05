@@ -1446,7 +1446,7 @@ class InventoryHandler(tornado.web.RequestHandler):
         laser_cut_inventory = LaserCutInventory(paint_inventory, workspace_settings)
         sheet_settings = SheetSettings()
         sheets_inventory = SheetsInventory(sheet_settings)
-        data: dict[str, dict[str, str]] = dict({"Components Inventory": {}})
+        data: dict[str, dict[str, str]] = {"Components Inventory": {}}
         categories = natsorted(components_inventory.get_categories(), key=lambda category: category.name)
         for category in categories:
             data["Components Inventory"].update({category.name: f'/inventory/components_inventory/{quote(category.name, safe="")}'})
@@ -1511,7 +1511,7 @@ class InventoryTablesHandler(tornado.web.RequestHandler):
         self.write(rendered_template)
 
 
-def signal_clients_for_changes(client_to_ignore, changed_files: list[str]) -> None:
+def signal_clients_for_changes(client_to_ignore, changed_files: list[str]):
     CustomPrint.print(
         f"INFO - Signaling {len(connected_clients)} clients",
         connected_clients=connected_clients,
