@@ -63,6 +63,56 @@ function isAssemblyComplete(assembly) {
 }
 
 /**
+ * Calculates the progress to complete an assembly.
+ * @param {Object} assembly - The assembly object to calculate.
+ * @returns {number} - The total time in days.
+ */
+function getAssemblyCompletionProgress(assembly) {
+    function calculateProgress(assembly) {
+        let totalSteps = assembly.assembly_data.flow_tag.tags.length;
+        let currentSteps = assembly.assembly_data.current_flow_tag_index;
+
+        if (assembly.sub_assemblies && assembly.sub_assemblies.length > 0) {
+            assembly.sub_assemblies.forEach(subAssembly => {
+                const subAssemblyProgress = calculateProgress(subAssembly);
+                totalSteps += subAssemblyProgress.totalSteps;
+                currentSteps += subAssemblyProgress.currentSteps;
+            });
+        }
+
+        return {
+            totalSteps: totalSteps,
+            currentSteps: currentSteps
+        };
+    }
+
+    const progress = calculateProgress(assembly);
+    return progress.totalSteps > 0 ? progress.currentSteps / progress.totalSteps : 0;
+}
+function getJobCompletionProgress(job) {
+    function calculateJobProgress(job) {
+        let totalSteps = 0;
+        let currentSteps = 0;
+
+        job.assemblies.forEach(assembly => {
+            const assemblyProgress = getAssemblyCompletionProgress(assembly);
+            const assemblyTotalSteps = assembly.assembly_data.flow_tag.tags.length;
+            const assemblyCurrentSteps = Math.floor(assemblyProgress * assemblyTotalSteps);
+
+            totalSteps += assemblyTotalSteps;
+            currentSteps += assemblyCurrentSteps;
+        });
+
+        return {
+            totalSteps: totalSteps,
+            currentSteps: currentSteps
+        };
+    }
+
+    const progress = calculateJobProgress(job);
+    return progress.totalSteps > 0 ? progress.currentSteps / progress.totalSteps : 0;
+}
+/**
  * Calculates the total time (in days) it took to complete an assembly.
  * @param {Object} assembly - The assembly object to calculate the time for.
  * @returns {number} - The total time in days.
@@ -94,4 +144,11 @@ function getAssemblyCompletionTime(assembly) {
     // Convert total time from milliseconds to days
     return totalTime / (1000 * 60 * 60 * 24);
 }
-export { getAssemblies, isAssemblyComplete, isJobComplete, getAssemblyCompletionTime };
+export {
+    getAssemblies,
+    isAssemblyComplete,
+    isJobComplete,
+    getAssemblyCompletionProgress,
+    getJobCompletionProgress,
+    getAssemblyCompletionTime
+};

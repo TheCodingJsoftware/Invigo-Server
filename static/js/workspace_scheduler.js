@@ -1,4 +1,11 @@
-import { getAssemblies, isAssemblyComplete, isJobComplete, getAssemblyCompletionTime } from './utils.js';
+import {
+    getAssemblies,
+    isAssemblyComplete,
+    isJobComplete,
+    getAssemblyCompletionProgress,
+    getJobCompletionProgress,
+    getAssemblyCompletionTime
+} from './utils.js';
 
 function goToMainUrl() {
     window.location.href = "/";
@@ -44,7 +51,7 @@ class GanttGraph {
                 text: job.job_data.name,
                 start_date: startDate,
                 duration: Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24)),
-                progress: 0.75,
+                progress: getJobCompletionProgress(job),
                 open: isJobComplete(job),
                 parent: 0,
                 color: job.job_data.color,
@@ -69,7 +76,7 @@ class GanttGraph {
                 text: assembly.assembly_data.name,
                 start_date: startDate,
                 duration: expectedDays,
-                progress: 0.5,
+                progress: getAssemblyCompletionProgress(assembly),
                 open: !isAssemblyComplete(assembly),
                 parent: parentId,
                 color: assembly.assembly_data.color,
