@@ -102,8 +102,8 @@ function getJobCompletionProgress(job) {
 
         job.assemblies.forEach(assembly => {
             const assemblyProgress = getAssemblyCompletionProgress(assembly);
-            const assemblyTotalSteps = assembly.assembly_data.flow_tag.tags.length;
-            const assemblyCurrentSteps = Math.floor(assemblyProgress * assemblyTotalSteps);
+            const assemblyTotalSteps = assemblyProgress.totalSteps;
+            const assemblyCurrentSteps = assemblyProgress.currentSteps;
 
             totalSteps += assemblyTotalSteps;
             currentSteps += assemblyCurrentSteps;
