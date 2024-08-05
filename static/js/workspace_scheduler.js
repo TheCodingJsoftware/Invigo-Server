@@ -397,7 +397,8 @@ window.addEventListener('load', async function () {
         alert('Error loading workspace. Please try again later.');
     }
 
-    document.getElementById('submit-button').onclick = function () {
+    document.getElementById('submit-button').onclick = function (event) {
+        event.preventDefault(); // Prevent the default form submission behavior
         workspaceScheduler.uploadWorkspace();
     };
 

@@ -74,14 +74,14 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
         connected_clients.add(self)
 
         CustomPrint.print(
-            f"INFO - Connection established with: {self.request.remote_ip}",
+            f"INFO - Software connection established with: {self.request.remote_ip}",
             connected_clients=connected_clients,
         )
 
     def on_close(self):
         connected_clients.remove(self)
         CustomPrint.print(
-            f"INFO - Connection ended with: {self.request.remote_ip}",
+            f"INFO - Software connection ended with: {self.request.remote_ip}",
             connected_clients=connected_clients,
         )
 
@@ -416,7 +416,7 @@ class FileUploadHandler(tornado.web.RequestHandler):
                 with open(f"images/{file_name}", "wb") as file:
                     file.write(file_data)
             CustomPrint.print(
-                f'INFO - {self.request.remote_ip} uploaded "{file_name}"',
+                f'INFO - Software {self.request.remote_ip} uploaded "{file_name}"',
                 connected_clients=connected_clients,
             )
             should_signal_connect_clients = True
@@ -447,7 +447,7 @@ class WorkspaceSchedulerFileUploadHandler(tornado.web.RequestHandler):
                 with open(f"images/{file_name}", "wb") as file:
                     file.write(file_data)
             CustomPrint.print(
-                f'INFO - {self.request.remote_ip} uploaded "{file_name}"',
+                f'INFO - Web {self.request.remote_ip} uploaded "{file_name}"',
                 connected_clients=connected_clients,
             )
             should_signal_connect_clients = True
