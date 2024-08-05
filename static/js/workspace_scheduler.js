@@ -76,12 +76,14 @@ class WorkspaceScheduler {
         this.ganttWorkspaceData = null;
         this.allAssemblies = null;
         this.ganttProgressGraph = null;
+        this.lastViewMode = null;
         this.socket = null;
     }
 
     async initialize() {
         this.workspace = await this.loadWorkspace();
         this.workspaceSettings = await this.loadWorkspaceSettings();
+        this.lastViewMode = "Month";
         if (this.workspace && this.workspaceSettings) {
             this.allAssemblies = this.loadAllAssemblies();
             this.loadGantts();
@@ -117,7 +119,7 @@ class WorkspaceScheduler {
         const ganttData = ganttJob.getGanttWorkspaceData();
 
         this.ganttProgressGraph = new Gantt('.gantt-container', ganttData, {
-            view_mode: 'Month',
+            view_mode: this.lastViewMode,
             language: 'en',
             header_height: 50,
             column_width: 30,
@@ -261,10 +263,10 @@ window.addEventListener('load', async function () {
             btn.classList.remove('active');
         });
         button.classList.add('active');
-        // Update the URL with the selected view mode
         const url = new URL(window.location);
         url.searchParams.set('view', viewMode);
         window.history.pushState({}, '', url);
+        workspace_dashboard.lastViewMode = viewMode;
     }
 
     // Event listeners for view mode buttons
