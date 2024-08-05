@@ -52,7 +52,7 @@ class GanttGraph {
                 start_date: startDate,
                 duration: Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24)),
                 progress: getJobCompletionProgress(job),
-                open: isJobComplete(job),
+                open: false,
                 parent: 0,
                 color: job.job_data.color,
             });
@@ -77,7 +77,7 @@ class GanttGraph {
                 start_date: startDate,
                 duration: expectedDays,
                 progress: getAssemblyCompletionProgress(assembly),
-                open: !isAssemblyComplete(assembly),
+                open: false,
                 parent: parentId,
                 color: assembly.assembly_data.color,
             });

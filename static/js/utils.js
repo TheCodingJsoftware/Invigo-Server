@@ -36,16 +36,7 @@ function collectAssemblies(assemblies) {
  * @returns {boolean} - True if the job is complete, false otherwise.
  */
 function isJobComplete(job) {
-    if (!job) {
-        console.error("Invalid job object provided");
-        return false;
-    }
-    job.assemblies.forEach(assembly => {
-        if (!isAssemblyComplete(assembly)){
-            return false;
-        }
-    });
-    return true;
+    return getJobCompletionProgress(job) >= 1;
 }
 
 /**
@@ -54,12 +45,7 @@ function isJobComplete(job) {
  * @returns {boolean} - True if the assembly is complete, false otherwise.
  */
 function isAssemblyComplete(assembly) {
-    if (!assembly || !assembly.assembly_data) {
-        console.error("Invalid assembly object provided");
-        return false;
-    }
-    const { current_flow_tag_index, flow_tag } = assembly.assembly_data;
-    return current_flow_tag_index === flow_tag.tags.length;
+    return getAssemblyCompletionProgress(assembly) >= 1.0;
 }
 
 function calculateAssemblyProgress(assembly) {
