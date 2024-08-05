@@ -6,58 +6,72 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <meta name="google" content="notranslate">
-    <link href="https://cdn.jsdelivr.net/npm/beercss@3.6.8/dist/cdn/beer.min.css" rel="stylesheet">
-    <script type="module" src="https://cdn.jsdelivr.net/npm/beercss@3.6.8/dist/cdn/beer.min.js"></script>
-    <script type="module" src="https://cdn.jsdelivr.net/npm/material-dynamic-colors@1.1.2/dist/cdn/material-dynamic-colors.min.js"></script>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/frappe-gantt@latest/dist/frappe-gantt.css">
-    <script src="https://cdn.jsdelivr.net/npm/frappe-gantt@latest/dist/frappe-gantt.js"></script>
+
+    <script src="/static/gantt/codebase/dhtmlxgantt.js"></script>
+    <link rel="stylesheet" href="/static/gantt/codebase/dhtmlxgantt.css">
+
+    <link rel="stylesheet" href="/static/gantt/samples/common/controls_styles.css">
+
     <link rel="icon" href="/static/icon.png">
     <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=yes" />
-    <script src="https://www.kryogenix.org/code/browser/sorttable/sorttable.js"></script>
-    <link href="/static/css/theme.css" rel="stylesheet">
     <title>Workspace Scheduler</title>
 </head>
 
 <style>
-    .hidden, .handle.progress{
-        display: none;
+    .hidden,
+    .gantt_cal_ltext.gantt_section_description,
+    .gantt_cal_lsection,
+    .gantt_btn_set.gantt_left_btn_set.gantt_delete_btn_set,
+    .gantt_task_progress_drag,
+    .gantt_link_point  {
+        display: none !important;
+    }
+    html, body{
+        margin:0px;
+        padding:0px;
+        height:100%;
+        overflow:hidden;
+    }
+    .weekend {
+        background: #f4f7f4;
+    }
+
+    .gantt_selected .weekend {
+        background: #f7eb91;
+    }
+    .gantt_task_progress {
+        text-align: left;
+        padding-left: 10px;
+        box-sizing: border-box;
+        color: white;
+        font-weight: bold;
     }
 </style>
-<body class="dark">
-    <header class="fixed primary">
-        <nav>
-            <button class="circle transparent" onclick="goToMainUrl()">
-                <i>arrow_back</i>
-            </button>
-            <h5 class="max">
-                Workspace Scheduler
-            </h5>
-        </nav>
-    </header>
-    <main>
-        <nav class="tabbed large">
-            <a id="day-button">
-                <i>today</i>
-                <span>Day</span>
-            </a>
-            <a id="week-button">
-                <i>date_range</i>
-                <span>Week</span>
-            </a>
-            <a id="month-button" class="active">
-                <i>calendar_month</i>
-                <span>Month</span>
-            </a>
-            <a id="year-button">
-                <i>calendar_view_week</i>
-                <span>Year</span>
-            </a>
-        </nav>
-        <div id="charts" class="gantt-container"></div>
-        <div class="row">
-            <button class="small-round right-align" id="submit-button"><i>save</i><span>Submit</span></button>
-        </div>
-    </main>
+<body>
+    <form class="gantt_control">
+        <input type="button" value="Zoom In" onclick="gantt.ext.zoom.zoomIn();">
+        <input type="button" value="Zoom Out" onclick="gantt.ext.zoom.zoomOut();">
+
+        <input type="radio" id="scale1" class="gantt_radio" name="scale" value="day">
+        <label for="scale1">Day scale</label>
+
+        <input type="radio" id="scale2" class="gantt_radio" name="scale" value="week">
+        <label for="scale2">Week scale</label>
+
+        <input type="radio" id="scale3" class="gantt_radio" name="scale" value="month">
+        <label for="scale3">Month scale</label>
+
+        <input type="radio" id="scale4" class="gantt_radio" name="scale" value="quarter" checked>
+        <label for="scale4">Quarter scale</label>
+
+        <input type="radio" id="scale5" class="gantt_radio" name="scale" value="year">
+        <label for="scale5">Year scale</label>
+
+        <button id="submit-button"><i>save</i><span>Submit</span></button>
+    </div>
+    <div id="gantt_here" style='width:100%; height:calc(100vh - 52px);'></div>
+    <button id="month-button">Month</button>
+    <button id="year-button">Year</button>
     <script type="module" src="/static/js/workspace_scheduler.js"></script>
 </body>
 </html>

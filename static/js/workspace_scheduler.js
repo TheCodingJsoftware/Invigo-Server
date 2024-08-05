@@ -1,102 +1,312 @@
-import { getAssemblies, isAssemblyComplete, getAssemblyCompletionTime } from './utils.js';
+import { getAssemblies, isAssemblyComplete, isJobComplete, getAssemblyCompletionTime } from './utils.js';
 
 function goToMainUrl() {
     window.location.href = "/";
 }
 
-class GanttProgressGraph {
-    constructor(jobs) {
-        this.jobs = jobs;
+class GanttGraph {
+    constructor(workspace) {
+        this.workspace = workspace;
         this.today = new Date();
         this.oneWeekLater = new Date(this.today.getTime() + 7 * 24 * 60 * 60 * 1000);
+        this.data = null;
+        this.links = null;
+        this.idCounter = null;
+        this.lastViewMode = "quarter"
+    }
+
+    initialize() {
         this.data = [];
+        this.links = [];
+        this.idCounter = 1;
+        this.loadConfig();
     }
 
-    addJob(job, index) {
-        if (!job.job_data.starting_date) {
-            job.job_data.starting_date = this.today.toISOString().split("T")[0];
-        }
-        if (!job.job_data.ending_date) {
-            job.job_data.ending_date = this.oneWeekLater.toISOString().split("T")[0];
-        }
+    generateId() {
+        return this.idCounter++;
+    }
 
-        const startDate = new Date(job.job_data.starting_date);
-        const endDate = new Date(job.job_data.ending_date);
+    loadJobs() {
+        this.workspace.jobs.forEach(job => {
+            if (!job.job_data.starting_date) {
+                job.job_data.starting_date = this.today.toISOString().split("T")[0];
+            }
+            if (!job.job_data.ending_date) {
+                job.job_data.ending_date = this.oneWeekLater.toISOString().split("T")[0];
+            }
 
-        this.data.push({
-            start: startDate,
-            end: endDate,
-            name: job.job_data.name,
-            id: `${job.job_data.name}[${index}]`,
-            progress: 0,  // You can calculate this based on the job's progress
-            dependencies: null
+            const startDate = new Date(job.job_data.starting_date);
+            const endDate = new Date(job.job_data.ending_date);
+            const jobId = this.generateId();
+
+            this.data.push({
+                id: jobId,
+                text: job.job_data.name,
+                start_date: startDate,
+                duration: Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24)),
+                progress: 0.75,
+                open: isJobComplete(job),
+                parent: 0,
+                color: job.job_data.color,
+            });
+
+            this.loadAssemblies(job.assemblies, jobId, false);
         });
-
-        this.addAssemblies(job.assemblies, `${job.job_data.name}[${index}]`, 0);
     }
 
-    addAssemblies(assemblies, parentId, level) {
-        assemblies.forEach((assembly, assemblyIndex) => {
+    loadAssemblies(assemblies, parentId, flip) {
+        assemblies.forEach(assembly => {
             if (!assembly.assembly_data.starting_date) {
                 assembly.assembly_data.starting_date = this.today.toISOString().split("T")[0];
             }
             const startDate = new Date(assembly.assembly_data.starting_date);
             const expectedDays = assembly.assembly_data.expected_time_to_complete || 0;
-            const endDate = new Date(startDate.getTime() + expectedDays * 24 * 60 * 60 * 1000);
-            const assemblyId = `${parentId}/${assembly.assembly_data.name}[${assemblyIndex}]`;
+            const endDate = new Date(assembly.assembly_data.ending_date);
+            const assemblyId = this.generateId();
 
             this.data.push({
-                start: startDate,
-                end: endDate,
-                name: assembly.assembly_data.name,
                 id: assemblyId,
-                progress: 50, // TODO: Implement progress
-                dependencies: parentId
+                text: assembly.assembly_data.name,
+                start_date: startDate,
+                duration: expectedDays,
+                progress: 0.5,
+                open: !isAssemblyComplete(assembly),
+                parent: parentId,
+                color: assembly.assembly_data.color,
+            });
+
+            this.links.push({
+                id: assemblyId,
+                source: assemblyId,
+                target: parentId,
+                type: "1"
             });
 
             if (assembly.sub_assemblies && assembly.sub_assemblies.length > 0) {
-                this.addAssemblies(assembly.sub_assemblies, assemblyId, level + 1);
+                this.loadAssemblies(assembly.sub_assemblies, assemblyId, true);
             }
         });
     }
 
-    getGanttWorkspaceData() {
-        this.jobs.forEach((job, index) => {
-            this.addJob(job, index);
+    loadConfig() {
+        gantt.config.min_column_width = 50;
+        gantt.config.scale_height = 90;
+
+        var zoomConfig = {
+            levels: [
+                {
+                    name: "day",
+                    scale_height: 27,
+                    min_column_width: 80,
+                    scales: [
+                        { unit: "day", step: 1, format: "%d %M" }
+                    ]
+                },
+                {
+                    name: "week",
+                    scale_height: 50,
+                    min_column_width: 50,
+                    scales: [
+                        {
+                            unit: "week", step: 1, format: function (date) {
+                                var dateToStr = gantt.date.date_to_str("%d %M");
+                                var endDate = gantt.date.add(date, -6, "day");
+                                var weekNum = gantt.date.date_to_str("%W")(date);
+                                return "#" + weekNum + ", " + dateToStr(date) + " - " + dateToStr(endDate);
+                            }
+                        },
+                        { unit: "day", step: 1, format: "%j %D" }
+                    ]
+                },
+                {
+                    name: "month",
+                    scale_height: 50,
+                    min_column_width: 120,
+                    scales: [
+                        { unit: "month", format: "%F, %Y" },
+                        { unit: "week", format: "Week #%W" }
+                    ]
+                },
+                {
+                    name: "quarter",
+                    height: 50,
+                    min_column_width: 90,
+                    scales: [
+                        { unit: "month", step: 1, format: "%M" },
+                        {
+                            unit: "quarter", step: 1, format: function (date) {
+                                var dateToStr = gantt.date.date_to_str("%M");
+                                var endDate = gantt.date.add(gantt.date.add(date, 3, "month"), -1, "day");
+                                return dateToStr(date) + " - " + dateToStr(endDate);
+                            }
+                        }
+                    ]
+                },
+                {
+                    name: "year",
+                    scale_height: 50,
+                    min_column_width: 30,
+                    scales: [
+                        { unit: "year", step: 1, format: "%Y" }
+                    ]
+                }
+            ]
+        };
+
+        gantt.templates.scale_cell_class = function (date) {
+            if (date.getDay() == 0 || date.getDay() == 6) {
+                return "weekend";
+            }
+        };
+        gantt.templates.timeline_cell_class = function (item, date) {
+            if (date.getDay() == 0 || date.getDay() == 6) {
+                return "weekend"
+            }
+        };
+
+        gantt.ext.zoom.init(zoomConfig);
+        gantt.ext.zoom.setLevel("month");
+        gantt.ext.zoom.attachEvent("onAfterZoom", function (level, config) {
+            document.querySelector(".gantt_radio[value='" + config.name + "']").checked = true;
+        })
+        var weekScaleTemplate = function (date) {
+            var dateToStr = gantt.date.date_to_str("%d %M");
+            var endDate = gantt.date.add(gantt.date.add(date, 1, "week"), -1, "day");
+            return dateToStr(date) + " - " + dateToStr(endDate);
+        };
+
+        var daysStyle = function (date) {
+            if (date.getDay() === 0 || date.getDay() === 6) {
+                return "weekend";
+            }
+            return "";
+        };
+
+        gantt.config.scales = [
+            { unit: "month", step: 1, format: "%F, %Y" },
+            { unit: "week", step: 1, format: weekScaleTemplate },
+            { unit: "day", step: 1, format: "%D", css: daysStyle }
+        ];
+
+        gantt.config.date_format = "%Y-%m-%d";
+        gantt.config.columns = [
+            { name: "text", label: "Job/Assembly name", tree: true, width: 180 },
+            { name: "start_date", label: "Start date", align: "center", width: 100 },
+            { name: "duration", label: "Days", align: "center" },
+            { name: "end_date", label: "End date", align: "center", width: 100 },
+        ];
+
+        gantt.config.scale_height = 50;
+        gantt.config.autoscroll = true;
+        gantt.config.multiselect = false;
+        gantt.config.show_links = true;
+
+        gantt.templates.progress_text = function (start, end, task) {
+            return "<span style='text-align:left;'>" + Math.round(task.progress * 100) + "% </span>";
+        };
+        gantt.plugins({
+            multiselect: true,
+            auto_scheduling: true,
+            drag_timeline: true,
+            click_drag: true,
         });
-        return this.data;
+
+        gantt.attachEvent("onTaskDrag", (id, mode, item, original) => {
+            this.updateJobs(item)
+        });
+
+        gantt.attachEvent("onAfterTaskUpdate", (id, item) => {
+            this.updateJobs(item)
+        });
     }
 
+    render() {
+        gantt.init("gantt_here");
+        gantt.parse(this.loadData());
+        gantt.ext.zoom.setLevel(this.lastViewMode)
+    }
+
+    formatDate(date) {
+        const d = new Date(date);
+        const year = d.getFullYear();
+        const month = ("0" + (d.getMonth() + 1)).slice(-2);
+        const day = ("0" + d.getDate()).slice(-2);
+        return `${year}-${month}-${day}`;
+    }
+
+    updateAssemblies(assemblies, itemToUpdate, counter) {
+        assemblies.forEach(assembly => {
+            counter.id++;
+            if (counter.id === itemToUpdate.id && assembly.assembly_data.name === itemToUpdate.text) {
+                assembly.assembly_data.starting_date = this.formatDate(itemToUpdate.start_date);
+                assembly.assembly_data.ending_date = this.formatDate(itemToUpdate.end_date);
+                assembly.assembly_data.expected_time_to_complete = itemToUpdate.duration;
+                return;
+            }
+            if (assembly.sub_assemblies && assembly.sub_assemblies.length > 0) {
+                this.updateAssemblies(assembly.sub_assemblies, itemToUpdate, counter);
+            }
+        });
+    }
+
+    updateJobs(itemToUpdate) {
+        var counter = { id: 0 };
+        this.workspace.jobs.forEach(job => {
+            counter.id++;
+            if (counter.id === itemToUpdate.id && job.job_data.name === itemToUpdate.text) {
+                job.job_data.starting_date = this.formatDate(itemToUpdate.start_date);
+                job.job_data.ending_date = this.formatDate(itemToUpdate.end_date);
+                return;
+            }
+            if (job.assemblies && job.assemblies.length > 0) {
+                this.updateAssemblies(job.assemblies, itemToUpdate, counter);
+            }
+        });
+    }
+
+
+    getData() {
+        return this.workspace
+    }
+
+    loadData() {
+        this.data = [];
+        this.links = [];
+        this.idCounter = 1;
+        this.loadJobs();
+        return {
+            data: this.data,
+            links: this.links
+        };
+    }
 }
+
 
 class WorkspaceScheduler {
     constructor() {
         this.workspace = null;
         this.workspaceSettings = null;
-        this.ganttWorkspaceData = null;
         this.allAssemblies = null;
-        this.ganttProgressGraph = null;
-        this.lastViewMode = null;
         this.socket = null;
+        this.gnattGraph = null;
     }
 
     async initialize() {
         this.workspace = await this.loadWorkspace();
         this.workspaceSettings = await this.loadWorkspaceSettings();
-        this.lastViewMode = "Month";
         if (this.workspace && this.workspaceSettings) {
-            this.allAssemblies = this.loadAllAssemblies();
-            this.loadGantts();
+            this.loadGanttGraph();
             this.setupWebSocket();
         }
     }
 
-    async reloadGanttGraph() {
+    async reloadView() {
         this.workspace = await this.loadWorkspace();
         this.workspaceSettings = await this.loadWorkspaceSettings();
         if (this.workspace && this.workspaceSettings) {
             this.allAssemblies = this.loadAllAssemblies();
-            this.loadGantts();
+            this.ganttGraph.jobs = this.workspace.jobs
+            this.loadGanttGraph();
         }
     }
 
@@ -108,80 +318,12 @@ class WorkspaceScheduler {
         return allAssemblies;
     }
 
-    loadGantts() {
-        const chartsContainer = document.getElementById('charts');
-        if (!chartsContainer) {
-            console.error('Charts container not found');
-            return;
+    loadGanttGraph() {
+        if (!this.gnattGraph) {
+            this.ganttGraph = new GanttGraph(this.workspace);
+            this.ganttGraph.initialize();
         }
-
-        const ganttJob = new GanttProgressGraph(this.workspace.jobs);
-        const ganttData = ganttJob.getGanttWorkspaceData();
-
-        this.ganttProgressGraph = new Gantt('.gantt-container', ganttData, {
-            view_mode: this.lastViewMode,
-            language: 'en',
-            header_height: 50,
-            column_width: 30,
-            step: 24,
-            bar_height: 20,
-            bar_corner_radius: 3,
-            arrow_curve: 5,
-            padding: 18,
-            date_format: 'YYYY-MM-DD',
-            popup_trigger: 'click',
-            on_click: task => {
-                // console.log(task);
-            },
-            on_date_change: (task, start, end) => {
-                this.updateWorkspaceDates(task.id, start, end);
-            },
-        });
-    }
-
-    updateWorkspaceDates(id, start, end) {
-        const parts = id.split('/').map(part => part.replace(/\[(\d+)\]/, (_, num) => `__${num}`));
-        console.log(parts);
-
-        function recursiveUpdate(parts, currentLevel) {
-            const part = parts.shift();
-
-            if (!part) return;
-
-            const [name, index] = part.split('__');
-            const match = currentLevel.find((item, idx) => item.assembly_data.name === name && idx === parseInt(index, 10));
-            if (match) {
-                console.log(parts);
-                if (parts.length === 0) {
-                    // Update the dates
-                    match.assembly_data.starting_date = start.toISOString().split('T')[0];
-                    match.assembly_data.ending_date = end.toISOString().split('T')[0];
-                } else if (match.sub_assemblies) {
-                    recursiveUpdate(parts, match.sub_assemblies);
-                }
-            }
-        }
-        const [jobName, jobIdx] = parts[0].split('__');
-        this.workspace.jobs.forEach((job, jobIndex) => {
-            if (job.job_data.name === jobName && jobIndex === parseInt(jobIdx, 10)) {
-                if (parts.length === 1) {
-                    // Update job dates
-                    job.job_data.starting_date = start.toISOString().split('T')[0];
-                    job.job_data.ending_date = end.toISOString().split('T')[0];
-                } else if (parts.length === 2) {
-                    // Update assembly dates
-                    const [assemblyName, assemblyIdx] = parts[1].split('__');
-                    const assembly = job.assemblies.find((item, idx) => item.assembly_data.name === assemblyName && idx === parseInt(assemblyIdx, 10));
-                    if (assembly) {
-                        assembly.assembly_data.starting_date = start.toISOString().split('T')[0];
-                        assembly.assembly_data.ending_date = end.toISOString().split('T')[0];
-                    }
-                } else {
-                    // Update sub-assembly dates
-                    recursiveUpdate(parts.slice(1), job.assemblies);
-                }
-            }
-        });
+        this.ganttGraph.render();
     }
 
     async loadWorkspace() {
@@ -211,6 +353,7 @@ class WorkspaceScheduler {
             return null;
         }
     }
+
     async uploadWorkspace() {
         const response = await fetch('/workspace_scheduler_upload', {
             method: 'POST',
@@ -226,7 +369,7 @@ class WorkspaceScheduler {
 
     createFormData() {
         const formData = new FormData();
-        const workspaceBlob = new Blob([JSON.stringify(this.workspace)], { type: 'application/json' });
+        const workspaceBlob = new Blob([JSON.stringify(this.ganttGraph.getData())], { type: 'application/json' });
         formData.append('file', workspaceBlob, 'workspace.json');
         return formData;
     }
@@ -238,7 +381,7 @@ class WorkspaceScheduler {
             if (message.action === 'download' && message.files.includes('workspace.json')) {
                 console.log('Workspace update received. Reloading...');
                 this.loadWorkspace().then(() => {
-                    this.reloadGanttGraph();
+                    this.reloadView();
                 });
             }
         };
@@ -246,82 +389,25 @@ class WorkspaceScheduler {
 }
 
 window.addEventListener('load', async function () {
-    const workspace_dashboard = new WorkspaceScheduler();
+    const workspaceScheduler = new WorkspaceScheduler();
     try {
-        await workspace_dashboard.initialize(); // Wait for initialization to complete
+        await workspaceScheduler.initialize(); // Wait for initialization to complete
     } catch (error) {
         console.error('Error initializing workspace:', error);
         alert('Error loading workspace. Please try again later.');
     }
 
     document.getElementById('submit-button').onclick = function () {
-        workspace_dashboard.uploadWorkspace();
+        workspaceScheduler.uploadWorkspace();
     };
 
-    function setActiveView(button, viewMode) {
-        document.querySelectorAll('nav.tabbed.large a').forEach(btn => {
-            btn.classList.remove('active');
-        });
-        button.classList.add('active');
-        const url = new URL(window.location);
-        url.searchParams.set('view', viewMode);
-        window.history.pushState({}, '', url);
-        workspace_dashboard.lastViewMode = viewMode;
+    var radios = document.getElementsByName("scale");
+    for (var i = 0; i < radios.length; i++) {
+        radios[i].onclick = function (event) {
+            gantt.ext.zoom.setLevel(event.target.value);
+            workspaceScheduler.ganttGraph.lastViewMode = event.target.value;
+        };
     }
-
-    // Event listeners for view mode buttons
-    document.getElementById('day-button').onclick = function () {
-        if (workspace_dashboard.ganttProgressGraph) {
-            workspace_dashboard.ganttProgressGraph.change_view_mode('Day');
-            setActiveView(this, 'Day');
-        }
-    };
-
-    document.getElementById('week-button').onclick = function () {
-        if (workspace_dashboard.ganttProgressGraph) {
-            workspace_dashboard.ganttProgressGraph.change_view_mode('Week');
-            setActiveView(this, 'Week');
-        }
-    };
-
-    document.getElementById('month-button').onclick = function () {
-        if (workspace_dashboard.ganttProgressGraph) {
-            workspace_dashboard.ganttProgressGraph.change_view_mode('Month');
-            setActiveView(this, 'Month');
-        }
-    };
-
-    document.getElementById('year-button').onclick = function () {
-        if (workspace_dashboard.ganttProgressGraph) {
-            workspace_dashboard.ganttProgressGraph.change_view_mode('Year');
-            setActiveView(this, 'Year');
-        }
-    };
-    const urlParams = new URLSearchParams(window.location.search);
-    const viewMode = urlParams.get('view') || 'Month'; // Default to 'Month' if not specified
-
-    // Set the active view button and change the view mode
-    document.querySelectorAll('nav.tabbed.large a').forEach(button => {
-        const spanText = button.querySelector('span').innerText;
-        if (spanText === viewMode) {
-            setActiveView(button, viewMode);
-        }
-    });
-
-    if (workspace_dashboard.ganttProgressGraph) {
-        workspace_dashboard.ganttProgressGraph.change_view_mode(viewMode);
-    }
-
-    setTimeout(function () {
-        document.querySelectorAll('brandingLogo').forEach(function (img) {
-            img.onerror = function () {
-                this.classList.add('hidden');
-            };
-            if (!img.complete || img.naturalWidth === 0) {
-                img.onerror();
-            }
-        });
-    }, 1000); // 1000 milliseconds = 1 second
 
     setTimeout(function () {
         document.querySelectorAll('img').forEach(function (img) {

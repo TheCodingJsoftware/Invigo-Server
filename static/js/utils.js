@@ -31,6 +31,24 @@ function collectAssemblies(assemblies) {
 }
 
 /**
+ * Checks if an job is complete.
+ * @param {Object} job - The job object to check.
+ * @returns {boolean} - True if the job is complete, false otherwise.
+ */
+function isJobComplete(job) {
+    if (!job) {
+        console.error("Invalid job object provided");
+        return false;
+    }
+    job.assemblies.forEach(assembly => {
+        if (!isAssemblyComplete(assembly)){
+            return false;
+        }
+    });
+    return true;
+}
+
+/**
  * Checks if an assembly is complete.
  * @param {Object} assembly - The assembly object to check.
  * @returns {boolean} - True if the assembly is complete, false otherwise.
@@ -76,4 +94,4 @@ function getAssemblyCompletionTime(assembly) {
     // Convert total time from milliseconds to days
     return totalTime / (1000 * 60 * 60 * 24);
 }
-export { getAssemblies, isAssemblyComplete, getAssemblyCompletionTime };
+export { getAssemblies, isAssemblyComplete, isJobComplete, getAssemblyCompletionTime };
