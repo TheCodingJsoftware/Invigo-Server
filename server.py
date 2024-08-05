@@ -422,7 +422,37 @@ class FileUploadHandler(tornado.web.RequestHandler):
             should_signal_connect_clients = True
             if should_signal_connect_clients and file_name.lower().endswith(".json"):
                 signal_clients_for_changes(self.request.remote_ip, [file_name], client_type='software')
-                signal_clients_for_changes(self.request.remote_ip, [file_name], client_type='web')
+                signal_clients_for_changes(None, [file_name], client_type='web')
+        else:
+            self.write("No file received.")
+            CustomPrint.print(
+                f"ERROR - No file received from  {self.request.remote_ip}.",
+                connected_clients=connected_clients,
+            )
+
+class WorkspaceSchedulerFileUploadHandler(tornado.web.RequestHandler):
+    async def post(self):
+        file_info = self.request.files.get("file")
+        should_signal_connect_clients: bool = False
+        if file_info:
+            file_data = file_info[0]["body"]
+            file_name: str = file_info[0]["filename"]
+
+            if file_name.lower().endswith(".json"):
+                with open(f"data/{file_name}", "wb") as file:
+                    file.write(file_data)
+                threading.Thread(target=update_inventory_file_to_pinecone, args=(file_name,)).start()
+            elif file_name.lower().endswith(".jpeg") or file_name.lower().endswith(".jpg") or file_name.lower().endswith(".png"):
+                file_name = os.path.basename(file_name)
+                with open(f"images/{file_name}", "wb") as file:
+                    file.write(file_data)
+            CustomPrint.print(
+                f'INFO - {self.request.remote_ip} uploaded "{file_name}"',
+                connected_clients=connected_clients,
+            )
+            should_signal_connect_clients = True
+            if should_signal_connect_clients and file_name.lower().endswith(".json"):
+                signal_clients_for_changes(None, [file_name], client_type='software')
         else:
             self.write("No file received.")
             CustomPrint.print(
@@ -1618,6 +1648,7 @@ if __name__ == "__main__":
             # Upload/download handlers
             (r"/file/(.*)", FileReceiveHandler),
             (r"/upload", FileUploadHandler),
+            (r"/workspace_scheduler_upload", WorkspaceSchedulerFileUploadHandler),
             (r"/workspace_upload", WorkspaceFileUploader),
             (r"/workspace_get_file/(.*)", WorkspaceFileHandler),
             # Image handlers

@@ -210,7 +210,7 @@ class WorkspaceScheduler {
         }
     }
     async uploadWorkspace() {
-        const response = await fetch('/upload', {
+        const response = await fetch('/workspace_scheduler_upload', {
             method: 'POST',
             body: this.createFormData()
         });
