@@ -68,13 +68,18 @@ function isAssemblyComplete(assembly) {
  * @returns {number} - The total time in days.
  */
 function getAssemblyCompletionProgress(assembly) {
-    function calculateProgress(assembly) {
+    function calculateAssemblyProgress(assembly) {
         let totalSteps = assembly.assembly_data.flow_tag.tags.length;
         let currentSteps = assembly.assembly_data.current_flow_tag_index;
 
+        assembly.laser_cut_parts.forEach(part => {
+            totalSteps += part.flow_tag.tags.length;
+            currentSteps += part.current_flow_tag_index;
+        });
+
         if (assembly.sub_assemblies && assembly.sub_assemblies.length > 0) {
             assembly.sub_assemblies.forEach(subAssembly => {
-                const subAssemblyProgress = calculateProgress(subAssembly);
+                const subAssemblyProgress = calculateAssemblyProgress(subAssembly);
                 totalSteps += subAssemblyProgress.totalSteps;
                 currentSteps += subAssemblyProgress.currentSteps;
             });
@@ -86,9 +91,10 @@ function getAssemblyCompletionProgress(assembly) {
         };
     }
 
-    const progress = calculateProgress(assembly);
+    const progress = calculateAssemblyProgress(assembly);
     return progress.totalSteps > 0 ? progress.currentSteps / progress.totalSteps : 0;
 }
+
 function getJobCompletionProgress(job) {
     function calculateJobProgress(job) {
         let totalSteps = 0;
