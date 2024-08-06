@@ -126,10 +126,10 @@ class WorkspaceArchivesScriptHandler(tornado.web.RequestHandler):
             self.write(data)
 
 
-class WorkspaceSchedulerScriptHandler(tornado.web.RequestHandler):
+class ProductionPlannerScriptHandler(tornado.web.RequestHandler):
     def get(self):
         self.set_header("Content-Type", "application/javascript")
-        with open("static/js/workspace_scheduler.js", "rb") as file:
+        with open("static/js/production_planner.js", "rb") as file:
             data = file.read()
             self.write(data)
 
@@ -430,7 +430,7 @@ class FileUploadHandler(tornado.web.RequestHandler):
                 connected_clients=connected_clients,
             )
 
-class WorkspaceSchedulerFileUploadHandler(tornado.web.RequestHandler):
+class ProductionPlannerFileUploadHandler(tornado.web.RequestHandler):
     async def post(self):
         file_info = self.request.files.get("file")
         should_signal_connect_clients: bool = False
@@ -1022,9 +1022,9 @@ class DeleteJobHandler(tornado.web.RequestHandler):
         self.write({"status": "success", "message": "Quote deleted successfully."})
 
 
-class WorkspaceSchedulerHandler(tornado.web.RequestHandler):
+class ProductionPlannerHandler(tornado.web.RequestHandler):
     def get(self):
-        template = env.get_template("workspace_scheduler.html")
+        template = env.get_template("production_planner.html")
         rendered_template = template.render()
         self.write(rendered_template)
 
@@ -1648,7 +1648,7 @@ if __name__ == "__main__":
             # Upload/download handlers
             (r"/file/(.*)", FileReceiveHandler),
             (r"/upload", FileUploadHandler),
-            (r"/workspace_scheduler_upload", WorkspaceSchedulerFileUploadHandler),
+            (r"/production_planner_upload", ProductionPlannerFileUploadHandler),
             (r"/workspace_upload", WorkspaceFileUploader),
             (r"/workspace_get_file/(.*)", WorkspaceFileHandler),
             # Image handlers
@@ -1680,10 +1680,10 @@ if __name__ == "__main__":
             (r"/delete_job/(.*)", DeleteJobHandler),
             (r"/jobs", JobPrintoutsHandler),
             # Dashboard handlers
-            (r"/workspace_scheduler", WorkspaceSchedulerHandler),
+            (r"/production_planner", ProductionPlannerHandler),
             (r"/workspace_dashboard", WorkspaceDashboardHandler),
             (r"/workspace_archives_dashboard", WorkspaceArchivesDashboardHandler),
-            (r"/static/js/workspace_scheduler.js", WorkspaceSchedulerScriptHandler),
+            (r"/static/js/production_planner.js", ProductionPlannerScriptHandler),
             (r"/static/js/workspace_dashboard.js", WorkspaceScriptHandler),
             (r"/static/js/workspace_archives_dashboard.js", WorkspaceArchivesScriptHandler),
             (r"/data/workspace.json", WorkspaceJsonHandler),

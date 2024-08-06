@@ -362,7 +362,7 @@ class WorkspaceScheduler {
     }
 
     async uploadWorkspace() {
-        const response = await fetch('/workspace_scheduler_upload', {
+        const response = await fetch('/production_planner_upload', {
             method: 'POST',
             body: this.createFormData()
         });
