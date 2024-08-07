@@ -51,47 +51,38 @@ class GanttGraph {
                 text: job.job_data.name,
                 start_date: startDate,
                 duration: Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24)),
-                progress: getJobCompletionProgress(job),
+                // progress: getJobCompletionProgress(job),
                 open: false,
                 parent: 0,
                 color: job.job_data.color,
             });
 
-            this.loadAssemblies(job.assemblies, jobId, false);
+            this.loadProcessTimeline(job.job_data.flowtag_timeline, jobId, job.job_data.color);
         });
     }
 
-    loadAssemblies(assemblies, parentId, flip) {
-        assemblies.forEach(assembly => {
-            if (!assembly.assembly_data.starting_date) {
-                assembly.assembly_data.starting_date = this.today.toISOString().split("T")[0];
-            }
-            const startDate = new Date(assembly.assembly_data.starting_date);
-            const expectedDays = assembly.assembly_data.expected_time_to_complete || 0;
-            const endDate = new Date(assembly.assembly_data.ending_date);
-            const assemblyId = this.generateId();
+    loadProcessTimeline(flowtag_timeline, parentId, color) {
+        flowtag_timeline.forEach(tag => {
+            const startDate = new Date(tag.starting_date);
+            const endDate = new Date(tag.ending_date);
+            const duration = (endDate - startDate) / (1000 * 60 * 60 * 24);
+            const tagId = this.generateId();
 
             this.data.push({
-                id: assemblyId,
-                text: assembly.assembly_data.name,
+                id: tagId,
+                text: tag.name,
                 start_date: startDate,
-                duration: expectedDays,
-                progress: getAssemblyCompletionProgress(assembly),
-                open: false,
+                duration: duration,
                 parent: parentId,
-                color: assembly.assembly_data.color,
+                color: color,
             });
 
             this.links.push({
-                id: assemblyId,
-                source: assemblyId,
-                target: parentId,
+                id: this.generateId(),
+                source: parentId,
+                target: tagId,
                 type: "1"
             });
-
-            if (assembly.sub_assemblies && assembly.sub_assemblies.length > 0) {
-                this.loadAssemblies(assembly.sub_assemblies, assemblyId, true);
-            }
         });
     }
 
@@ -241,17 +232,13 @@ class GanttGraph {
         return `${year}-${month}-${day}`;
     }
 
-    updateAssemblies(assemblies, itemToUpdate, counter) {
-        assemblies.forEach(assembly => {
+    updateFlowtagTimeline(flowtag_timeline, itemToUpdate, counter) {
+        flowtag_timeline.forEach(tag => {
             counter.id++;
-            if (counter.id === itemToUpdate.id && assembly.assembly_data.name === itemToUpdate.text) {
-                assembly.assembly_data.starting_date = this.formatDate(itemToUpdate.start_date);
-                assembly.assembly_data.ending_date = this.formatDate(itemToUpdate.end_date);
-                assembly.assembly_data.expected_time_to_complete = itemToUpdate.duration;
+            if (counter.id === itemToUpdate.id && tag.name === itemToUpdate.text) {
+                tag.starting_date = this.formatDate(itemToUpdate.start_date);
+                tag.ending_date = this.formatDate(itemToUpdate.end_date);
                 return;
-            }
-            if (assembly.sub_assemblies && assembly.sub_assemblies.length > 0) {
-                this.updateAssemblies(assembly.sub_assemblies, itemToUpdate, counter);
             }
         });
     }
@@ -265,9 +252,7 @@ class GanttGraph {
                 job.job_data.ending_date = this.formatDate(itemToUpdate.end_date);
                 return;
             }
-            if (job.assemblies && job.assemblies.length > 0) {
-                this.updateAssemblies(job.assemblies, itemToUpdate, counter);
-            }
+            this.updateFlowtagTimeline(job.job_data.flowtag_timeline, itemToUpdate, counter);
         });
     }
 
@@ -377,7 +362,7 @@ class WorkspaceScheduler {
     createFormData() {
         const formData = new FormData();
         const workspaceBlob = new Blob([JSON.stringify(this.ganttGraph.getData())], { type: 'application/json' });
-        formData.append('file', workspaceBlob, 'workspace.json');
+        formData.append('file', workspaceBlob, 'production_plan.json');
         return formData;
     }
 
@@ -385,7 +370,7 @@ class WorkspaceScheduler {
         this.socket = new WebSocket(`ws://${window.location.host}/ws/web`);
         this.socket.onmessage = (event) => {
             const message = JSON.parse(event.data);
-            if (message.action === 'download' && message.files.includes('workspace.json')) {
+            if (message.action === 'download' && message.files.includes('production_plan.json')) {
                 console.log('Workspace update received. Reloading...');
                 this.loadWorkspace().then(() => {
                     this.reloadView();

@@ -6,7 +6,7 @@ import sys
 import threading
 import time
 import zipfile
-from filelock import FileLock
+from filelock import FileLock, Timeout
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
 from functools import partial
@@ -135,9 +135,17 @@ class ProductionPlannerScriptHandler(tornado.web.RequestHandler):
             self.write(data)
 
 
+class ProductionPlanJsonHandler(tornado.web.RequestHandler):
+    def get(self):
+        self.set_header("Content-Type", "application/json")
+        with open("data/production_plan.json", "rb") as file:
+            data = msgspec.json.decode(file.read())
+            self.write(data)
+
+
 class WorkspaceJsonHandler(tornado.web.RequestHandler):
     def get(self):
-        self.set_header("Content-Type", "application/javascript")
+        self.set_header("Content-Type", "application/json")
         with open("data/workspace.json", "rb") as file:
             data = msgspec.json.decode(file.read())
             self.write(data)
@@ -223,10 +231,12 @@ class LogContentHandler(tornado.web.RequestHandler):
                     "ERROR": "#bf382f",
                     "Error": "#bf382f",
                     "ERRNO": "#bf382f",
+                    "WARN": "#f1c234",
                     "INVIGO SERVER STARTED": "#3daee9",
                     "HOURLY BACKUP COMPLETE": "#f1c234",
                     "DAILY BACKUP COMPLETE": "#f1c234",
                     "WEEKLY BACKUP COMPLETE": "#f1c234",
+                    "LOCK": "#0057ea",
                     "UPLOADED": "#0057ea",
                     "DOWNLOADED": "#0057ea",
                     "SENT": "#0057ea",
@@ -361,8 +371,9 @@ class FetchDataHandler(tornado.web.RequestHandler):
 class FileReceiveHandler(tornado.web.RequestHandler):
     def get(self, filename: str):
         file_path = self.get_file_path(filename)
+        lock = FileLock(f"{file_path}.lock", timeout=10)  # Set a timeout for acquiring the lock
         try:
-            with FileLock(f"{file_path}.lock"):
+            with lock:
                 with open(file_path, "rb") as file:
                     data = file.read()
                     self.set_header("Content-Type", "application/json")
@@ -370,9 +381,13 @@ class FileReceiveHandler(tornado.web.RequestHandler):
                     self.write(data)
                 CustomPrint.print(f'INFO - {self.request.remote_ip} downloaded "{filename}"', connected_clients=connected_clients)
         except FileNotFoundError:
+            CustomPrint.print(f'ERROR - File "{filename}" not found.', connected_clients=connected_clients)
             self.set_status(404)
             self.write(f'File "{filename}" not found.')
-            CustomPrint.print(f'ERROR - File "{filename}" not found.', connected_clients=connected_clients)
+        except Timeout:
+            CustomPrint.print(f'WARN - {self.request.remote_ip} Could not acquire lock for "{filename}".', connected_clients=connected_clients)
+            self.set_status(503)
+            self.write(f'Could not acquire lock for {filename}. Try again later.')
 
     def get_file_path(self, filename: str) -> str:
         if filename.endswith(".job"):
@@ -396,40 +411,43 @@ def update_inventory_file_to_pinecone(file_name: str):
         )
 
 
+
 class FileUploadHandler(tornado.web.RequestHandler):
     async def post(self):
         file_info = self.request.files.get("file")
         should_signal_connect_clients = False
         if file_info:
             file_data = file_info[0]["body"]
-            file_name = file_info[0]["filename"]
-            file_path = self.get_file_path(file_name)
+            filename: str = file_info[0]["filename"]
 
-            if file_name.lower().endswith(".json"):
-                with FileLock(f"{file_path}.lock"):
-                    self.write_file(file_path, file_data)
-                    threading.Thread(target=update_inventory_file_to_pinecone, args=(file_name,)).start()
-                    should_signal_connect_clients = True
-            else:
-                self.write_file(file_path, file_data)
+            if filename.lower().endswith(".json"):
+                file_path = f"data/{filename}"
+                lock_path = f"{file_path}.lock"
+                lock = FileLock(lock_path, timeout=10)
+                try:
+                    with lock:
+                        with open(file_path, "wb") as file:
+                            file.write(file_data)
+                        threading.Thread(target=update_inventory_file_to_pinecone, args=(filename,)).start()
+                        should_signal_connect_clients = True
 
-            CustomPrint.print(f'INFO - {self.request.remote_ip} uploaded "{file_name}"', connected_clients=connected_clients)
+                    CustomPrint.print(f'INFO - {self.request.remote_ip} uploaded "{filename}"', connected_clients=connected_clients)
 
-            if should_signal_connect_clients:
-                signal_clients_for_changes(self.request.remote_ip, [file_name], client_type='software')
-                signal_clients_for_changes(None, [file_name], client_type='web')
+                    if should_signal_connect_clients:
+                        signal_clients_for_changes(self.request.remote_ip, [filename], client_type='software')
+                        signal_clients_for_changes(None, [filename], client_type='web')
+                except Timeout:
+                    CustomPrint.print(f'WARN - {self.request.remote_ip} Could not acquire lock for "{filename}".', connected_clients=connected_clients)
+                    self.set_status(503)
+                    self.write(f'Could not acquire lock for {filename}. Try again later.')
+            elif filename.lower().endswith((".jpeg", ".jpg", '.png')):
+                filename = os.path.basename(filename)
+                with open(f"images/{filename}", "wb") as file:
+                    file.write(file_data)
         else:
             self.write("No file received.")
             CustomPrint.print(f"ERROR - No file received from {self.request.remote_ip}.", connected_clients=connected_clients)
 
-    def get_file_path(self, filename: str) -> str:
-        if filename.lower().endswith((".jpeg", ".jpg", ".png")):
-            return os.path.join("images", os.path.basename(filename))
-        return f"data/{filename}"
-
-    def write_file(self, file_path: str, file_data: bytes):
-        with open(file_path, "wb") as file:
-            file.write(file_data)
 
 class ProductionPlannerFileUploadHandler(tornado.web.RequestHandler):
     async def post(self):
@@ -437,23 +455,35 @@ class ProductionPlannerFileUploadHandler(tornado.web.RequestHandler):
         should_signal_connect_clients = False
         if file_info:
             file_data = file_info[0]["body"]
-            file_name: str = file_info[0]["filename"]
+            filename: str = file_info[0]["filename"]
 
-            if file_name.lower().endswith(".json"):
-                with open(f"data/{file_name}", "wb") as file:
+            if filename.lower().endswith(".json"):
+                file_path = f"data/{filename}"
+                lock_path = f"{file_path}.lock"
+                lock = FileLock(lock_path, timeout=10)
+
+                try:
+                    with lock:
+                        with open(file_path, "wb") as file:
+                            file.write(file_data)
+                        threading.Thread(target=update_inventory_file_to_pinecone, args=(filename,)).start()
+                except Timeout:
+                    CustomPrint.print(f'WARN - {self.request.remote_ip} Could not acquire lock for "{filename}".', connected_clients=connected_clients)
+                    self.write(f"Could not acquire lock for {filename}. Try again later.")
+                    return
+
+            elif filename.lower().endswith(".jpeg") or filename.lower().endswith(".jpg") or filename.lower().endswith(".png"):
+                filename = os.path.basename(filename)
+                with open(f"images/{filename}", "wb") as file:
                     file.write(file_data)
-                threading.Thread(target=update_inventory_file_to_pinecone, args=(file_name,)).start()
-            elif file_name.lower().endswith(".jpeg") or file_name.lower().endswith(".jpg") or file_name.lower().endswith(".png"):
-                file_name = os.path.basename(file_name)
-                with open(f"images/{file_name}", "wb") as file:
-                    file.write(file_data)
+
             CustomPrint.print(
-                f'INFO - Web {self.request.remote_ip} uploaded "{file_name}"',
+                f'INFO - Web {self.request.remote_ip} uploaded "{filename}"',
                 connected_clients=connected_clients,
             )
             should_signal_connect_clients = True
-            if should_signal_connect_clients and file_name.lower().endswith(".json"):
-                signal_clients_for_changes(None, [file_name], client_type='software')
+            if should_signal_connect_clients and filename.lower().endswith(".json"):
+                signal_clients_for_changes(None, [filename], client_type='software')
         else:
             self.write("No file received.")
             CustomPrint.print(
@@ -1687,6 +1717,7 @@ if __name__ == "__main__":
             (r"/static/js/production_planner.js", ProductionPlannerScriptHandler),
             (r"/static/js/workspace_dashboard.js", WorkspaceScriptHandler),
             (r"/static/js/workspace_archives_dashboard.js", WorkspaceArchivesScriptHandler),
+            (r"/data/production_plan.json", ProductionPlanJsonHandler),
             (r"/data/workspace.json", WorkspaceJsonHandler),
             (r"/data/workspace_settings.json", WorkspaceSettingsJsonHandler),
             # Workorder handlers
