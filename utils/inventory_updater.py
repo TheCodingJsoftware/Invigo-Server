@@ -60,12 +60,14 @@ def get_sheet_pending_data(sheet_name: str) -> list[Order]:
     sheets_inventory.load_data()
     if sheet := sheets_inventory.get_sheet_by_name(sheet_name):
         return sheet.orders
+    return []
 
 
 def get_sheet_quantity(sheet_name: str) -> float:
     sheets_inventory.load_data()
     if sheet := sheets_inventory.get_sheet_by_name(sheet_name):
         return sheet.quantity
+    return 0.0
 
 
 def set_sheet_quantity(sheet_name: str, new_quantity: float, other_order: Order, clients) -> None:

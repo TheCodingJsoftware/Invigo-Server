@@ -7,7 +7,7 @@ def calculate_overhead(
     overhead_percentage: float = 0.18,
     max_iterations: int = 10,
 ):
-    unit_price = 0
+    unit_price = 0.0
     for _ in range(max_iterations):
         try:
             unit_price = (cost + (unit_price * overhead_percentage)) / (1 - profit_margin)

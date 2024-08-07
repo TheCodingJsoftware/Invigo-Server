@@ -6,6 +6,7 @@ import sys
 import threading
 import time
 import zipfile
+from filelock import FileLock
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
 from functools import partial
@@ -356,33 +357,29 @@ class FetchDataHandler(tornado.web.RequestHandler):
         self.write({"dates": dates, "quantities": quantities, "prices": prices})
 
 
+
 class FileReceiveHandler(tornado.web.RequestHandler):
     def get(self, filename: str):
-        if filename.endswith(".job"):
-            file_path = f"data/jobs/{filename}"
-        elif filename.endswith(".json"):
-            file_path = f"data/{filename}"
+        file_path = self.get_file_path(filename)
         try:
-            with open(file_path, "rb") as file:
-                data = file.read()
-
-                # Set the response headers
-                self.set_header("Content-Type", "application/json")
-                self.set_header("Content-Disposition", f'attachment; filename="{filename}"')
-
-                # Send the file as the response
-                self.write(data)
-                CustomPrint.print(
-                    f'INFO - {self.request.remote_ip} downloaded "{filename}"',
-                    connected_clients=connected_clients,
-                )
+            with FileLock(f"{file_path}.lock"):
+                with open(file_path, "rb") as file:
+                    data = file.read()
+                    self.set_header("Content-Type", "application/json")
+                    self.set_header("Content-Disposition", f'attachment; filename="{filename}"')
+                    self.write(data)
+                CustomPrint.print(f'INFO - {self.request.remote_ip} downloaded "{filename}"', connected_clients=connected_clients)
         except FileNotFoundError:
             self.set_status(404)
             self.write(f'File "{filename}" not found.')
-            CustomPrint.print(
-                f'ERROR - File "{filename}" not found.',
-                connected_clients=connected_clients,
-            )
+            CustomPrint.print(f'ERROR - File "{filename}" not found.', connected_clients=connected_clients)
+
+    def get_file_path(self, filename: str) -> str:
+        if filename.endswith(".job"):
+            return f"data/jobs/{filename}"
+        elif filename.endswith(".json"):
+            return f"data/{filename}"
+        return f"data/{filename}"
 
 
 def update_inventory_file_to_pinecone(file_name: str):
@@ -402,38 +399,42 @@ def update_inventory_file_to_pinecone(file_name: str):
 class FileUploadHandler(tornado.web.RequestHandler):
     async def post(self):
         file_info = self.request.files.get("file")
-        should_signal_connect_clients: bool = False
+        should_signal_connect_clients = False
         if file_info:
             file_data = file_info[0]["body"]
-            file_name: str = file_info[0]["filename"]
+            file_name = file_info[0]["filename"]
+            file_path = self.get_file_path(file_name)
 
             if file_name.lower().endswith(".json"):
-                with open(f"data/{file_name}", "wb") as file:
-                    file.write(file_data)
-                threading.Thread(target=update_inventory_file_to_pinecone, args=(file_name,)).start()
-            elif file_name.lower().endswith(".jpeg") or file_name.lower().endswith(".jpg") or file_name.lower().endswith(".png"):
-                file_name = os.path.basename(file_name)
-                with open(f"images/{file_name}", "wb") as file:
-                    file.write(file_data)
-            CustomPrint.print(
-                f'INFO - Software {self.request.remote_ip} uploaded "{file_name}"',
-                connected_clients=connected_clients,
-            )
-            should_signal_connect_clients = True
-            if should_signal_connect_clients and file_name.lower().endswith(".json"):
+                with FileLock(f"{file_path}.lock"):
+                    self.write_file(file_path, file_data)
+                    threading.Thread(target=update_inventory_file_to_pinecone, args=(file_name,)).start()
+                    should_signal_connect_clients = True
+            else:
+                self.write_file(file_path, file_data)
+
+            CustomPrint.print(f'INFO - {self.request.remote_ip} uploaded "{file_name}"', connected_clients=connected_clients)
+
+            if should_signal_connect_clients:
                 signal_clients_for_changes(self.request.remote_ip, [file_name], client_type='software')
                 signal_clients_for_changes(None, [file_name], client_type='web')
         else:
             self.write("No file received.")
-            CustomPrint.print(
-                f"ERROR - No file received from  {self.request.remote_ip}.",
-                connected_clients=connected_clients,
-            )
+            CustomPrint.print(f"ERROR - No file received from {self.request.remote_ip}.", connected_clients=connected_clients)
+
+    def get_file_path(self, filename: str) -> str:
+        if filename.lower().endswith((".jpeg", ".jpg", ".png")):
+            return os.path.join("images", os.path.basename(filename))
+        return f"data/{filename}"
+
+    def write_file(self, file_path: str, file_data: bytes):
+        with open(file_path, "wb") as file:
+            file.write(file_data)
 
 class ProductionPlannerFileUploadHandler(tornado.web.RequestHandler):
     async def post(self):
         file_info = self.request.files.get("file")
-        should_signal_connect_clients: bool = False
+        should_signal_connect_clients = False
         if file_info:
             file_data = file_info[0]["body"]
             file_name: str = file_info[0]["filename"]
@@ -481,8 +482,8 @@ class WorkspaceFileUploader(tornado.web.RequestHandler):
 
 
 class WorkspaceFileHandler(tornado.web.RequestHandler):
-    def get(self, file_name):
-        file_name: str = os.path.basename(file_name)
+    def get(self, file_name: str):
+        file_name = os.path.basename(file_name)
         file_ext = os.path.splitext(file_name)[1].upper().replace(".", "")
         filepath = os.path.join("data\\workspace", file_ext, file_name)
         if os.path.exists(filepath):
@@ -635,11 +636,11 @@ class AddCutoffSheetHandler(tornado.web.RequestHandler):
         self.write(rendered_template)
 
     def post(self):
-        length: float = float(self.get_argument("length"))
-        width: float = float(self.get_argument("width"))
-        material: str = self.get_argument("material")
-        thickness: str = self.get_argument("thickness")
-        quantity: int = int(self.get_argument("quantity"))
+        length = float(self.get_argument("length"))
+        width = float(self.get_argument("width"))
+        material = self.get_argument("material")
+        thickness = self.get_argument("thickness")
+        quantity = int(self.get_argument("quantity"))
 
         add_sheet(
             thickness=thickness,
