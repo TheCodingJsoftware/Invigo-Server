@@ -1,5 +1,6 @@
-import contextlib
+import copy
 import os
+from datetime import datetime, timedelta
 from typing import Union
 
 import msgspec
@@ -15,11 +16,11 @@ from utils.workspace.workspace_settings import WorkspaceSettings
 
 
 class Workspace:
-    def __init__(self, workspace_settings: WorkspaceSettings, job_manager: JobManager):
+    def __init__(self, workspace_settings: WorkspaceSettings, job_manager: JobManager, filename: str = "workspace"):
         self.jobs: list[Job] = []
 
-        self.filename: str = "workspace"
-        self.FOLDER_LOCATION: str = f"{os.getcwd()}/data"
+        self.filename = filename
+        self.FOLDER_LOCATION = f"{os.getcwd()}/data"
 
         self.workspace_settings = workspace_settings
         self.job_manager = job_manager
@@ -37,22 +38,37 @@ class Workspace:
     def deep_split_job_copy(self, job: Job) -> Job:
         new_job = Job({}, self.job_manager)
         new_job.load_settings(job.to_dict())
-        self.copy_assemblies(job.assemblies, new_job)
+        new_job.flowtag_timeline = job.flowtag_timeline
+        self.copy_assemblies(job.assemblies, new_job, job.ending_date)
         return new_job
 
-    def copy_assemblies(self, assemblies: list[Assembly], job: Job):
+    def copy_assemblies(self, assemblies: list[Assembly], parent: Union[Job, Assembly], job_ending_date: str):
         for assembly in assemblies:
             for _ in range(int(assembly.quantity)):
-                new_assembly = Assembly({}, job)
+                new_assembly = Assembly({}, parent if isinstance(parent, Job) else parent.job)
                 new_assembly.load_settings(assembly.to_dict())
+
+                parent_starting_date = datetime.strptime(parent.starting_date, '%Y-%m-%d')
+
+                calculated_starting_date = parent_starting_date - timedelta(days=7.0)
+                calculated_ending_date = calculated_starting_date + timedelta(days=assembly.expected_time_to_complete)
+
+                new_assembly.starting_date = calculated_starting_date.strftime('%Y-%m-%d')
+                new_assembly.ending_date = calculated_ending_date.strftime('%Y-%m-%d')
+
                 new_assembly.quantity = 1
-                job.add_assembly(new_assembly)
+
+                if isinstance(parent, Job):
+                    parent.add_assembly(new_assembly)
+                else:
+                    parent.add_sub_assembly(new_assembly)
+
                 if assembly.laser_cut_parts:
                     self.copy_laser_cut_parts(assembly.laser_cut_parts, new_assembly)
                 if assembly.components:
                     self.copy_components(assembly.components, new_assembly)
                 if assembly.sub_assemblies:
-                    self.copy_assemblies(assembly.sub_assemblies, job)
+                    self.copy_assemblies(assembly.sub_assemblies, new_assembly, job_ending_date)
 
     def copy_components(self, components: list[Component], assembly: Assembly):
         for component in components:
@@ -63,14 +79,13 @@ class Workspace:
         for part in laser_cut_parts:
             for _ in range(int(part.quantity)):
                 new_part = LaserCutPart(part.to_dict(), self.laser_cut_inventory)
-                # timer = WorkspaceTimer({}, new_part.flow_tag)
-                new_part.timer.start_timer()
                 new_part.quantity = 1
                 assembly.add_laser_cut_part(new_part)
 
-    def add_job(self, job: Job):
+    def add_job(self, job: Job) -> Job:
         new_job = self.deep_split_job_copy(job)
         self.jobs.append(new_job)
+        return new_job
 
     def remove_job(self, job: Job):
         self.jobs.remove(job)
@@ -87,6 +102,8 @@ class Workspace:
             if assembly.is_assembly_finished():
                 continue
             if not assembly.all_laser_cut_parts_complete():
+                continue
+            if not assembly.all_sub_assemblies_complete():
                 continue
             if current_tag := assembly.get_current_tag():
                 if current_tag.name != self.workspace_filter.current_tag:
@@ -148,6 +165,23 @@ class Workspace:
                 if part_current_tag.name != self.workspace_filter.current_tag:
                     continue
 
+            if self.workspace_filter.enable_date_range and len(self.workspace_filter.date_range) > 0:
+                filter_start_date = self.workspace_filter.date_range[0].toPyDate() if self.workspace_filter.date_range[0] else None
+                filter_end_date = self.workspace_filter.date_range[1].toPyDate() if self.workspace_filter.date_range[1] else None
+
+                tag_start_date_str = job.flowtag_timeline.tags_data[laser_cut_part.get_current_tag()]["starting_date"]
+                tag_end_date_str = job.flowtag_timeline.tags_data[laser_cut_part.get_current_tag()]["ending_date"]
+
+                tag_start_date = datetime.strptime(tag_start_date_str, "%Y-%m-%d").date()
+                tag_end_date = datetime.strptime(tag_end_date_str, "%Y-%m-%d").date()
+
+                if filter_start_date and not filter_end_date:
+                    if not (tag_start_date <= filter_start_date <= tag_end_date):
+                        continue
+                elif filter_start_date and filter_end_date:
+                    if tag_end_date < filter_start_date or tag_start_date > filter_end_date:
+                        continue
+
             if any(self.workspace_filter.material_filter.values()):
                 if not self.workspace_filter.material_filter.get(laser_cut_part.material, False):
                     continue
@@ -207,16 +241,12 @@ class Workspace:
             group = WorkspaceLaserCutPartGroup()
             group.add_laser_cut_part(base_part)
             grouped_laser_cut_parts.append(group)
-            parts_group[base_part.name] = group
+            parts_group[(base_part.name, base_part.recut, base_part.recoat)] = group
 
         for laser_cut_part in laser_cut_parts:
-            if group := parts_group.get(laser_cut_part.name):
-                if group.base_part.recut and laser_cut_part.recut:
-                    group.add_laser_cut_part(laser_cut_part)
-                elif not group.base_part.recut and not laser_cut_part.recut:
-                    group.add_laser_cut_part(laser_cut_part)
-                else:
-                    create_part_group(laser_cut_part)
+            group_key = (laser_cut_part.name, laser_cut_part.recut, laser_cut_part.recoat)
+            if group := parts_group.get(group_key):
+                group.add_laser_cut_part(laser_cut_part)
             else:
                 create_part_group(laser_cut_part)
 
@@ -243,9 +273,8 @@ class Workspace:
 
         self.jobs.clear()
 
-        with contextlib.suppress(AttributeError):
-            jobs = data.get("jobs", [])
+        jobs = data.get("jobs", [])
 
-            for job_data in jobs:
-                job = Job(job_data, self.job_manager)
-                self.jobs.append(job)
+        for job_data in jobs:
+            job = Job(job_data, self.job_manager)
+            self.jobs.append(job)
