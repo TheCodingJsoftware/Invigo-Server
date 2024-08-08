@@ -4,7 +4,10 @@ from email.mime import multipart, text
 
 from utils.custom_print import CustomPrint
 
-SMTP_HOST = "smtp.gmail.com"
+
+ERROR_LOG_RECEIVER = "jared@pinelandfarms.ca"
+
+SMTP_HOST = "smtp-mail.outlook.com"
 SMTP_PORT = 587
 
 
@@ -43,7 +46,7 @@ def send_error_log(body: str, connected_clients):
     msg = multipart.MIMEMultipart()
 
     msg["From"] = USERNAME
-    msg["To"] = "jaredgrozz@gmail.com"
+    msg["To"] = ERROR_LOG_RECEIVER
     msg["Subject"] = "Invigo - Error Report"
     body = body.replace("\n", "<br>")
 
@@ -54,8 +57,8 @@ def send_error_log(body: str, connected_clients):
     server.starttls()
     server.ehlo()
     server.login(USERNAME, PASSWORD)
-    server.sendmail(USERNAME, "jaredgrozz@gmail.com", msg.as_string())
+    server.sendmail(USERNAME, ERROR_LOG_RECEIVER, msg.as_string())
     CustomPrint.print(
-        "INFO - Email sent to jaredgrozz@gmail.com",
+        f"INFO - Email sent to {ERROR_LOG_RECEIVER}",
         connected_clients=connected_clients,
     )
