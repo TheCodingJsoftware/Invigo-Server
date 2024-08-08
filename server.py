@@ -55,6 +55,8 @@ from utils.workspace.workorder import Workorder
 from utils.workspace.workspace_history import WorkspaceHistory
 from utils.workspace.job import Job
 from utils.workspace.generate_printout import WorkspaceJobPrintout
+from utils.workspace.production_plan import ProductionPlan
+
 
 # Store connected clients
 connected_clients: set[tornado.websocket.WebSocketHandler] = set()
@@ -1674,6 +1676,46 @@ def zip_files(path_to_zip_file: str, files_to_backup: list[str]):
     file.close()
 
 
+def check_production_plan_for_jobs():
+    jobs_added = False
+    components_inventory = ComponentsInventory()
+    sheet_settings = SheetSettings()
+    workspace_settings = WorkspaceSettings()
+    paint_inventory = PaintInventory(components_inventory)
+    sheets_inventory = SheetsInventory(sheet_settings)
+    laser_cut_inventory = LaserCutInventory(paint_inventory, workspace_settings)
+    job_manager = JobManager(sheet_settings, sheets_inventory, workspace_settings, components_inventory, laser_cut_inventory, paint_inventory, None)
+    workspace = Workspace(workspace_settings, job_manager)
+    production_plan = ProductionPlan(workspace_settings, job_manager)
+
+    today = datetime.today().date()
+
+    for job in production_plan.jobs:
+        if job.moved_job_to_workspace:
+            continue
+
+        job_starting_date = datetime.strptime(job.starting_date, "%Y-%m-%d").date()
+        job_ending_date = datetime.strptime(job.ending_date, "%Y-%m-%d").date()
+
+        if job_starting_date <= today <= job_ending_date:
+            jobs_added = True
+            print(f"Job {job.name} moved to workspace.")
+            new_job = workspace.add_job(job)
+            job.moved_job_to_workspace = True
+            new_job.moved_job_to_workspace = True
+
+            for assembly in new_job.get_all_assemblies():
+                if assembly.all_laser_cut_parts_complete() and not assembly.timer.has_started_timer():
+                    assembly.timer.start_timer()
+            for laser_cut_part in new_job.get_all_laser_cut_parts():
+                laser_cut_part.timer.start_timer()
+    if jobs_added:
+        laser_cut_inventory.save()
+        workspace.save()
+        production_plan.save()
+        signal_clients_for_changes(client_to_ignore=None, changed_files=[f"{workspace.filename}.json", f"{production_plan.filename}.json", f"{laser_cut_inventory.filename}.json"])
+
+
 def schedule_thread():
     while True:
         schedule.run_pending()
@@ -1687,6 +1729,7 @@ if __name__ == "__main__":
     schedule.every().monday.at("04:00").do(partial(generate_sheet_report, connected_clients))
     schedule.every().hour.do(hourly_backup_inventory_files)
     schedule.every().day.at("04:00").do(daily_backup_inventory_files)
+    schedule.every().day.at("04:00").do(check_production_plan_for_jobs)
     schedule.every().week.do(weekly_backup_inventory_files)
 
     thread = threading.Thread(target=schedule_thread)
