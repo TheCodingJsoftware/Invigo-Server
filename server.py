@@ -589,15 +589,28 @@ class SetOrderNumberHandler(tornado.web.RequestHandler):
 
 
 class GetOrderNumberHandler(tornado.web.RequestHandler):
-    def get(self):
-        with open("order_number.json", "rb") as file:
-            order_number = msgspec.json.decode(file.read())["order_number"]
+    async def get(self):
+        directories_info = await gather_job_directories_info(
+            base_directory="saved_jobs",
+            specific_dirs=[
+                "planning",
+                "quoting",
+                "quoted",
+                "template",
+            ],
+        )
+
+        max_order_number = 0
+        for job_path, job_data in directories_info.items():
+            max_order_number = max(max_order_number, job_data["order_number"])
+
+        next_order_number = max_order_number + 1
 
         CustomPrint.print(
-            f"INFO - Sent order number ({order_number}) to {self.request.remote_ip}",
+            f"INFO - Sent order number ({next_order_number}) to {self.request.remote_ip}",
             connected_clients=connected_clients,
         )
-        self.write({"order_number": order_number})
+        self.write({"order_number": next_order_number})
 
 
 class SheetQuantityHandler(tornado.web.RequestHandler):
