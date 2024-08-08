@@ -3,20 +3,28 @@
 
 <head>
     <meta charset="UTF-8">
-	<meta http-equiv="Content-type" content="text/html; charset=utf-8">
+    <meta http-equiv="Content-type" content="text/html; charset=utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="google" content="notranslate">
 
-	<script src="https://cdn.dhtmlx.com/edge/dhtmlx.js?v=8.0.9"></script>
+    <script src="https://cdn.dhtmlx.com/edge/dhtmlx.js?v=8.0.9"></script>
     <script src="/static/gantt/codebase/dhtmlxgantt.js"></script>
     <link rel="stylesheet" href="/static/gantt/codebase/skins/dhtmlxgantt_terrace.css">
     <link rel="stylesheet" href="https://cdn.dhtmlx.com/edge/skins/terrace/dhtmlx.css">
     <link rel="stylesheet" href="/static/gantt/samples/common/controls_styles.css">
-	<script src="https://code.jquery.com/jquery-3.3.1.min.js?v=8.0.6" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
-	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css?v=8.0.6" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
-	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css?v=8.0.6" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
-	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js?v=8.0.6" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
-
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js?v=8.0.6"
+        integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css?v=8.0.6"
+        integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css?v=8.0.6"
+        integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js?v=8.0.6"
+        integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous">
+    </script>
+    <script src="https://www.kryogenix.org/code/browser/sorttable/sorttable.js"></script>
+    <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" />
+    <link href="/static/css/theme.css" rel="stylesheet">
     <link rel="icon" href="/static/icon.png">
     <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=yes" />
     <title>Production Planner</title>
@@ -28,22 +36,18 @@
     .gantt_cal_lsection,
     .gantt_btn_set.gantt_left_btn_set.gantt_delete_btn_set,
     .gantt_task_progress_drag,
-    .gantt_link_point  {
+    .gantt_link_point {
         display: none !important;
     }
-    html, body {
+
+    html,
+    body {
         height: 100%;
         padding: 0px;
         margin: 0px;
         font: Inter, Roboto, "Helvetica Neue", "Arial Nova", "Nimbus Sans", Arial, sans-serif;
-    }
-
-    .weekend {
-        background: #f4f7f4 !important;
-    }
-
-    .gantt_selected .weekend {
-        background: #FFF3A1 !important;
+        background-color: var(--surface);
+        border-color: var(--outline);
     }
 
     .well {
@@ -51,40 +55,65 @@
     }
 
     @media (max-width: 991px) {
-        .nav-stacked > li {
+        .nav-stacked>li {
             float: left;
         }
     }
-    label{
-        color: #fff;
+
+    label {
+        color: var(--on-background);
+        margin: auto;
+        margin-right: 0;
     }
-    .gantt_radio:checked + label, .gantt_radio:not(:checked) + label{
-        color: #fff;
+
+    .panel,
+    .panel-default {
+        background-color: var(--surface-container-low);
+        background-image: var(--surface-container-low);
+        box-shadow: var(--elevate1);
+        color: var(--on-surface);
+        border: 1px solid transparent;
+        border-radius: 10px;
     }
-    .container-fluid .row {
+
+    .panel-default>.panel-heading {
+        background-color: var(--surface-container-low);
+        background-image: var(--surface-container-low);
+        color: var(--on-surface);
+        border: 1px solid transparent;
+        border-radius: 10px;
     }
-    .navbar{
-        background-color: #0061a4;
+
+    .gantt_radio:checked+label,
+    .gantt_radio:not(:checked)+label {
+        color: var(--on-background);
+        margin-left: 0;
+
+    }
+
+    .container-fluid .row {}
+
+    .navbar {
+        background-color: var(--primary);
         border-radius: 0px;
+        height: 64px;
     }
-    .navbar-header{
-        position: fixed;
-        left: 10px;
-        top: 0;
-        padding: 5px;
-        font-size: 18pt;
+
+    .navbar-header {
+        font-size: 28px;
+        color: var(--on-primary);
+        margin-top: 5px;
+        margin-left: 5px;
     }
-    .navbar-header a{
-        font-size: 25pt;
-        color: #fff;
-    }
-    .container{
+
+    .container {
         text-align: right;
         margin-top: 10px;
         margin-right: 0;
     }
+
     .container-fluid .gantt_wrapper {
-        height: 90vh;
+        height: 93vh;
         width: 100%;
     }
 
@@ -99,63 +128,182 @@
     .gantt_hor_scroll {
         margin-bottom: 1px;
     }
-    .weekend {
-        background: #f4f7f4;
-    }
 
-    .gantt_selected .weekend {
-        background: #f7eb91;
-    }
     .gantt_task_progress {
         text-align: left;
         padding-left: 10px;
         box-sizing: border-box;
-        color: white;
+        color: var(--on-background);
         font-weight: bold;
     }
+
     .gantt_grid_scale .gantt_grid_head_cell,
     .gantt_task .gantt_task_scale .gantt_scale_cell {
         font-weight: bold;
         font-size: 14px;
-        color: rgba(0, 0, 0, 0.7);
+    }
+
+    input[type="date"] {
+        background-color: var(--surface);
+        color: var(--on-background);
+        border-radius: 5px;
+        border: 0.20rem solid var(--primary);
+        padding: 7px 13px;
+    }
+
+    button {
+        color: var(--on-primary);
+        background-color: var(--primary);
+        padding: 7px 13px;
+        border-radius: 5px;
+        border: 0.01em solid transparent;
+    }
+
+    table td,
+    th {
+        padding: 5px;
+    }
+
+    table td {
+        border-top: 1px solid var(--outline);
+        text-align: center;
+    }
+
+    .gantt_tree_content,
+    .gantt_cell {
+        color: var(--on-background);
+    }
+
+    .gantt_layout_cell,
+    .gantt_task_cell,
+    .gantt_row_task,
+    .gantt_scale_cell,
+    .gantt_grid_head_cell,
+    .gantt_grid_scale,
+    .gantt_grid_head_text,
+    .gantt_row_project,
+    .gantt_task .gantt_task_scale .gantt_scale_cell {
+        background-color: var(--surface);
+        border: 0.01em solid var(--background);
+
+    }
+
+    .gantt_row.odd,
+    .gantt_task_row.odd {
+        background-color: var(--surface-container-lowest);
+    }
+
+    .weekend {
+        background: #f4f7f4 !important;
+    }
+
+    .gantt_selected .weekend {
+        background: #FFF3A1 !important;
+    }
+
+    .gantt_selected,
+    .gantt_task_row.gantt_selected .gantt_task_cell,
+    .gantt_grid_data .gantt_row.gantt_selected,
+    .gantt_grid_data .gantt_row.odd.gantt_selected,
+    .gantt_task_row.gantt_selected {
+        background-color: var(--primary-container);
+        color: var(--on-primary);
+        border: 0.01em solid var(--on-primary);
+    }
+
+    .gantt_left,
+    .gantt_right {
+        color: var(--on-background);
+        font-size: 12pt;
+    }
+
+    .gridHoverStyle,
+    .gridSelection,
+    .timelineSelection {
+        background-color: var(--primary-container);
+        color: var(--on-primary);
+    }
+
+    .gantt_grid_data .gantt_row.odd:hover,
+    .gantt_grid_data .gantt_row:hover {
+        background-color: var(--primary-container);
+        color: var(--on-primary);
+    }
+
+    .gantt_grid_data .gantt_row.gantt_selected,
+    .gantt_grid_data .gantt_row.odd.gantt_selected,
+    .gantt_task_row.gantt_selected {
+        background-color: var(--primary-container);
+        color: var(--on-primary);
+    }
+
+    .gantt_row,
+    .gantt_task_row {
+        border: 0.01em solid var(--background);
+    }
+
+    .circle,
+    .transparent {
+        background-color: transparent;
+        color: var(--on-primary);
+    }
+    .gantt_layout_root,.gantt_layout_cell{
+        border: 1px solid var(--surface);
+        background-color: var(--surface)
+        border-radius: 10px;
+    }
+    .gantt_hor_scroll{
+        height: 5px;
+    }
+    .gantt_task_link.start_to_start .gantt_line_wrapper div {
+        background-color: #dd5640;
+    }
+
+    .gantt_task_link.start_to_start:hover .gantt_line_wrapper div {
+        box-shadow: 0 0 5px 0px #dd5640;
+    }
+
+    .gantt_task_link.start_to_start .gantt_link_arrow_right {
+        border-left-color: #dd5640;
+    }
+
+    .gantt_task_link.finish_to_start .gantt_line_wrapper div {
+        background-color: #7576ba;
+    }
+
+    .gantt_task_link.finish_to_start:hover .gantt_line_wrapper div {
+        box-shadow: 0 0 5px 0px #7576ba;
+    }
+
+    .gantt_task_link.finish_to_start .gantt_link_arrow_right {
+        border-left-color: #7576ba;
+    }
+
+    .gantt_task_link.finish_to_finish .gantt_line_wrapper div {
+        background-color: #55d822;
+    }
+
+    .gantt_task_link.finish_to_finish:hover .gantt_line_wrapper div {
+        box-shadow: 0 0 5px 0px #55d822;
+    }
+
+    .gantt_task_link.finish_to_finish .gantt_link_arrow_left {
+        border-right-color: #55d822;
     }
 </style>
+
 <body>
     <div class="container-fluid">
         <div class="row">
             <div class="col-md-13">
                 <div class="navbar">
                     <div class="navbar-header">
-                        <a class="navbar-brand" href="#">Production Planner</a>
-                    </div>
-                    <div class="container">
-                        <label for="startDate">Start Date:</label>
-                        <input type="date" id="startDate">
-                        <label for="endDate">End Date:</label>
-                        <input type="date" id="endDate">
-                        <button id="applyDates">Apply</button>
-                    </div>
-                    <div class="container">
-                        <button id="thisMonth">This Month</button>
-                        <button id="thisYear">This Year</button>
-                        <button id="prevMonth">Previous Month</button>
-                        <button id="nextMonth">Next Month</button>
-                    </div>
-                    <div class="container">
-                        <input type="radio" id="scale1" class="gantt_radio" name="scale" value="day">
-                        <label for="scale1">Day scale</label>
-
-                        <input type="radio" id="scale2" class="gantt_radio" name="scale" value="week">
-                        <label for="scale2">Week scale</label>
-
-                        <input type="radio" id="scale3" class="gantt_radio" name="scale" value="month">
-                        <label for="scale3">Month scale</label>
-
-                        <input type="radio" id="scale4" class="gantt_radio" name="scale" value="quarter" checked>
-                        <label for="scale4">Quarter scale</label>
-
-                        <input type="radio" id="scale5" class="gantt_radio" name="scale" value="year">
-                        <label for="scale5">Year scale</label>
+                        <button class="circle transparent" onclick="window.location.href = '/'">
+                            <span class="material-symbols-rounded">
+                                arrow_back
+                            </span>
+                        </button>
+                        Production Planner
                     </div>
                 </div>
             </div>
@@ -164,7 +312,45 @@
             <div class="col-md-2 col-md-push-10">
                 <div class="panel panel-default">
                     <div class="panel-heading">
-                        <h3 class="panel-title">Summary</h3>
+                        <h3 class="panel-title">Date and Range Controls</h3>
+                    </div>
+                    <div class="panel-body">
+                        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 5px; padding: 10px;">
+                            <label for="startDate">Start Date:</label>
+                            <input type="date" id="startDate">
+                            <label for="endDate">End Date:</label>
+                            <input type="date" id="endDate">
+                            <div></div>
+                            <button id="applyDates">Apply</button>
+                        </div>
+                        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 5px; padding: 10px;">
+                            <button id="thisMonth">This Month</button>
+                            <button id="thisYear">This Year</button>
+                            <button id="prevMonth">Previous Month</button>
+                            <button id="nextMonth">Next Month</button>
+                        </div>
+                        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 5px; padding: 10px;">
+                            <input type="radio" id="scale1" class="gantt_radio" name="scale" value="day">
+                            <label for="scale1">Day scale</label>
+
+                            <input type="radio" id="scale2" class="gantt_radio" name="scale" value="week">
+                            <label for="scale2">Week scale</label>
+
+                            <input type="radio" id="scale3" class="gantt_radio" name="scale" value="month">
+                            <label for="scale3">Month scale</label>
+
+                            <input type="radio" id="scale4" class="gantt_radio" name="scale" value="quarter" checked>
+                            <label for="scale4">Quarter scale</label>
+
+                            <input type="radio" id="scale5" class="gantt_radio" name="scale" value="year">
+                            <label for="scale5">Year scale</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <h3 class="panel-title">Assembly Summary</h3>
                     </div>
                     <div class="panel-body">
                         <ul class="nav nav-pills nav-stacked" id="gantt_info">
@@ -180,4 +366,5 @@
     <div id="context"></div>
     <script type="module" src="/static/js/production_planner.js"></script>
 </body>
+
 </html>

@@ -167,6 +167,20 @@ class GanttGraph {
             }
         };
 
+        gantt.templates.link_class = function (link) {
+            var types = gantt.config.links;
+            switch (link.type) {
+                case types.finish_to_start:
+                    return "finish_to_start";
+                    break;
+                case types.start_to_start:
+                    return "start_to_start";
+                    break;
+                case types.finish_to_finish:
+                    return "finish_to_finish";
+                    break;
+            }
+        };
         function linkTypeToString(linkType) {
             switch (linkType) {
                 case gantt.config.links.start_to_start:
@@ -432,7 +446,7 @@ class GanttGraph {
                 var redShade = Math.floor(128 + red / 2); // Lighter red
                 var greenShade = Math.floor(128 + green / 2); // Lighter green
 
-                return `rgb(${redShade}, ${greenShade}, 0)`;
+                return `rgba(${redShade}, ${greenShade}, 0, 0.2)`;
             }
 
             for (var i = 0; i < timetable.length; i++) {
@@ -530,45 +544,13 @@ class GanttGraph {
             ]
         };
         var resourcePanelConfig = {
-            columns: [{
-                    name: "name",
-                    label: "Process",
-                    resize: true,
-                    align: "left",
-                    width: 220,
-                    template: function (resource) {
-                        return resource.label;
-                    }
-                },
+            columns: [
                 {
                     name: "workload",
-                    label: "Days",
-                    width: 50,
+                    label: "Parts",
+                    width: 90,
                     resize: true,
-                    template: function (resource) {
-                        var tasks = gantt.getTaskBy("user", resource.id);
-
-                        var totalDuration = 0;
-                        var visibleTasks = tasks.filter(task => {
-                            const taskStart = new Date(task.start_date);
-                            const taskEnd = new Date(task.end_date);
-                            const visibleStart = gantt.getState().min_date;
-                            const visibleEnd = gantt.getState().max_date;
-                            return taskEnd >= visibleStart && taskStart <= visibleEnd;
-                        });
-
-                        for (var i = 0; i < visibleTasks.length; i++) {
-                            totalDuration += visibleTasks[i].duration;
-                        }
-
-                        return (totalDuration || 0) + "";
-                    }
-                },
-                {
-                    name: "workload",
-                    label: "Count",
-                    width: 50,
-                    resize: true,
+                    align: "center",
                     template: function (resource) {
                         var tasks = gantt.getTaskBy("user", resource.id);
 
@@ -586,6 +568,41 @@ class GanttGraph {
                         }
 
                         return (totalProcessCount || 0) + "";
+                    }
+                },
+                {
+                    name: "name",
+                    label: "Process",
+                    resize: true,
+                    align: "left",
+                    width: 220,
+                    template: function (resource) {
+                        return resource.label;
+                    }
+                },
+                {
+                    name: "workload",
+                    label: "Days",
+                    width: 50,
+                    resize: true,
+                    align: "center",
+                    template: function (resource) {
+                        var tasks = gantt.getTaskBy("user", resource.id);
+
+                        var totalDuration = 0;
+                        var visibleTasks = tasks.filter(task => {
+                            const taskStart = new Date(task.start_date);
+                            const taskEnd = new Date(task.end_date);
+                            const visibleStart = gantt.getState().min_date;
+                            const visibleEnd = gantt.getState().max_date;
+                            return taskEnd >= visibleStart && taskStart <= visibleEnd;
+                        });
+
+                        for (var i = 0; i < visibleTasks.length; i++) {
+                            totalDuration += visibleTasks[i].duration;
+                        }
+
+                        return (totalDuration || 0) + "";
                     }
                 },
                 {
@@ -925,7 +942,7 @@ class GanttGraph {
         ganttInfoDiv.innerHTML = ''; // Clear existing content
 
         const table = document.createElement('table');
-        table.classList.add('table');
+        table.classList.add('sortable');
 
         const headerRow = document.createElement('tr');
         const headerName = document.createElement('th');
@@ -968,15 +985,16 @@ class GanttGraph {
         menu.loadStruct("/static/common/dhxmenu.xml");
 
         gantt.attachEvent("onContextMenu", function (taskId, linkId, event) {
+            event.preventDefault();
             var x = event.clientX + document.body.scrollLeft + document.documentElement.scrollLeft,
                 y = event.clientY + document.body.scrollTop + document.documentElement.scrollTop;
+            if (!taskId) {
+                return false;
+            }
             var task = gantt.getTask(taskId);
             if (taskId && task.type === "project") {
                 gantt.contextID = taskId; // Assuming this is set correctly
                 menu.showContextMenu(x, y);
-            }
-            if (taskId) {
-                return false;
             }
 
             return true;
@@ -1126,15 +1144,24 @@ class GanttGraph {
     }
 
     async uploadWorkspace() {
+
+        var showSuccessMessage = function() {
+            var text = "Production plan saved successfully";
+            gantt.message({type:"info", text:text, expire: 3000});
+        }
+        var showErrorMessage = function() {
+            var text = "Failed to save production plan. Please panic, but calmly.";
+            gantt.message({type:"error", text:text, expire: 10000});
+        }
         const response = await fetch('/production_planner_upload', {
             method: 'POST',
             body: this.createFormData()
         });
 
         if (response.ok) {
-            console.log('Workspace uploaded successfully.');
+            showSuccessMessage();
         } else {
-            console.error('Failed to upload workspace.');
+            showErrorMessage();
         }
     }
 
