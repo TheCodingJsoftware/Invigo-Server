@@ -53,6 +53,8 @@ from utils.inventory.nest import Nest
 from utils.workspace.job_manager import JobManager
 from utils.workspace.workorder import Workorder
 from utils.workspace.workspace_history import WorkspaceHistory
+from utils.workspace.job import Job
+from utils.workspace.generate_printout import WorkspaceJobPrintout
 
 # Store connected clients
 connected_clients: set[tornado.websocket.WebSocketHandler] = set()
@@ -1060,6 +1062,33 @@ class ProductionPlannerHandler(tornado.web.RequestHandler):
         self.write(rendered_template)
 
 
+class ProductionPlannerJobPrintoutHandler(tornado.web.RequestHandler):
+    def post(self):
+        try:
+            data = msgspec.json.decode(self.request.body)
+
+            self.components_inventory = ComponentsInventory()
+            self.sheet_settings = SheetSettings()
+            self.workspace_settings = WorkspaceSettings()
+            self.paint_inventory = PaintInventory(self.components_inventory)
+            self.sheets_inventory = SheetsInventory(self.sheet_settings)
+            self.laser_cut_inventory = LaserCutInventory(self.paint_inventory, self.workspace_settings)
+            self.job_manager = JobManager(self.sheet_settings, self.sheets_inventory, self.workspace_settings, self.components_inventory, self.laser_cut_inventory, self.paint_inventory, self)
+
+            job = Job(data, self.job_manager)
+            printout = WorkspaceJobPrintout(job, "WORKORDER")
+            html_content = printout.generate()
+
+            self.set_header("Content-Type", "text/html")
+            self.write(html_content)
+        except msgspec.DecodeError:
+            self.write({"status": "error", "message": "Invalid JSON"})
+            self.set_status(400)
+        except Exception as e:
+            self.write({"status": "error", "message": str(e)})
+            self.set_status(500)
+
+
 class WorkspaceDashboardHandler(tornado.web.RequestHandler):
     def get(self):
         template = env.get_template("workspace.html")
@@ -1714,6 +1743,7 @@ if __name__ == "__main__":
             (r"/production_planner", ProductionPlannerHandler),
             (r"/workspace_dashboard", WorkspaceDashboardHandler),
             (r"/workspace_archives_dashboard", WorkspaceArchivesDashboardHandler),
+            (r"/production_planner_job_printout", ProductionPlannerJobPrintoutHandler),
             (r"/static/js/production_planner.js", ProductionPlannerScriptHandler),
             (r"/static/js/workspace_dashboard.js", WorkspaceScriptHandler),
             (r"/static/js/workspace_archives_dashboard.js", WorkspaceArchivesScriptHandler),

@@ -3,14 +3,19 @@
 
 <head>
     <meta charset="UTF-8">
+	<meta http-equiv="Content-type" content="text/html; charset=utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <meta name="google" content="notranslate">
 
+	<script src="https://cdn.dhtmlx.com/edge/dhtmlx.js?v=8.0.9"></script>
     <script src="/static/gantt/codebase/dhtmlxgantt.js"></script>
-    <link rel="stylesheet" href="/static/gantt/codebase/dhtmlxgantt.css">
-
+    <link rel="stylesheet" href="/static/gantt/codebase/skins/dhtmlxgantt_terrace.css">
+    <link rel="stylesheet" href="https://cdn.dhtmlx.com/edge/skins/terrace/dhtmlx.css">
     <link rel="stylesheet" href="/static/gantt/samples/common/controls_styles.css">
+	<script src="https://code.jquery.com/jquery-3.3.1.min.js?v=8.0.6" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css?v=8.0.6" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css?v=8.0.6" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js?v=8.0.6" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
 
     <link rel="icon" href="/static/icon.png">
     <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=yes" />
@@ -26,11 +31,73 @@
     .gantt_link_point  {
         display: none !important;
     }
-    html, body{
-        margin:0px;
-        padding:0px;
-        height:100%;
-        overflow:hidden;
+    html, body {
+        height: 100%;
+        padding: 0px;
+        margin: 0px;
+        font: Inter, Roboto, "Helvetica Neue", "Arial Nova", "Nimbus Sans", Arial, sans-serif;
+    }
+
+    .weekend {
+        background: #f4f7f4 !important;
+    }
+
+    .gantt_selected .weekend {
+        background: #FFF3A1 !important;
+    }
+
+    .well {
+        text-align: right;
+    }
+
+    @media (max-width: 991px) {
+        .nav-stacked > li {
+            float: left;
+        }
+    }
+    label{
+        color: #fff;
+    }
+    .gantt_radio:checked + label, .gantt_radio:not(:checked) + label{
+        color: #fff;
+    }
+    .container-fluid .row {
+    }
+    .navbar{
+        background-color: #0061a4;
+        border-radius: 0px;
+    }
+    .navbar-header{
+        position: fixed;
+        left: 10px;
+        top: 0;
+        padding: 5px;
+        font-size: 18pt;
+    }
+    .navbar-header a{
+        font-size: 25pt;
+        color: #fff;
+    }
+    .container{
+        text-align: right;
+        margin-top: 10px;
+        margin-right: 0;
+    }
+    .container-fluid .gantt_wrapper {
+        height: 90vh;
+        width: 100%;
+    }
+
+    .gantt_container {
+        border-radius: 5px;
+    }
+
+    .gantt_grid_scale {
+        background-color: transparent;
+    }
+
+    .gantt_hor_scroll {
+        margin-bottom: 1px;
     }
     .weekend {
         background: #f4f7f4;
@@ -46,30 +113,71 @@
         color: white;
         font-weight: bold;
     }
+    .gantt_grid_scale .gantt_grid_head_cell,
+    .gantt_task .gantt_task_scale .gantt_scale_cell {
+        font-weight: bold;
+        font-size: 14px;
+        color: rgba(0, 0, 0, 0.7);
+    }
 </style>
 <body>
-    <form class="gantt_control">
-        <input type="button" value="Zoom In" onclick="gantt.ext.zoom.zoomIn();">
-        <input type="button" value="Zoom Out" onclick="gantt.ext.zoom.zoomOut();">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-13">
+                <div class="navbar">
+                    <div class="navbar-header">
+                        <a class="navbar-brand" href="#">Production Planner</a>
+                    </div>
+                    <div class="container">
+                        <label for="startDate">Start Date:</label>
+                        <input type="date" id="startDate">
+                        <label for="endDate">End Date:</label>
+                        <input type="date" id="endDate">
+                        <button id="applyDates">Apply</button>
+                    </div>
+                    <div class="container">
+                        <button id="thisMonth">This Month</button>
+                        <button id="thisYear">This Year</button>
+                        <button id="prevMonth">Previous Month</button>
+                        <button id="nextMonth">Next Month</button>
+                    </div>
+                    <div class="container">
+                        <input type="radio" id="scale1" class="gantt_radio" name="scale" value="day">
+                        <label for="scale1">Day scale</label>
 
-        <input type="radio" id="scale1" class="gantt_radio" name="scale" value="day">
-        <label for="scale1">Day scale</label>
+                        <input type="radio" id="scale2" class="gantt_radio" name="scale" value="week">
+                        <label for="scale2">Week scale</label>
 
-        <input type="radio" id="scale2" class="gantt_radio" name="scale" value="week">
-        <label for="scale2">Week scale</label>
+                        <input type="radio" id="scale3" class="gantt_radio" name="scale" value="month">
+                        <label for="scale3">Month scale</label>
 
-        <input type="radio" id="scale3" class="gantt_radio" name="scale" value="month">
-        <label for="scale3">Month scale</label>
+                        <input type="radio" id="scale4" class="gantt_radio" name="scale" value="quarter" checked>
+                        <label for="scale4">Quarter scale</label>
 
-        <input type="radio" id="scale4" class="gantt_radio" name="scale" value="quarter" checked>
-        <label for="scale4">Quarter scale</label>
-
-        <input type="radio" id="scale5" class="gantt_radio" name="scale" value="year">
-        <label for="scale5">Year scale</label>
-
-        <button id="submit-button"><i>save</i><span>Submit</span></button>
+                        <input type="radio" id="scale5" class="gantt_radio" name="scale" value="year">
+                        <label for="scale5">Year scale</label>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-2 col-md-push-10">
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <h3 class="panel-title">Summary</h3>
+                    </div>
+                    <div class="panel-body">
+                        <ul class="nav nav-pills nav-stacked" id="gantt_info">
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-10 col-md-pull-2">
+                <div class="gantt_wrapper panel" id="gantt_here"></div>
+            </div>
+        </div>
     </div>
-    <div id="gantt_here" style='width:100%; height:calc(100vh - 52px);'></div>
+    <div id="context"></div>
     <script type="module" src="/static/js/production_planner.js"></script>
 </body>
 </html>

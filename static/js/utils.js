@@ -134,11 +134,65 @@ function getAssemblyCompletionTime(assembly) {
     // Convert total time from milliseconds to days
     return totalTime / (1000 * 60 * 60 * 24);
 }
+
+function getProcessCount(job, tagName) {
+    let processCount = 0;
+
+    function countLaserCutParts(parts) {
+        console.log(parts);
+        for (const part of parts) {
+
+            if (part.flow_tag && part.flow_tag.tags.includes(tagName)) {
+                processCount++;
+            }
+        }
+    }
+
+    function countAssemblies(assemblies) {
+        console.log(assemblies);
+
+        for (const asm of assemblies) {
+            if (asm.laser_cut_parts) {
+                countLaserCutParts(asm.laser_cut_parts);
+            }
+            if (asm.sub_assemblies && asm.sub_assemblies.length > 0) {
+                countAssemblies(asm.sub_assemblies);
+            }
+        }
+    }
+
+    if (job.assemblies) {
+        countAssemblies(job.assemblies);
+    }
+
+    return processCount;
+}
+function getAssemblyCount(job) {
+    let assemblyCount = 0;
+
+    function countAssemblies(assemblies) {
+        for (const assembly of assemblies) {
+            assemblyCount++;
+            if (assembly.sub_assemblies && assembly.sub_assemblies.length > 0) {
+                countAssemblies(assembly.sub_assemblies);
+            }
+        }
+    }
+
+    if (job.assemblies && job.assemblies.length > 0) {
+        countAssemblies(job.assemblies);
+    }
+
+    return assemblyCount;
+}
+
 export {
     getAssemblies,
     isAssemblyComplete,
     isJobComplete,
     getAssemblyCompletionProgress,
     getJobCompletionProgress,
-    getAssemblyCompletionTime
+    getAssemblyCompletionTime,
+    getProcessCount,
+    getAssemblyCount
 };
