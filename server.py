@@ -601,7 +601,7 @@ class GetOrderNumberHandler(tornado.web.RequestHandler):
         )
 
         max_order_number = 0
-        for job_path, job_data in directories_info.items():
+        for _, job_data in directories_info.items():
             max_order_number = max(max_order_number, job_data["order_number"])
 
         next_order_number = max_order_number + 1
