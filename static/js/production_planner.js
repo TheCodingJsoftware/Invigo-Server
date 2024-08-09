@@ -898,6 +898,7 @@ class GanttGraph {
             return true;
         });
     }
+    
     generateAssemblySummary() {
         const startDate = new Date(document.getElementById("startDate").value);
         const endDate = new Date(document.getElementById("endDate").value);

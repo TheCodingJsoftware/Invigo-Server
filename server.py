@@ -1,4 +1,5 @@
 import asyncio
+import csv
 import os
 import re
 import shutil
@@ -8,7 +9,7 @@ import time
 import zipfile
 from filelock import FileLock, Timeout
 from concurrent.futures import ThreadPoolExecutor
-from datetime import datetime
+from datetime import datetime, timedelta
 from functools import partial
 from io import StringIO
 from pathlib import Path
@@ -118,7 +119,7 @@ class ThemeFileHandler(tornado.web.RequestHandler):
 class WorkspaceScriptHandler(tornado.web.RequestHandler):
     def get(self):
         self.set_header("Content-Type", "application/javascript")
-        with open("static/js/workspace.js", "rb") as file:
+        with open("static/js/workspace_dashboard.js", "rb") as file:
             data = file.read()
             self.write(data)
 
@@ -1106,7 +1107,7 @@ class ProductionPlannerJobPrintoutHandler(tornado.web.RequestHandler):
 
 class WorkspaceDashboardHandler(tornado.web.RequestHandler):
     def get(self):
-        template = env.get_template("workspace.html")
+        template = env.get_template("workspace_dashboard.html")
         rendered_template = template.render()
         self.write(rendered_template)
 

@@ -1,19 +1,233 @@
-function goToMainUrl() {
-    window.location.href = "/"
+import {
+    getAssemblies,
+    isAssemblyComplete,
+    isJobComplete,
+    getAssemblyCompletionProgress,
+    getJobCompletionProgress,
+    getAssemblyCompletionTime,
+    getProcessCount,
+    getAssemblyCount,
+    getPartsCount,
+} from './utils.js';
+
+class HeatMap {
+    constructor(productionPlan, div) {
+        this.productionPlan = productionPlan;
+        this.div = div
+    }
+
+    initialize() {
+        this.loadHeatMap();
+    }
+
+    generateData() {
+        const data = [];
+        const startDate = new Date(new Date().getFullYear(), 0, 1); // Jan 1st of current year
+        const endDate = new Date(new Date().getFullYear(), 11, 31); // Dec 31st of current year
+
+        let currentDate = new Date(new Date().setDate(endDate.getDate() - 365));
+
+        while (currentDate <= endDate) {
+            let jobOverlapCount = 0;
+
+            this.productionPlan.jobs.forEach(job => {
+                const jobStartDate = new Date(job.job_data.starting_date);
+                const jobEndDate = new Date(job.job_data.ending_date);
+
+                // If the job is active on the current date
+                if (jobStartDate <= currentDate && currentDate <= jobEndDate) {
+                    jobOverlapCount += getPartsCount(job);
+                }
+            });
+
+            const isoDate = currentDate.toISOString().substr(0, 10);
+            data.push({
+                x: isoDate,
+                y: currentDate.getDay(),
+                d: isoDate,
+                v: jobOverlapCount
+            });
+
+            // Move to the next day
+            currentDate.setDate(currentDate.getDate() + 1);
+        }
+
+        return data;
+    }
+
+    loadHeatMap() {
+        const ctx = document.getElementById(this.div).getContext('2d');
+        const MAX = 100;
+
+        const data = {
+            datasets: [{
+                label: 'Production Plan HeatMap',
+                data: this.generateData(), backgroundColor(c) {
+                    const value = c.dataset.data[c.dataIndex].v;
+
+                    if (value === 0) {
+                        return 'rgba(0, 0, 0, 0)';
+                    }
+
+                    const normalizedValue = Math.min(value, MAX);
+
+                    let alpha = normalizedValue / 60; 
+
+                    const r = Math.floor(255 * (normalizedValue / 10));
+                    const g = Math.floor(255 * (10 - normalizedValue / 10));
+                    const b = 0;
+
+                    return `rgba(${r}, ${g}, ${b}, ${alpha})`; 
+                },
+                borderColor(c) {
+                    const value = c.dataset.data[c.dataIndex].v;
+
+                    const normalizedValue = Math.min(value, MAX);
+
+                    const alpha = (10 + normalizedValue) / 255;
+
+                    const r = Math.floor(255 * (normalizedValue / 10));
+                    const g = Math.floor(255 * (10 - normalizedValue / 10));
+                    const b = 0; 
+
+                    return `rgba(${r}, ${g}, ${b}, ${alpha})`; 
+                },
+                borderWidth: 1,
+                hoverBackgroundColor: 'yellow',
+                hoverBorderColor: 'yellowgreen',
+                width(c) {
+                    const a = c.chart.chartArea || {};
+                    const numWeeks = 52;
+                    return (a.right - a.left) / numWeeks - 4;
+                },
+                height(c) {
+                    const a = c.chart.chartArea || {};
+                    const numDays = 7; 
+                    return (a.bottom - a.top) / numDays;  
+                }
+            }]
+        };
+        const scales = {
+            y: {
+                type: 'linear',
+                min: 0,
+                max: 6,
+                offset: true,
+                ticks: {
+                    stepSize: 1,
+                    callback: function (value) {
+                        const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+                        return days[value];
+                    },
+                    font: {
+                        size: 9
+                    }
+                },
+                grid: {
+                    display: false,
+                    drawBorder: false,
+                    tickLength: 0
+                },
+            },
+            x: {
+                type: 'time',
+                position: 'bottom',
+                offset: true,
+                time: {
+                    unit: 'week',
+                    round: 'week',
+                    isoWeekday: 0,
+                    displayFormats: {
+                        week: 'MMM dd'
+                    }
+                },
+                ticks: {
+                    maxRotation: 0,
+                    autoSkip: true,
+                    font: {
+                        size: 9
+                    },
+                },
+                grid: {
+                    display: false,
+                    drawBorder: false,
+                    tickLength: 0,
+                }
+            }
+        };
+
+        const options = {
+            aspectRatio: 0,
+            plugins: {
+                legend: false,
+                tooltip: {
+                    displayColors: false,
+                    callbacks: {
+                        title() {
+                            return '';
+                        },
+                        label(context) {
+                            const v = context.dataset.data[context.dataIndex];
+                            return ['Date: ' + v.d, 'Jobs: ' + v.v.toFixed(2)];
+                        }
+                    }
+                },
+            },
+            scales: scales,
+            layout: {
+                padding: {
+                    top: 10,
+                    left: 10,
+                    right: 10,
+                    bottom: 10
+                },
+            }
+        };
+
+        const config = {
+            type: 'matrix',
+            data: data,
+            options: options
+        };
+
+        new Chart(ctx, config);
+    }
 }
 
 class WorkspaceDashboard {
     constructor() {
         this.workspace = null;
-        this.workspace_settings = null;
+        this.workspaceSettings = null;
+        this.productionPlan = null
+        this.productionPlanHeatMap = null;
+        this.workspaceHeatmap = null;
     }
 
     async initialize() {
         this.workspace = await this.loadWorkspace();
-        this.workspace_settings = await this.loadWorkspaceSettings();
-        if (this.workspace && this.workspace_settings) {
+        this.workspaceSettings = await this.loadWorkspaceSettings();
+        this.productionPlan = await this.loadProductionPlanner();
+        if (this.workspace && this.workspaceSettings && this.productionPlan) {
             this.loadWorkspaceContents();
             this.createBasicChart(); // Add this line to create a chart after loading workspace contents
+            this.loadProductionPlanHeatmap();
+            this.loadWorkspaceHeatmap();
+        }
+    }
+    loadProductionPlanHeatmap() {
+        if (!this.productionPlanHeatMap) {
+            this.productionPlanHeatMap = new HeatMap(this.productionPlan, 'production-plan-heatmap');
+            this.productionPlanHeatMap.initialize();
+        } else {
+            this.productionPlanHeatMap.loadHeatMap();
+        }
+    }
+    loadWorkspaceHeatmap() {
+        if (!this.workspaceHeatmap) {
+            this.workspaceHeatmap = new HeatMap(this.workspace, 'workspace-heatmap');
+            this.workspaceHeatmap.initialize();
+        } else {
+            this.workspaceHeatmap.loadHeatMap();
         }
     }
     createBasicChart() {
@@ -23,10 +237,8 @@ class WorkspaceDashboard {
             return;
         }
 
-        // Clear the container
         container.innerHTML = '';
 
-        // Create a canvas element
         const canvas = document.createElement('canvas');
         container.appendChild(canvas);
 
@@ -68,6 +280,7 @@ class WorkspaceDashboard {
             }
         });
     }
+
     loadWorkspaceContents() {
         const container = document.getElementById('workspace-container');
         if (!container || !this.workspace || !this.workspace.jobs) return;
@@ -110,10 +323,25 @@ class WorkspaceDashboard {
             return null;
         }
     }
+
+    async loadProductionPlanner() {
+        try {
+            const response = await fetch('/data/production_plan.json');
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            const config = await response.json();
+            return config;
+        } catch (error) {
+            console.error('Failed to load workspace settings:', error);
+            return null;
+        }
+    }
 }
+
 window.addEventListener('load', async function () {
-    const workspace_dashboard = new WorkspaceScheduler();
-    await workspace_dashboard.initialize(); // Wait for initialization to complete
+    const workspace_dashboard = new WorkspaceDashboard();
+    await workspace_dashboard.initialize();
     setTimeout(function () {
         document.querySelectorAll('img').forEach(function (img) {
             img.onerror = function () {
@@ -123,5 +351,5 @@ window.addEventListener('load', async function () {
                 img.onerror();
             }
         });
-    }, 1000); // 1000 milliseconds = 1 second
+    }, 1000);
 });

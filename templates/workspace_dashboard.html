@@ -8,15 +8,16 @@
     <meta name="google" content="notranslate">
     <link href="https://cdn.jsdelivr.net/npm/beercss@3.6.9/dist/cdn/beer.min.css" rel="stylesheet">
     <script type="module" src="https://cdn.jsdelivr.net/npm/beercss@3.6.9/dist/cdn/beer.min.js"></script>
-    <script type="module"
-        src="https://cdn.jsdelivr.net/npm/material-dynamic-colors@1.1.2/dist/cdn/material-dynamic-colors.min.js">
-    </script>
+    <script type="module" src="https://cdn.jsdelivr.net/npm/material-dynamic-colors@1.1.2/dist/cdn/material-dynamic-colors.min.js"></script>
     <link href="/static/css/theme.css" rel="stylesheet">
     <link rel="icon" href="/static/icon.png">
     <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=yes" />
     <script src="https://www.kryogenix.org/code/browser/sorttable/sorttable.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <title>Workspace</title>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-chart-matrix@2.0.1"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
+
+    <title>Workspace Dashboard</title>
 </head>
 
 <style>
@@ -27,19 +28,32 @@
 <body class="dark">
     <header class="fixed primary">
         <nav>
-            <button class="circle transparent" onclick="goToMainUrl()">
+            <button class="circle transparent" onclick="window.location.href = '/'">
                 <i>arrow_back</i>
             </button>
             <h5 class="max">
-                Workspace
+                Workspace Dashboard
             </h5>
         </nav>
     </header>
     <main class="responsive" id="workspace-container">
-        <!-- Jobs will be dynamically loaded here by workspace.js -->
-
-        <div id="chart-container" style="width: 400px; height: 200px;"></div>
+        <article>
+            <h5>Random Chart</h5>
+            <div id="chart-container" style="width: 400px; height: 200px;"></div>
+        </article>
+        <article>
+            <h5>Production Plan Heatmap</h5>
+            <div class="production-plan-heatmap-container">
+                <canvas id="production-plan-heatmap">
+            </div>
+        </article>
+        <article>
+            <h5>Workspace Heatmap</h5>
+            <div class="workspace-heatmap-container">
+                <canvas id="workspace-heatmap">
+            </div>
+        </article>
     </main>
-    <script src="/static/js/workspace_dashboard.js"></script>
+    <script type="module" src="/static/js/workspace_dashboard.js"></script>
 </body>
 </html>

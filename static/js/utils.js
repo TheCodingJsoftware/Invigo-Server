@@ -1,8 +1,3 @@
-/**
- * Given a job, gets all assemblies and their sub-assemblies recursively.
- * @param {Object} job - The job object containing assemblies.
- * @returns {Array} - A list of all assemblies and sub-assemblies.
- */
 function getAssemblies(job) {
     if (!job || !job.assemblies) {
         console.error("Invalid job object provided");
@@ -11,11 +6,6 @@ function getAssemblies(job) {
     return collectAssemblies(job.assemblies);
 }
 
-/**
- * Recursively collects all assemblies and sub-assemblies.
- * @param {Array} assemblies - The list of assemblies.
- * @returns {Array} - A list of all assemblies and sub-assemblies.
- */
 function collectAssemblies(assemblies) {
     let allAssemblies = [];
 
@@ -30,20 +20,10 @@ function collectAssemblies(assemblies) {
     return allAssemblies;
 }
 
-/**
- * Checks if an job is complete.
- * @param {Object} job - The job object to check.
- * @returns {boolean} - True if the job is complete, false otherwise.
- */
 function isJobComplete(job) {
     return getJobCompletionProgress(job) >= 1;
 }
 
-/**
- * Checks if an assembly is complete.
- * @param {Object} assembly - The assembly object to check.
- * @returns {boolean} - True if the assembly is complete, false otherwise.
- */
 function isAssemblyComplete(assembly) {
     return getAssemblyCompletionProgress(assembly) >= 1.0;
 }
@@ -70,11 +50,7 @@ function calculateAssemblyProgress(assembly) {
         currentSteps: currentSteps
     };
 }
-/**
- * Calculates the progress to complete an assembly.
- * @param {Object} assembly - The assembly object to calculate.
- * @returns {number} - The total time in days.
- */
+
 function getAssemblyCompletionProgress(assembly) {
     const progress = calculateAssemblyProgress(assembly);
     return progress.totalSteps > 0 ? progress.currentSteps / progress.totalSteps : 0;
@@ -98,15 +74,12 @@ function calculateJobProgress(job) {
         currentSteps: currentSteps
     };
 }
+
 function getJobCompletionProgress(job) {
     const progress = calculateJobProgress(job);
     return progress.totalSteps > 0 ? progress.currentSteps / progress.totalSteps : 0;
 }
-/**
- * Calculates the total time (in days) it took to complete an assembly.
- * @param {Object} assembly - The assembly object to calculate the time for.
- * @returns {number} - The total time in days.
- */
+
 function getAssemblyCompletionTime(assembly) {
     if (!assembly || !assembly.assembly_data || !assembly.assembly_data.timer) {
         console.error("Invalid assembly object provided");
@@ -139,7 +112,6 @@ function getProcessCount(job, tagName) {
     let processCount = 0;
 
     function countLaserCutParts(parts) {
-        console.log(parts);
         for (const part of parts) {
 
             if (part.flow_tag && part.flow_tag.tags.includes(tagName)) {
@@ -167,6 +139,28 @@ function getProcessCount(job, tagName) {
 
     return processCount;
 }
+
+function getPartsCount(job){
+    let partsCount = 0;
+
+    function countAssemblies(assemblies) {
+        for (const asm of assemblies) {
+            if (asm.laser_cut_parts) {
+                partsCount += asm.laser_cut_parts.length
+            }
+            if (asm.sub_assemblies && asm.sub_assemblies.length > 0) {
+                countAssemblies(asm.sub_assemblies);
+            }
+        }
+    }
+
+    if (job.assemblies) {
+        countAssemblies(job.assemblies);
+    }
+
+    return partsCount;
+}
+
 function getAssemblyCount(job) {
     let assemblyCount = 0;
 
@@ -194,5 +188,6 @@ export {
     getJobCompletionProgress,
     getAssemblyCompletionTime,
     getProcessCount,
-    getAssemblyCount
+    getAssemblyCount,
+    getPartsCount,
 };
