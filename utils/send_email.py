@@ -39,6 +39,13 @@ def send(subject: str, body: str, recipients: list[str], connected_clients):
 
 
 def send_error_log(body: str, connected_clients):
+    if "User: Jared" in body:
+        CustomPrint.print(
+            "INFO - Email aborted because its development server.",
+            connected_clients=connected_clients,
+        )
+
+        return
     with open("credentials.json", "r", encoding="utf-8") as credentialsFile:
         credentials = json.load(credentialsFile)
     USERNAME: str = credentials["username"]
