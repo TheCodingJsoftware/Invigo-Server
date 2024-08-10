@@ -8,7 +8,8 @@
     <meta name="google" content="notranslate">
     <link href="https://cdn.jsdelivr.net/npm/beercss@3.6.9/dist/cdn/beer.min.css" rel="stylesheet">
     <script type="module" src="https://cdn.jsdelivr.net/npm/beercss@3.6.9/dist/cdn/beer.min.js"></script>
-    <script type="module" src="https://cdn.jsdelivr.net/npm/material-dynamic-colors@1.1.2/dist/cdn/material-dynamic-colors.min.js"></script>
+    <script type="module"
+        src="https://cdn.jsdelivr.net/npm/material-dynamic-colors@1.1.2/dist/cdn/material-dynamic-colors.min.js"></script>
     <link href="/static/css/theme.css" rel="stylesheet">
     <link rel="icon" href="/static/icon.png">
     <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=yes" />
@@ -21,10 +22,11 @@
 </head>
 
 <style>
-    .hidden{
+    .hidden {
         display: none;
     }
 </style>
+
 <body class="dark">
     <header class="fixed primary">
         <nav>
@@ -41,19 +43,42 @@
             <h5>Random Chart</h5>
             <div id="chart-container" style="width: 400px; height: 200px;"></div>
         </article>
-        <article>
+        <article id="production-plan-heatmap-container">
             <h5>Production Plan Heatmap</h5>
-            <div class="production-plan-heatmap-container">
-                <canvas id="production-plan-heatmap">
+            <div class="field label suffix border">
+                <select>
+                    <!-- Options will be populated dynamically -->
+                </select>
+                <label>Process</label>
+                <i>arrow_drop_down</i>
+            </div>
+            <div>
+                <span id="min-value-display">Min: 0h</span>
+                <span id="max-value-display">Max: 0h</span>
+            </div>
+            <div>
+                <canvas id="production-plan-heatmap"></canvas>
             </div>
         </article>
-        <article>
+        <article id="workspace-heatmap-container">
             <h5>Workspace Heatmap</h5>
-            <div class="workspace-heatmap-container">
+            <div class="field label suffix border">
+                <select>
+                    <!-- Options will be populated dynamically -->
+                </select>
+                <label>Process</label>
+                <i>arrow_drop_down</i>
+            </div>
+            <div>
+                <span id="min-value-display">Min: 0h</span>
+                <span id="max-value-display">Max: 0h</span>
+            </div>
+            <div>
                 <canvas id="workspace-heatmap">
             </div>
         </article>
     </main>
     <script type="module" src="/static/js/workspace_dashboard.js"></script>
 </body>
+
 </html>

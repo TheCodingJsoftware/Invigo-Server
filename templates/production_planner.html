@@ -24,6 +24,8 @@
     <script src="https://www.kryogenix.org/code/browser/sorttable/sorttable.js"></script>
     <link rel="stylesheet"
         href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" />
+    <link rel="stylesheet" type="text/css" href="https://npmcdn.com/flatpickr/dist/themes/dark.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <link href="/static/css/theme.css" rel="stylesheet">
     <link rel="icon" href="/static/icon.png">
     <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=yes" />
@@ -323,13 +325,8 @@
                         <h3 class="panel-title">Date and Range Controls</h3>
                     </div>
                     <div class="panel-body">
-                        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 5px; padding: 10px;">
-                            <label for="startDate">Start Date:</label>
-                            <input type="date" id="startDate">
-                            <label for="endDate">End Date:</label>
-                            <input type="date" id="endDate">
-                            <div></div>
-                            <button id="applyDates">Apply</button>
+                        <div style="display: grid; grid-template-columns: repeat(1, 1fr); gap: 5px; padding: 10px;">
+                            <input type="text" id="date-range-picker" placeholder="Select Date Range" />
                         </div>
                         <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 5px; padding: 10px;">
                             <button id="thisMonth">This Month</button>

@@ -1730,6 +1730,10 @@ def check_production_plan_for_jobs():
         signal_clients_for_changes(client_to_ignore=None, changed_files=[f"{workspace.filename}.json", f"{production_plan.filename}.json", f"{laser_cut_inventory.filename}.json"])
 
 
+def check_if_jobs_complete():
+    # TODO: If jobs are complete then send to workspace archive.
+    pass
+
 def schedule_thread():
     while True:
         schedule.run_pending()
@@ -1742,6 +1746,7 @@ if __name__ == "__main__":
 
     schedule.every().monday.at("04:00").do(partial(generate_sheet_report, connected_clients))
     schedule.every().hour.do(hourly_backup_inventory_files)
+    schedule.every().minute.do(check_if_jobs_complete)
     schedule.every().day.at("04:00").do(daily_backup_inventory_files)
     schedule.every().day.at("04:00").do(check_production_plan_for_jobs)
     schedule.every().week.do(weekly_backup_inventory_files)

@@ -40,32 +40,15 @@ class GanttGraph {
         return this.idCounter++;
     }
 
-    parseDateTime(dateTimeString) {
-        const [datePart, timePart, period] = dateTimeString.split(' ');
-        const [year, month, day] = datePart.split('-').map(Number);
-        let [hours, minutes] = timePart.split(':').map(Number);
-    
-        if (period === 'PM' && hours !== 12) {
-            hours += 12;
-        } else if (period === 'AM' && hours === 12) {
-            hours = 0;
-        }
-    
-        return new Date(year, month - 1, day, hours, minutes);
-    }
-    
     loadJobs() {
         this.productionPlan.jobs.forEach(job => {
-            // const startDate = this.parseDateTime(job.job_data.starting_date);
-            // const endDate = this.parseDateTime(job.job_data.ending_date);
-            
             const startDate = new Date(job.job_data.starting_date);
             const endDate = new Date(job.job_data.ending_date);
 
             const jobId = this.generateId();
             var job_color = 'gray';
-            
-            if (job.job_data.moved_job_to_workspace){
+
+            if (job.job_data.moved_job_to_workspace) {
                 job_color = 'gray';
             } else {
                 job_color = job.job_data.color
@@ -107,9 +90,6 @@ class GanttGraph {
             if (flowtag_timeline.hasOwnProperty(tagName)) {
                 const tag = flowtag_timeline[tagName];
 
-                // const startDate = this.parseDateTime(tag.starting_date);
-                // const endDate = this.parseDateTime(tag.ending_date);
-                
                 const startDate = new Date(tag.starting_date);
                 const endDate = new Date(tag.ending_date);
 
@@ -193,10 +173,10 @@ class GanttGraph {
 
         gantt.templates.progress_text = function (start, end, task) {
             console.log(task.type);
-            
+
             if (task.assembly_count > 0 && task.part_count > 0) {
                 return "<span style='text-align:left;'>" + Math.round(task.part_count) + (Math.round(task.part_count) === 1 ? " part" : " parts") + Math.round(task.assembly_count) + (Math.round(task.assembly_count) === 1 ? " assembly" : " assemblies") + "</span>";
-            }else if (task.assembly_count > 0) {
+            } else if (task.assembly_count > 0) {
                 return "<span style='text-align:left;'>" + Math.round(task.assembly_count) + (Math.round(task.assembly_count) === 1 ? " assembly" : " assemblies") + "</span>";
             } else if (task.part_count > 0) {
                 return "<span style='text-align:left;'>" + Math.round(task.part_count) + (Math.round(task.part_count) === 1 ? " part" : " parts") + "</span>";
@@ -245,7 +225,7 @@ class GanttGraph {
                     var owner = store.getItem(assignment.resource_id)
                     owners.push(owner.text);
                 });
-                if (task.assembly_count > 0 && task.part_count > 0){
+                if (task.assembly_count > 0 && task.part_count > 0) {
                     return "<b>Process:</b> " + task.text + "<br/>" +
                         "<b>Assembly count:</b> " + task.assembly_count + "<br/>" +
                         "<b>Part count:</b> " + task.part_count + "<br/>" +
@@ -362,41 +342,6 @@ class GanttGraph {
             return assignments;
         }
 
-        function getTasksLoad(tasks, resourceId) {
-            var totalLoad = 0;
-            tasks.forEach(function (task) {
-                totalLoad += 8;
-            });
-            return totalLoad;
-        }
-
-        gantt.templates.resource_cell_class = function (start_date, end_date, resource, tasks) {
-            var totalLoad = getTasksLoad(tasks, resource.id);
-            var css = [];
-            css.push("resource_marker");
-            if (totalLoad <= 8) {
-                css.push("workday_ok");
-            } else {
-                css.push("workday_over");
-            }
-            return css.join(" ");
-        };
-
-        gantt.templates.resource_cell_value = function (start_date, end_date, resource, tasks) {
-
-            var totalLoad = getTasksLoad(tasks, resource.id);
-
-            var tasksIds = "data-recource-tasks='" + JSON.stringify(tasks.map(function (task) {
-                return task.id
-            })) + "'";
-
-            var resourceId = "data-resource-id='" + resource.id + "'";
-
-            var dateAttr = "data-cell-date='" + gantt.templates.format_date(start_date) + "'";
-
-            return "<div " + tasksIds + " " + resourceId + " " + dateAttr + ">" + totalLoad + "</div>";
-        };
-
         gantt.templates.leftside_text = function (start, end, task) {
             var state = gantt.getState(),
                 modes = gantt.config.drag_mode;
@@ -405,7 +350,7 @@ class GanttGraph {
                 if (state.drag_mode == modes.move || (state.drag_mode == modes.resize && state.drag_from_start)) {
                     return dateToStr(gantt.roundDate(start));
                 }
-            }else{
+            } else {
                 return task.duration + " days";
             }
 
@@ -424,7 +369,7 @@ class GanttGraph {
         };
 
         function roundToTwo(num) {
-            return +(Math.round(num + "e+2")  + "e-2");
+            return +(Math.round(num + "e+2") + "e-2");
         }
 
         function calculateResourceLoad(tasks, scale) {
@@ -455,12 +400,12 @@ class GanttGraph {
                     const hoursToComplete = ((task.part_expected_time_to_complete + task.assembly_expected_time_to_complete) / 3600); // Convert seconds to hours
                     const durationInHours = task.duration; // Convert days to hours
 
-                    if (durationInHours <= 0){
+                    if (durationInHours <= 0) {
                         durationInHours = 1;
                     }
-                    
+
                     timegrid[timestamp] += roundToTwo((hoursToComplete / durationInHours)); // Calculate and round to 1 decimal
-                    
+
                 }
             }
 
@@ -511,6 +456,34 @@ class GanttGraph {
                 var sizes = timeline.getItemPosition(resource, day.start_date, day.end_date);
                 var el = document.createElement('div');
 
+                var totalMinutes = day.value * 60;
+                var days = Math.floor(totalMinutes / (60 * 24));
+                var hours = Math.floor((totalMinutes % (60 * 24)) / 60);
+                var minutes = Math.floor(totalMinutes % 60);
+
+                // Build the time string conditionally
+                var timeString = '';
+                if (days > 0) {
+                    timeString += days + 'd ';
+                }
+                if (hours > 0) {
+                    timeString += hours + 'h ';
+                }
+                if (minutes > 0 || timeString === '') {
+                    timeString += minutes + 'm';
+                }
+
+                var fontSize;
+                if (timeString.length <= 3) { // E.g., "1d", "2h", "3m"
+                    fontSize = "12pt";
+                } else if (timeString.length <= 6) { // E.g., "1d 2h"
+                    fontSize = "10pt";
+                } else if (timeString.length <= 9) { // E.g., "1d 2h 3m"
+                    fontSize = "8pt";
+                } else { // For even longer strings, reduce font size further
+                    fontSize = "6pt";
+                }
+
                 el.style.cssText = [
                     'left:' + sizes.left + 'px',
                     'width:' + sizes.width + 'px',
@@ -520,11 +493,12 @@ class GanttGraph {
                     'top:' + sizes.top + 'px',
                     'background-color:' + color,
                     'color: white',
-                    'font-weight: bold',
-                    'text-align: center'
+                    'font-weight: normal',
+                    'text-align: center',
+                    'font-size:' + fontSize,
                 ].join(";");
 
-                el.innerHTML = day.value;
+                el.innerHTML = timeString.trim();
                 row.appendChild(el);
             }
             return row;
@@ -532,7 +506,7 @@ class GanttGraph {
 
         function onDragEnd(startPoint, endPoint, startDate, endDate, tasksBetweenDates, tasksInRows) {
             var mode = document.querySelector("input[name=selectMode]:checked");
-            if (!mode){
+            if (!mode) {
                 return
             }
             switch (mode.value) {
@@ -568,42 +542,51 @@ class GanttGraph {
 
         var mainGridConfig = {
             columns: [{
-                    name: "text",
-                    label: "Job/Process Name",
-                    tree: true,
-                    width: 200,
-                    resize: true
-                },
-                {
-                    name: "start_date",
-                    label: "Start",
-                    align: "center",
-                    width: 80,
-                    resize: true
-                },
-                {
-                    name: "duration",
-                    label: "Days",
-                    width: 50,
-                    align: "center",
-                    resize: true
-                },
-                {
-                    name: "end_date",
-                    label: "End",
-                    align: "center",
-                    width: 80,
-                    resize: true
-                },
+                name: "text",
+                label: "Job/Process Name",
+                tree: true,
+                width: 200,
+                resize: true
+            },
+            {
+                name: "start_date",
+                label: "Start",
+                align: "center",
+                width: 80,
+                resize: true
+            },
+            {
+                name: "duration",
+                label: "Days",
+                width: 50,
+                align: "center",
+                resize: true
+            },
+            {
+                name: "end_date",
+                label: "End",
+                align: "center",
+                width: 80,
+                resize: true
+            },
             ]
         };
         var resourcePanelConfig = {
             columns: [
                 {
+                    name: "name",
+                    label: "Process",
+                    resize: true,
+                    align: "left",
+                    width: 200,
+                    template: function (resource) {
+                        return resource.label;
+                    }
+                },
+                {
                     name: "workload",
                     label: "Parts",
-                    width: 90,
-                    resize: true,
+                    width: 50,
                     align: "center",
                     template: function (resource) {
                         var tasks = gantt.getTaskBy("user", resource.id);
@@ -649,24 +632,14 @@ class GanttGraph {
                     }
                 },
                 {
-                    name: "name",
-                    label: "Process",
-                    resize: true,
-                    align: "left",
-                    width: 220,
-                    template: function (resource) {
-                        return resource.label;
-                    }
-                },
-                {
                     name: "workload",
                     label: "Workload",
-                    width: 150,
+                    width: 100,
                     resize: true,
                     align: "left",
                     template: function (resource) {
                         var tasks = gantt.getTaskBy("user", resource.id);
-                    
+
                         var totalDurationInSeconds = 0;
                         var visibleTasks = tasks.filter(task => {
                             const taskStart = new Date(task.start_date);
@@ -675,17 +648,31 @@ class GanttGraph {
                             const visibleEnd = gantt.getState().max_date;
                             return taskEnd >= visibleStart && taskStart <= visibleEnd;
                         });
-                    
+
                         for (var i = 0; i < visibleTasks.length; i++) {
-                            totalDurationInSeconds += visibleTasks[i].part_expected_time_to_complete + visibleTasks[i].assembly_expected_time_to_complete; 
+                            totalDurationInSeconds += visibleTasks[i].part_expected_time_to_complete + visibleTasks[i].assembly_expected_time_to_complete;
                         }
-                    
-                        // Convert total duration from seconds to hours, minutes, seconds
-                        const hours = Math.floor(totalDurationInSeconds / 3600);
+
+                        const days = Math.floor(totalDurationInSeconds / (3600 * 24));
+                        const hours = Math.floor((totalDurationInSeconds % (3600 * 24)) / 3600);
                         const minutes = Math.floor((totalDurationInSeconds % 3600) / 60);
                         const seconds = Math.floor(totalDurationInSeconds % 60);
-                    
-                        return `${hours}h ${minutes}m ${seconds}s`;
+
+                        let durationString = '';
+                        if (days > 0) {
+                            durationString += `${days}d `;
+                        }
+                        if (hours > 0) {
+                            durationString += `${hours}h `;
+                        }
+                        if (minutes > 0) {
+                            durationString += `${minutes}m `;
+                        }
+                        if (seconds > 0 || durationString === '') { // Show seconds if they are non-zero or if everything else is zero
+                            durationString += `${seconds}s`;
+                        }
+
+                        return durationString.trim();
                     }
                 },
                 {
@@ -698,84 +685,84 @@ class GanttGraph {
         gantt.config.layout = {
             css: "gantt_container",
             rows: [{
-                    config: mainGridConfig,
-                    cols: [{
-                            width: 400,
-                            min_width: 300,
-                            rows: [{
-                                    view: "grid",
-                                    scrollX: "gridScroll",
-                                    scrollable: true,
-                                    scrollY: "scrollVer"
-                                },
-                                {
-                                    view: "scrollbar",
-                                    id: "gridScroll",
-                                    group: "horizontal"
-                                }
-                            ]
-                        },
-                        {
-                            resizer: true,
-                            width: 1,
-                            group: "vertical"
-                        },
-                        {
-                            rows: [{
-                                    view: "timeline",
-                                    scrollX: "scrollHor",
-                                    scrollY: "scrollVer"
-                                },
-                                {
-                                    view: "scrollbar",
-                                    id: "scrollHor",
-                                    group: "horizontal"
-                                }
-                            ]
-                        },
-                        {
-                            view: "scrollbar",
-                            id: "scrollVer"
-                        }
+                config: mainGridConfig,
+                cols: [{
+                    width: 400,
+                    min_width: 300,
+                    rows: [{
+                        view: "grid",
+                        scrollX: "gridScroll",
+                        scrollable: true,
+                        scrollY: "scrollVer"
+                    },
+                    {
+                        view: "scrollbar",
+                        id: "gridScroll",
+                        group: "horizontal"
+                    }
                     ]
                 },
                 {
                     resizer: true,
-                    width: 1
+                    width: 1,
+                    group: "vertical"
                 },
                 {
-                    config: resourcePanelConfig,
-                    height: 400, // Adjust the height of the resource panel as needed
-                    cols: [{
-                            width: 400,
-                            min_width: 200,
-                            view: "grid",
-                            id: "resourceGrid",
-                            group: "grids",
-                            bind: "resources",
-                            scrollY: "resourceVScroll"
-                        },
-                        {
-                            resizer: true,
-                            width: 1,
-                            group: "vertical"
-                        },
-                        {
-                            view: "timeline",
-                            id: "resourceTimeline",
-                            bind: "resources",
-                            bindLinks: null,
-                            layers: resourceLayers,
-                            scrollX: "scrollHor",
-                            scrollY: "resourceVScroll"
-                        },
-                        {
-                            view: "scrollbar",
-                            id: "resourceVScroll",
-                            group: "vertical"
-                        }
+                    rows: [{
+                        view: "timeline",
+                        scrollX: "scrollHor",
+                        scrollY: "scrollVer"
+                    },
+                    {
+                        view: "scrollbar",
+                        id: "scrollHor",
+                        group: "horizontal"
+                    }
                     ]
                 },
+                {
+                    view: "scrollbar",
+                    id: "scrollVer"
+                }
+                ]
+            },
+            {
+                resizer: true,
+                width: 1
+            },
+            {
+                config: resourcePanelConfig,
+                height: 400, // Adjust the height of the resource panel as needed
+                cols: [{
+                    width: 400,
+                    min_width: 200,
+                    view: "grid",
+                    id: "resourceGrid",
+                    group: "grids",
+                    bind: "resources",
+                    scrollY: "resourceVScroll"
+                },
+                {
+                    resizer: true,
+                    width: 1,
+                    group: "vertical"
+                },
+                {
+                    view: "timeline",
+                    id: "resourceTimeline",
+                    bind: "resources",
+                    bindLinks: null,
+                    layers: resourceLayers,
+                    scrollX: "scrollHor",
+                    scrollY: "resourceVScroll"
+                },
+                {
+                    view: "scrollbar",
+                    id: "resourceVScroll",
+                    group: "vertical"
+                }
+                ]
+            },
             ]
         };
 
@@ -794,80 +781,80 @@ class GanttGraph {
 
         var zoomConfig = {
             levels: [{
-                    name: "day",
-                    scale_height: 27,
-                    min_column_width: 80,
-                    scales: [{
-                        unit: "day",
-                        step: 1,
-                        format: "%d %M"
-                    }]
+                name: "day",
+                scale_height: 27,
+                min_column_width: 80,
+                scales: [{
+                    unit: "day",
+                    step: 1,
+                    format: "%d %M"
+                }]
+            },
+            {
+                name: "week",
+                scale_height: 50,
+                min_column_width: 50,
+                scales: [{
+                    unit: "week",
+                    step: 1,
+                    format: function (date) {
+                        var dateToStr = gantt.date.date_to_str("%d %M");
+                        var endDate = gantt.date.add(date, -6, "day");
+                        var weekNum = gantt.date.date_to_str("%W")(date);
+                        return "#" + weekNum + ", " + dateToStr(date) + " - " + dateToStr(endDate);
+                    }
                 },
                 {
-                    name: "week",
-                    scale_height: 50,
-                    min_column_width: 50,
-                    scales: [{
-                            unit: "week",
-                            step: 1,
-                            format: function (date) {
-                                var dateToStr = gantt.date.date_to_str("%d %M");
-                                var endDate = gantt.date.add(date, -6, "day");
-                                var weekNum = gantt.date.date_to_str("%W")(date);
-                                return "#" + weekNum + ", " + dateToStr(date) + " - " + dateToStr(endDate);
-                            }
-                        },
-                        {
-                            unit: "day",
-                            step: 1,
-                            format: "%j %D"
-                        }
-                    ]
-                },
-                {
-                    name: "month",
-                    scale_height: 50,
-                    min_column_width: 120,
-                    scales: [{
-                            unit: "month",
-                            format: "%F, %Y"
-                        },
-                        {
-                            unit: "week",
-                            format: "Week #%W"
-                        }
-                    ]
-                },
-                {
-                    name: "quarter",
-                    height: 50,
-                    min_column_width: 90,
-                    scales: [{
-                            unit: "month",
-                            step: 1,
-                            format: "%M"
-                        },
-                        {
-                            unit: "quarter",
-                            step: 1,
-                            format: function (date) {
-                                var dateToStr = gantt.date.date_to_str("%M");
-                                var endDate = gantt.date.add(gantt.date.add(date, 3, "month"), -1, "day");
-                                return dateToStr(date) + " - " + dateToStr(endDate);
-                            }
-                        }
-                    ]
-                },
-                {
-                    name: "year",
-                    scale_height: 50,
-                    min_column_width: 30,
-                    scales: [{
-                        unit: "year",
-                        step: 1,
-                        format: "%Y"
-                    }]
+                    unit: "day",
+                    step: 1,
+                    format: "%j %D"
                 }
+                ]
+            },
+            {
+                name: "month",
+                scale_height: 50,
+                min_column_width: 120,
+                scales: [{
+                    unit: "month",
+                    format: "%F, %Y"
+                },
+                {
+                    unit: "week",
+                    format: "Week #%W"
+                }
+                ]
+            },
+            {
+                name: "quarter",
+                height: 50,
+                min_column_width: 90,
+                scales: [{
+                    unit: "month",
+                    step: 1,
+                    format: "%M"
+                },
+                {
+                    unit: "quarter",
+                    step: 1,
+                    format: function (date) {
+                        var dateToStr = gantt.date.date_to_str("%M");
+                        var endDate = gantt.date.add(gantt.date.add(date, 3, "month"), -1, "day");
+                        return dateToStr(date) + " - " + dateToStr(endDate);
+                    }
+                }
+                ]
+            },
+            {
+                name: "year",
+                scale_height: 50,
+                min_column_width: 30,
+                scales: [{
+                    unit: "year",
+                    step: 1,
+                    format: "%Y"
+                }]
+            }
             ]
         };
         gantt.templates.scale_cell_class = function (date) {
@@ -911,21 +898,21 @@ class GanttGraph {
         };
 
         gantt.config.scales = [{
-                unit: "month",
-                step: 1,
-                format: "%F, %Y"
-            },
-            {
-                unit: "week",
-                step: 1,
-                format: weekScaleTemplate
-            },
-            {
-                unit: "day",
-                step: 1,
-                format: "%D",
-                css: daysStyle
-            }
+            unit: "month",
+            step: 1,
+            format: "%F, %Y"
+        },
+        {
+            unit: "week",
+            step: 1,
+            format: weekScaleTemplate
+        },
+        {
+            unit: "day",
+            step: 1,
+            format: "%D",
+            css: daysStyle
+        }
         ];
 
         var dateToStr = gantt.date.date_to_str(gantt.config.task_date);
@@ -986,8 +973,8 @@ class GanttGraph {
     }
 
     generateAssemblySummary() {
-        const startDate = new Date(document.getElementById("startDate").value);
-        const endDate = new Date(document.getElementById("endDate").value);
+        const startDate = new Date(gantt.config.start_date);
+        const endDate = new Date(gantt.config.end_date);
 
         const assemblyMap = new Map();
 
@@ -1059,10 +1046,7 @@ class GanttGraph {
         this.data.length = 0;
         this.links.length = 0;
 
-        const startDate = new Date(document.getElementById("startDate").value);
-        const endDate = new Date(document.getElementById("endDate").value);
-
-        gantt.init("gantt_here", startDate, endDate);
+        gantt.init("gantt_here");
         gantt.parse(this.loadData());
         gantt.ext.zoom.setLevel(this.lastViewMode)
 
@@ -1087,8 +1071,8 @@ class GanttGraph {
             return true;
         });
 
-        menu.attachEvent("onClick", function(id) {
-            switch(id) {
+        menu.attachEvent("onClick", function (id) {
+            switch (id) {
                 case "open_printout":
                     var task = gantt.getTask(gantt.contextID); // Assuming gantt.contextID is set correctly in onContextMenu
 
@@ -1117,20 +1101,20 @@ class GanttGraph {
                             },
                             body: JSON.stringify(matchingJob)
                         })
-                        .then(response => {
-                            if (!response.ok) {
-                                throw new Error('Network response was not ok');
-                            }
-                            return response.text();
-                        })
-                        .then(html => {
-                            var newWindow = window.open();
-                            newWindow.document.write(html);
-                            newWindow.document.close();
-                        })
-                        .catch(error => {
-                            console.error('Error:', error);
-                        });
+                            .then(response => {
+                                if (!response.ok) {
+                                    throw new Error('Network response was not ok');
+                                }
+                                return response.text();
+                            })
+                            .then(html => {
+                                var newWindow = window.open();
+                                newWindow.document.write(html);
+                                newWindow.document.close();
+                            })
+                            .catch(error => {
+                                console.error('Error:', error);
+                            });
                     } else {
                         console.error('No matching job found');
                     }
@@ -1143,12 +1127,6 @@ class GanttGraph {
     }
 
     changeDateRange() {
-        const startDate = new Date(document.getElementById("startDate").value);
-        const endDate = new Date(document.getElementById("endDate").value);
-
-        gantt.config.start_date = startDate;
-        gantt.config.end_date = endDate;
-
         gantt.render();
         gantt.ext.zoom.setLevel(this.lastViewMode)
         this.generateAssemblySummary()
@@ -1159,15 +1137,15 @@ class GanttGraph {
         const year = d.getFullYear();
         const month = ("0" + (d.getMonth() + 1)).slice(-2);
         const day = ("0" + d.getDate()).slice(-2);
-    
+
         let hours = d.getHours();
         const minutes = ("0" + d.getMinutes()).slice(-2);
         const period = hours >= 12 ? 'PM' : 'AM';
-    
+
         // Convert hours to 12-hour format
         hours = hours % 12;
         hours = hours ? hours : 12; // If hours is 0, set it to 12
-    
+
         return `${year}-${month}-${day} ${hours}:${minutes} ${period}`;
     }
 
@@ -1238,13 +1216,13 @@ class GanttGraph {
 
     async uploadWorkspace() {
 
-        var showSuccessMessage = function() {
+        var showSuccessMessage = function () {
             var text = "Production plan saved successfully";
-            gantt.message({type:"info", text:text, expire: 3000});
+            gantt.message({ type: "info", text: text, expire: 3000 });
         }
-        var showErrorMessage = function() {
+        var showErrorMessage = function () {
             var text = "Failed to save production plan. Please panic, but calmly.";
-            gantt.message({type:"error", text:text, expire: 10000});
+            gantt.message({ type: "error", text: text, expire: 10000 });
         }
         const response = await fetch('/production_planner_upload', {
             method: 'POST',
@@ -1401,87 +1379,88 @@ window.addEventListener('load', async function () {
         };
     }
 
-    document.getElementById('applyDates').onclick = function (event) {
-        event.preventDefault();
-        workspaceScheduler.ganttGraph.changeDateRange();
-    };
+    // document.getElementById('applyDates').onclick = function (event) {
+    //     event.preventDefault();
+    //     workspaceScheduler.ganttGraph.changeDateRange();
+    // };// Initialize flatpickr with a date range picker
+    
+    flatpickr("#date-range-picker", {
+        mode: "range",
+        theme: 'dark',
+        altInput: true,
+        altFormat: "F j, Y",
+        dateFormat: "Y-m-d",
+        onClose: function (selectedDates, dateStr, instance) {
+            const [startDate, endDate] = selectedDates;
+            if (startDate && endDate) {
+                gantt.config.start_date = startDate;
+                gantt.config.end_date = endDate;
+                workspaceScheduler.ganttGraph.changeDateRange();
+            }
+        }
+    });
 
-    var startDateInput = document.getElementById("startDate");
-    var endDateInput = document.getElementById("endDate");
+    // Utility functions for setting the date range
+    function setDateRange(startDate, endDate) {
+        document.querySelector("#date-range-picker")._flatpickr.setDate([startDate, endDate], true);
+        gantt.config.start_date = startDate;
+        gantt.config.end_date = endDate;
+        workspaceScheduler.ganttGraph.changeDateRange();
+    }
 
     function setThisMonth() {
-        var today = new Date();
-        var firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
-        var lastDay = new Date(today.getFullYear(), today.getMonth() + 1, 0);
-
-        startDateInput.value = firstDay.toISOString().split("T")[0];
-        endDateInput.value = lastDay.toISOString().split("T")[0];
+        const today = new Date();
+        const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+        const lastDay = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+        setDateRange(firstDay, lastDay);
     }
 
     function setThisYear() {
-        var thisYear = new Date().getFullYear();
-        var firstDay = new Date(thisYear, 0, 1);
-        var lastDay = new Date(thisYear, 11, 31);
-
-        startDateInput.value = firstDay.toISOString().split("T")[0];
-        endDateInput.value = lastDay.toISOString().split("T")[0];
+        const thisYear = new Date().getFullYear();
+        const firstDay = new Date(thisYear, 0, 1);
+        const lastDay = new Date(thisYear, 11, 31);
+        setDateRange(firstDay, lastDay);
     }
 
     function setNextMonth() {
-        var currentStart = new Date(startDateInput.value);
-        var currentEnd = new Date(endDateInput.value);
-
-        var nextMonthStart = new Date(currentStart.getFullYear(), currentStart.getMonth() + 2, 1);
-        var nextMonthEnd = new Date(currentEnd.getFullYear(), currentEnd.getMonth() + 2, 0);
-
-        startDateInput.value = nextMonthStart.toISOString().split("T")[0];
-        endDateInput.value = nextMonthEnd.toISOString().split("T")[0];
+        const flatpickrInstance = document.querySelector("#date-range-picker")._flatpickr;
+        const [currentStart, currentEnd] = flatpickrInstance.selectedDates;
+        const nextMonthStart = new Date(currentStart.getFullYear(), currentStart.getMonth() + 1, 1);
+        const nextMonthEnd = new Date(currentEnd.getFullYear(), currentEnd.getMonth() + 2, 0);
+        setDateRange(nextMonthStart, nextMonthEnd);
     }
 
     function setPrevMonth() {
-        var currentStart = new Date(startDateInput.value);
-        var currentEnd = new Date(endDateInput.value);
-
-        var prevMonthStart = new Date(currentStart.getFullYear(), currentStart.getMonth(), 1);
-        var prevMonthEnd = new Date(currentEnd.getFullYear(), currentEnd.getMonth(), 0);
-
-        startDateInput.value = prevMonthStart.toISOString().split("T")[0];
-        endDateInput.value = prevMonthEnd.toISOString().split("T")[0];
+        const flatpickrInstance = document.querySelector("#date-range-picker")._flatpickr;
+        const [currentStart, currentEnd] = flatpickrInstance.selectedDates;
+        const prevMonthStart = new Date(currentStart.getFullYear(), currentStart.getMonth() - 1, 1);
+        const prevMonthEnd = new Date(currentEnd.getFullYear(), currentEnd.getMonth(), 0);
+        setDateRange(prevMonthStart, prevMonthEnd);
     }
 
+    // Event listeners for custom date range buttons
     document.getElementById('thisMonth').onclick = function (event) {
         event.preventDefault();
-        var today = new Date();
-        var firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
-        var lastDay = new Date(today.getFullYear(), today.getMonth() + 1, 0);
-
-        startDateInput.value = firstDay.toISOString().split("T")[0];
-        endDateInput.value = lastDay.toISOString().split("T")[0];
-        workspaceScheduler.ganttGraph.changeDateRange();
+        setThisMonth();
     };
 
     document.getElementById('thisYear').onclick = function (event) {
         event.preventDefault();
-        var thisYear = new Date().getFullYear();
-
-        startDateInput.value = `${thisYear}-01-01`;
-        endDateInput.value = `${thisYear}-12-31`;
-        workspaceScheduler.ganttGraph.changeDateRange();
+        setThisYear();
     };
 
     document.getElementById('nextMonth').onclick = function (event) {
         event.preventDefault();
         setNextMonth();
-        workspaceScheduler.ganttGraph.changeDateRange();
     };
 
     document.getElementById('prevMonth').onclick = function (event) {
         event.preventDefault();
         setPrevMonth();
-        workspaceScheduler.ganttGraph.changeDateRange();
     };
-    setThisMonth(); // Set default dates to this month
 
+    // Initialize with the current month's date range
+    
     setTimeout(function () {
         document.querySelectorAll('img').forEach(function (img) {
             img.onerror = function () {
@@ -1492,9 +1471,10 @@ window.addEventListener('load', async function () {
             }
         });
     }, 1000); // 1000 milliseconds = 1 second
-
+    
     try {
         await workspaceScheduler.initialize(); // Wait for initialization to complete
+        setThisMonth();
         workspaceScheduler.ganttGraph.changeDateRange();
     } catch (error) {
         console.error('Error initializing workspace:', error);

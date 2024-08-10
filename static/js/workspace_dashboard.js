@@ -6,58 +6,123 @@ import {
     getJobCompletionProgress,
     getAssemblyCompletionTime,
     getPartProcessCountByTag,
-    getAssemblyProcessCount,
+    getAssemblyCount,
+    getAssemblyProcessCountByTag,
+    getPartProcessExpectedTimeToComplete,
+    getAssemblyProcessExpectedTimeToComplete,
     getPartsCount,
 } from './utils.js';
 
+
 class HeatMap {
-    constructor(productionPlan, div) {
+    constructor(productionPlan, workspaceSettings, container) {
         this.productionPlan = productionPlan;
-        this.div = div
+        this.workspaceSettings = workspaceSettings;
+        this.container = container;
+        this.containerDiv = null;
+        this.heatmapCanvas = null;
+        this.currentProcess = null;
+        this.chartInstance = null;
+        this.minValue = null;
+        this.maxValue = null;
     }
 
     initialize() {
+        this.containerDiv = document.getElementById(this.container);
+        this.heatmapCanvas = this.containerDiv.querySelector('canvas').id;
+        this.processSelections = this.containerDiv.querySelector('select');
+        this.populateProcessSelections();
+        
+        if (this.workspaceSettings.tags.length > 0 && !this.currentProcess) {
+            this.processSelections.value = this.workspaceSettings.tags[0];
+            console.log(this.processSelections.value);
+            
+            this.currentProcess = this.workspaceSettings.tags[0];
+        }
+        
+        this.processSelections.addEventListener('change', () => {
+            this.currentProcess = this.processSelections.value;
+            this.loadHeatMap();
+        });
         this.loadHeatMap();
+    }
+
+    populateProcessSelections() {
+        this.processSelections.innerHTML = '';
+        Object.keys(this.workspaceSettings.tags).forEach(tagName => {
+            const option = document.createElement('option');
+            option.textContent = tagName;
+            this.processSelections.appendChild(option);
+        });
     }
 
     generateData() {
         const data = [];
         const startDate = new Date(new Date().getFullYear(), 0, 1); // Jan 1st of current year
         const endDate = new Date(new Date().getFullYear(), 11, 31); // Dec 31st of current year
-
+    
         let currentDate = new Date(new Date().setDate(endDate.getDate() - 365));
-
+    
+        let minValue = Number.POSITIVE_INFINITY;
+        let maxValue = Number.NEGATIVE_INFINITY;
+    
         while (currentDate <= endDate) {
-            let jobOverlapCount = 0;
-
+            let totalHourCount = 0;
+    
             this.productionPlan.jobs.forEach(job => {
                 const jobStartDate = new Date(job.job_data.starting_date);
                 const jobEndDate = new Date(job.job_data.ending_date);
-
+    
                 // If the job is active on the current date
                 if (jobStartDate <= currentDate && currentDate <= jobEndDate) {
-                    jobOverlapCount += getPartsCount(job);
+                    const flowtag_timeline = job.job_data.flowtag_timeline; 
+                    if (flowtag_timeline.hasOwnProperty(this.currentProcess)) {
+                        const tag = flowtag_timeline[this.currentProcess];
+                        const tagStartDate = new Date(tag.starting_date);
+                        const tagEndDate = new Date(tag.ending_date);
+                        const durationDays = (tagEndDate - tagStartDate) / (1000 * 60 * 60 * 24);
+                        const processExpectedTimeSeconds = (getPartProcessExpectedTimeToComplete(job, this.currentProcess) + getAssemblyProcessExpectedTimeToComplete(job, this.currentProcess)); // seconds
+                        if (tagStartDate <= currentDate && currentDate <= tagEndDate) {
+                            totalHourCount += processExpectedTimeSeconds / durationDays / 60;
+                        }
+                    }
                 }
             });
-
+    
+            // Update min and max values
+            if (totalHourCount < minValue) {
+                minValue = totalHourCount;
+            }
+            if (totalHourCount > maxValue) {
+                maxValue = totalHourCount;
+            }
+    
             const isoDate = currentDate.toISOString().substr(0, 10);
             data.push({
                 x: isoDate,
                 y: currentDate.getDay(),
                 d: isoDate,
-                v: jobOverlapCount
+                v: totalHourCount
             });
-
+    
             // Move to the next day
             currentDate.setDate(currentDate.getDate() + 1);
         }
-
+    
+        this.minValue = minValue;
+        this.maxValue = maxValue;
+    
         return data;
     }
+    
 
     loadHeatMap() {
-        const ctx = document.getElementById(this.div).getContext('2d');
-        const MAX = 100;
+        const ctx = document.getElementById(this.heatmapCanvas).getContext('2d');
+        const MAX = 255;
+
+        if (this.chartInstance) {
+            this.chartInstance.destroy();
+        }
 
         const data = {
             datasets: [{
@@ -74,7 +139,7 @@ class HeatMap {
                     let alpha = normalizedValue / 60; 
 
                     const r = Math.floor(255 * (normalizedValue / 10));
-                    const g = Math.floor(255 * (10 - normalizedValue / 10));
+                    const g = Math.floor(255 * (20 - normalizedValue / 10));
                     const b = 0;
 
                     return `rgba(${r}, ${g}, ${b}, ${alpha})`; 
@@ -87,13 +152,12 @@ class HeatMap {
                     const alpha = (10 + normalizedValue) / 255;
 
                     const r = Math.floor(255 * (normalizedValue / 10));
-                    const g = Math.floor(255 * (10 - normalizedValue / 10));
+                    const g = Math.floor(255 * (20 - normalizedValue / 10));
                     const b = 0; 
 
                     return `rgba(${r}, ${g}, ${b}, ${alpha})`; 
                 },
                 borderWidth: 1,
-                hoverBackgroundColor: 'yellow',
                 hoverBorderColor: 'yellowgreen',
                 width(c) {
                     const a = c.chart.chartArea || {};
@@ -190,7 +254,10 @@ class HeatMap {
             options: options
         };
 
-        new Chart(ctx, config);
+        this.chartInstance = new Chart(ctx, config);
+
+        this.containerDiv.querySelector('#min-value-display').textContent = `Min: ${this.minValue}h`;
+        this.containerDiv.querySelector('#max-value-display').textContent = `Max: ${this.maxValue}h`;
     }
 }
 
@@ -216,7 +283,7 @@ class WorkspaceDashboard {
     }
     loadProductionPlanHeatmap() {
         if (!this.productionPlanHeatMap) {
-            this.productionPlanHeatMap = new HeatMap(this.productionPlan, 'production-plan-heatmap');
+            this.productionPlanHeatMap = new HeatMap(this.productionPlan, this.workspaceSettings, 'production-plan-heatmap-container');
             this.productionPlanHeatMap.initialize();
         } else {
             this.productionPlanHeatMap.loadHeatMap();
@@ -224,7 +291,7 @@ class WorkspaceDashboard {
     }
     loadWorkspaceHeatmap() {
         if (!this.workspaceHeatmap) {
-            this.workspaceHeatmap = new HeatMap(this.workspace, 'workspace-heatmap');
+            this.workspaceHeatmap = new HeatMap(this.workspace, this.workspaceSettings, 'workspace-heatmap-container');
             this.workspaceHeatmap.initialize();
         } else {
             this.workspaceHeatmap.loadHeatMap();
