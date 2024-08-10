@@ -108,7 +108,35 @@ function getAssemblyCompletionTime(assembly) {
     return totalTime / (1000 * 60 * 60 * 24);
 }
 
-function getProcessCount(job, tagName) {
+function getPartProcessExpectedTimeToComplete(job, tagName){
+    let processDuration = 0;
+
+    function getLaserCutPartsDuration(parts) {
+        for (const part of parts) {
+            if (part.flow_tag_data && part.flow_tag.tags.includes(tagName)) {
+                processDuration += part.flow_tag_data[tagName]["expected_time_to_complete"];                
+            }
+        }
+    }
+
+    function getAssemblies(assemblies) {
+        for (const asm of assemblies) {
+            if (asm.laser_cut_parts) {
+                getLaserCutPartsDuration(asm.laser_cut_parts);
+            }
+            if (asm.sub_assemblies && asm.sub_assemblies.length > 0) {
+                getAssemblies(asm.sub_assemblies);
+            }
+        }
+    }
+
+    if (job.assemblies) {
+        getAssemblies(job.assemblies);
+    }
+    return processDuration;
+}
+
+function getPartProcessCountByTag(job, tagName) {
     let processCount = 0;
 
     function countLaserCutParts(parts) {
@@ -121,8 +149,6 @@ function getProcessCount(job, tagName) {
     }
 
     function countAssemblies(assemblies) {
-        console.log(assemblies);
-
         for (const asm of assemblies) {
             if (asm.laser_cut_parts) {
                 countLaserCutParts(asm.laser_cut_parts);
@@ -137,6 +163,50 @@ function getProcessCount(job, tagName) {
         countAssemblies(job.assemblies);
     }
 
+    return processCount;
+}
+
+function getAssemblyProcessExpectedTimeToComplete(job, tagName){
+    let processDuration = 0;
+
+    function getAssemblies(assemblies) {
+        for (const asm of assemblies) {
+            if (asm.assembly_data.flow_tag_data && asm.assembly_data.flow_tag.tags.includes(tagName)) {
+                processDuration += asm.assembly_data.flow_tag_data[tagName]["expected_time_to_complete"];                
+            }
+            if (asm.sub_assemblies && asm.sub_assemblies.length > 0) {
+                getAssemblies(asm.sub_assemblies);
+            }
+        }
+    }
+
+    if (job.assemblies) {
+        getAssemblies(job.assemblies);
+    }    
+    console.log(tagName, processDuration);
+    
+    return processDuration;
+}
+function getAssemblyProcessCountByTag(job, tagName) {
+    let processCount = 0;
+
+    function countAssemblies(assemblies) {
+        for (const asm of assemblies) {
+            if (asm.assembly_data.flow_tag && asm.assembly_data.flow_tag.tags.includes(tagName)) {
+                processCount++;
+                console.log("im here");
+                
+            }
+            if (asm.sub_assemblies && asm.sub_assemblies.length > 0) {
+                countAssemblies(asm.sub_assemblies);
+            }
+        }
+    }
+
+    if (job.assemblies) {
+        countAssemblies(job.assemblies);
+    }
+    console.log(tagName, processCount);
     return processCount;
 }
 
@@ -176,7 +246,8 @@ function getAssemblyCount(job) {
     if (job.assemblies && job.assemblies.length > 0) {
         countAssemblies(job.assemblies);
     }
-
+    console.log(assemblyCount);
+    
     return assemblyCount;
 }
 
@@ -187,7 +258,10 @@ export {
     getAssemblyCompletionProgress,
     getJobCompletionProgress,
     getAssemblyCompletionTime,
-    getProcessCount,
+    getPartProcessCountByTag,
     getAssemblyCount,
     getPartsCount,
+    getAssemblyProcessCountByTag,
+    getPartProcessExpectedTimeToComplete,
+    getAssemblyProcessExpectedTimeToComplete,
 };

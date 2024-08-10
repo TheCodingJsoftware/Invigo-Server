@@ -5,8 +5,8 @@ import {
     getAssemblyCompletionProgress,
     getJobCompletionProgress,
     getAssemblyCompletionTime,
-    getProcessCount,
-    getAssemblyCount,
+    getPartProcessCountByTag,
+    getAssemblyProcessCount,
     getPartsCount,
 } from './utils.js';
 

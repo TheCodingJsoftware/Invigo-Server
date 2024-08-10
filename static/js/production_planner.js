@@ -5,8 +5,11 @@ import {
     getAssemblyCompletionProgress,
     getJobCompletionProgress,
     getAssemblyCompletionTime,
-    getProcessCount,
-    getAssemblyCount
+    getPartProcessCountByTag,
+    getAssemblyCount,
+    getAssemblyProcessCountByTag,
+    getPartProcessExpectedTimeToComplete,
+    getAssemblyProcessExpectedTimeToComplete,
 } from './utils.js';
 
 function goToMainUrl() {
@@ -37,27 +40,50 @@ class GanttGraph {
         return this.idCounter++;
     }
 
+    parseDateTime(dateTimeString) {
+        const [datePart, timePart, period] = dateTimeString.split(' ');
+        const [year, month, day] = datePart.split('-').map(Number);
+        let [hours, minutes] = timePart.split(':').map(Number);
+    
+        if (period === 'PM' && hours !== 12) {
+            hours += 12;
+        } else if (period === 'AM' && hours === 12) {
+            hours = 0;
+        }
+    
+        return new Date(year, month - 1, day, hours, minutes);
+    }
+    
     loadJobs() {
         this.productionPlan.jobs.forEach(job => {
-            const startDateParts = job.job_data.starting_date.split('-');
-            const endDateParts = job.job_data.ending_date.split('-');
-            const startDate = new Date(startDateParts[0], startDateParts[1] - 1, startDateParts[2]);
-            const endDate = new Date(endDateParts[0], endDateParts[1] - 1, endDateParts[2]);
+            // const startDate = this.parseDateTime(job.job_data.starting_date);
+            // const endDate = this.parseDateTime(job.job_data.ending_date);
+            
+            const startDate = new Date(job.job_data.starting_date);
+            const endDate = new Date(job.job_data.ending_date);
 
             const jobId = this.generateId();
+            var job_color = 'gray';
+            
+            if (job.job_data.moved_job_to_workspace){
+                job_color = 'gray';
+            } else {
+                job_color = job.job_data.color
+            }
 
             this.data.push({
                 id: jobId,
                 text: job.job_data.name,
                 start_date: startDate,
-                duration: Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24)), // Add 1 to account for inclusive end date
+                duration: (endDate - startDate) / (1000 * 60 * 60 * 24), // Add 1 to account for inclusive end date
                 open: false,
                 parent: 0,
-                progress: getAssemblyCount(job),
-                color: job.job_data.color,
+                progress: 1, // Otherwise the assembly count doesn't show
+                assembly_count: getAssemblyCount(job),
+                color: job_color,
                 type: "project",
             });
-            this.loadProcessTimeline(job, jobId, job.job_data.flowtag_timeline, jobId, job.job_data.color);
+            this.loadProcessTimeline(job, jobId, job.job_data.flowtag_timeline, jobId, job_color);
         });
     }
 
@@ -81,23 +107,30 @@ class GanttGraph {
             if (flowtag_timeline.hasOwnProperty(tagName)) {
                 const tag = flowtag_timeline[tagName];
 
-                const startDateParts = tag.starting_date.split('-');
-                const endDateParts = tag.ending_date.split('-');
-                const startDate = new Date(startDateParts[0], startDateParts[1] - 1, startDateParts[2]);
-                const endDate = new Date(endDateParts[0], endDateParts[1] - 1, endDateParts[2]);
+                // const startDate = this.parseDateTime(tag.starting_date);
+                // const endDate = this.parseDateTime(tag.ending_date);
+                
+                const startDate = new Date(tag.starting_date);
+                const endDate = new Date(tag.ending_date);
 
                 const tagId = this.generateId();
+
+                const duration_days = (endDate - startDate) / (1000 * 60 * 60 * 24)
 
                 this.data.push({
                     id: tagId,
                     text: tagName,
                     start_date: startDate,
-                    duration: Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24)), // Add 1 to account for inclusive end date
+                    duration: duration_days, // Add 1 to account for inclusive end date
                     parent: parentId,
-                    progress: getProcessCount(job, tagName),
+                    part_count: getPartProcessCountByTag(job, tagName),
+                    assembly_count: getAssemblyProcessCountByTag(job, tagName),
                     user: this.getIndexOfProcessTag(tagName),
                     color: color,
+                    progress: 1, // Otherwise the parts count doesn't show
                     type: gantt.config.types.task,
+                    part_expected_time_to_complete: getPartProcessExpectedTimeToComplete(job, tagName),
+                    assembly_expected_time_to_complete: getAssemblyProcessExpectedTimeToComplete(job, tagName),
                 });
 
                 if (first) {
@@ -127,9 +160,6 @@ class GanttGraph {
 
         // Create link from the finish of the last tag to the finish of the job
         if (lastTag) {
-            const jobEndDateParts = job.job_data.ending_date.split('-');
-            const jobEndDate = new Date(jobEndDateParts[0], jobEndDateParts[1] - 1, jobEndDateParts[2]);
-
             this.links.push({
                 id: parentId,
                 source: lastTag.id,
@@ -158,12 +188,18 @@ class GanttGraph {
         gantt.config.autoscroll = true;
         gantt.config.multiselect = true;
         gantt.config.show_links = true;
-        gantt.config.date_format = "%Y-%m-%d";
+        gantt.config.drag_project = true;
+        gantt.config.date_format = "%Y-%m-%d %h:%i %A";
+
         gantt.templates.progress_text = function (start, end, task) {
-            if (task.type === "project") {
-                return "<span style='text-align:left;'>" + Math.round(task.progress) + (Math.round(task.progress) === 1 ? " assembly" : " assemblies") + "</span>";
-            } else {
-                return "<span style='text-align:left;'>" + Math.round(task.progress) + (Math.round(task.progress) === 1 ? " part" : " parts") + "</span>";
+            console.log(task.type);
+            
+            if (task.assembly_count > 0 && task.part_count > 0) {
+                return "<span style='text-align:left;'>" + Math.round(task.part_count) + (Math.round(task.part_count) === 1 ? " part" : " parts") + Math.round(task.assembly_count) + (Math.round(task.assembly_count) === 1 ? " assembly" : " assemblies") + "</span>";
+            }else if (task.assembly_count > 0) {
+                return "<span style='text-align:left;'>" + Math.round(task.assembly_count) + (Math.round(task.assembly_count) === 1 ? " assembly" : " assemblies") + "</span>";
+            } else if (task.part_count > 0) {
+                return "<span style='text-align:left;'>" + Math.round(task.part_count) + (Math.round(task.part_count) === 1 ? " part" : " parts") + "</span>";
             }
         };
 
@@ -181,6 +217,7 @@ class GanttGraph {
                     break;
             }
         };
+
         function linkTypeToString(linkType) {
             switch (linkType) {
                 case gantt.config.links.start_to_start:
@@ -195,6 +232,7 @@ class GanttGraph {
                     return ""
             }
         }
+
         gantt.attachEvent("onGanttReady", function () {
             var tooltips = gantt.ext.tooltips;
 
@@ -207,14 +245,21 @@ class GanttGraph {
                     var owner = store.getItem(assignment.resource_id)
                     owners.push(owner.text);
                 });
-                if (task.type === "project") {
-                    return "<b>Job:</b> " + task.text + "<br/>" +
-                        "<b>Assembly count:</b> " + task.progress + "<br/>" +
+                if (task.assembly_count > 0 && task.part_count > 0){
+                    return "<b>Process:</b> " + task.text + "<br/>" +
+                        "<b>Assembly count:</b> " + task.assembly_count + "<br/>" +
+                        "<b>Part count:</b> " + task.part_count + "<br/>" +
                         "<b>Start date:</b> " + gantt.templates.tooltip_date_format(start) +
                         "<br/><b>End date:</b> " + gantt.templates.tooltip_date_format(end);
-                } else {
+                }
+                else if (task.assembly_count > 0) {
+                    return "<b>Job:</b> " + task.text + "<br/>" +
+                        "<b>Assembly count:</b> " + task.assembly_count + "<br/>" +
+                        "<b>Start date:</b> " + gantt.templates.tooltip_date_format(start) +
+                        "<br/><b>End date:</b> " + gantt.templates.tooltip_date_format(end);
+                } else if (task.part_count > 0) {
                     return "<b>Process:</b> " + task.text + "<br/>" +
-                        "<b>Part count:</b> " + task.progress + "<br/>" +
+                        "<b>Part count:</b> " + task.part_count + "<br/>" +
                         "<b>Start date:</b> " + gantt.templates.tooltip_date_format(start) +
                         "<br/><b>End date:</b> " + gantt.templates.tooltip_date_format(end);
                 }
@@ -305,7 +350,6 @@ class GanttGraph {
             });
         });
 
-
         function getResourceAssignments(resource, store) {
             var assignments = [];
             if (store.hasChild(resource.id)) {
@@ -321,13 +365,12 @@ class GanttGraph {
         function getTasksLoad(tasks, resourceId) {
             var totalLoad = 0;
             tasks.forEach(function (task) {
-                var assignments = gantt.getResourceAssignments(resourceId, task.id);
-                totalLoad += assignments[0].value;
+                totalLoad += 8;
             });
             return totalLoad;
         }
-        gantt.templates.resource_cell_class = function (start_date, end_date, resource, tasks) {
 
+        gantt.templates.resource_cell_class = function (start_date, end_date, resource, tasks) {
             var totalLoad = getTasksLoad(tasks, resource.id);
             var css = [];
             css.push("resource_marker");
@@ -338,6 +381,7 @@ class GanttGraph {
             }
             return css.join(" ");
         };
+
         gantt.templates.resource_cell_value = function (start_date, end_date, resource, tasks) {
 
             var totalLoad = getTasksLoad(tasks, resource.id);
@@ -352,8 +396,6 @@ class GanttGraph {
 
             return "<div " + tasksIds + " " + resourceId + " " + dateAttr + ">" + totalLoad + "</div>";
         };
-
-
 
         gantt.templates.leftside_text = function (start, end, task) {
             var state = gantt.getState(),
@@ -381,6 +423,10 @@ class GanttGraph {
             return "";
         };
 
+        function roundToTwo(num) {
+            return +(Math.round(num + "e+2")  + "e-2");
+        }
+
         function calculateResourceLoad(tasks, scale) {
             var step = scale.unit;
             var timegrid = {};
@@ -406,7 +452,15 @@ class GanttGraph {
                     if (!timegrid[timestamp])
                         timegrid[timestamp] = 0;
 
-                    timegrid[timestamp] += 1;
+                    const hoursToComplete = ((task.part_expected_time_to_complete + task.assembly_expected_time_to_complete) / 3600); // Convert seconds to hours
+                    const durationInHours = task.duration; // Convert days to hours
+
+                    if (durationInHours <= 0){
+                        durationInHours = 1;
+                    }
+                    
+                    timegrid[timestamp] += roundToTwo((hoursToComplete / durationInHours)); // Calculate and round to 1 decimal
+                    
                 }
             }
 
@@ -430,6 +484,7 @@ class GanttGraph {
                 gantt.unselectTask(item.id);
             });
         };
+
         var renderResourceLine = function (resource, timeline) {
             var tasks = gantt.getTaskBy("user", resource.id);
             var timetable = calculateResourceLoad(tasks, timeline.getScale());
@@ -439,7 +494,7 @@ class GanttGraph {
 
             function getColor(value, total) {
                 // Calculate the relative position between green and red
-                var ratio = value / total;
+                var ratio = value / 4;
                 var red = Math.min(255, Math.floor(255 * ratio));
                 var green = Math.min(255, Math.floor(255 * (1 - ratio)));
 
@@ -474,7 +529,6 @@ class GanttGraph {
             }
             return row;
         };
-
 
         function onDragEnd(startPoint, endPoint, startDate, endDate, tasksBetweenDates, tasksInRows) {
             var mode = document.querySelector("input[name=selectMode]:checked");
@@ -554,7 +608,7 @@ class GanttGraph {
                     template: function (resource) {
                         var tasks = gantt.getTaskBy("user", resource.id);
 
-                        var totalProcessCount = 0;
+                        var totalPartCount = 0;
                         var visibleTasks = tasks.filter(task => {
                             const taskStart = new Date(task.start_date);
                             const taskEnd = new Date(task.end_date);
@@ -564,10 +618,34 @@ class GanttGraph {
                         });
 
                         for (var i = 0; i < visibleTasks.length; i++) {
-                            totalProcessCount += visibleTasks[i].progress;
+                            totalPartCount += visibleTasks[i].part_count;
                         }
 
-                        return (totalProcessCount || 0) + "";
+                        return (totalPartCount || 0) + "";
+                    }
+                },
+                {
+                    name: "workload",
+                    label: "Assemblies",
+                    width: 150,
+                    align: "center",
+                    template: function (resource) {
+                        var tasks = gantt.getTaskBy("user", resource.id);
+
+                        var totalAssemblyCount = 0;
+                        var visibleTasks = tasks.filter(task => {
+                            const taskStart = new Date(task.start_date);
+                            const taskEnd = new Date(task.end_date);
+                            const visibleStart = gantt.getState().min_date;
+                            const visibleEnd = gantt.getState().max_date;
+                            return taskEnd >= visibleStart && taskStart <= visibleEnd;
+                        });
+
+                        for (var i = 0; i < visibleTasks.length; i++) {
+                            totalAssemblyCount += visibleTasks[i].assembly_count;
+                        }
+
+                        return (totalAssemblyCount || 0) + "";
                     }
                 },
                 {
@@ -582,14 +660,14 @@ class GanttGraph {
                 },
                 {
                     name: "workload",
-                    label: "Days",
-                    width: 50,
+                    label: "Workload",
+                    width: 150,
                     resize: true,
-                    align: "center",
+                    align: "left",
                     template: function (resource) {
                         var tasks = gantt.getTaskBy("user", resource.id);
-
-                        var totalDuration = 0;
+                    
+                        var totalDurationInSeconds = 0;
                         var visibleTasks = tasks.filter(task => {
                             const taskStart = new Date(task.start_date);
                             const taskEnd = new Date(task.end_date);
@@ -597,12 +675,17 @@ class GanttGraph {
                             const visibleEnd = gantt.getState().max_date;
                             return taskEnd >= visibleStart && taskStart <= visibleEnd;
                         });
-
+                    
                         for (var i = 0; i < visibleTasks.length; i++) {
-                            totalDuration += visibleTasks[i].duration;
+                            totalDurationInSeconds += visibleTasks[i].part_expected_time_to_complete + visibleTasks[i].assembly_expected_time_to_complete; 
                         }
-
-                        return (totalDuration || 0) + "";
+                    
+                        // Convert total duration from seconds to hours, minutes, seconds
+                        const hours = Math.floor(totalDurationInSeconds / 3600);
+                        const minutes = Math.floor((totalDurationInSeconds % 3600) / 60);
+                        const seconds = Math.floor(totalDurationInSeconds % 60);
+                    
+                        return `${hours}h ${minutes}m ${seconds}s`;
                     }
                 },
                 {
@@ -664,7 +747,7 @@ class GanttGraph {
                     config: resourcePanelConfig,
                     height: 400, // Adjust the height of the resource panel as needed
                     cols: [{
-                            width: 350,
+                            width: 400,
                             min_width: 200,
                             view: "grid",
                             id: "resourceGrid",
@@ -876,12 +959,15 @@ class GanttGraph {
         gantt.attachEvent("onAfterTaskUpdate", (id, item) => {
             this.handleUpdate(item);
         });
+
         gantt.attachEvent("onColumnResizeStart", function (index, column) {
             return true;
         });
+
         gantt.attachEvent("onColumnResize", function (index, column, new_width) {
             document.getElementById("width_placeholder").innerText = new_width
         });
+
         gantt.attachEvent("onColumnResizeEnd", function (index, column, new_width) {
             return true;
         });
@@ -1005,7 +1091,6 @@ class GanttGraph {
             switch(id) {
                 case "open_printout":
                     var task = gantt.getTask(gantt.contextID); // Assuming gantt.contextID is set correctly in onContextMenu
-                    console.log(task);
 
                     const findMatchingJob = (task) => {
                         var counter = { id: 1 };
@@ -1074,7 +1159,16 @@ class GanttGraph {
         const year = d.getFullYear();
         const month = ("0" + (d.getMonth() + 1)).slice(-2);
         const day = ("0" + d.getDate()).slice(-2);
-        return `${year}-${month}-${day}`;
+    
+        let hours = d.getHours();
+        const minutes = ("0" + d.getMinutes()).slice(-2);
+        const period = hours >= 12 ? 'PM' : 'AM';
+    
+        // Convert hours to 12-hour format
+        hours = hours % 12;
+        hours = hours ? hours : 12; // If hours is 0, set it to 12
+    
+        return `${year}-${month}-${day} ${hours}:${minutes} ${period}`;
     }
 
     updateJobTimelineBasedOnTags(job) {
@@ -1083,11 +1177,9 @@ class GanttGraph {
 
         for (const tagName in job.job_data.flowtag_timeline) {
             const tag = job.job_data.flowtag_timeline[tagName];
-            const startDateParts = tag.starting_date.split('-');
-            const endDateParts = tag.ending_date.split('-');
 
-            const tagStartDate = new Date(startDateParts[0], startDateParts[1] - 1, startDateParts[2]);
-            const tagEndDate = new Date(endDateParts[0], endDateParts[1] - 1, endDateParts[2]);
+            const tagStartDate = new Date(tag.starting_date);
+            const tagEndDate = new Date(tag.ending_date);
 
             if (!earliestDate || tagStartDate < earliestDate) {
                 earliestDate = tagStartDate;
