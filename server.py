@@ -23,7 +23,7 @@ import schedule
 import tornado.ioloop
 import tornado.web
 import tornado.websocket
-from tornado.ioloop import IOLoop
+from tornado.ioloop import IOLoop, PeriodicCallback
 from ansi2html import Ansi2HTMLConverter
 from markupsafe import Markup
 from natsort import natsorted
@@ -1817,16 +1817,31 @@ def schedule_thread():
         time.sleep(5)
 
 
+def schedule_daily_task_at(hour, minute, task):
+    now = datetime.now()
+    next_run = now.replace(hour=hour, minute=minute, second=0, microsecond=0)
+    if next_run < now:
+        next_run += timedelta(days=1)
+    delay = (next_run - now).total_seconds()
+
+    IOLoop.current().call_later(delay, task)
+    IOLoop.current().call_later(delay + 86400, lambda: schedule_daily_task_at(hour, minute, task))  # Reschedule for the next day
+
+
 if __name__ == "__main__":
     coloredlogs.install(level="INFO")  # Enable colored logs
     sys.stdout = StringIO()
 
+    # Does not need to be thread safe
     schedule.every().monday.at("04:00").do(partial(generate_sheet_report, connected_clients))
     schedule.every().hour.do(hourly_backup_inventory_files)
-    schedule.every().minute.do(check_if_jobs_are_complete)
     schedule.every().day.at("04:00").do(daily_backup_inventory_files)
-    schedule.every().day.at("04:00").do(check_production_plan_for_jobs)
     schedule.every().week.do(weekly_backup_inventory_files)
+
+    # For thread safety
+    schedule_daily_task_at(4, 0, check_production_plan_for_jobs)
+    periodic_callback = PeriodicCallback(check_if_jobs_are_complete, 60000)  # 60000 ms = 1 minute
+    periodic_callback.start()
 
     thread = threading.Thread(target=schedule_thread)
     thread.start()
@@ -1913,3 +1928,4 @@ if __name__ == "__main__":
     app.listen(80)
     CustomPrint.print("INFO - Invigo server started")
     tornado.ioloop.IOLoop.current().start()
+
