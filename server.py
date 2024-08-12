@@ -996,12 +996,12 @@ class AddJobToProductionPlannerHandler(tornado.web.RequestHandler):
                 data = msgspec.json.decode(file.read())
                 job = Job(data, self.job_manager)
                 self.production_plan.add_job(job)
-            print(job_path, json_file_path)
+                self.production_plan.save()
+
             signal_clients_for_changes(None, [f"{self.production_plan.filename}.json"], "web")
 
             self.write({"status": "success", "message": f"Job added successfully: {job.name}"})
             self.set_status(200)
-
         except Exception as e:
             self.write({"status": "error", "message": str(e)})
             self.set_status(500)
