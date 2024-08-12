@@ -1266,7 +1266,6 @@ class WorkspaceScheduler {
     constructor() {
         this.productionPlan = null;
         this.workspaceSettings = null;
-        this.allAssemblies = null;
         this.socket = null;
         this.gnattGraph = null;
     }
@@ -1284,18 +1283,10 @@ class WorkspaceScheduler {
         this.productionPlan = await this.loadProductionPlan();
         this.workspaceSettings = await this.loadWorkspaceSettings();
         if (this.productionPlan && this.workspaceSettings) {
-            this.allAssemblies = this.loadAllAssemblies();
-            this.ganttGraph.jobs = this.productionPlan.jobs
+            this.ganttGraph.workspaceSettings = this.workspaceSettings;
+            this.ganttGraph.productionPlan = this.productionPlan;
             this.loadGanttGraph();
         }
-    }
-
-    loadAllAssemblies() {
-        let allAssemblies = [];
-        this.productionPlan.jobs.forEach(job => {
-            allAssemblies = allAssemblies.concat(getAssemblies(job));
-        });
-        return allAssemblies;
     }
 
     loadGanttGraph() {
@@ -1360,7 +1351,7 @@ class WorkspaceScheduler {
         this.socket = new WebSocket(`ws://${window.location.host}/ws/web`);
         this.socket.onmessage = (event) => {
             const message = JSON.parse(event.data);
-            if (message.action === 'download' && message.files.includes('production_plan.json')) {
+            if (message.action === 'download') {
                 console.log('Workspace update received. Reloading...');
                 this.loadProductionPlan().then(() => {
                     this.reloadView();

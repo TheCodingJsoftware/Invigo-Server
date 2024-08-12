@@ -480,7 +480,7 @@ class ProductionPlannerFileUploadHandler(tornado.web.RequestHandler):
                 f'INFO - Web {self.request.remote_ip} uploaded "{filename}"',
                 connected_clients=connected_clients,
             )
-            signal_clients_for_changes(None, [filename], client_type='web')
+            signal_clients_for_changes(self.request.remote_ip, [filename], client_type='web')
         else:
             self.write("No file received.")
             CustomPrint.print(
