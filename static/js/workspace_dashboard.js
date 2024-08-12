@@ -254,8 +254,8 @@ class HeatMap {
 
         this.chartInstance = new Chart(ctx, config);
 
-        this.containerDiv.querySelector('#min-value-display').textContent = `Min: ${this.minValue}h`;
-        this.containerDiv.querySelector('#max-value-display').textContent = `Max: ${this.maxValue}h`;
+        this.containerDiv.querySelector('#min-value-display').textContent = ``;
+        this.containerDiv.querySelector('#max-value-display').textContent = `Max: ${this.maxValue}m`;
     }
 }
 
