@@ -23,6 +23,7 @@ import schedule
 import tornado.ioloop
 import tornado.web
 import tornado.websocket
+from tornado.ioloop import IOLoop
 from ansi2html import Ansi2HTMLConverter
 from markupsafe import Markup
 from natsort import natsorted
@@ -1672,6 +1673,17 @@ def signal_clients_for_changes(client_to_ignore, changed_files: list[str], clien
         f"INFO - Signaling {len(connected_clients)} {client_type} clients",
         connected_clients=connected_clients,
     )
+
+    def send_message(client: tornado.websocket.WebSocketHandler, message):
+        if client.ws_connection and client.ws_connection.stream.socket:
+            client.write_message(message)
+            CustomPrint.print(
+                f"INFO - Signaling {client.request.remote_ip} to download {changed_files}",
+                connected_clients=clients,
+            )
+
+    message = msgspec.json.encode({"action": "download", "files": changed_files})
+
     for client in clients:
         if client.request.remote_ip == client_to_ignore:
             CustomPrint.print(
@@ -1679,14 +1691,9 @@ def signal_clients_for_changes(client_to_ignore, changed_files: list[str], clien
                 connected_clients=clients,
             )
             continue
-        if client.ws_connection and client.ws_connection.stream.socket:
-            message = msgspec.json.encode({"action": "download", "files": changed_files})
-            client.write_message(message)
-            CustomPrint.print(
-                f"INFO - Signaling {client.request.remote_ip} to download {changed_files}",
-                connected_clients=clients,
-            )
 
+        # Schedule the send_message function to run in the IOLoop
+        IOLoop.current().add_callback(send_message, client, message)
 
 def hourly_backup_inventory_files() -> None:
     files_to_backup = os.listdir(f"{os.path.dirname(os.path.realpath(__file__))}/data")
