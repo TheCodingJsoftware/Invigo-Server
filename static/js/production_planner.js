@@ -1210,11 +1210,11 @@ class GanttGraph {
             clearTimeout(this.saveTimer);
         }
         this.saveTimer = setTimeout(() => {
-            this.uploadWorkspace();
+            this.uploadProductionPlan();
         }, this.saveDelay);
     }
 
-    async uploadWorkspace() {
+    async uploadProductionPlan() {
 
         var showSuccessMessage = function () {
             var text = "Production plan saved successfully";
@@ -1383,7 +1383,7 @@ window.addEventListener('load', async function () {
     //     event.preventDefault();
     //     workspaceScheduler.ganttGraph.changeDateRange();
     // };// Initialize flatpickr with a date range picker
-    
+
     flatpickr("#date-range-picker", {
         mode: "range",
         theme: 'dark',
@@ -1460,7 +1460,7 @@ window.addEventListener('load', async function () {
     };
 
     // Initialize with the current month's date range
-    
+
     setTimeout(function () {
         document.querySelectorAll('img').forEach(function (img) {
             img.onerror = function () {
@@ -1471,7 +1471,7 @@ window.addEventListener('load', async function () {
             }
         });
     }, 1000); // 1000 milliseconds = 1 second
-    
+
     try {
         await workspaceScheduler.initialize(); // Wait for initialization to complete
         setThisMonth();

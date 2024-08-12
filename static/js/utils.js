@@ -111,18 +111,12 @@ function getAssemblyCompletionTime(assembly) {
 function getPartProcessExpectedTimeToComplete(job, tagName){
     let processDuration = 0;
 
-    function getLaserCutPartsDuration(parts) {
-        for (const part of parts) {
-            if (part.flow_tag_data && part.flow_tag.tags.includes(tagName)) {
-                processDuration += part.flow_tag_data[tagName]["expected_time_to_complete"];                
-            }
-        }
-    }
-
     function getAssemblies(assemblies) {
         for (const asm of assemblies) {
-            if (asm.laser_cut_parts) {
-                getLaserCutPartsDuration(asm.laser_cut_parts);
+            for (const part of asm.laser_cut_parts) {
+                if (part.flow_tag_data && part.flow_tag.tags.includes(tagName)) {
+                    processDuration += part.flow_tag_data[tagName]["expected_time_to_complete"] * part.quantity * asm.assembly_data.quantity;
+                }
             }
             if (asm.sub_assemblies && asm.sub_assemblies.length > 0) {
                 getAssemblies(asm.sub_assemblies);
@@ -139,19 +133,12 @@ function getPartProcessExpectedTimeToComplete(job, tagName){
 function getPartProcessCountByTag(job, tagName) {
     let processCount = 0;
 
-    function countLaserCutParts(parts) {
-        for (const part of parts) {
-
-            if (part.flow_tag && part.flow_tag.tags.includes(tagName)) {
-                processCount++;
-            }
-        }
-    }
-
     function countAssemblies(assemblies) {
         for (const asm of assemblies) {
-            if (asm.laser_cut_parts) {
-                countLaserCutParts(asm.laser_cut_parts);
+            for (const part of asm.laser_cut_parts) {
+                if (part.flow_tag && part.flow_tag.tags.includes(tagName)) {
+                    processCount += part.quantity * asm.assembly_data.quantity;
+                }
             }
             if (asm.sub_assemblies && asm.sub_assemblies.length > 0) {
                 countAssemblies(asm.sub_assemblies);
@@ -172,7 +159,7 @@ function getAssemblyProcessExpectedTimeToComplete(job, tagName){
     function getAssemblies(assemblies) {
         for (const asm of assemblies) {
             if (asm.assembly_data.flow_tag_data && asm.assembly_data.flow_tag.tags.includes(tagName)) {
-                processDuration += asm.assembly_data.flow_tag_data[tagName]["expected_time_to_complete"];                
+                processDuration += asm.assembly_data.flow_tag_data[tagName]["expected_time_to_complete"] * asm.assembly_data.quantity;
             }
             if (asm.sub_assemblies && asm.sub_assemblies.length > 0) {
                 getAssemblies(asm.sub_assemblies);
@@ -182,9 +169,9 @@ function getAssemblyProcessExpectedTimeToComplete(job, tagName){
 
     if (job.assemblies) {
         getAssemblies(job.assemblies);
-    }    
+    }
     console.log(tagName, processDuration);
-    
+
     return processDuration;
 }
 function getAssemblyProcessCountByTag(job, tagName) {
@@ -193,9 +180,7 @@ function getAssemblyProcessCountByTag(job, tagName) {
     function countAssemblies(assemblies) {
         for (const asm of assemblies) {
             if (asm.assembly_data.flow_tag && asm.assembly_data.flow_tag.tags.includes(tagName)) {
-                processCount++;
-                console.log("im here");
-                
+                processCount += asm.assembly_data.quantity;
             }
             if (asm.sub_assemblies && asm.sub_assemblies.length > 0) {
                 countAssemblies(asm.sub_assemblies);
@@ -206,7 +191,6 @@ function getAssemblyProcessCountByTag(job, tagName) {
     if (job.assemblies) {
         countAssemblies(job.assemblies);
     }
-    console.log(tagName, processCount);
     return processCount;
 }
 
@@ -215,8 +199,8 @@ function getPartsCount(job){
 
     function countAssemblies(assemblies) {
         for (const asm of assemblies) {
-            if (asm.laser_cut_parts) {
-                partsCount += asm.laser_cut_parts.length
+            for (const part of asm.laser_cut_parts) {
+                partsCount += part.quantity * asm.assembly_data.quantity;
             }
             if (asm.sub_assemblies && asm.sub_assemblies.length > 0) {
                 countAssemblies(asm.sub_assemblies);
@@ -236,7 +220,7 @@ function getAssemblyCount(job) {
 
     function countAssemblies(assemblies) {
         for (const assembly of assemblies) {
-            assemblyCount++;
+            assemblyCount += assembly.assembly_data.quantity;
             if (assembly.sub_assemblies && assembly.sub_assemblies.length > 0) {
                 countAssemblies(assembly.sub_assemblies);
             }
@@ -247,7 +231,7 @@ function getAssemblyCount(job) {
         countAssemblies(job.assemblies);
     }
     console.log(assemblyCount);
-    
+
     return assemblyCount;
 }
 

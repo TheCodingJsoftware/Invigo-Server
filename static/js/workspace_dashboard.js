@@ -32,18 +32,16 @@ class HeatMap {
         this.heatmapCanvas = this.containerDiv.querySelector('canvas').id;
         this.processSelections = this.containerDiv.querySelector('select');
         this.populateProcessSelections();
-        
+
         if (this.workspaceSettings.tags.length > 0 && !this.currentProcess) {
             this.processSelections.value = this.workspaceSettings.tags[0];
-            console.log(this.processSelections.value);
-            
-            this.currentProcess = this.workspaceSettings.tags[0];
         }
-        
+
         this.processSelections.addEventListener('change', () => {
             this.currentProcess = this.processSelections.value;
             this.loadHeatMap();
         });
+        this.currentProcess = this.processSelections.value;
         this.loadHeatMap();
     }
 
@@ -60,22 +58,22 @@ class HeatMap {
         const data = [];
         const startDate = new Date(new Date().getFullYear(), 0, 1); // Jan 1st of current year
         const endDate = new Date(new Date().getFullYear(), 11, 31); // Dec 31st of current year
-    
+
         let currentDate = new Date(new Date().setDate(endDate.getDate() - 365));
-    
+
         let minValue = Number.POSITIVE_INFINITY;
         let maxValue = Number.NEGATIVE_INFINITY;
-    
+
         while (currentDate <= endDate) {
             let totalHourCount = 0;
-    
+
             this.productionPlan.jobs.forEach(job => {
                 const jobStartDate = new Date(job.job_data.starting_date);
                 const jobEndDate = new Date(job.job_data.ending_date);
-    
+
                 // If the job is active on the current date
                 if (jobStartDate <= currentDate && currentDate <= jobEndDate) {
-                    const flowtag_timeline = job.job_data.flowtag_timeline; 
+                    const flowtag_timeline = job.job_data.flowtag_timeline;
                     if (flowtag_timeline.hasOwnProperty(this.currentProcess)) {
                         const tag = flowtag_timeline[this.currentProcess];
                         const tagStartDate = new Date(tag.starting_date);
@@ -88,7 +86,7 @@ class HeatMap {
                     }
                 }
             });
-    
+
             // Update min and max values
             if (totalHourCount < minValue) {
                 minValue = totalHourCount;
@@ -96,7 +94,7 @@ class HeatMap {
             if (totalHourCount > maxValue) {
                 maxValue = totalHourCount;
             }
-    
+
             const isoDate = currentDate.toISOString().substr(0, 10);
             data.push({
                 x: isoDate,
@@ -104,17 +102,17 @@ class HeatMap {
                 d: isoDate,
                 v: totalHourCount
             });
-    
+
             // Move to the next day
             currentDate.setDate(currentDate.getDate() + 1);
         }
-    
+
         this.minValue = minValue;
         this.maxValue = maxValue;
-    
+
         return data;
     }
-    
+
 
     loadHeatMap() {
         const ctx = document.getElementById(this.heatmapCanvas).getContext('2d');
@@ -136,13 +134,13 @@ class HeatMap {
 
                     const normalizedValue = Math.min(value, MAX);
 
-                    let alpha = normalizedValue / 60; 
+                    let alpha = normalizedValue / 60;
 
                     const r = Math.floor(255 * (normalizedValue / 10));
                     const g = Math.floor(255 * (20 - normalizedValue / 10));
                     const b = 0;
 
-                    return `rgba(${r}, ${g}, ${b}, ${alpha})`; 
+                    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
                 },
                 borderColor(c) {
                     const value = c.dataset.data[c.dataIndex].v;
@@ -153,9 +151,9 @@ class HeatMap {
 
                     const r = Math.floor(255 * (normalizedValue / 10));
                     const g = Math.floor(255 * (20 - normalizedValue / 10));
-                    const b = 0; 
+                    const b = 0;
 
-                    return `rgba(${r}, ${g}, ${b}, ${alpha})`; 
+                    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
                 },
                 borderWidth: 1,
                 hoverBorderColor: 'yellowgreen',
@@ -166,8 +164,8 @@ class HeatMap {
                 },
                 height(c) {
                     const a = c.chart.chartArea || {};
-                    const numDays = 7; 
-                    return (a.bottom - a.top) / numDays;  
+                    const numDays = 7;
+                    return (a.bottom - a.top) / numDays;
                 }
             }]
         };

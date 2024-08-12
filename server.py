@@ -1721,6 +1721,7 @@ def zip_files(path_to_zip_file: str, files_to_backup: list[str]) -> None:
 
 
 def check_production_plan_for_jobs() -> None:
+    CustomPrint.print("INFO - Checking for jobs to be moved from production plan to workspace", connected_clients=connected_clients)
     jobs_added = False
     components_inventory = ComponentsInventory()
     sheet_settings = SheetSettings()
@@ -1743,7 +1744,6 @@ def check_production_plan_for_jobs() -> None:
 
         if job_starting_date <= today <= job_ending_date:
             jobs_added = True
-            print(f"Job {job.name} moved to workspace.")
             new_job = workspace.add_job(job)
             job.moved_job_to_workspace = True
             new_job.moved_job_to_workspace = True
@@ -1753,11 +1753,18 @@ def check_production_plan_for_jobs() -> None:
                     assembly.timer.start_timer()
             for laser_cut_part in new_job.get_all_laser_cut_parts():
                 laser_cut_part.timer.start_timer()
+
+            CustomPrint.print(f"INFO - Job, '{job.name}' added to workspace from production plan and started timers.", connected_clients=connected_clients)
+
     if jobs_added:
         laser_cut_inventory.save()
         workspace.save()
         production_plan.save()
-        signal_clients_for_changes(client_to_ignore=None, changed_files=[f"{workspace.filename}.json", f"{production_plan.filename}.json", f"{laser_cut_inventory.filename}.json"])
+        CustomPrint.print("INFO - Workspace and production plan updated, signaling clients to update files.", connected_clients=connected_clients)
+        signal_clients_for_changes(client_to_ignore=None, changed_files=[f"{workspace.filename}.json", f"{production_plan.filename}.json"], client_type="web")
+        signal_clients_for_changes(client_to_ignore=None, changed_files=[f"{workspace.filename}.json", f"{laser_cut_inventory.filename}.json"], client_type="software")
+    else:
+        CustomPrint.print("INFO - No jobs were added to workspace from production plan.", connected_clients=connected_clients)
 
 
 def check_if_jobs_are_complete() -> None:
@@ -1770,19 +1777,25 @@ def check_if_jobs_are_complete() -> None:
     job_manager = JobManager(sheet_settings, sheets_inventory, workspace_settings, components_inventory, laser_cut_inventory, paint_inventory, None)
     workspace = Workspace(workspace_settings, job_manager)
     workspace_history = WorkspaceHistory(job_manager)
+
     completed_jobs: list[Job] = []
 
     for job in workspace.jobs:
         if job.is_job_finished():
+            CustomPrint.print(f"INFO - Job, '{job.name}' is finished and will be moved from workspace to workspace history.", connected_clients=connected_clients)
             workspace_history.add_job(job)
+            CustomPrint.print(f"INFO - Added '{job.name}' to workspace history.", connected_clients=connected_clients)
             completed_jobs.append(job)
 
     if completed_jobs:
         for job in completed_jobs:
             workspace.remove_job(job)
+            CustomPrint.print(f"INFO - Removed '{job.name}' from workspace.", connected_clients=connected_clients)
         workspace_history.save()
         workspace.save()
-        signal_clients_for_changes(client_to_ignore=None, changed_files=[f"{workspace.filename}.json", f"{workspace_history.filename}.json", f"{laser_cut_inventory.filename}.json"])
+        CustomPrint.print("INFO - Workspace and workspace history updated, signaling clients to update files.", connected_clients=connected_clients)
+        signal_clients_for_changes(client_to_ignore=None, changed_files=[f"{workspace.filename}.json", f"{workspace_history.filename}.json"], client_type="web")
+        signal_clients_for_changes(client_to_ignore=None, changed_files=[f"{workspace.filename}.json", f"{laser_cut_inventory.filename}.json"], client_type="software")
 
 
 def schedule_thread():
