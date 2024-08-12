@@ -80,37 +80,41 @@ class GanttGraph {
         }
         return index;
     }
-
     loadProcessTimeline(job, jobId, flowtag_timeline, parentId, color) {
         let lastTagId = parentId;
         let first = true;
         let lastTag = null;
 
-        for (const tagName in flowtag_timeline) {
-            if (flowtag_timeline.hasOwnProperty(tagName)) {
-                const tag = flowtag_timeline[tagName];
+        const tag_order = Object.keys(this.workspaceSettings.tags);
+        console.log(tag_order);
+
+
+        // Iterate over the ordered tags
+        for (const orderedTagName of tag_order) {
+            if (flowtag_timeline.hasOwnProperty(orderedTagName)) {
+                const tag = flowtag_timeline[orderedTagName];
 
                 const startDate = new Date(tag.starting_date);
                 const endDate = new Date(tag.ending_date);
 
                 const tagId = this.generateId();
 
-                const duration_days = (endDate - startDate) / (1000 * 60 * 60 * 24)
+                const duration_days = (endDate - startDate) / (1000 * 60 * 60 * 24);
 
                 this.data.push({
                     id: tagId,
-                    text: tagName,
+                    text: orderedTagName,
                     start_date: startDate,
                     duration: duration_days, // Add 1 to account for inclusive end date
                     parent: parentId,
-                    part_count: getPartProcessCountByTag(job, tagName),
-                    assembly_count: getAssemblyProcessCountByTag(job, tagName),
-                    user: this.getIndexOfProcessTag(tagName),
+                    part_count: getPartProcessCountByTag(job, orderedTagName),
+                    assembly_count: getAssemblyProcessCountByTag(job, orderedTagName),
+                    user: this.getIndexOfProcessTag(orderedTagName),
                     color: color,
                     progress: 1, // Otherwise the parts count doesn't show
                     type: gantt.config.types.task,
-                    part_expected_time_to_complete: getPartProcessExpectedTimeToComplete(job, tagName),
-                    assembly_expected_time_to_complete: getAssemblyProcessExpectedTimeToComplete(job, tagName),
+                    part_expected_time_to_complete: getPartProcessExpectedTimeToComplete(job, orderedTagName),
+                    assembly_expected_time_to_complete: getAssemblyProcessExpectedTimeToComplete(job, orderedTagName),
                 });
 
                 if (first) {
@@ -118,7 +122,7 @@ class GanttGraph {
                         id: tagId,
                         source: lastTagId,
                         target: tagId,
-                        type: "1" // Finish to start. Going to the next process
+                        type: "1", // Finish to start. Going to the next process
                     });
                     first = false;
                 } else {
@@ -126,14 +130,14 @@ class GanttGraph {
                         id: tagId,
                         source: lastTagId,
                         target: tagId,
-                        type: "0" // Start to start. Starting the first process
+                        type: "0", // Start to start. Starting the first process
                     });
                 }
 
                 lastTagId = tagId;
                 lastTag = {
                     id: tagId,
-                    endDate: endDate
+                    endDate: endDate,
                 };
             }
         }
