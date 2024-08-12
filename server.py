@@ -1670,8 +1670,8 @@ def signal_clients_for_changes(client_to_ignore, changed_files: list[str], clien
     clients = connected_clients if client_type == 'software' else web_connected_clients
 
     CustomPrint.print(
-        f"INFO - Signaling {len(connected_clients)} {client_type} clients",
-        connected_clients=connected_clients,
+        f"INFO - Signaling {len(clients)} {client_type} clients",
+        connected_clients=clients,
     )
 
     def send_message(client: tornado.websocket.WebSocketHandler, message):
@@ -1692,8 +1692,14 @@ def signal_clients_for_changes(client_to_ignore, changed_files: list[str], clien
             )
             continue
 
-        # Schedule the send_message function to run in the IOLoop
-        IOLoop.current().add_callback(send_message, client, message)
+        try:
+            # Check if we're inside the Tornado IOLoop
+            IOLoop.current().add_callback(send_message, client, message)
+        except RuntimeError:
+            # We're outside the IOLoop, so we need to run the message sending inside it
+            loop = asyncio.get_event_loop()
+            loop.call_soon_threadsafe(IOLoop.current().add_callback, send_message, client, message)
+
 
 def hourly_backup_inventory_files() -> None:
     files_to_backup = os.listdir(f"{os.path.dirname(os.path.realpath(__file__))}/data")
