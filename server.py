@@ -458,38 +458,29 @@ class FileUploadHandler(tornado.web.RequestHandler):
 class ProductionPlannerFileUploadHandler(tornado.web.RequestHandler):
     async def post(self):
         file_info = self.request.files.get("file")
-        should_signal_connect_clients = False
         if file_info:
             file_data = file_info[0]["body"]
             filename: str = file_info[0]["filename"]
 
-            if filename.lower().endswith(".json"):
-                file_path = f"data/{filename}"
-                lock_path = f"{file_path}.lock"
-                lock = FileLock(lock_path, timeout=10)
+            file_path = f"data/{filename}"
+            lock_path = f"{file_path}.lock"
+            lock = FileLock(lock_path, timeout=10)
 
-                try:
-                    with lock:
-                        with open(file_path, "wb") as file:
-                            file.write(file_data)
-                        threading.Thread(target=update_inventory_file_to_pinecone, args=(filename,)).start()
-                except Timeout:
-                    CustomPrint.print(f'WARN - {self.request.remote_ip} Could not acquire lock for "{filename}".', connected_clients=connected_clients)
-                    self.write(f"Could not acquire lock for {filename}. Try again later.")
-                    return
-
-            elif filename.lower().endswith(".jpeg") or filename.lower().endswith(".jpg") or filename.lower().endswith(".png"):
-                filename = os.path.basename(filename)
-                with open(f"images/{filename}", "wb") as file:
-                    file.write(file_data)
+            try:
+                with lock:
+                    with open(file_path, "wb") as file:
+                        file.write(file_data)
+                    threading.Thread(target=update_inventory_file_to_pinecone, args=(filename,)).start()
+            except Timeout:
+                CustomPrint.print(f'WARN - {self.request.remote_ip} Could not acquire lock for "{filename}".', connected_clients=connected_clients)
+                self.write(f"Could not acquire lock for {filename}. Try again later.")
+                return
 
             CustomPrint.print(
                 f'INFO - Web {self.request.remote_ip} uploaded "{filename}"',
                 connected_clients=connected_clients,
             )
-            should_signal_connect_clients = True
-            if should_signal_connect_clients and filename.lower().endswith(".json"):
-                signal_clients_for_changes(None, [filename], client_type='software')
+            signal_clients_for_changes(None, [filename], client_type='web')
         else:
             self.write("No file received.")
             CustomPrint.print(
