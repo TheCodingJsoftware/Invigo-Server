@@ -13,7 +13,7 @@ from datetime import datetime, timedelta
 from functools import partial
 from io import StringIO
 from pathlib import Path
-from typing import Union
+from typing import Literal, Union
 from urllib.parse import quote
 
 import coloredlogs
@@ -977,6 +977,38 @@ class DownloadJobHandler(tornado.web.RequestHandler):
             self.write("404: File not found")
 
 
+class AddJobToProductionPlannerHandler(tornado.web.RequestHandler):
+    def post(self):
+        try:
+            job_path = self.get_argument('job_path')
+
+            self.components_inventory = ComponentsInventory()
+            self.sheet_settings = SheetSettings()
+            self.workspace_settings = WorkspaceSettings()
+            self.paint_inventory = PaintInventory(self.components_inventory)
+            self.sheets_inventory = SheetsInventory(self.sheet_settings)
+            self.laser_cut_inventory = LaserCutInventory(self.paint_inventory, self.workspace_settings)
+            self.job_manager = JobManager(self.sheet_settings, self.sheets_inventory, self.workspace_settings, self.components_inventory, self.laser_cut_inventory, self.paint_inventory, None)
+            self.workspace = Workspace(self.workspace_settings, self.job_manager)
+            self.production_plan = ProductionPlan(self.workspace_settings, self.job_manager)
+
+            job_path = job_path.replace("\\", "/")
+            json_file_path = os.path.join(job_path, "data.json")
+            with open(json_file_path, "rb") as file:
+                data = msgspec.json.decode(file.read())
+                job = Job(data, self.job_manager)
+                self.production_plan.add_job(job)
+            print(job_path, json_file_path)
+            signal_clients_for_changes(None, [f"{self.production_plan.filename}.json"], "web")
+
+            self.write({"status": "success", "message": f"Job added successfully: {job.name}"})
+            self.set_status(200)
+
+        except Exception as e:
+            self.write({"status": "error", "message": str(e)})
+            self.set_status(500)
+
+
 class UpdateJobSettingsHandler(tornado.web.RequestHandler):
     def post(self):
         folder = self.get_argument("folder")
@@ -1635,7 +1667,7 @@ class InventoryTablesHandler(tornado.web.RequestHandler):
         self.write(rendered_template)
 
 
-def signal_clients_for_changes(client_to_ignore, changed_files: list[str], client_type: str = 'software'):
+def signal_clients_for_changes(client_to_ignore, changed_files: list[str], client_type: Literal["software", "web"] = 'software') -> None:
     clients = connected_clients if client_type == 'software' else web_connected_clients
 
     CustomPrint.print(
@@ -1658,28 +1690,28 @@ def signal_clients_for_changes(client_to_ignore, changed_files: list[str], clien
             )
 
 
-def hourly_backup_inventory_files():
+def hourly_backup_inventory_files() -> None:
     files_to_backup = os.listdir(f"{os.path.dirname(os.path.realpath(__file__))}/data")
     path_to_zip_file: str = f"{os.path.dirname(os.path.realpath(__file__))}/backups/Hourly Backup - {datetime.now().strftime('%I %p')}.zip"
     zip_files(path_to_zip_file, files_to_backup)
     CustomPrint.print("INFO - Hourly backup complete", connected_clients=connected_clients)
 
 
-def daily_backup_inventory_files():
+def daily_backup_inventory_files() -> None:
     files_to_backup = os.listdir(f"{os.path.dirname(os.path.realpath(__file__))}/data")
     path_to_zip_file: str = f"{os.path.dirname(os.path.realpath(__file__))}/backups/Daily Backup - {datetime.now().strftime('%d %B')}.zip"
     zip_files(path_to_zip_file, files_to_backup)
     CustomPrint.print("INFO - Daily backup complete", connected_clients=connected_clients)
 
 
-def weekly_backup_inventory_files():
+def weekly_backup_inventory_files() -> None:
     files_to_backup = os.listdir(f"{os.path.dirname(os.path.realpath(__file__))}/data")
     path_to_zip_file: str = f"{os.path.dirname(os.path.realpath(__file__))}/backups/Weekly Backup - {datetime.now().strftime('%W')}.zip"
     zip_files(path_to_zip_file, files_to_backup)
     CustomPrint.print("INFO - Weekly backup complete", connected_clients=connected_clients)
 
 
-def zip_files(path_to_zip_file: str, files_to_backup: list[str]):
+def zip_files(path_to_zip_file: str, files_to_backup: list[str]) -> None:
     file = zipfile.ZipFile(path_to_zip_file, mode="w")
     for file_path in files_to_backup:
         file.write(
@@ -1690,7 +1722,7 @@ def zip_files(path_to_zip_file: str, files_to_backup: list[str]):
     file.close()
 
 
-def check_production_plan_for_jobs():
+def check_production_plan_for_jobs() -> None:
     jobs_added = False
     components_inventory = ComponentsInventory()
     sheet_settings = SheetSettings()
@@ -1708,8 +1740,8 @@ def check_production_plan_for_jobs():
         if job.moved_job_to_workspace:
             continue
 
-        job_starting_date = datetime.strptime(job.starting_date, "%Y-%m-%d").date()
-        job_ending_date = datetime.strptime(job.ending_date, "%Y-%m-%d").date()
+        job_starting_date = datetime.strptime(job.starting_date, "%Y-%m-%d %I:%M %p").date()
+        job_ending_date = datetime.strptime(job.ending_date, "%Y-%m-%d %I:%M %p").date()
 
         if job_starting_date <= today <= job_ending_date:
             jobs_added = True
@@ -1730,9 +1762,30 @@ def check_production_plan_for_jobs():
         signal_clients_for_changes(client_to_ignore=None, changed_files=[f"{workspace.filename}.json", f"{production_plan.filename}.json", f"{laser_cut_inventory.filename}.json"])
 
 
-def check_if_jobs_complete():
-    # TODO: If jobs are complete then send to workspace archive.
-    pass
+def check_if_jobs_are_complete() -> None:
+    components_inventory = ComponentsInventory()
+    sheet_settings = SheetSettings()
+    workspace_settings = WorkspaceSettings()
+    paint_inventory = PaintInventory(components_inventory)
+    sheets_inventory = SheetsInventory(sheet_settings)
+    laser_cut_inventory = LaserCutInventory(paint_inventory, workspace_settings)
+    job_manager = JobManager(sheet_settings, sheets_inventory, workspace_settings, components_inventory, laser_cut_inventory, paint_inventory, None)
+    workspace = Workspace(workspace_settings, job_manager)
+    workspace_history = WorkspaceHistory(job_manager)
+    completed_jobs: list[Job] = []
+
+    for job in workspace.jobs:
+        if job.is_job_finished():
+            workspace_history.add_job(job)
+            completed_jobs.append(job)
+
+    if completed_jobs:
+        for job in completed_jobs:
+            workspace.remove_job(job)
+        workspace_history.save()
+        workspace.save()
+        signal_clients_for_changes(client_to_ignore=None, changed_files=[f"{workspace.filename}.json", f"{workspace_history.filename}.json", f"{laser_cut_inventory.filename}.json"])
+
 
 def schedule_thread():
     while True:
@@ -1746,7 +1799,7 @@ if __name__ == "__main__":
 
     schedule.every().monday.at("04:00").do(partial(generate_sheet_report, connected_clients))
     schedule.every().hour.do(hourly_backup_inventory_files)
-    schedule.every().minute.do(check_if_jobs_complete)
+    schedule.every().minute.do(check_if_jobs_are_complete)
     schedule.every().day.at("04:00").do(daily_backup_inventory_files)
     schedule.every().day.at("04:00").do(check_production_plan_for_jobs)
     schedule.every().week.do(weekly_backup_inventory_files)
@@ -1801,6 +1854,7 @@ if __name__ == "__main__":
             (r"/update_job_settings", UpdateJobSettingsHandler),
             (r"/delete_job/(.*)", DeleteJobHandler),
             (r"/jobs", JobPrintoutsHandler),
+            (r"/add_job/(.*)", AddJobToProductionPlannerHandler),
             # Dashboard handlers
             (r"/production_planner", ProductionPlannerHandler),
             (r"/workspace_dashboard", WorkspaceDashboardHandler),
