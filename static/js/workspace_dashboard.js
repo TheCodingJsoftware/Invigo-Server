@@ -266,19 +266,33 @@ class WorkspaceDashboard {
         this.productionPlan = null
         this.productionPlanHeatMap = null;
         this.workspaceHeatmap = null;
+        this.socket = null;
     }
 
     async initialize() {
         this.workspace = await this.loadWorkspace();
         this.workspaceSettings = await this.loadWorkspaceSettings();
-        this.productionPlan = await this.loadProductionPlanner();
+        this.productionPlan = await this.loadProductionPlan();
         if (this.workspace && this.workspaceSettings && this.productionPlan) {
             this.loadWorkspaceContents();
-            this.createBasicChart(); // Add this line to create a chart after loading workspace contents
+            this.createBasicChart();
+            this.loadProductionPlanHeatmap();
+            this.loadWorkspaceHeatmap();
+            this.setupWebSocket();
+        }
+    }
+
+    async reloadView() {
+        this.workspace = await this.loadWorkspace();
+        this.workspaceSettings = await this.loadWorkspaceSettings();
+        this.productionPlan = await this.loadProductionPlan();
+        if (this.workspace && this.workspaceSettings && this.productionPlan) {
+            this.createBasicChart();
             this.loadProductionPlanHeatmap();
             this.loadWorkspaceHeatmap();
         }
     }
+
     loadProductionPlanHeatmap() {
         if (!this.productionPlanHeatMap) {
             this.productionPlanHeatMap = new HeatMap(this.productionPlan, this.workspaceSettings, 'production-plan-heatmap-container');
@@ -287,6 +301,7 @@ class WorkspaceDashboard {
             this.productionPlanHeatMap.loadHeatMap();
         }
     }
+
     loadWorkspaceHeatmap() {
         if (!this.workspaceHeatmap) {
             this.workspaceHeatmap = new HeatMap(this.workspace, this.workspaceSettings, 'workspace-heatmap-container');
@@ -295,6 +310,7 @@ class WorkspaceDashboard {
             this.workspaceHeatmap.loadHeatMap();
         }
     }
+
     createBasicChart() {
         const container = document.getElementById('chart-container');
         if (!container) {
@@ -389,7 +405,7 @@ class WorkspaceDashboard {
         }
     }
 
-    async loadProductionPlanner() {
+    async loadProductionPlan() {
         try {
             const response = await fetch('/data/production_plan.json');
             if (!response.ok) {
@@ -401,6 +417,19 @@ class WorkspaceDashboard {
             console.error('Failed to load workspace settings:', error);
             return null;
         }
+    }
+
+    setupWebSocket() {
+        this.socket = new WebSocket(`ws://${window.location.host}/ws/web`);
+        this.socket.onmessage = (event) => {
+            const message = JSON.parse(event.data);
+            if (message.action === 'download' && message.files.includes('production_plan.json')) {
+                console.log('Workspace update received. Reloading...');
+                this.loadProductionPlan().then(() => {
+                    this.reloadView();
+                });
+            }
+        };
     }
 }
 
