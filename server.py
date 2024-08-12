@@ -978,10 +978,8 @@ class DownloadJobHandler(tornado.web.RequestHandler):
 
 
 class AddJobToProductionPlannerHandler(tornado.web.RequestHandler):
-    def post(self):
+    def post(self, job_path: str):
         try:
-            job_path = self.get_argument('job_path')
-
             self.components_inventory = ComponentsInventory()
             self.sheet_settings = SheetSettings()
             self.workspace_settings = WorkspaceSettings()
