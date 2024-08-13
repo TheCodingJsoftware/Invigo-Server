@@ -1651,9 +1651,25 @@ class InventoryTablesHandler(tornado.web.RequestHandler):
         laser_cut_inventory = LaserCutInventory(paint_inventory, workspace_settings)
         sheets_inventory = SheetsInventory(sheet_settings)
         if inventory_type == "components_inventory":
-            data = [{"part_number": component.part_number, **component.to_dict()} for component in components_inventory.get_components_by_category(category)]
+            data = [
+                {
+                    "name": component.part_name,
+                    "quantity": component.quantity,
+                    "part_number": component.part_number,
+                } for component in components_inventory.get_components_by_category(category)
+            ]
         elif inventory_type == "laser_cut_inventory":
-            data = [{"name": laser_cut_part.name, **laser_cut_part.to_dict()} for laser_cut_part in laser_cut_inventory.get_laser_cut_parts_by_category(category)]
+            data = [
+                {
+                    "name": laser_cut_part.name,
+                    "quantity": laser_cut_part.quantity,
+                    "part_dim": laser_cut_part.part_dim,
+                    "thickness": laser_cut_part.gauge,
+                    "material": laser_cut_part.material,
+                    "weight": laser_cut_part.weight,
+                    "surface_area": laser_cut_part.surface_area,
+                } for laser_cut_part in laser_cut_inventory.get_laser_cut_parts_by_category(category)
+            ]
         elif inventory_type == "paint_inventory":
             if category == "primer":
                 data = [{"name": primer.name, **primer.to_dict()} for primer in paint_inventory.primers]
@@ -1665,7 +1681,14 @@ class InventoryTablesHandler(tornado.web.RequestHandler):
             if category == "price_per_pound":
                 data = [{material: sheet_settings.get_price_per_pound(material) for material in sheet_settings.get_materials()}]
         elif inventory_type == "sheets_inventory":
-            data = [{"name": sheet.get_name(), **sheet.to_dict()} for sheet in sheets_inventory.get_sheets_by_category(category)]
+            data = [
+                {
+                    "name": sheet.get_name(),
+                    "quantity": sheet.quantity,
+                    "thickness": sheet.thickness,
+                    "material": sheet.material,
+                } for sheet in sheets_inventory.get_sheets_by_category(category)
+            ]
         template = env.get_template("inventory_table.html")
         rendered_template = template.render(
             inventory_type=inventory_type.replace("_", " ").title(),
