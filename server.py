@@ -1653,7 +1653,7 @@ class InventoryTablesHandler(tornado.web.RequestHandler):
         if inventory_type == "components_inventory":
             data = [
                 {
-                    "name": component.part_name,
+                    "part_name": component.part_name,
                     "quantity": component.quantity,
                     "price": component.price,
                     "use_exchange_rate": component.use_exchange_rate,
@@ -1663,7 +1663,7 @@ class InventoryTablesHandler(tornado.web.RequestHandler):
         elif inventory_type == "laser_cut_inventory":
             data = [
                 {
-                    "name": laser_cut_part.name,
+                    "part_name": laser_cut_part.name,
                     "quantity": laser_cut_part.quantity,
                     "price": round(laser_cut_part.price,2),
                     "part_dim": laser_cut_part.part_dim,
