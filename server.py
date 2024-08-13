@@ -1656,6 +1656,7 @@ class InventoryTablesHandler(tornado.web.RequestHandler):
                     "name": component.part_name,
                     "quantity": component.quantity,
                     "price": component.price,
+                    "use_exchange_rate": component.use_exchange_rate,
                     "part_number": component.part_number,
                 } for component in components_inventory.get_components_by_category(category)
             ]
