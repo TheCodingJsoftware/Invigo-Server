@@ -259,23 +259,268 @@ class HeatMap {
     }
 }
 
+class AssembliesInProcessChart {
+    constructor(workspace, workspaceArchives, workspaceSettings, container) {
+        this.workspace = workspace;
+        this.workspaceArchives = workspaceArchives;
+        this.workspaceSettings = workspaceSettings;
+        this.container = container;
+
+        this.containerDiv = null;
+        this.chartCanvas = null;
+
+        this.dateRangePicker = null;
+        this.useWorkspaceArchivesCheckbox = null;
+        this.thisWeekButton = null;
+        this.thisMonthButton = null;
+        this.thisYearButton = null;
+
+        this.currentProcess = null;
+        this.chartInstance = null;
+
+        this.useWorkspaceArchiveData = false;
+        this.startDate = null;
+        this.endDate = null;
+    }
+
+    initialize() {
+        this.containerDiv = document.getElementById(this.container);
+
+        this.chartCanvas = this.containerDiv.querySelector('canvas').id;
+
+        this.dateRangePicker = `#${this.container}-date-range-picker`
+        this.useWorkspaceArchivesCheckbox = `#${this.container}-use-workspace-archives-checkbox`;
+        this.thisWeekButton = `#${this.container}-this-week`;
+        this.thisMonthButton = `#${this.container}-this-month`;
+        this.thisYearButton = `#${this.container}-this-year`;
+
+        this.processSelections = this.containerDiv.querySelector('select');
+
+        this.populateProcessSelections();
+        this.setupDateRangePicker();
+
+        this.currentProcess = this.processSelections.value;
+
+        this.containerDiv.querySelector(this.useWorkspaceArchivesCheckbox).addEventListener('click', () => {
+            this.useWorkspaceArchiveData = this.containerDiv.querySelector(this.useWorkspaceArchivesCheckbox).checked;
+            this.loadChart()
+        });
+
+        this.containerDiv.querySelector(this.thisWeekButton).addEventListener('click', () => {
+            this.setThisWeek();
+        });
+
+        this.containerDiv.querySelector(this.thisMonthButton).addEventListener('click', () => {
+            this.setThisMonth();
+        });
+
+        this.containerDiv.querySelector(this.thisYearButton).addEventListener('click', () => {
+            this.setThisYear();
+        });
+
+        this.processSelections.addEventListener('change', () => {
+            this.currentProcess = this.processSelections.value;
+            this.loadChart();
+        });
+        this.setThisYear();
+    }
+
+    setDateRange(startDate, endDate) {
+        document.querySelector(this.dateRangePicker)._flatpickr.setDate([startDate, endDate], true);
+        this.startDate = startDate;
+        this.endDate = endDate;
+        this.loadChart()
+    }
+
+    setThisWeek() {
+        const today = new Date();
+        const dayOfWeek = today.getDay();
+
+        const diffToStartOfWeek = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+
+        const firstDay = new Date(today);
+        firstDay.setDate(today.getDate() - diffToStartOfWeek);
+
+        const lastDay = new Date(firstDay);
+        lastDay.setDate(firstDay.getDate() + 6);
+
+        this.setDateRange(firstDay, lastDay);
+    }
+
+    setThisMonth() {
+        const today = new Date();
+        const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+        const lastDay = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+        this.setDateRange(firstDay, lastDay);
+    }
+
+    setThisYear() {
+        const thisYear = new Date().getFullYear();
+        const firstDay = new Date(thisYear, 0, 1);
+        const lastDay = new Date(thisYear, 11, 31);
+        this.setDateRange(firstDay, lastDay);
+    }
+
+    setupDateRangePicker(){
+        flatpickr(this.dateRangePicker, {
+            mode: "range",
+            theme: 'dark',
+            altInput: true,
+            altFormat: "F j, Y",
+            dateFormat: "Y-m-d",
+            locale: {
+                firstDayOfWeek: 1
+            },
+            onClose: (selectedDates, dateStr, instance) => {
+                const [startDate, endDate] = selectedDates;
+                if (startDate && endDate) {
+                    this.startDate = startDate;
+                    this.endDate = endDate;
+                    this.loadChart();
+                }
+            }
+        });
+    }
+
+    populateProcessSelections() {
+        this.processSelections.innerHTML = '';
+
+        const everythingOption = document.createElement('option');
+        everythingOption.textContent = 'Everything';
+        this.processSelections.appendChild(everythingOption);
+
+        const finishedOption = document.createElement('option');
+        finishedOption.textContent = 'Finished';
+        this.processSelections.appendChild(finishedOption);
+
+        const uniqueTags = new Set();
+        this.workspace.jobs.forEach(job => {
+            getAssemblies(job).forEach(assembly => {
+                assembly.assembly_data.flow_tag.tags.forEach(tag => {
+                    uniqueTags.add(tag);
+                });
+            });
+        });
+
+        uniqueTags.forEach(tag => {
+            const option = document.createElement('option');
+            option.textContent = tag;
+            this.processSelections.appendChild(option);
+        });
+
+        // Set the first option as selected if nothing else is selected
+        if (this.workspaceSettings.tags.length > 0 && !this.currentProcess) {
+            this.processSelections.value = 'Everything';
+        }
+    }
+
+    getAllJobs() {
+        let allJobs = [];
+        if (this.workspace && this.workspace.jobs) {
+            allJobs = [...this.workspace.jobs];
+        }
+        if (this.useWorkspaceArchiveData && this.workspaceArchives) {
+            allJobs = [...allJobs, ...this.workspaceArchives];
+        }
+        return allJobs;
+    }
+
+    countAssembliesAtProcess(process) {
+        const processCounts = {};
+        const allJobs = this.getAllJobs();
+
+        allJobs.forEach(job => {
+            const jobStartDate = new Date(job.job_data.starting_date);
+            const jobEndDate = new Date(job.job_data.ending_date);
+
+            if ((jobStartDate >= this.startDate && jobStartDate <= this.endDate) ||
+                (jobEndDate >= this.startDate && jobEndDate <= this.endDate) ||
+                (jobStartDate <= this.startDate && jobEndDate >= this.endDate)) {
+
+                getAssemblies(job).forEach(assembly => {
+                    const currentIndex = assembly.assembly_data.current_flow_tag_index;
+                    var currentProcess = assembly.assembly_data.flow_tag.tags[currentIndex];
+
+                    if (currentProcess === undefined) {
+                        currentProcess = "Finished";
+                    }
+
+                    if (process === 'Everything' || currentProcess === process) {
+                        if (!processCounts[currentProcess]) {
+                            processCounts[currentProcess] = 0;
+                        }
+                        processCounts[currentProcess]++;
+                    }
+                });
+            }
+        });
+
+        return processCounts;
+    }
+
+    loadChart() {
+        const processCounts = this.countAssembliesAtProcess(this.currentProcess);
+
+        const labels = Object.keys(processCounts);
+        const data = Object.values(processCounts);
+
+        const chartData = {
+            labels: labels,
+            datasets: [{
+                label: '# of Assemblies',
+                data: data,
+                backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                borderColor: 'rgba(75, 192, 192, 1)',
+                borderWidth: 1
+            }]
+        };
+
+        const config = {
+            type: 'bar',
+            data: chartData,
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        };
+
+        if (this.chartInstance) {
+            this.chartInstance.destroy();
+        }
+
+        this.chartInstance = new Chart(this.chartCanvas, config);
+    }
+}
+
 class WorkspaceDashboard {
     constructor() {
+        // Data
         this.workspace = null;
+        this.workspaceArchives = null;
         this.workspaceSettings = null;
         this.productionPlan = null
+
+        // Graphs
         this.productionPlanHeatMap = null;
         this.workspaceHeatmap = null;
+        this.assemblyInProcessChart1 = null;
+        this.assemblyInProcessChart2 = null;
+        this.assemblyInProcessChart3 = null;
+
         this.socket = null;
     }
 
     async initialize() {
         this.workspace = await this.loadWorkspace();
+        this.workspaceArchives = await this.loadWorkspaceArchives();
         this.workspaceSettings = await this.loadWorkspaceSettings();
         this.productionPlan = await this.loadProductionPlan();
-        if (this.workspace && this.workspaceSettings && this.productionPlan) {
-            this.loadWorkspaceContents();
-            this.createBasicChart();
+        if (this.workspace && this.workspaceArchives && this.workspaceSettings && this.productionPlan) {
+            // this.loadWorkspaceContents();
+            this.loadAssembliesInProcessChart();
             this.loadProductionPlanHeatmap();
             this.loadWorkspaceHeatmap();
             this.setupWebSocket();
@@ -284,10 +529,11 @@ class WorkspaceDashboard {
 
     async reloadView() {
         this.workspace = await this.loadWorkspace();
+        this.workspaceArchives = await this.loadWorkspaceArchives();
         this.workspaceSettings = await this.loadWorkspaceSettings();
         this.productionPlan = await this.loadProductionPlan();
-        if (this.workspace && this.workspaceSettings && this.productionPlan) {
-            this.createBasicChart();
+        if (this.workspace && this.workspaceArchives && this.workspaceSettings && this.productionPlan) {
+            this.loadAssembliesInProcessChart();
             this.loadProductionPlanHeatmap();
             this.loadWorkspaceHeatmap();
         }
@@ -307,10 +553,29 @@ class WorkspaceDashboard {
             this.workspaceHeatmap = new HeatMap(this.workspace, this.workspaceSettings, 'workspace-heatmap-container');
             this.workspaceHeatmap.initialize();
         } else {
-            this.workspaceHeatmap.loadHeatMap();
+            this.workspaceHeatmap.loadChart();
         }
     }
-
+    loadAssembliesInProcessChart(){
+        if (!this.assemblyInProcessChart1) {
+            this.assemblyInProcessChart1 = new AssembliesInProcessChart(this.workspace, this.workspaceArchives, this.workspaceSettings, 'assemblies-in-chart-container-1');
+            this.assemblyInProcessChart1.initialize();
+        } else {
+            this.assemblyInProcessChart1.loadChart();
+        }
+        if (!this.assemblyInProcessChar2) {
+            this.assemblyInProcessChart2 = new AssembliesInProcessChart(this.workspace, this.workspaceArchives, this.workspaceSettings, 'assemblies-in-chart-container-2');
+            this.assemblyInProcessChart2.initialize();
+        } else {
+            this.assemblyInProcessChart2.loadChart();
+        }
+        if (!this.assemblyInProcessChar3) {
+            this.assemblyInProcessChart3 = new AssembliesInProcessChart(this.workspace, this.workspaceArchives, this.workspaceSettings, 'assemblies-in-chart-container-3');
+            this.assemblyInProcessChart3.initialize();
+        } else {
+            this.assemblyInProcessChart3.loadChart();
+        }
+    }
     createBasicChart() {
         const container = document.getElementById('chart-container');
         if (!container) {
@@ -380,6 +645,20 @@ class WorkspaceDashboard {
     async loadWorkspace() {
         try {
             const response = await fetch('/data/workspace.json');
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            const config = await response.json();
+            return config;
+        } catch (error) {
+            console.error('Failed to load workspace:', error);
+            return null;
+        }
+    }
+
+    async loadWorkspaceArchives() {
+        try {
+            const response = await fetch('/data/workspace_archives');
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }

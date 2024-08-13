@@ -1,5 +1,5 @@
 import asyncio
-import csv
+import glob
 import os
 import re
 import shutil
@@ -155,6 +155,25 @@ class WorkspaceJsonHandler(tornado.web.RequestHandler):
         with open("data/workspace.json", "rb") as file:
             data = msgspec.json.decode(file.read())
             self.write(data)
+
+
+class WorkspaceArchivesHandler(tornado.web.RequestHandler):
+    def get(self):
+        self.set_header("Content-Type", "application/json")
+
+        files = glob.glob("data/workspace_*_history.json")
+
+        all_jobs = []
+
+        for file_path in files:
+            with open(file_path, "rb") as file:
+                data = msgspec.json.decode(file.read())
+                if isinstance(data, list):
+                    all_jobs.extend(data)
+
+        print(files)
+        self.write(msgspec.json.encode(all_jobs))
+
 
 
 class WorkspaceSettingsJsonHandler(tornado.web.RequestHandler):
@@ -1896,6 +1915,7 @@ if __name__ == "__main__":
             (r"/data/production_plan.json", ProductionPlanJsonHandler),
             (r"/data/workspace.json", WorkspaceJsonHandler),
             (r"/data/workspace_settings.json", WorkspaceSettingsJsonHandler),
+            (r"/data/workspace_archives", WorkspaceArchivesHandler),
             # Workorder handlers
             (r"/upload_workorder", UploadWorkorderHandler),
             (r"/workorder/(.*)", WorkorderHandler),
