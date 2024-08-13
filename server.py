@@ -1655,6 +1655,7 @@ class InventoryTablesHandler(tornado.web.RequestHandler):
                 {
                     "name": component.part_name,
                     "quantity": component.quantity,
+                    "price": component.price,
                     "part_number": component.part_number,
                 } for component in components_inventory.get_components_by_category(category)
             ]
@@ -1663,6 +1664,7 @@ class InventoryTablesHandler(tornado.web.RequestHandler):
                 {
                     "name": laser_cut_part.name,
                     "quantity": laser_cut_part.quantity,
+                    "price": round(laser_cut_part.price,2),
                     "part_dim": laser_cut_part.part_dim,
                     "thickness": laser_cut_part.gauge,
                     "material": laser_cut_part.material,
@@ -1672,11 +1674,23 @@ class InventoryTablesHandler(tornado.web.RequestHandler):
             ]
         elif inventory_type == "paint_inventory":
             if category == "primer":
-                data = [{"name": primer.name, **primer.to_dict()} for primer in paint_inventory.primers]
+                data = [{
+                    "name": primer.name,
+                    "color": primer.color,
+                } for primer in paint_inventory.primers
+            ]
             elif category == "paint":
-                data = [{"name": paint.name, **paint.to_dict()} for paint in paint_inventory.paints]
+                data = [{
+                    "name": paint.name,
+                    "color": paint.color,
+                } for paint in paint_inventory.paints
+            ]
             elif category == "powder":
-                data = [{"name": powder.name, **powder.to_dict()} for powder in paint_inventory.powders]
+                data = [{
+                    "name": powder.name,
+                    "color": powder.color,
+                    } for powder in paint_inventory.powders
+                ]
         elif inventory_type == "sheet_settings":
             if category == "price_per_pound":
                 data = [{material: sheet_settings.get_price_per_pound(material) for material in sheet_settings.get_materials()}]
