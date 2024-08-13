@@ -7,11 +7,10 @@ from utils.inventory.laser_cut_part import LaserCutPart
 from utils.inventory.nest import Nest
 from utils.ip_utils import get_server_ip_address, get_server_port
 from utils.quote.quote import Quote
-from utils.workspace.job import Job
 
 
 class CoverPage:
-    def __init__(self, title: str, quote: Quote | Job):
+    def __init__(self, title: str, quote: Quote):
         self.title = title
         self.quote = quote
         self.server_directory = f"http://{get_server_ip_address()}:{get_server_port()}"
@@ -215,7 +214,7 @@ class LaserCutPartsTable:
             <td class="ui-table-cell-visible">{laser_cut_part.material}</td>
             <td class="ui-table-cell-visible">{laser_cut_part.gauge}</td>
             <td class="ui-table-cell-visible">{laser_cut_part.quantity}</td>
-            <td class="ui-table-cell-{'visible' if self.title == "Workorder" else 'hidden'}">{laser_cut_part.flow_tag.get_name()}</td>
+            <td class="ui-table-cell-{'visible' if self.title == "Workorder" else 'hidden'}">{laser_cut_part.flowtag.get_name()}</td>
             <td class="ui-table-cell-{'visible' if self.title == "Workorder" else 'hidden'}">{laser_cut_part.shelf_number}</td>
             <td class="ui-table-cell-{'visible' if self.title == "Quote" else 'hidden'}">${laser_cut_part.price:,.2f}</td>
             <td class="ui-table-cell-{'visible' if self.title == "Quote" else 'hidden'}">${(laser_cut_part.price * laser_cut_part.quantity):,.2f}</td>
