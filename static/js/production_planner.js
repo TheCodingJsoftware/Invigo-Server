@@ -80,16 +80,14 @@ class GanttGraph {
         }
         return index;
     }
+
     loadProcessTimeline(job, jobId, flowtag_timeline, parentId, color) {
         let lastTagId = parentId;
         let first = true;
         let lastTag = null;
 
         const tag_order = Object.keys(this.workspaceSettings.tags);
-        console.log(tag_order);
 
-
-        // Iterate over the ordered tags
         for (const orderedTagName of tag_order) {
             if (flowtag_timeline.hasOwnProperty(orderedTagName)) {
                 const tag = flowtag_timeline[orderedTagName];
@@ -142,7 +140,6 @@ class GanttGraph {
             }
         }
 
-        // Create link from the finish of the last tag to the finish of the job
         if (lastTag) {
             this.links.push({
                 id: parentId,
@@ -174,10 +171,24 @@ class GanttGraph {
         gantt.config.show_links = true;
         gantt.config.drag_project = true;
         gantt.config.date_format = "%Y-%m-%d %h:%i %A";
+		gantt.config.font_width_ratio = 7;
+        gantt.config.round_dnd_dates = false;
 
+        gantt.templates.task_date = function (date) {
+            return gantt.templates.format_date(date); // Use the standard date format for task dates
+        };
+
+        gantt.templates.date_grid = function (date) {
+            return gantt.templates.format_date(date); // Use the standard date format for grid dates
+        };
+
+        gantt.config.drag_mode = {
+            move: "move",
+            resize: "resize",
+            progress: "progress",
+            ignore: false // Prevents any time-specific dragging, enforces day-based movement
+        };
         gantt.templates.progress_text = function (start, end, task) {
-            console.log(task.type);
-
             if (task.assembly_count > 0 && task.part_count > 0) {
                 return "<span style='text-align:left;'>" + Math.round(task.part_count) + (Math.round(task.part_count) === 1 ? " part" : " parts") + Math.round(task.assembly_count) + (Math.round(task.assembly_count) === 1 ? " assembly" : " assemblies") + "</span>";
             } else if (task.assembly_count > 0) {
@@ -187,6 +198,34 @@ class GanttGraph {
             }
         };
 
+		gantt.templates.task_text = function taskTextTemplate(start, end, task) {
+			if (getTaskFitValue(task) === "center") {
+				return task.text;
+			}
+			return "";
+		};
+
+		function getTaskFitValue(task) {
+			var taskStartPos = gantt.posFromDate(task.start_date),
+				taskEndPos = gantt.posFromDate(task.end_date);
+
+			var width = taskEndPos - taskStartPos;
+			var textWidth = (task.text || "").length * gantt.config.font_width_ratio;
+
+			if (width < textWidth) {
+				var ganttLastDate = gantt.getState().max_date;
+				var ganttEndPos = gantt.posFromDate(ganttLastDate);
+				if (ganttEndPos - taskEndPos < textWidth) {
+					return "left"
+				}
+				else {
+					return "right"
+				}
+			}
+			else {
+				return "center";
+			}
+		}
         gantt.templates.link_class = function (link) {
             var types = gantt.config.links;
             switch (link.type) {
@@ -221,6 +260,8 @@ class GanttGraph {
             var tooltips = gantt.ext.tooltips;
 
             gantt.templates.tooltip_text = function (start, end, task) {
+                start = gantt.date.day_start(start);
+                end = gantt.date.day_start(end);
                 var store = gantt.getDatastore("resource");
                 var assignments = task[gantt.config.resource_property] || [];
 
@@ -233,19 +274,19 @@ class GanttGraph {
                     return "<b>Process:</b> " + task.text + "<br/>" +
                         "<b>Assembly count:</b> " + task.assembly_count + "<br/>" +
                         "<b>Part count:</b> " + task.part_count + "<br/>" +
-                        "<b>Start date:</b> " + gantt.templates.tooltip_date_format(start) +
-                        "<br/><b>End date:</b> " + gantt.templates.tooltip_date_format(end);
+                        "<b>Start date:</b> " + gantt.templates.format_date(start) +
+                        "<br/><b>End date:</b> " + gantt.templates.format_date(end);
                 }
                 else if (task.assembly_count > 0) {
                     return "<b>Job:</b> " + task.text + "<br/>" +
                         "<b>Assembly count:</b> " + task.assembly_count + "<br/>" +
-                        "<b>Start date:</b> " + gantt.templates.tooltip_date_format(start) +
-                        "<br/><b>End date:</b> " + gantt.templates.tooltip_date_format(end);
+                        "<b>Start date:</b> " + gantt.templates.format_date(start) +
+                        "<br/><b>End date:</b> " + gantt.templates.format_date(end);
                 } else if (task.part_count > 0) {
                     return "<b>Process:</b> " + task.text + "<br/>" +
                         "<b>Part count:</b> " + task.part_count + "<br/>" +
-                        "<b>Start date:</b> " + gantt.templates.tooltip_date_format(start) +
-                        "<br/><b>End date:</b> " + gantt.templates.tooltip_date_format(end);
+                        "<b>Start date:</b> " + gantt.templates.format_date(start) +
+                        "<br/><b>End date:</b> " + gantt.templates.format_date(end);
                 }
             };
 
@@ -297,7 +338,7 @@ class GanttGraph {
                 selector: ".gantt_scale_cell",
                 html: function (event, node) {
                     var relativePosition = gantt.utils.dom.getRelativeEventPosition(event, gantt.$task_scale);
-                    return gantt.templates.tooltip_date_format(gantt.dateFromPos(relativePosition.x));
+                    return gantt.templates.format_date(gantt.dateFromPos(relativePosition.x));
                 }
             });
 
@@ -315,7 +356,7 @@ class GanttGraph {
                     var store = gantt.getDatastore("resource");
 
                     var html = [
-                        "<b>" + store.getItem(resourceId).text + "</b>" + ", " + gantt.templates.tooltip_date_format(date),
+                        "<b>" + store.getItem(resourceId).text + "</b>" + ", " + gantt.templates.format_date(date),
                         "",
                         ids.map(function (id, index) {
                             var task = gantt.getTask(id);
@@ -347,12 +388,15 @@ class GanttGraph {
         }
 
         gantt.templates.leftside_text = function (start, end, task) {
+            start = gantt.date.day_start(start);
+            end = gantt.date.day_start(end);
+
             var state = gantt.getState(),
                 modes = gantt.config.drag_mode;
 
             if (state.drag_id == task.id) {
                 if (state.drag_mode == modes.move || (state.drag_mode == modes.resize && state.drag_from_start)) {
-                    return dateToStr(gantt.roundDate(start));
+                    return dateToStr(start);
                 }
             } else {
                 return task.duration + " days";
@@ -362,12 +406,17 @@ class GanttGraph {
         };
 
         gantt.templates.rightside_text = function (start, end, task) {
+            start = gantt.date.day_start(start);
+            end = gantt.date.day_start(end);
+
             var state = gantt.getState(), modes = gantt.config.drag_mode;
 
             if (state.drag_id == task.id) {
                 if (state.drag_mode == modes.move || (state.drag_mode == modes.resize && !state.drag_from_start)) {
-                    return dateToStr(gantt.roundDate(end));
+                    return dateToStr(end);
                 }
+            } else if (getTaskFitValue(task) === "right") {
+                return task.text;
             }
             return "";
         };
@@ -375,53 +424,59 @@ class GanttGraph {
         function roundToTwo(num) {
             return +(Math.round(num + "e+2") + "e-2");
         }
-
         function calculateResourceLoad(tasks, scale) {
             var step = scale.unit;
             var timegrid = {};
-            var currentScale = gantt.ext.zoom.getCurrentLevel().name;
 
             for (var i = 0; i < tasks.length; i++) {
                 var task = tasks[i];
 
                 var currDate = gantt.date[step + "_start"](new Date(task.start_date));
+                currDate.setHours(0, 0, 0, 0);
 
-                while (currDate < task.end_date) {
+                var taskEndDate = new Date(task.end_date);
+                taskEndDate.setHours(0, 0, 0, 0);
 
-                    var date = currDate;
-                    currDate = gantt.date.add(currDate, 1, step);
+                var totalDays = (taskEndDate - currDate) / (1000 * 60 * 60 * 24);
 
-                    if (currentScale === "day" || currentScale === "week") {
-                        if (date.getDay() == 0) {
-                            continue;
-                        }
+                while (currDate < taskEndDate) {
+                    var nextDate = gantt.date.add(currDate, 1, step);
+                    nextDate.setHours(0, 0, 0, 0);
+
+                    // Ensure we don't go past the task end date
+                    if (nextDate > taskEndDate) {
+                        nextDate = taskEndDate;
                     }
 
-                    var timestamp = date.valueOf();
-                    if (!timegrid[timestamp])
-                        timegrid[timestamp] = 0;
+                    // Calculate the overlap with the task duration in days
+                    var overlapMs = nextDate - currDate;
+                    var overlapDays = overlapMs / (1000 * 60 * 60 * 24);
 
-                    const hoursToComplete = ((task.part_expected_time_to_complete + task.assembly_expected_time_to_complete) / 3600); // Convert seconds to hours
-                    const durationInHours = task.duration; // Convert days to hours
+                    var timestamp = currDate.valueOf();
 
-                    if (durationInHours <= 0) {
-                        durationInHours = 1;
+                    if (!timegrid[timestamp]) {
+                        timegrid[timestamp] = {
+                            "expected_time_to_complete": 0
+                        };
                     }
 
-                    timegrid[timestamp] += roundToTwo((hoursToComplete / durationInHours)); // Calculate and round to 1 decimal
+                    // Distribute the task time proportionally across the grid cells
+                    var proportionalTime = ((task.part_expected_time_to_complete + task.assembly_expected_time_to_complete) / totalDays) * overlapDays;
+                    timegrid[timestamp].expected_time_to_complete += proportionalTime;
 
+                    currDate = nextDate;
                 }
             }
 
             var timetable = [];
             var start, end;
             for (var i in timegrid) {
-                start = new Date(i * 1);
+                start = new Date(parseInt(i, 10));
                 end = gantt.date.add(start, 1, step);
                 timetable.push({
                     start_date: start,
                     end_date: end,
-                    value: timegrid[i]
+                    expected_time_to_complete: timegrid[i].expected_time_to_complete,
                 });
             }
 
@@ -437,9 +492,10 @@ class GanttGraph {
         var renderResourceLine = function (resource, timeline) {
             var tasks = gantt.getTaskBy("user", resource.id);
             var timetable = calculateResourceLoad(tasks, timeline.getScale());
+            var step = timeline.getScale().unit;
 
             var row = document.createElement("div");
-            var totalValue = timetable.reduce((sum, day) => sum + day.value, 0); // Calculate the total value in the row
+            var totalValue = timetable.reduce((sum, day) => sum + day.expected_time_to_complete, 0); // Calculate the total value in the row
 
             function getColor(value, total) {
                 // Calculate the relative position between green and red
@@ -454,16 +510,19 @@ class GanttGraph {
             }
 
             for (var i = 0; i < timetable.length; i++) {
-                var day = timetable[i];
-                var color = getColor(day.value, totalValue);
+                var date = timetable[i];
+                var totalMinutes = (date.expected_time_to_complete / 60);
+                var totalHours = (date.expected_time_to_complete / 60 / 60);
 
-                var sizes = timeline.getItemPosition(resource, day.start_date, day.end_date);
-                var el = document.createElement('div');
-
-                var totalMinutes = day.value * 60;
                 var days = Math.floor(totalMinutes / (60 * 24));
                 var hours = Math.floor((totalMinutes % (60 * 24)) / 60);
                 var minutes = Math.floor(totalMinutes % 60);
+
+                var color = getColor(totalHours, totalValue);
+
+                var sizes = timeline.getItemPosition(resource, date.start_date, date.end_date);
+                var el = document.createElement('div');
+
 
                 // Build the time string conditionally
                 var timeString = '';
@@ -539,6 +598,7 @@ class GanttGraph {
                     return;
             }
         }
+
         var resourceLayers = [
             renderResourceLine,
             "taskBg"
@@ -575,6 +635,7 @@ class GanttGraph {
             },
             ]
         };
+
         var resourcePanelConfig = {
             columns: [
                 {
@@ -944,10 +1005,14 @@ class GanttGraph {
         resourcesStore.parse(resources);
 
         gantt.attachEvent("onTaskDrag", (id, mode, item, original) => {
+            // item.start_date = gantt.date.day_start(item.start_date);
+            // item.end_date = gantt.date.day_start(item.end_date);
             this.handleUpdate(item);
         });
 
         gantt.attachEvent("onAfterTaskUpdate", (id, item) => {
+            // item.start_date = gantt.date.day_start(item.start_date);
+            // item.end_date = gantt.date.day_start(item.end_date);
             this.handleUpdate(item);
         });
 
@@ -1076,24 +1141,23 @@ class GanttGraph {
         });
 
         menu.attachEvent("onClick", function (id) {
+            const findMatchingJob = (task) => {
+                var counter = { id: 1 };
+                for (let job of this.productionPlan.jobs) {
+                    if (counter.id === task.id && job.job_data.name === task.text) {
+                        return job;
+                    }
+                    counter.id++;
+                    for (const _ in job.job_data.flowtag_timeline) {
+                        counter.id++;
+                    }
+                }
+                return null; // If no matching job is found
+            }
+
             switch (id) {
                 case "open_printout":
-                    var task = gantt.getTask(gantt.contextID); // Assuming gantt.contextID is set correctly in onContextMenu
-
-                    const findMatchingJob = (task) => {
-                        var counter = { id: 1 };
-                        for (let job of this.productionPlan.jobs) {
-                            console.log(counter.id);
-                            if (counter.id === task.id && job.job_data.name === task.text) {
-                                return job;
-                            }
-                            counter.id++;
-                            for (const _ in job.job_data.flowtag_timeline) {
-                                counter.id++;
-                            }
-                        }
-                        return null; // If no matching job is found
-                    }
+                    var task = gantt.getTask(gantt.contextID);
 
                     var matchingJob = findMatchingJob(task);
 
@@ -1123,6 +1187,14 @@ class GanttGraph {
                         console.error('No matching job found');
                     }
                     break;
+                case "delete_job":
+                    var task = gantt.getTask(gantt.contextID);
+
+                    var matchingJob = findMatchingJob(task);
+
+                    if (matchingJob) {
+                        console.log("found job to delete" + matchingJob)
+                    }
                 default:
                     break;
             }
@@ -1364,6 +1436,7 @@ class WorkspaceScheduler {
         };
     }
 }
+
 window.addEventListener('load', async function () {
     const workspaceScheduler = new WorkspaceScheduler();
     var radios = document.getElementsByName("scale");
@@ -1373,11 +1446,6 @@ window.addEventListener('load', async function () {
             workspaceScheduler.ganttGraph.lastViewMode = event.target.value;
         };
     }
-
-    // document.getElementById('applyDates').onclick = function (event) {
-    //     event.preventDefault();
-    //     workspaceScheduler.ganttGraph.changeDateRange();
-    // };// Initialize flatpickr with a date range picker
 
     flatpickr("#date-range-picker", {
         mode: "range",
@@ -1395,7 +1463,6 @@ window.addEventListener('load', async function () {
         }
     });
 
-    // Utility functions for setting the date range
     function setDateRange(startDate, endDate) {
         document.querySelector("#date-range-picker")._flatpickr.setDate([startDate, endDate], true);
         gantt.config.start_date = startDate;
