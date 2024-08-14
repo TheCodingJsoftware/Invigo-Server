@@ -4,7 +4,7 @@
 }
 
 /* workspace_dashboard.html */
-.job-details details[open] summary i::before {
+.job-details[open] summary i::before {
     content: 'expand_less';
 }
 
