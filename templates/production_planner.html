@@ -110,6 +110,13 @@
         margin-top: 5px;
         margin-left: 5px;
         font-weight: bold;
+        width: 100%;
+        display: flex;
+        flex-wrap: nowrap;
+        justify-content: flex-start;
+        align-items: center;
+        flex-direction: row;
+        align-content: space-around;
     }
 
     .container {
@@ -310,7 +317,14 @@
                                 arrow_back
                             </span>
                         </button>
-                        Production Planner
+                        <div style="width: 95%;">
+                            Production Planner
+                        </div>
+                        <button class="circle transparent" onclick="window.location.href = '/workspace_dashboard'">
+                            <span class="material-symbols-rounded">
+                                construction
+                            </span>
+                        </button>
                     </div>
                 </div>
             </div>
