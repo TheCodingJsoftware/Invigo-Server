@@ -8,8 +8,6 @@
     <meta name="google" content="notranslate">
     <link href="https://cdn.jsdelivr.net/npm/beercss@3.6.13/dist/cdn/beer.min.css" rel="stylesheet">
     <script type="module" src="https://cdn.jsdelivr.net/npm/beercss@3.6.13/dist/cdn/beer.min.js"></script>
-    <script type="module"
-        src="https://cdn.jsdelivr.net/npm/material-dynamic-colors@1.1.2/dist/cdn/material-dynamic-colors.min.js"></script>
     <link href="/static/css/theme.css" rel="stylesheet">
     <link rel="icon" href="/static/icon.png">
     <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=yes" />
@@ -26,6 +24,30 @@
     .hidden {
         display: none;
     }
+
+    details[open] summary i::before {
+        content: 'expand_less';
+    }
+
+    summary i::before {
+        content: 'expand_more';
+    }
+
+    summary i {
+        display: inline-block;
+    }
+
+    details[open] .job-article {
+        border-bottom-left-radius: 0 !important;
+        border-bottom-right-radius: 0 !important;
+    }
+    details[open] .assembly-container {
+        border-top-left-radius: 0 !important;
+        border-top-right-radius: 0 !important;
+    }
+    .assembly-article{
+        background-color: var(--surface-container-high);
+    }
 </style>
 
 <body class="dark">
@@ -40,175 +62,403 @@
         </nav>
     </header>
     <main class="padding responsive" id="workspace-container">
-        <div class="grid">
-            <div class="s4">
-                <article id="assemblies-in-chart-container-1">
-                    <div class="row">
-                        <h6 class="small middle-align left-align">Assemblies in </h6>
-                        <div class="field suffix max">
-                            <select>
-                                <!-- Options will be populated dynamically -->
-                            </select>
-                            <i>arrow_drop_down</i>
-                        </div>
-                        <button class="transparent link circle">
-                            <i>tune</i>
-                            <menu class="left no-wrap">
-                                <a class="row surface-container">
-                                    <label class="checkbox">
-                                        <input type="checkbox" id="assemblies-in-chart-container-1-use-workspace-archives-checkbox">
-                                        <span>Include data from workspace archives</span>
-                                    </label>
-                                </a>
-                                <div class="divider"></div>
-                                <a class="row surface-container">
-                                    <div class="field label prefix border max">
-                                        <i>date_range</i>
-                                        <input type="text" id="assemblies-in-chart-container-1-date-range-picker"
-                                            placeholder="Select Date Range" />
-                                        <label>Select Date Range</label>
-                                    </div>
-                                </a>
-                                <a class="row" id="assemblies-in-chart-container-1-this-week">
-                                    <span>This Week</span>
-                                </a>
-                                <a class="row" id="assemblies-in-chart-container-1-this-month">
-                                    <span>This Month</span>
-                                </a>
-                                <a class="row" id="assemblies-in-chart-container-1-this-year">
-                                    <span>This Year</span>
-                                </a>
-                            </menu>
-                        </button>
-                    </div>
-                    <canvas id="assemblies-in-chart-1" style="max-height: 300px"></canvas>
-                </article>
+        <div>
+            <div class="tabs left-align">
+              <a data-ui="#graphs-page" class="active">
+                <i>bar_chart</i>
+                <span>Graphs</span>
+              </a>
+              <a data-ui="#heatmaps-page">
+                <i>key_visualizer</i>
+                <span>Heatmaps</span>
+              </a>
+              <a data-ui="#progression-page">
+                <i>browse_activity</i>
+                <span>Progression</span>
+              </a>
             </div>
-            <div class="s4">
-                <article id="assemblies-in-chart-container-2">
-                    <div class="row">
-                        <h6 class="small middle-align left-align">Assemblies in </h6>
-                        <div class="field suffix max">
-                            <select>
-                                <!-- Options will be populated dynamically -->
-                            </select>
-                            <i>arrow_drop_down</i>
-                        </div>
-                        <button class="transparent link circle">
-                            <i>tune</i>
-                            <menu class="left no-wrap">
-                                <a class="row surface-container">
-                                    <label class="checkbox">
-                                        <input type="checkbox" id="assemblies-in-chart-container-2-use-workspace-archives-checkbox">
-                                        <span>Include data from workspace archives</span>
-                                    </label>
-                                </a>
-                                <div class="divider"></div>
-                                <a class="row surface-container">
-                                    <div class="field label prefix border max">
-                                        <i>date_range</i>
-                                        <input type="text" id="assemblies-in-chart-container-2-date-range-picker"
-                                            placeholder="Select Date Range" />
-                                        <label>Select Date Range</label>
-                                    </div>
-                                </a>
-                                <a class="row" id="assemblies-in-chart-container-2-this-week">
-                                    <span>This Week</span>
-                                </a>
-                                <a class="row" id="assemblies-in-chart-container-2-this-month">
-                                    <span>This Month</span>
-                                </a>
-                                <a class="row" id="assemblies-in-chart-container-2-this-year">
-                                    <span>This Year</span>
-                                </a>
-                            </menu>
-                        </button>
+            <div id="graphs-page" class="page padding active">
+                <div class="grid">
+                    <div class="s4">
+                        <article id="assemblies-in-process-chart-container-1">
+                            <div class="row">
+                                <h6 class="small middle-align left-align">Assemblies in </h6>
+                                <div class="field suffix max">
+                                    <select id="process-tags">
+                                        <!-- Options will be populated dynamically -->
+                                    </select>
+                                    <i>arrow_drop_down</i>
+                                </div>
+                                <button class="transparent link circle">
+                                    <i>tune</i>
+                                    <menu class="left no-wrap">
+                                        <a class="row surface-container">
+                                            <label class="checkbox">
+                                                <input type="checkbox" id="use-workspace-archives">
+                                                <span>Include data from workspace archives</span>
+                                            </label>
+                                        </a>
+                                        <div class="divider"></div>
+                                        <a class="row surface-container">
+                                            <div class="field label prefix border max">
+                                                <i>date_range</i>
+                                                <input type="text" id="date-range-picker" placeholder="Select Date Range" />
+                                                <label>Select Date Range</label>
+                                            </div>
+                                        </a>
+                                        <a class="row" id="this-week">
+                                            <span>This Week</span>
+                                        </a>
+                                        <a class="row" id="this-month">
+                                            <span>This Month</span>
+                                        </a>
+                                        <a class="row" id="this-year">
+                                            <span>This Year</span>
+                                        </a>
+                                    </menu>
+                                </button>
+                            </div>
+                            <canvas id="bar-chart" style="max-height: 300px"></canvas>
+                        </article>
                     </div>
-                    <canvas id="assemblies-in-chart-2" style="max-height: 300px"></canvas>
-                </article>
-            </div>
-            <div class="s4">
-                <article id="assemblies-in-chart-container-3">
-                    <div class="row">
-                        <h6 class="small middle-align left-align">Assemblies in </h6>
-                        <div class="field suffix max">
-                            <select>
-                                <!-- Options will be populated dynamically -->
-                            </select>
-                            <i>arrow_drop_down</i>
-                        </div>
-                        <button class="transparent link circle">
-                            <i>tune</i>
-                            <menu class="left no-wrap">
-                                <a class="row surface-container">
-                                    <label class="checkbox">
-                                        <input type="checkbox" id="assemblies-in-chart-container-3-use-workspace-archives-checkbox">
-                                        <span>Include data from workspace archives</span>
-                                    </label>
-                                </a>
-                                <div class="divider"></div>
-                                <a class="row surface-container">
-                                    <div class="field label prefix border max">
-                                        <i>date_range</i>
-                                        <input type="text" id="assemblies-in-chart-container-3-date-range-picker"
-                                            placeholder="Select Date Range" />
-                                        <label>Select Date Range</label>
-                                    </div>
-                                </a>
-                                <a class="row" id="assemblies-in-chart-container-3-this-week">
-                                    <span>This Week</span>
-                                </a>
-                                <a class="row" id="assemblies-in-chart-container-3-this-month">
-                                    <span>This Month</span>
-                                </a>
-                                <a class="row" id="assemblies-in-chart-container-3-this-year">
-                                    <span>This Year</span>
-                                </a>
-                            </menu>
-                        </button>
+                    <div class="s4">
+                        <article id="assemblies-in-process-chart-container-2">
+                            <div class="row">
+                                <h6 class="small middle-align left-align">Assemblies in </h6>
+                                <div class="field suffix max">
+                                    <select id="process-tags">
+                                        <!-- Options will be populated dynamically -->
+                                    </select>
+                                    <i>arrow_drop_down</i>
+                                </div>
+                                <button class="transparent link circle">
+                                    <i>tune</i>
+                                    <menu class="left no-wrap">
+                                        <a class="row surface-container">
+                                            <label class="checkbox">
+                                                <input type="checkbox" id="use-workspace-archives">
+                                                <span>Include data from workspace archives</span>
+                                            </label>
+                                        </a>
+                                        <div class="divider"></div>
+                                        <a class="row surface-container">
+                                            <div class="field label prefix border max">
+                                                <i>date_range</i>
+                                                <input type="text" id="date-range-picker" placeholder="Select Date Range" />
+                                                <label>Select Date Range</label>
+                                            </div>
+                                        </a>
+                                        <a class="row" id="this-week">
+                                            <span>This Week</span>
+                                        </a>
+                                        <a class="row" id="this-month">
+                                            <span>This Month</span>
+                                        </a>
+                                        <a class="row" id="this-year">
+                                            <span>This Year</span>
+                                        </a>
+                                    </menu>
+                                </button>
+                            </div>
+                            <canvas id="bar-chart" style="max-height: 300px"></canvas>
+                        </article>
                     </div>
-                    <canvas id="assemblies-in-chart-3" style="max-height: 300px"></canvas>
-                </article>
-            </div>
-        </div>
-        <article id="production-plan-heatmap-container">
-            <div class="row">
-                <h5 class="max">Production Plan Heatmap</h5>
-                <div class="field label suffix border">
-                    <select>
-                        <!-- Options will be populated dynamically -->
-                    </select>
-                    <label>Select Process</label>
-                    <i>arrow_drop_down</i>
+                    <div class="s4">
+                        <article id="assemblies-in-process-chart-container-3">
+                            <div class="row">
+                                <h6 class="small middle-align left-align">Assemblies in </h6>
+                                <div class="field suffix max">
+                                    <select id="process-tags">
+                                        <!-- Options will be populated dynamically -->
+                                    </select>
+                                    <i>arrow_drop_down</i>
+                                </div>
+                                <button class="transparent link circle">
+                                    <i>tune</i>
+                                    <menu class="left no-wrap">
+                                        <a class="row surface-container">
+                                            <label class="checkbox">
+                                                <input type="checkbox" id="use-workspace-archives">
+                                                <span>Include data from workspace archives</span>
+                                            </label>
+                                        </a>
+                                        <div class="divider"></div>
+                                        <a class="row surface-container">
+                                            <div class="field label prefix border max">
+                                                <i>date_range</i>
+                                                <input type="text" id="date-range-picker" placeholder="Select Date Range" />
+                                                <label>Select Date Range</label>
+                                            </div>
+                                        </a>
+                                        <a class="row" id="this-week">
+                                            <span>This Week</span>
+                                        </a>
+                                        <a class="row" id="this-month">
+                                            <span>This Month</span>
+                                        </a>
+                                        <a class="row" id="this-year">
+                                            <span>This Year</span>
+                                        </a>
+                                    </menu>
+                                </button>
+                            </div>
+                            <canvas id="bar-chart" style="max-height: 300px"></canvas>
+                        </article>
+                    </div>
+                    <div class="s6">
+                        <article id="select-assembly-chart-container-1">
+                            <div class="row">
+                                <h6 class="small middle-align left-align">Assembly </h6>
+                                <div class="field suffix max">
+                                    <select id="process-tags">
+                                        <!-- Options will be populated dynamically -->
+                                    </select>
+                                    <i>arrow_drop_down</i>
+                                </div>
+                                <button class="transparent link circle">
+                                    <i>tune</i>
+                                    <menu class="left no-wrap">
+                                        <a class="row surface-container">
+                                            <label class="checkbox">
+                                                <input type="checkbox" id="use-workspace-archives">
+                                                <span>Include data from workspace archives</span>
+                                            </label>
+                                        </a>
+                                        <div class="divider"></div>
+                                        <a class="row surface-container">
+                                            <div class="field label prefix border max">
+                                                <i>date_range</i>
+                                                <input type="text" id="date-range-picker" placeholder="Select Date Range" />
+                                                <label>Select Date Range</label>
+                                            </div>
+                                        </a>
+                                        <a class="row" id="this-week">
+                                            <span>This Week</span>
+                                        </a>
+                                        <a class="row" id="this-month">
+                                            <span>This Month</span>
+                                        </a>
+                                        <a class="row" id="this-year">
+                                            <span>This Year</span>
+                                        </a>
+                                    </menu>
+                                </button>
+                            </div>
+                            <canvas id="bar-chart" style="max-height: 300px"></canvas>
+                        </article>
+                    </div>
+                    <div class="s6">
+                        <article id="select-assembly-chart-container-2">
+                            <div class="row">
+                                <h6 class="small middle-align left-align">Assembly </h6>
+                                <div class="field suffix max">
+                                    <select id="process-tags">
+                                        <!-- Options will be populated dynamically -->
+                                    </select>
+                                    <i>arrow_drop_down</i>
+                                </div>
+                                <button class="transparent link circle">
+                                    <i>tune</i>
+                                    <menu class="left no-wrap">
+                                        <a class="row surface-container">
+                                            <label class="checkbox">
+                                                <input type="checkbox" id="use-workspace-archives">
+                                                <span>Include data from workspace archives</span>
+                                            </label>
+                                        </a>
+                                        <div class="divider"></div>
+                                        <a class="row surface-container">
+                                            <div class="field label prefix border max">
+                                                <i>date_range</i>
+                                                <input type="text" id="date-range-picker" placeholder="Select Date Range" />
+                                                <label>Select Date Range</label>
+                                            </div>
+                                        </a>
+                                        <a class="row" id="this-week">
+                                            <span>This Week</span>
+                                        </a>
+                                        <a class="row" id="this-month">
+                                            <span>This Month</span>
+                                        </a>
+                                        <a class="row" id="this-year">
+                                            <span>This Year</span>
+                                        </a>
+                                    </menu>
+                                </button>
+                            </div>
+                            <canvas id="bar-chart" style="max-height: 300px"></canvas>
+                        </article>
+                    </div>
+                    <div class="s12">
+                        <article id="all-assemblies-chart-container-1">
+                            <div class="row">
+                                <h6 class="small middle-align left-align max">All Assemblies </h6>
+                                <button class="transparent link circle">
+                                    <i>tune</i>
+                                    <menu class="left no-wrap">
+                                        <a class="row surface-container">
+                                            <label class="checkbox">
+                                                <input type="checkbox" id="use-workspace-archives">
+                                                <span>Include data from workspace archives</span>
+                                            </label>
+                                        </a>
+                                        <div class="divider"></div>
+                                        <a class="row surface-container">
+                                            <div class="field label prefix border max">
+                                                <i>date_range</i>
+                                                <input type="text" id="date-range-picker" placeholder="Select Date Range" />
+                                                <label>Select Date Range</label>
+                                            </div>
+                                        </a>
+                                        <a class="row" id="this-week">
+                                            <span>This Week</span>
+                                        </a>
+                                        <a class="row" id="this-month">
+                                            <span>This Month</span>
+                                        </a>
+                                        <a class="row" id="this-year">
+                                            <span>This Year</span>
+                                        </a>
+                                    </menu>
+                                </button>
+                            </div>
+                            <canvas id="bar-chart" style="max-height: 300px"></canvas>
+                        </article>
+                    </div>
+                    <div class="s6">
+                        <article id="laser-cut-parts-in-process-chart-container-1">
+                            <div class="row">
+                                <h6 class="small middle-align left-align">Parts in </h6>
+                                <div class="field suffix max">
+                                    <select id="process-tags">
+                                        <!-- Options will be populated dynamically -->
+                                    </select>
+                                    <i>arrow_drop_down</i>
+                                </div>
+                                <button class="transparent link circle">
+                                    <i>tune</i>
+                                    <menu class="left no-wrap">
+                                        <a class="row surface-container">
+                                            <label class="checkbox">
+                                                <input type="checkbox" id="use-workspace-archives">
+                                                <span>Include data from workspace archives</span>
+                                            </label>
+                                        </a>
+                                        <div class="divider"></div>
+                                        <a class="row surface-container">
+                                            <div class="field label prefix border max">
+                                                <i>date_range</i>
+                                                <input type="text" id="date-range-picker" placeholder="Select Date Range" />
+                                                <label>Select Date Range</label>
+                                            </div>
+                                        </a>
+                                        <a class="row" id="this-week">
+                                            <span>This Week</span>
+                                        </a>
+                                        <a class="row" id="this-month">
+                                            <span>This Month</span>
+                                        </a>
+                                        <a class="row" id="this-year">
+                                            <span>This Year</span>
+                                        </a>
+                                    </menu>
+                                </button>
+                            </div>
+                            <canvas id="bar-chart" style="max-height: 300px"></canvas>
+                        </article>
+                    </div>
+                    <div class="s6">
+                        <article id="laser-cut-parts-in-process-chart-container-2">
+                            <div class="row">
+                                <h6 class="small middle-align left-align">Parts in </h6>
+                                <div class="field suffix max">
+                                    <select id="process-tags">
+                                        <!-- Options will be populated dynamically -->
+                                    </select>
+                                    <i>arrow_drop_down</i>
+                                </div>
+                                <button class="transparent link circle">
+                                    <i>tune</i>
+                                    <menu class="left no-wrap">
+                                        <a class="row surface-container">
+                                            <label class="checkbox">
+                                                <input type="checkbox" id="use-workspace-archives">
+                                                <span>Include data from workspace archives</span>
+                                            </label>
+                                        </a>
+                                        <div class="divider"></div>
+                                        <a class="row surface-container">
+                                            <div class="field label prefix border max">
+                                                <i>date_range</i>
+                                                <input type="text" id="date-range-picker" placeholder="Select Date Range" />
+                                                <label>Select Date Range</label>
+                                            </div>
+                                        </a>
+                                        <a class="row" id="this-week">
+                                            <span>This Week</span>
+                                        </a>
+                                        <a class="row" id="this-month">
+                                            <span>This Month</span>
+                                        </a>
+                                        <a class="row" id="this-year">
+                                            <span>This Year</span>
+                                        </a>
+                                    </menu>
+                                </button>
+                            </div>
+                            <canvas id="bar-chart" style="max-height: 300px"></canvas>
+                        </article>
+                    </div>
                 </div>
             </div>
-            <div>
-                <span id="min-value-display">Min: 0h</span>
-                <span id="max-value-display">Max: 0h</span>
+            <div id="heatmaps-page" class="page padding">
+                <article id="production-plan-heatmap-container">
+                    <div class="row">
+                        <h5 class="max">Production Plan Heatmap</h5>
+                        <div class="field label suffix border">
+                            <select id="process-tags">
+                                <!-- Options will be populated dynamically -->
+                            </select>
+                            <label>Select Process</label>
+                            <i>arrow_drop_down</i>
+                        </div>
+                    </div>
+                    <div>
+                        <span id="min-value-display">Min: 0h</span>
+                        <span id="max-value-display">Max: 0h</span>
+                    </div>
+                    <div>
+                        <canvas id="heatmap" style="max-height: 135px;"></canvas>
+                    </div>
+                </article>
+                <article id="workspace-heatmap-container">
+                    <div class="row">
+                        <h5 class="max">Workspace Heatmap</h5>
+                        <div class="field label suffix border">
+                            <select id="process-tags">
+                                <!-- Options will be populated dynamically -->
+                            </select>
+                            <label>Select Process</label>
+                            <i>arrow_drop_down</i>
+                        </div>
+                    </div>
+                    <div>
+                        <span id="min-value-display">Min: 0h</span>
+                        <span id="max-value-display">Max: 0h</span>
+                    </div>
+                    <div>
+                        <canvas id="heatmap" style="max-height: 135px;"></canvas>
+                    </div>
+                </article>
             </div>
-            <div>
-                <canvas id="production-plan-heatmap"></canvas>
-            </div>
-        </article>
-        <article id="workspace-heatmap-container">
-            <div class="row">
-                <h5 class="max">Workspace Heatmap</h5>
-                <div class="field label suffix border">
-                    <select>
-                        <!-- Options will be populated dynamically -->
-                    </select>
-                    <label>Select Process</label>
-                    <i>arrow_drop_down</i>
+            <div id="progression-page" class="page padding">
+                <div id="assembly-progression-container">
+                    <div id="jobs-list">
+
+                    </div>
                 </div>
             </div>
-            <div>
-                <span id="min-value-display">Min: 0h</span>
-                <span id="max-value-display">Max: 0h</span>
-            </div>
-            <div>
-                <canvas id="workspace-heatmap">
-            </div>
-        </article>
+          </div>
     </main>
     <script type="module" src="/static/js/workspace_dashboard.js"></script>
 </body>

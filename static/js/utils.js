@@ -27,6 +27,9 @@ function isJobComplete(job) {
 function isAssemblyComplete(assembly) {
     return getAssemblyCompletionProgress(assembly) >= 1.0;
 }
+function isAssemblyPartsComplete(assembly) {
+    return !assembly.laser_cut_parts.some(part => part.current_flow_tag_index < part.flow_tag.tags.length);
+}
 
 function calculateAssemblyProgress(assembly) {
     let totalSteps = assembly.assembly_data.flow_tag.tags.length;
@@ -230,16 +233,41 @@ function getAssemblyCount(job) {
     if (job.assemblies && job.assemblies.length > 0) {
         countAssemblies(job.assemblies);
     }
-    console.log(assemblyCount);
-
     return assemblyCount;
 }
 
+function generateColor(index, total) {
+    const hue = (index / total) * 360;
+    const saturation = 70 + (index % 3) * 10;
+    const lightness = 50 + (index % 2) * 10;
+    return {
+        backgroundColor: `hsla(${hue}, ${saturation}%, ${lightness}%, 0.2)`,
+        borderColor: `hsla(${hue}, ${saturation}%, ${lightness}%, 1)`
+    };
+}
+
+function generateColorMap(processTags) {
+    const totalTags = processTags.length;
+    const colorMap = {};
+
+    processTags.forEach((tagName, index) => {
+        colorMap[tagName] = generateColor(index, totalTags);
+    });
+
+    return colorMap;
+}
+
+function getColorForProcessTag(tagName, processTags) {
+    const colorMap = generateColorMap(processTags);
+    return colorMap[tagName] || { backgroundColor: 'rgba(0, 0, 0, 0.2)', borderColor: 'rgba(0, 0, 0, 1)' };
+}
 export {
     getAssemblies,
     isAssemblyComplete,
+    isAssemblyPartsComplete,
     isJobComplete,
     getAssemblyCompletionProgress,
+    calculateAssemblyProgress,
     getJobCompletionProgress,
     getAssemblyCompletionTime,
     getPartProcessCountByTag,
@@ -248,4 +276,5 @@ export {
     getAssemblyProcessCountByTag,
     getPartProcessExpectedTimeToComplete,
     getAssemblyProcessExpectedTimeToComplete,
+    getColorForProcessTag,
 };
