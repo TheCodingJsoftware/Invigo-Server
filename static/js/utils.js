@@ -260,6 +260,20 @@ function getColorForProcessTag(tagName, processTags) {
     const colorMap = generateColorMap(processTags);
     return colorMap[tagName] || { backgroundColor: 'rgba(0, 0, 0, 0.2)', borderColor: 'rgba(0, 0, 0, 1)' };
 }
+
+function savePreference(id, key, value) {
+    const storageKey = `${id}_${key}`;
+    const data = {'value': value};
+    localStorage.setItem(storageKey, JSON.stringify(data));
+}
+
+function getPreference(id, key, defaultValue = null) {
+    const storageKey = `${id}_${key}`;
+    const value = localStorage.getItem(storageKey);
+    console.log(storageKey, value);
+
+    return value !== null ? JSON.parse(value): defaultValue;
+}
 export {
     getAssemblies,
     isAssemblyComplete,
@@ -276,4 +290,6 @@ export {
     getPartProcessExpectedTimeToComplete,
     getAssemblyProcessExpectedTimeToComplete,
     getColorForProcessTag,
+    savePreference,
+    getPreference,
 };
