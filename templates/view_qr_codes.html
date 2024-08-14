@@ -8,75 +8,16 @@
     <meta name="google" content="notranslate">
     <link href="https://cdn.jsdelivr.net/npm/beercss@3.6.13/dist/cdn/beer.min.css" rel="stylesheet">
     <script type="module" src="https://cdn.jsdelivr.net/npm/beercss@3.6.13/dist/cdn/beer.min.js"></script>
-    <script type="module"
-        src="https://cdn.jsdelivr.net/npm/material-dynamic-colors@1.1.2/dist/cdn/material-dynamic-colors.min.js">
-    </script>
+    <script type="module" src="https://cdn.jsdelivr.net/npm/material-dynamic-colors@1.1.2/dist/cdn/material-dynamic-colors.min.js"></script>
     <script src="https://www.kryogenix.org/code/browser/sorttable/sorttable.js"></script>
     <link href="/static/css/theme.css" rel="stylesheet">
+    <link href="/static/css/style.css" rel="stylesheet">
     <link rel="icon" href="/static/icon.png">
     <script src="https://cdn.jsdelivr.net/gh/davidshimjs/qrcodejs/qrcode.min.js"></script>
     <script src="https://kit.fontawesome.com/b88fae5da2.js" crossorigin="anonymous"></script>
     <title>View QR Codes</title>
 
 </head>
-
-<style>
-    summary{
-        font-size: 22pt;
-        padding: 0.2em;
-    }
-    .qr-container{
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(25em, 0));
-    }
-    .qr-code {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        cursor: pointer;
-        padding-top: 5em;
-    }
-    .qr-code img {
-        display: block; /* Ensures the image behaves as a block-level element */
-    }
-    .qr-code-add-cut-off{
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        cursor: pointer;
-    }
-    .qr-code-add-cut-off img{
-        width: 50%;
-    }
-    .qr-container > * {
-        border: 1px dashed black; /* or any other color you prefer */
-    }
-    .fixed-button {
-        position: fixed;
-        bottom: 20px;
-        right: 20px;
-    }
-
-    @media print {
-        header {
-            display: none;
-        }
-
-        details:not([open]) {
-            display: none;
-        }
-
-        summary {
-            display: none;
-        }
-        .qr-code-add-cut-off img{
-            width: 100%;
-        }
-    }
-    .page-break {
-        page-break-after: always;
-    }
-</style>
 
 <body class="dark">
     <header class="fixed primary" style="height: 60px;">
@@ -90,7 +31,7 @@
     <main>
         {% for category, sheets in sheet_data.items() %}
         <details class="center-align">
-            <summary>{{ category }}</summary>
+            <summary class="qr-summary">{{ category }}</summary>
             <div class="qr-container center-align">
                 {% for sheet in sheets %}
                 <div class="qr-item center-align" data-name="{{ sheet }}">
@@ -103,7 +44,7 @@
         {% endfor %}
         <div class="page-break"></div>
         <details class="center-align">
-            <summary>Add Cut Off</summary>
+            <summary class="qr-summary">Add Cut Off</summary>
             <div class="center-align center-align">
                 <div class="qr-item center-align" data-name="add_cutoff_sheet">
                     <div class="qr-code-add-cut-off" style="width: 100%;"></div>

@@ -8,25 +8,14 @@
     <meta name="google" content="notranslate">
     <link href="https://cdn.jsdelivr.net/npm/beercss@3.6.13/dist/cdn/beer.min.css" rel="stylesheet">
     <script type="module" src="https://cdn.jsdelivr.net/npm/beercss@3.6.13/dist/cdn/beer.min.js"></script>
-    <script type="module"
-        src="https://cdn.jsdelivr.net/npm/material-dynamic-colors@1.1.2/dist/cdn/material-dynamic-colors.min.js">
-    </script>
+    <script type="module" src="https://cdn.jsdelivr.net/npm/material-dynamic-colors@1.1.2/dist/cdn/material-dynamic-colors.min.js"></script>
     <link href="/static/css/theme.css" rel="stylesheet">
+    <link href="/static/css/style.css" rel="stylesheet">
     <link rel="icon" href="/static/icon.png">
     <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=yes" />
     <script src="https://www.kryogenix.org/code/browser/sorttable/sorttable.js"></script>
     <title>Workorder</title>
 </head>
-
-<style>
-    .hidden{
-        display: none;
-    }
-    img {
-        -webkit-filter: invert(0.9);
-        filter: invert(0.9);
-    }
-</style>
 
 <body class="dark">
     <header class="fixed primary">
@@ -52,7 +41,7 @@
             </div>
             {% for nest_data in workorder_data %}
                 <article class="border no-padding">
-                    <img src="/image/{{nest_data.image_path}}" class="responsive">
+                    <img class="workorder-image" src="/image/{{nest_data.image_path}}" class="responsive">
                     <div class="padding">
                         <h5>
                             {{nest_data.name}}
@@ -74,7 +63,7 @@
                         <details>
                             <summary class="none no-padding">
                                 <a class="row wave padding surface-container">
-                                    <img class="round" src="/{{laser_cut_part.image_index}}">
+                                    <img class="workorder-image" class="round" src="/{{laser_cut_part.image_index}}">
                                     <div>
                                         <h6 class="small">{{laser_cut_part.name}}</h6>
                                         <div><i>tag</i>{{laser_cut_part.part_number}}</div>
