@@ -324,8 +324,26 @@ class WayBackMachineHandler(tornado.web.RequestHandler):
                 data["sheets_inventory"].append(sheet_data["name"])
 
         template = env.get_template("way_back_machine.html")
-        rendered_template = template.render(inventory=data)
+        rendered_template = template.render()
         self.write(rendered_template)
+
+
+class WayBackMachineDataHandler(tornado.web.RequestHandler):
+    def get(self):
+        data: dict[str, list[str]] = {}
+        with open("data/components_inventory.json", "rb") as f:
+            data["components_inventory"] = []
+            for component_data in msgspec.json.decode(f.read())["components"]:
+                data["components_inventory"].append(component_data["part_name"])
+        with open("data/laser_cut_inventory.json", "rb") as f:
+            data["laser_cut_inventory"] = []
+            for laser_cut_part_data in msgspec.json.decode(f.read())["laser_cut_parts"]:
+                data["laser_cut_inventory"].append(laser_cut_part_data["name"])
+        with open("data/sheets_inventory.json", "rb") as f:
+            data["sheets_inventory"] = []
+            for sheet_data in msgspec.json.decode(f.read())["sheets"]:
+                data["sheets_inventory"].append(sheet_data["name"])
+        self.write(data)
 
 
 class FetchDataHandler(tornado.web.RequestHandler):
@@ -1921,6 +1939,7 @@ if __name__ == "__main__":
             (r"/get_order_number", GetOrderNumberHandler),
             # Way back machine habdlers
             (r"/way_back_machine", WayBackMachineHandler),
+            (r"/way_back_machine_get_data", WayBackMachineDataHandler),
             (r"/fetch_data", FetchDataHandler),
             # Inventory handlers
             (r"/inventory", InventoryHandler),
