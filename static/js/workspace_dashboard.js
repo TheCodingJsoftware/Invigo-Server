@@ -17,6 +17,95 @@ import {
 } from './utils.js';
 
 
+class Accordion {
+    constructor(delailElement) {
+        this.detailElement = delailElement;
+
+        this.summary = this.detailElement.querySelector("summary");
+        this.content = this.detailElement.querySelector(".assembly-container");
+        this.jobArticle = this.detailElement.querySelector('.job-article');
+
+        this.animation = null;
+        this.isClosing = false;
+        this.isExpanding = false;
+
+        this.summary.addEventListener("click", (e) => this.onClick(e));
+    }
+
+    onClick(e) {
+        e.preventDefault();
+        this.detailElement.style.overflow = "hidden";
+        if (this.isClosing || !this.detailElement.open) {
+            this.open();
+        } else if (this.isExpanding || this.detailElement.open) {
+            this.shrink();
+        }
+    }
+
+    shrink() {
+        this.isClosing = true;
+        this.jobArticle.classList.remove("primary");
+
+        const startHeight = `${this.detailElement.offsetHeight}px`;
+        const endHeight = `${this.summary.offsetHeight}px`;
+
+        if (this.animation) {
+            this.animation.cancel();
+        }
+
+        this.animation = this.detailElement.animate(
+            {
+                height: [startHeight, endHeight],
+            },
+            {
+                duration: 300,
+                easing: "ease-in-out",
+            }
+        );
+
+        this.animation.onfinish = () => this.onAnimationFinish(false);
+        this.animation.oncancel = () => (this.isClosing = false);
+    }
+
+    open() {
+        this.detailElement.style.height = `${this.detailElement.offsetHeight}px`;
+        this.detailElement.open = true;
+        window.requestAnimationFrame(() => this.expand());
+    }
+
+    expand() {
+        this.jobArticle.classList.add("primary");
+        this.isExpanding = true;
+        const startHeight = `${this.detailElement.offsetHeight}px`;
+        const endHeight = `${this.summary.offsetHeight + this.content.offsetHeight
+            }px`;
+
+        if (this.animation) {
+            this.animation.cancel();
+        }
+
+        this.animation = this.detailElement.animate(
+            {
+                height: [startHeight, endHeight],
+            },
+            {
+                duration: 300,
+                easing: "ease-in-out",
+            }
+        );
+        this.animation.onfinish = () => this.onAnimationFinish(true);
+        this.animation.oncancel = () => (this.isExpanding = false);
+    }
+
+    onAnimationFinish(open) {
+        this.detailElement.open = open;
+        this.animation = null;
+        this.isClosing = false;
+        this.isExpanding = false;
+        this.detailElement.style.height = this.detailElement.style.overflow = "";
+    }
+}
+
 class HeatMap {
     constructor(productionPlan, workspaceSettings, container) {
         this.productionPlan = productionPlan;
@@ -51,6 +140,10 @@ class HeatMap {
 
     populateProcessSelections() {
         this.processSelections.innerHTML = '';
+        const everythingOption = document.createElement('option');
+        everythingOption.textContent = "Everything";
+        this.processSelections.appendChild(everythingOption);
+
         Object.keys(this.workspaceSettings.tags).forEach(tagName => {
             const option = document.createElement('option');
             option.textContent = tagName;
@@ -78,7 +171,18 @@ class HeatMap {
                 // If the job is active on the current date
                 if (jobStartDate <= currentDate && currentDate <= jobEndDate) {
                     const flowtag_timeline = job.job_data.flowtag_timeline;
-                    if (flowtag_timeline.hasOwnProperty(this.currentProcess)) {
+                    if (this.currentProcess === "Everything"){
+                        Object.keys(flowtag_timeline).forEach(tagName => {
+                            const tag = flowtag_timeline[tagName]
+                            const tagStartDate = new Date(tag.starting_date);
+                            const tagEndDate = new Date(tag.ending_date);
+                            const durationDays = (tagEndDate - tagStartDate) / (1000 * 60 * 60 * 24);
+                            const processExpectedTimeSeconds = (getPartProcessExpectedTimeToComplete(job, tagName) + getAssemblyProcessExpectedTimeToComplete(job, tagName)); // seconds
+                            if (tagStartDate <= currentDate && currentDate <= tagEndDate) {
+                                totalHourCount += processExpectedTimeSeconds / durationDays / 60;
+                            }
+                        });
+                    }else if (flowtag_timeline.hasOwnProperty(this.currentProcess)) {
                         const tag = flowtag_timeline[this.currentProcess];
                         const tagStartDate = new Date(tag.starting_date);
                         const tagEndDate = new Date(tag.ending_date);
@@ -116,7 +220,6 @@ class HeatMap {
 
         return data;
     }
-
 
     loadHeatMap() {
         const ctx = this.heatmapCanvas.getContext('2d');
@@ -1227,23 +1330,33 @@ class AssemblyProgressionLayout{
         this.containerDiv = document.querySelector(this.container);
         this.jobsList = this.containerDiv.querySelector('#jobs-list');
         this.loadView();
-    }loadView() {
+    }
+
+    loadView() {
         this.jobsList.innerHTML = '';  // Clear the current content
 
         this.workspace.jobs.forEach(job => {
             const jobDetails = document.createElement('details');
-            jobDetails.className = "bottom-margin"
+            jobDetails.className = "bottom-margin job-details"
 
             const jobSummary = document.createElement('summary');
             jobSummary.className = 'none';
 
             const jobArticle = document.createElement('article');
-            jobArticle.className = 'small-round primary small-padding job-article';
+            jobArticle.className = 'small-round small-padding job-article';
+
+            const jobCompletionProgress = getJobCompletionProgress(job).toFixed(2) * 100;
+            const jobProgress = document.createElement('progress');
+            jobProgress.className = "max";
+            jobProgress.max = 100;
+            jobProgress.value = jobCompletionProgress;
+            jobArticle.appendChild(jobProgress)
 
             const jobNav = document.createElement('nav');
+            jobNav.className = "no-margin";
             const jobMaxDiv = document.createElement('div');
             jobMaxDiv.className = 'max';
-            jobMaxDiv.textContent = `${job.job_data.name} #${job.job_data.order_number} - ${getJobCompletionProgress(job).toFixed(2) * 100}% complete`;
+            jobMaxDiv.textContent = `${job.job_data.name} #${job.job_data.order_number} - ${jobCompletionProgress}% complete`;
 
             const jobIcon = document.createElement('i');
             jobIcon.textContent = 'expand_more';
@@ -1255,26 +1368,27 @@ class AssemblyProgressionLayout{
             jobDetails.appendChild(jobSummary);
 
             const assembliesContainer = document.createElement('article');
-            assembliesContainer.className = 'grid padding no-margin assembly-container';
+            assembliesContainer.className = 'padding no-margin assembly-container no-shadow';
 
             getAssemblies(job).forEach(assembly => {
                 const assemblyArticle = document.createElement('article');
-                assemblyArticle.className = 's12 no-padding assembly-article';
+                assemblyArticle.className = 'no-padding assembly-article';
 
                 const assemblyGrid = document.createElement('div');
-                assemblyGrid.className = '';
+                assemblyGrid.className = 'row';
 
                 const imageContainer = document.createElement('div');
 
                 const assemblyImage = document.createElement('img');
-                assemblyImage.className = 's6 responsive';
+                assemblyImage.className = 'responsive small-round';
+                assemblyImage.style = "max-height: 12rem;"
                 assemblyImage.src = assembly.assembly_data.assembly_image;  // Replace with actual path
                 imageContainer.appendChild(assemblyImage);
 
                 assemblyGrid.appendChild(imageContainer);
 
                 const textContainer = document.createElement('div');
-                textContainer.className = 's6';
+                textContainer.className = 'max';
 
                 const textPadding = document.createElement('div');
                 textPadding.className = 'padding';
@@ -1350,21 +1464,21 @@ class AssemblyProgressionLayout{
 
                 textPadding.appendChild(nav);
 
-                const progressContainer = document.createElement("div")
-                progressContainer.className = "padding row";
+                // const progressContainer = document.createElement("div")
+                // progressContainer.className = "padding row";
 
-                const progress = document.createElement('progress');
-                progress.value = getAssemblyCompletionProgress(assembly).toFixed(2) * 100;
-                progress.max = 100;
-                progressContainer.appendChild(progress);
+                // const progress = document.createElement('progress');
+                // progress.value = getAssemblyCompletionProgress(assembly).toFixed(2) * 100;
+                // progress.max = 100;
+                // progressContainer.appendChild(progress);
 
-                const assemblySteps = calculateAssemblyProgress(assembly);
-                const assemblyStepsText = document.createElement('p');
-                assemblyStepsText.textContent = `${assemblySteps.currentSteps}/${assemblySteps.totalSteps}`;
-                progressContainer.appendChild(assemblyStepsText);
+                // const assemblySteps = calculateAssemblyProgress(assembly);
+                // const assemblyStepsText = document.createElement('p');
+                // assemblyStepsText.textContent = `${assemblySteps.currentSteps}/${assemblySteps.totalSteps}`;
+                // progressContainer.appendChild(assemblyStepsText);
+                // textPadding.appendChild(progressContainer);
 
                 textContainer.appendChild(textPadding);
-                textContainer.appendChild(progressContainer);
                 assemblyGrid.appendChild(textContainer);
 
                 assemblyArticle.appendChild(assemblyGrid);
@@ -1373,6 +1487,11 @@ class AssemblyProgressionLayout{
 
             jobDetails.appendChild(assembliesContainer);
             this.jobsList.appendChild(jobDetails);
+        });
+
+
+        this.containerDiv.querySelectorAll("details").forEach((detailElement) => {
+            new Accordion(detailElement);
         });
     }
 
@@ -1415,7 +1534,6 @@ class WorkspaceDashboard {
         this.workspaceSettings = await this.loadWorkspaceSettings();
         this.productionPlan = await this.loadProductionPlan();
         if (this.workspace && this.workspaceArchives && this.workspaceSettings && this.productionPlan) {
-            // this.loadWorkspaceContents();
             this.loadLaserCutPartsInProcessCharts();
             this.loadAssembliesInProcessCharts();
             this.loadAssemblyCharts();
@@ -1525,21 +1643,6 @@ class WorkspaceDashboard {
         }
     }
 
-    loadWorkspaceContents() {
-        const container = document.getElementById('workspace-container');
-        if (!container || !this.workspace || !this.workspace.jobs) return;
-
-        this.workspace.jobs.forEach(job => {
-            const jobElement = document.createElement('article');
-            jobElement.className = 'article';
-            jobElement.innerHTML = `
-                <h3>${job.job_data.name}</h3>
-                <a href="${job.url}" class="button">Open</a>
-            `;
-            container.appendChild(jobElement);
-        });
-    }
-
     async loadWorkspace() {
         try {
             const response = await fetch('/data/workspace.json');
@@ -1600,11 +1703,9 @@ class WorkspaceDashboard {
         this.socket = new WebSocket(`ws://${window.location.host}/ws/web`);
         this.socket.onmessage = (event) => {
             const message = JSON.parse(event.data);
-            if (message.action === 'download') {
+            if (message.action === 'download' && (message.files.includes('workspace.json') || message.files.includes('workspace'))) {
                 console.log('Workspace update received. Reloading...');
-                this.loadProductionPlan().then(() => {
-                    this.reloadView();
-                });
+                this.reloadView();
             }
         };
     }
@@ -1623,4 +1724,43 @@ window.addEventListener('load', async function () {
             }
         });
     }, 1000);
+});
+
+document.addEventListener('DOMContentLoaded', () => {
+    function activateTabFromHash() {
+        const hash = window.location.hash;
+        if (hash) {
+            const activeTab = document.querySelector(`.tabs a[data-ui="${hash}"]`);
+            const activePage = document.querySelector(hash);
+
+            if (activeTab && activePage) {
+                document.querySelectorAll('.tabs a').forEach(tab => tab.classList.remove('active'));
+                document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+
+                activeTab.classList.add('active');
+                activePage.classList.add('active');
+
+                window.scrollTo(0, 0);
+            }
+        }
+    }
+
+    document.querySelectorAll('.tabs a').forEach(tab => {
+        tab.addEventListener('click', function (event) {
+            event.preventDefault();
+
+            document.querySelectorAll('.tabs a').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+
+            this.classList.add('active');
+            const pageId = this.getAttribute('data-ui');
+            document.querySelector(pageId).classList.add('active');
+
+            window.location.hash = pageId;
+        });
+    });
+
+    activateTabFromHash();
+
+    window.addEventListener('hashchange', activateTabFromHash);
 });

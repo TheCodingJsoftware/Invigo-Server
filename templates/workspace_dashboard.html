@@ -9,6 +9,7 @@
     <link href="https://cdn.jsdelivr.net/npm/beercss@3.6.13/dist/cdn/beer.min.css" rel="stylesheet">
     <script type="module" src="https://cdn.jsdelivr.net/npm/beercss@3.6.13/dist/cdn/beer.min.js"></script>
     <link href="/static/css/theme.css" rel="stylesheet">
+    <link href="/static/css/style.css" rel="stylesheet">
     <link rel="icon" href="/static/icon.png">
     <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=yes" />
     <script src="https://www.kryogenix.org/code/browser/sorttable/sorttable.js"></script>
@@ -19,36 +20,6 @@
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <title>Workspace Dashboard</title>
 </head>
-
-<style>
-    .hidden {
-        display: none;
-    }
-
-    details[open] summary i::before {
-        content: 'expand_less';
-    }
-
-    summary i::before {
-        content: 'expand_more';
-    }
-
-    summary i {
-        display: inline-block;
-    }
-
-    details[open] .job-article {
-        border-bottom-left-radius: 0 !important;
-        border-bottom-right-radius: 0 !important;
-    }
-    details[open] .assembly-container {
-        border-top-left-radius: 0 !important;
-        border-top-right-radius: 0 !important;
-    }
-    .assembly-article{
-        background-color: var(--surface-container-high);
-    }
-</style>
 
 <body class="dark">
     <header class="fixed primary">
@@ -61,23 +32,23 @@
             </h5>
         </nav>
     </header>
-    <main class="padding responsive" id="workspace-container">
+    <main class="responsive">
         <div>
             <div class="tabs left-align">
-              <a data-ui="#graphs-page" class="active">
+              <a data-ui="#graphs" class="active">
                 <i>bar_chart</i>
                 <span>Graphs</span>
               </a>
-              <a data-ui="#heatmaps-page">
+              <a data-ui="#heatmaps">
                 <i>key_visualizer</i>
                 <span>Heatmaps</span>
               </a>
-              <a data-ui="#progression-page">
+              <a data-ui="#activity">
                 <i>browse_activity</i>
-                <span>Progression</span>
+                <span>Activity</span>
               </a>
             </div>
-            <div id="graphs-page" class="page padding active">
+            <div id="graphs" class="page padding active">
                 <div class="grid">
                     <div class="s4">
                         <article id="assemblies-in-process-chart-container-1">
@@ -98,7 +69,6 @@
                                                 <span>Include data from workspace archives</span>
                                             </label>
                                         </a>
-                                        <div class="divider"></div>
                                         <a class="row surface-container">
                                             <div class="field label prefix border max">
                                                 <i>date_range</i>
@@ -140,7 +110,6 @@
                                                 <span>Include data from workspace archives</span>
                                             </label>
                                         </a>
-                                        <div class="divider"></div>
                                         <a class="row surface-container">
                                             <div class="field label prefix border max">
                                                 <i>date_range</i>
@@ -182,7 +151,6 @@
                                                 <span>Include data from workspace archives</span>
                                             </label>
                                         </a>
-                                        <div class="divider"></div>
                                         <a class="row surface-container">
                                             <div class="field label prefix border max">
                                                 <i>date_range</i>
@@ -224,7 +192,6 @@
                                                 <span>Include data from workspace archives</span>
                                             </label>
                                         </a>
-                                        <div class="divider"></div>
                                         <a class="row surface-container">
                                             <div class="field label prefix border max">
                                                 <i>date_range</i>
@@ -266,7 +233,6 @@
                                                 <span>Include data from workspace archives</span>
                                             </label>
                                         </a>
-                                        <div class="divider"></div>
                                         <a class="row surface-container">
                                             <div class="field label prefix border max">
                                                 <i>date_range</i>
@@ -302,7 +268,6 @@
                                                 <span>Include data from workspace archives</span>
                                             </label>
                                         </a>
-                                        <div class="divider"></div>
                                         <a class="row surface-container">
                                             <div class="field label prefix border max">
                                                 <i>date_range</i>
@@ -344,7 +309,6 @@
                                                 <span>Include data from workspace archives</span>
                                             </label>
                                         </a>
-                                        <div class="divider"></div>
                                         <a class="row surface-container">
                                             <div class="field label prefix border max">
                                                 <i>date_range</i>
@@ -386,7 +350,6 @@
                                                 <span>Include data from workspace archives</span>
                                             </label>
                                         </a>
-                                        <div class="divider"></div>
                                         <a class="row surface-container">
                                             <div class="field label prefix border max">
                                                 <i>date_range</i>
@@ -411,7 +374,7 @@
                     </div>
                 </div>
             </div>
-            <div id="heatmaps-page" class="page padding">
+            <div id="heatmaps" class="page padding">
                 <article id="production-plan-heatmap-container">
                     <div class="row">
                         <h5 class="max">Production Plan Heatmap</h5>
@@ -428,7 +391,7 @@
                         <span id="max-value-display">Max: 0h</span>
                     </div>
                     <div>
-                        <canvas id="heatmap" style="max-height: 135px;"></canvas>
+                        <canvas id="heatmap" style="max-height: 150px;"></canvas>
                     </div>
                 </article>
                 <article id="workspace-heatmap-container">
@@ -447,18 +410,18 @@
                         <span id="max-value-display">Max: 0h</span>
                     </div>
                     <div>
-                        <canvas id="heatmap" style="max-height: 135px;"></canvas>
+                        <canvas id="heatmap" style="max-height: 150px;"></canvas>
                     </div>
                 </article>
             </div>
-            <div id="progression-page" class="page padding">
+            <div id="activity" class="page padding">
                 <div id="assembly-progression-container">
                     <div id="jobs-list">
 
                     </div>
                 </div>
             </div>
-          </div>
+        </div>
     </main>
     <script type="module" src="/static/js/workspace_dashboard.js"></script>
 </body>

@@ -173,7 +173,6 @@ function getAssemblyProcessExpectedTimeToComplete(job, tagName){
     if (job.assemblies) {
         getAssemblies(job.assemblies);
     }
-    console.log(tagName, processDuration);
 
     return processDuration;
 }
