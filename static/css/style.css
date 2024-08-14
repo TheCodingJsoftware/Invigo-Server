@@ -4,6 +4,7 @@
 }
 
 /* workspace_dashboard.html */
+
 .job-details[open] summary i::before {
     content: 'expand_less';
 }
@@ -15,20 +16,25 @@
 .job-details summary i {
     display: inline-block;
 }
+
 .job-article{
     transition: background-color, color 300ms ease-in-out;
 }
+
 .job-details[open] .job-article {
     border-bottom-left-radius: 0 !important;
     border-bottom-right-radius: 0 !important;
 }
+
 .job-details[open] .assembly-container {
     border-top-left-radius: 0 !important;
     border-top-right-radius: 0 !important;
 }
+
 .job-details .assembly-container{
     box-shadow: none;
 }
+
 .job-details .assembly-article{
     background-color: var(--surface-container-high);
     box-shadow: var(--elevate2);
@@ -76,10 +82,12 @@
     font-size: 22pt;
     padding: 0.2em;
 }
+
 .qr-container{
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(25em, 0));
 }
+
 .qr-code {
     display: flex;
     justify-content: center;
@@ -87,21 +95,26 @@
     cursor: pointer;
     padding-top: 5em;
 }
+
 .qr-code img {
     display: block; /* Ensures the image behaves as a block-level element */
 }
+
 .qr-code-add-cut-off{
     display: flex;
     justify-content: center;
     align-items: center;
     cursor: pointer;
 }
+
 .qr-code-add-cut-off img{
     width: 50%;
 }
+
 .qr-container > * {
     border: 1px dashed black; /* or any other color you prefer */
 }
+
 .fixed-button {
     position: fixed;
     bottom: 20px;
@@ -124,13 +137,14 @@
         width: 100%;
     }
 }
+
 .page-break {
     page-break-after: always;
 }
 
 /* workorder.html */
 
-.workorder-image {
+.workorder-image img{
     -webkit-filter: invert(0.9);
     filter: invert(0.9);
 }
