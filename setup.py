@@ -1,5 +1,6 @@
 import json
 import os
+import shutil
 import subprocess
 import sys
 
@@ -13,30 +14,30 @@ def create_directory(path):
 
 
 def check_installation(command, name):
-    try:
-        subprocess.check_output([command, '--version'])
-        print(f"{name} is installed.")
-    except subprocess.CalledProcessError:
+    if shutil.which(command):
+        try:
+            subprocess.check_output([command, '--version'], shell=True)
+            print(f"{name} is installed.")
+        except subprocess.CalledProcessError:
+            print(f"Error: {name} is installed, but an error occurred.")
+            sys.exit(1)
+    else:
         print(f"Error: {name} is not installed.")
         sys.exit(1)
 
 
 def install_npm_packages():
-    npm_packages = [
-        "webpack",
-        "copy-webpack-plugin",
-        "webpack-cli",
-        "beercss",
-        "material-dynamic-colors",
-        "jquery",
-        "flatpickr",
-        "chart.js",
-        "chartjs-chart-matrix",
-        "date-fns",
-        "chartjs-adapter-date-fns",
-        "dhtmlx-gantt"
-    ]
-    subprocess.check_call(['npm', 'install', '--save-dev'] + npm_packages)
+    npm_path = shutil.which('npm')
+    if npm_path:
+        npm_packages = [
+            'webpack', 'webpack-dev-server', 'style-loader', 'css-loader', 'copy-webpack-plugin', 'webpack-cli', 'beercss',
+            'material-dynamic-colors', 'jquery', 'flatpickr', 'chart.js', 'bootstrap',
+            'chartjs-chart-matrix', 'date-fns', 'chartjs-adapter-date-fns', 'dhtmlx-gantt'
+        ]
+        subprocess.check_call([npm_path, 'install', '--save-dev'] + npm_packages)
+    else:
+        print("npm is not installed or not in your PATH.")
+        sys.exit(1)
 
 
 def create_virtual_environment():
@@ -54,8 +55,13 @@ def install_python_requirements():
 
 
 def build_webpack():
-    command = ['npx', 'webpack', '--config', 'webpack.config.js']
-    subprocess.check_call(command)
+    npx_path = shutil.which('npx')
+    if npx_path:
+        command = [npx_path, 'webpack', '--config', 'webpack.config.js']
+        subprocess.check_call(command)
+    else:
+        print("npx is not installed or not in your PATH.")
+        sys.exit(1)
 
 
 def setup_email_credentials():
