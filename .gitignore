@@ -171,6 +171,7 @@ order_number.json
 backups
 run.bat
 update.bat
+install.bat
 *.zip
 *.json
 *.log
