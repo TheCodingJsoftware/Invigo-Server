@@ -1,3 +1,5 @@
+import "beercss"
+
 function goToMainUrl() {
     window.location.href = "/"
 }
@@ -14,3 +16,5 @@ window.addEventListener('load', function () {
         });
     }, 1000); // 1000 milliseconds = 1 second
 });
+
+window.goToMainUrl = goToMainUrl;

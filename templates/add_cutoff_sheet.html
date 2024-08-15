@@ -6,13 +6,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <meta name="google" content="notranslate">
-    <link href="https://cdn.jsdelivr.net/npm/beercss@3.6.13/dist/cdn/beer.min.css" rel="stylesheet">
-    <script type="module" src="https://cdn.jsdelivr.net/npm/beercss@3.6.13/dist/cdn/beer.min.js"></script>
-    <link href="/static/css/theme.css" rel="stylesheet">
     <link rel="icon" href="/static/icon.png">
     <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=yes" />
-    <script src="https://www.kryogenix.org/code/browser/sorttable/sorttable.js"></script>
     <title>Add Cutoff Sheet</title>
+    <script src="/dist/js/sorttable.bundle.js"></script>
+    <script src="/dist/js/add_cutoff_sheet.bundle.js"></script>
 </head>
 
 <body class="dark">
@@ -101,23 +99,8 @@
             </table>
         </div>
     </main>
+    <link href="/static/css/theme.css" rel="stylesheet">
+    <link href="/static/css/style.css" rel="stylesheet">
 </body>
-<script>
-    function goToMainUrl() {
-        window.location.href = "/";
-    }
-    function validateForm() {
-        var length = document.getElementById("length").value;
-        var width = document.getElementById("width").value;
-        var material = document.getElementById("material").value;
-        var thickness = document.getElementById("thickness").value;
-
-        if (length && width && material && thickness) {
-            document.getElementById("addButton").disabled = false;
-        } else {
-            document.getElementById("addButton").disabled = true;
-        }
-    }
-</script>
 
 </html>

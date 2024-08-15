@@ -109,10 +109,25 @@ class WebSocketWebHandler(tornado.websocket.WebSocketHandler):
         )
 
 
-class ThemeFileHandler(tornado.web.RequestHandler):
+class MaterialSymbolsRoundedFileHandler(tornado.web.RequestHandler):
+    def get(self):
+        with open(r"node_modules\beercss\dist\cdn\material-symbols-rounded.woff2", "rb") as file:
+            data = file.read()
+            self.write(data)
+
+
+class BootstrapCSSMapFileHandler(tornado.web.RequestHandler):
     def get(self):
         self.set_header("Content-Type", "text/css")
-        with open("static/css/theme.css", "rb") as file:
+        with open(r"node_modules\bootstrap\dist\css\bootstrap.min.css.map", "rb") as file:
+            data = file.read()
+            self.write(data)
+
+
+class FlatpickrCSSFileHandler(tornado.web.RequestHandler):
+    def get(self):
+        self.set_header("Content-Type", "text/css")
+        with open(r"node_modules\flatpickr\dist\themes\dark.css", "rb") as file:
             data = file.read()
             self.write(data)
 
@@ -120,7 +135,7 @@ class ThemeFileHandler(tornado.web.RequestHandler):
 class WorkspaceScriptHandler(tornado.web.RequestHandler):
     def get(self):
         self.set_header("Content-Type", "application/javascript")
-        with open("static/js/workspace_dashboard.js", "rb") as file:
+        with open(r"static/js/workspace_dashboard.js", "rb") as file:
             data = file.read()
             self.write(data)
 
@@ -128,7 +143,7 @@ class WorkspaceScriptHandler(tornado.web.RequestHandler):
 class WorkspaceArchivesScriptHandler(tornado.web.RequestHandler):
     def get(self):
         self.set_header("Content-Type", "application/javascript")
-        with open("static/js/workspace_archives.js", "rb") as file:
+        with open(r"static/js/workspace_archives.js", "rb") as file:
             data = file.read()
             self.write(data)
 
@@ -136,7 +151,7 @@ class WorkspaceArchivesScriptHandler(tornado.web.RequestHandler):
 class ProductionPlannerScriptHandler(tornado.web.RequestHandler):
     def get(self):
         self.set_header("Content-Type", "application/javascript")
-        with open("static/js/production_planner.js", "rb") as file:
+        with open(r"static/js/production_planner.js", "rb") as file:
             data = file.read()
             self.write(data)
 
@@ -1902,8 +1917,11 @@ if __name__ == "__main__":
         [
             (r"/", MainHandler),
             (r"/ws", WebSocketHandler),
-            (r"/ws/web", WebSocketWebHandler),  # New WebSocket handler for web clients
-            (r"/static/css/theme.css", ThemeFileHandler),
+            (r"/ws/web", WebSocketWebHandler),
+            # Source file handlers
+            (r"/flatpickr.css", FlatpickrCSSFileHandler),
+            (r'/material-symbols-rounded.woff2', MaterialSymbolsRoundedFileHandler), # Used by production planner
+            (r"/dist/(.*)", tornado.web.StaticFileHandler, {"path": "dist"}),
             # Log handlers
             (r"/server_log", ServerLogsHandler),
             (r"/logs", LogsHandler),
@@ -1952,9 +1970,6 @@ if __name__ == "__main__":
             (r"/workspace_dashboard", WorkspaceDashboardHandler),
             (r"/workspace_archives_dashboard", WorkspaceArchivesDashboardHandler),
             (r"/production_planner_job_printout", ProductionPlannerJobPrintoutHandler),
-            (r"/static/js/production_planner.js", ProductionPlannerScriptHandler),
-            (r"/static/js/workspace_dashboard.js", WorkspaceScriptHandler),
-            (r"/static/js/workspace_archives_dashboard.js", WorkspaceArchivesScriptHandler),
             (r"/data/production_plan.json", ProductionPlanJsonHandler),
             (r"/data/workspace.json", WorkspaceJsonHandler),
             (r"/data/workspace_settings.json", WorkspaceSettingsJsonHandler),

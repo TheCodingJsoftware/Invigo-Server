@@ -1,3 +1,5 @@
+import "beercss"
+
 function goToMainUrl() {
     window.location.href = "/";
 }
@@ -57,3 +59,7 @@ document.addEventListener("DOMContentLoaded", function() {
         });
     }
 });
+
+window.goToMainUrl = goToMainUrl;
+window.deleteLog = deleteLog;
+window.fetchLogContent = fetchLogContent;

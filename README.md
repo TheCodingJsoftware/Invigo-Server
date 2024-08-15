@@ -1,31 +1,35 @@
 # Invigo-Server
 
-LAN Server that handles HTTP requests from [Invigo](https://github.com/TheCodingJsoftware/Invigo).
-
-It also hosts various web pages that are designed with [beercss](https://beercss.com):
-
-- `/` is the homepage.
-- `/server_log` is the live server log.
-- `/logs` is a page where you can view user error logs and past server logs.
-- `/inventory` you can view all inventories and their respective categories.
-- `/inventory/(.*)/(.*)` is a table that loads all inventory items from the selected inventory and category.
-  - Example: `/inventory/components_inventory/BL 25` will load a table with all components in category, BL 25.
-- `/sheets_in_inventory/(.*)` is a page where you can view the order-pending status of a sheet and view/edit its quantity.
-- `/sheet_qr_codes` is a printer-ready page that generates QR Codes for every sheet in the inventory, scanning the QR Code redirects you to `/sheets_in_inventory/(.*)`.
-- `/add_cutoff_sheet` is a page to add and view cutoff sheets.
-- `/load_job/(.*)` loads a jobs HTML contents.
-- `/load_quote/(.*)` loads a quotes HTML contents.
+LAN file sharing server that Invigo relies on to keep all clients synced and a website with built in production planning and analytics.
 
 ## Setup
 
 1. Run `setup.py` to setup directories.
-2. Create a virtual environment with `virtualenv`, activate it, and install the following requirements:
+2. Install node requirements
+
+    ```bash
+    npm install webpack copy-webpack-plugin webpack-cli beercss material-dynamic-colors jquery flatpickr chart.js chartjs-chart-matrix date-fns chartjs-adapter-date-fns dhtmlx-gantt --save-dev
+    ```
+
+3. Create a virtual environment with `virtualenv`, activate it, and install the following python requirements:
 
     ```bash
     pip install -r requirements.txt
     ```
 
-3. Create a json file called `credentials.json` then set your email credentials in order send emails via SMTP:
+    OR for active development
+
+    ```bash
+    npx webpack --watch --config webpack.config.js
+    ```
+
+4. Build with
+
+    ```bash
+    npx webpack --config webpack.config.js
+    ```
+
+5. Create a json file called `credentials.json` then set your email credentials in order send emails via SMTP:
 
     ```json
     {
@@ -34,10 +38,10 @@ It also hosts various web pages that are designed with [beercss](https://beercss
     }
     ```
 
-4. Then make sure `run.bat` has the proper paths configured and just run it.
+6. Then make sure `run.bat` has the proper paths configured and just run it.
 
-5. Finally, set up autostart by making a shortcut of `run.bat` and pasting into:
+7. Finally, set up autostart by making a shortcut of `run.bat` and pasting into:
 
-```bash
-C:\Users\Invigo\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Startup
-```
+    ```bash
+    C:\Users\Invigo\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Startup
+    ```

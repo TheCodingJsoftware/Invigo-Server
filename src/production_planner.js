@@ -11,6 +11,10 @@ import {
     getPartProcessExpectedTimeToComplete,
     getAssemblyProcessExpectedTimeToComplete,
 } from './utils.js';
+import 'jquery'
+import 'bootstrap'
+import flatpickr from 'flatpickr';
+import { gantt } from 'dhtmlx-gantt';
 
 function goToMainUrl() {
     window.location.href = "/";

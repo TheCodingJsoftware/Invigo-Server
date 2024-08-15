@@ -1,10 +1,11 @@
+import "beercss"
+
 function goToMainUrl() {
     window.location.href = "/";
 }
 
 function openPrintout(dir, name) {
     window.location.href = "/load_job/" + dir + '/' + name;
-    console.log(dir, name);
 }
 
 document.addEventListener('DOMContentLoaded', function () {
@@ -46,3 +47,6 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 });
+
+window.goToMainUrl = goToMainUrl;
+window.openPrintout = openPrintout;

@@ -1,8 +1,11 @@
+import "beercss"
+
 function goToMainUrl() {
     window.location.href = "/"
 }
+
 document.addEventListener('DOMContentLoaded', async function () {
-    baseUrl = "http://invi.go/";
+    const baseUrl = "http://invi.go/";
     document.querySelectorAll('.qr-item').forEach(item => {
         const name = item.getAttribute('data-name');
         if (name == "add_cutoff_sheet") {
@@ -21,7 +24,7 @@ document.addEventListener('DOMContentLoaded', async function () {
                 window.open(encodedUrl, '_blank');
             });
         } else {
-            sheetsUrl = baseUrl + "sheets_in_inventory/"
+            const sheetsUrl = baseUrl + "sheets_in_inventory/"
             const encodedUrl = encodeURI(sheetsUrl + name.replace(/ /g, "_"));
             const qrDiv = item.querySelector('.qr-code');
             new QRCode(qrDiv, {
@@ -49,3 +52,5 @@ window.addEventListener('afterprint', function () {
     document.body.classList.remove('light');
     document.body.classList.add('dark');
 });
+
+window.goToMainUrl = goToMainUrl;

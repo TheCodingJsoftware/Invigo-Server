@@ -1,3 +1,8 @@
+import "beercss"
+import { Chart, registerables } from 'chart.js';
+import 'chartjs-adapter-date-fns';
+
+Chart.register(...registerables);
 
 function goToMainUrl() {
     window.location.href = "/";
@@ -165,3 +170,5 @@ document.addEventListener('DOMContentLoaded', async function () {
         }
     });
 });
+
+window.goToMainUrl = goToMainUrl;

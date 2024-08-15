@@ -1,3 +1,5 @@
+import "beercss"
+
 document.addEventListener('DOMContentLoaded', function () {
     document.querySelectorAll('.add-quantity-button').forEach(button => {
         button.addEventListener('click', function () {

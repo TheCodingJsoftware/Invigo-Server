@@ -6,19 +6,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <meta name="google" content="notranslate">
-    <link href="https://cdn.jsdelivr.net/npm/beercss@3.6.13/dist/cdn/beer.min.css" rel="stylesheet">
-    <script type="module" src="https://cdn.jsdelivr.net/npm/beercss@3.6.13/dist/cdn/beer.min.js"></script>
-    <link href="/static/css/theme.css" rel="stylesheet">
-    <link href="/static/css/style.css" rel="stylesheet">
     <link rel="icon" href="/static/icon.png">
+    <link href="/flatpickr.css" rel="stylesheet">
     <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=yes" />
-    <script src="https://www.kryogenix.org/code/browser/sorttable/sorttable.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-chart-matrix@2.0.1"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
-    <link rel="stylesheet" type="text/css" href="https://npmcdn.com/flatpickr/dist/themes/dark.css">
-    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <title>Workspace Dashboard</title>
+    <script type="module" src="/dist/js/workspace_dashboard.bundle.js"></script>
 </head>
 
 <body class="dark">
@@ -69,7 +61,7 @@
                                         <a class="row surface-container">
                                             <label class="checkbox">
                                                 <input type="checkbox" id="use-workspace-archives">
-                                                <span>Include data from workspace archives</span>
+                                                <span>Include jobs from workspace archives</span>
                                             </label>
                                         </a>
                                         <a class="row surface-container">
@@ -79,15 +71,24 @@
                                                 <label>Select Date Range</label>
                                             </div>
                                         </a>
-                                        <a class="row" id="this-week">
-                                            <span>This Week</span>
-                                        </a>
-                                        <a class="row" id="this-month">
-                                            <span>This Month</span>
-                                        </a>
-                                        <a class="row" id="this-year">
-                                            <span>This Year</span>
-                                        </a>
+                                        <div class="field middle-align">
+                                            <nav class="vertical">
+                                                <label class="radio">
+                                                    <input type="radio" id="this-week" name="radio1_">
+                                                    <span>This Week</span>
+                                                </label>
+                                                <label class="radio">
+                                                    <input type="radio" id="this-month" name="radio1_">
+                                                    <span>This Month</span>
+                                                </label>
+                                                <label class="radio">
+                                                    <input type="radio" id="this-year" name="radio1_">
+                                                    <span>This Year</span>
+                                                </label>
+                                            </nav>
+                                        </div>
+                                        <br>
+                                        <br>
                                     </menu>
                                 </button>
                             </div>
@@ -110,7 +111,7 @@
                                         <a class="row surface-container">
                                             <label class="checkbox">
                                                 <input type="checkbox" id="use-workspace-archives">
-                                                <span>Include data from workspace archives</span>
+                                                <span>Include jobs from workspace archives</span>
                                             </label>
                                         </a>
                                         <a class="row surface-container">
@@ -120,15 +121,24 @@
                                                 <label>Select Date Range</label>
                                             </div>
                                         </a>
-                                        <a class="row" id="this-week">
-                                            <span>This Week</span>
-                                        </a>
-                                        <a class="row" id="this-month">
-                                            <span>This Month</span>
-                                        </a>
-                                        <a class="row" id="this-year">
-                                            <span>This Year</span>
-                                        </a>
+                                        <div class="field middle-align">
+                                            <nav class="vertical">
+                                                <label class="radio">
+                                                    <input type="radio" id="this-week" name="radio2_">
+                                                    <span>This Week</span>
+                                                </label>
+                                                <label class="radio">
+                                                    <input type="radio" id="this-month" name="radio2_">
+                                                    <span>This Month</span>
+                                                </label>
+                                                <label class="radio">
+                                                    <input type="radio" id="this-year" name="radio2_">
+                                                    <span>This Year</span>
+                                                </label>
+                                            </nav>
+                                        </div>
+                                        <br>
+                                        <br>
                                     </menu>
                                 </button>
                             </div>
@@ -151,7 +161,7 @@
                                         <a class="row surface-container">
                                             <label class="checkbox">
                                                 <input type="checkbox" id="use-workspace-archives">
-                                                <span>Include data from workspace archives</span>
+                                                <span>Include jobs from workspace archives</span>
                                             </label>
                                         </a>
                                         <a class="row surface-container">
@@ -161,15 +171,24 @@
                                                 <label>Select Date Range</label>
                                             </div>
                                         </a>
-                                        <a class="row" id="this-week">
-                                            <span>This Week</span>
-                                        </a>
-                                        <a class="row" id="this-month">
-                                            <span>This Month</span>
-                                        </a>
-                                        <a class="row" id="this-year">
-                                            <span>This Year</span>
-                                        </a>
+                                        <div class="field middle-align">
+                                            <nav class="vertical">
+                                                <label class="radio">
+                                                    <input type="radio" id="this-week" name="radio3_">
+                                                    <span>This Week</span>
+                                                </label>
+                                                <label class="radio">
+                                                    <input type="radio" id="this-month" name="radio3_">
+                                                    <span>This Month</span>
+                                                </label>
+                                                <label class="radio">
+                                                    <input type="radio" id="this-year" name="radio3_">
+                                                    <span>This Year</span>
+                                                </label>
+                                            </nav>
+                                        </div>
+                                        <br>
+                                        <br>
                                     </menu>
                                 </button>
                             </div>
@@ -181,7 +200,7 @@
                             <div class="row">
                                 <h6 class="small middle-align left-align">Assembly </h6>
                                 <div class="field suffix max">
-                                    <select id="process-tags">
+                                    <select id="assembly-selection">
                                         <!-- Options will be populated dynamically -->
                                     </select>
                                     <i>arrow_drop_down</i>
@@ -192,7 +211,7 @@
                                         <a class="row surface-container">
                                             <label class="checkbox">
                                                 <input type="checkbox" id="use-workspace-archives">
-                                                <span>Include data from workspace archives</span>
+                                                <span>Include jobs from workspace archives</span>
                                             </label>
                                         </a>
                                         <a class="row surface-container">
@@ -202,15 +221,24 @@
                                                 <label>Select Date Range</label>
                                             </div>
                                         </a>
-                                        <a class="row" id="this-week">
-                                            <span>This Week</span>
-                                        </a>
-                                        <a class="row" id="this-month">
-                                            <span>This Month</span>
-                                        </a>
-                                        <a class="row" id="this-year">
-                                            <span>This Year</span>
-                                        </a>
+                                        <div class="field middle-align">
+                                            <nav class="vertical">
+                                                <label class="radio">
+                                                    <input type="radio" id="this-week" name="radio4_">
+                                                    <span>This Week</span>
+                                                </label>
+                                                <label class="radio">
+                                                    <input type="radio" id="this-month" name="radio4_">
+                                                    <span>This Month</span>
+                                                </label>
+                                                <label class="radio">
+                                                    <input type="radio" id="this-year" name="radio4_">
+                                                    <span>This Year</span>
+                                                </label>
+                                            </nav>
+                                        </div>
+                                        <br>
+                                        <br>
                                     </menu>
                                 </button>
                             </div>
@@ -222,7 +250,7 @@
                             <div class="row">
                                 <h6 class="small middle-align left-align">Assembly </h6>
                                 <div class="field suffix max">
-                                    <select id="process-tags">
+                                    <select id="assembly-selection">
                                         <!-- Options will be populated dynamically -->
                                     </select>
                                     <i>arrow_drop_down</i>
@@ -233,7 +261,7 @@
                                         <a class="row surface-container">
                                             <label class="checkbox">
                                                 <input type="checkbox" id="use-workspace-archives">
-                                                <span>Include data from workspace archives</span>
+                                                <span>Include jobs from workspace archives</span>
                                             </label>
                                         </a>
                                         <a class="row surface-container">
@@ -243,15 +271,24 @@
                                                 <label>Select Date Range</label>
                                             </div>
                                         </a>
-                                        <a class="row" id="this-week">
-                                            <span>This Week</span>
-                                        </a>
-                                        <a class="row" id="this-month">
-                                            <span>This Month</span>
-                                        </a>
-                                        <a class="row" id="this-year">
-                                            <span>This Year</span>
-                                        </a>
+                                        <div class="field middle-align">
+                                            <nav class="vertical">
+                                                <label class="radio">
+                                                    <input type="radio" id="this-week" name="radio5_">
+                                                    <span>This Week</span>
+                                                </label>
+                                                <label class="radio">
+                                                    <input type="radio" id="this-month" name="radio5_">
+                                                    <span>This Month</span>
+                                                </label>
+                                                <label class="radio">
+                                                    <input type="radio" id="this-year" name="radio5_">
+                                                    <span>This Year</span>
+                                                </label>
+                                            </nav>
+                                        </div>
+                                        <br>
+                                        <br>
                                     </menu>
                                 </button>
                             </div>
@@ -268,7 +305,7 @@
                                         <a class="row surface-container">
                                             <label class="checkbox">
                                                 <input type="checkbox" id="use-workspace-archives">
-                                                <span>Include data from workspace archives</span>
+                                                <span>Include jobs from workspace archives</span>
                                             </label>
                                         </a>
                                         <a class="row surface-container">
@@ -278,15 +315,24 @@
                                                 <label>Select Date Range</label>
                                             </div>
                                         </a>
-                                        <a class="row" id="this-week">
-                                            <span>This Week</span>
-                                        </a>
-                                        <a class="row" id="this-month">
-                                            <span>This Month</span>
-                                        </a>
-                                        <a class="row" id="this-year">
-                                            <span>This Year</span>
-                                        </a>
+                                        <div class="field middle-align">
+                                            <nav class="vertical">
+                                                <label class="radio">
+                                                    <input type="radio" id="this-week" name="radio6_">
+                                                    <span>This Week</span>
+                                                </label>
+                                                <label class="radio">
+                                                    <input type="radio" id="this-month" name="radio6_">
+                                                    <span>This Month</span>
+                                                </label>
+                                                <label class="radio">
+                                                    <input type="radio" id="this-year" name="radio6_">
+                                                    <span>This Year</span>
+                                                </label>
+                                            </nav>
+                                        </div>
+                                        <br>
+                                        <br>
                                     </menu>
                                 </button>
                             </div>
@@ -309,7 +355,7 @@
                                         <a class="row surface-container">
                                             <label class="checkbox">
                                                 <input type="checkbox" id="use-workspace-archives">
-                                                <span>Include data from workspace archives</span>
+                                                <span>Include jobs from workspace archives</span>
                                             </label>
                                         </a>
                                         <a class="row surface-container">
@@ -319,15 +365,24 @@
                                                 <label>Select Date Range</label>
                                             </div>
                                         </a>
-                                        <a class="row" id="this-week">
-                                            <span>This Week</span>
-                                        </a>
-                                        <a class="row" id="this-month">
-                                            <span>This Month</span>
-                                        </a>
-                                        <a class="row" id="this-year">
-                                            <span>This Year</span>
-                                        </a>
+                                        <div class="field middle-align">
+                                            <nav class="vertical">
+                                                <label class="radio">
+                                                    <input type="radio" id="this-week" name="radio7_">
+                                                    <span>This Week</span>
+                                                </label>
+                                                <label class="radio">
+                                                    <input type="radio" id="this-month" name="radio7_">
+                                                    <span>This Month</span>
+                                                </label>
+                                                <label class="radio">
+                                                    <input type="radio" id="this-year" name="radio7_">
+                                                    <span>This Year</span>
+                                                </label>
+                                            </nav>
+                                        </div>
+                                        <br>
+                                        <br>
                                     </menu>
                                 </button>
                             </div>
@@ -350,7 +405,7 @@
                                         <a class="row surface-container">
                                             <label class="checkbox">
                                                 <input type="checkbox" id="use-workspace-archives">
-                                                <span>Include data from workspace archives</span>
+                                                <span>Include jobs from workspace archives</span>
                                             </label>
                                         </a>
                                         <a class="row surface-container">
@@ -360,15 +415,24 @@
                                                 <label>Select Date Range</label>
                                             </div>
                                         </a>
-                                        <a class="row" id="this-week">
-                                            <span>This Week</span>
-                                        </a>
-                                        <a class="row" id="this-month">
-                                            <span>This Month</span>
-                                        </a>
-                                        <a class="row" id="this-year">
-                                            <span>This Year</span>
-                                        </a>
+                                        <div class="field middle-align">
+                                            <nav class="vertical">
+                                                <label class="radio">
+                                                    <input type="radio" id="this-week" name="radio8_">
+                                                    <span>This Week</span>
+                                                </label>
+                                                <label class="radio">
+                                                    <input type="radio" id="this-month" name="radio8_">
+                                                    <span>This Month</span>
+                                                </label>
+                                                <label class="radio">
+                                                    <input type="radio" id="this-year" name="radio8_">
+                                                    <span>This Year</span>
+                                                </label>
+                                            </nav>
+                                        </div>
+                                        <br>
+                                        <br>
                                     </menu>
                                 </button>
                             </div>
@@ -426,6 +490,7 @@
             </div>
         </div>
     </main>
-    <script type="module" src="/static/js/workspace_dashboard.js"></script>
+    <link href="/static/css/theme.css" rel="stylesheet">
+    <link href="/static/css/style.css" rel="stylesheet">
 </body>
 </html>

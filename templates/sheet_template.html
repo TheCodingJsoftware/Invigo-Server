@@ -6,13 +6,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <meta name="google" content="notranslate">
-    <link href="https://cdn.jsdelivr.net/npm/beercss@3.6.13/dist/cdn/beer.min.css" rel="stylesheet">
-    <script type="module" src="https://cdn.jsdelivr.net/npm/beercss@3.6.13/dist/cdn/beer.min.js"></script>
-    <link href="/static/css/theme.css" rel="stylesheet">
     <link rel="icon" href="/static/icon.png">
     <title>{{sheet_name}}</title>
     <meta property="og:title" content="{{sheet_name}}" />
     <meta property="og:description" content="Set Invigo Sheets in Inventory Information." />
+    <script src="/dist/js/sheet_template.bundle.js"></script>
 </head>
 
 <body class="dark" data-current-quantity="{{ quantity }}">
@@ -77,7 +75,6 @@
             </div>
         </form>
     </dialog>
-    <script src="/static/js/sheet_template.js"></script>
+    <link href="/static/css/theme.css" rel="stylesheet">
 </body>
-
 </html>

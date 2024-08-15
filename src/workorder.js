@@ -1,3 +1,5 @@
+import "beercss"
+
 var recut_laser_cut_part;
 var recut_nest;
 var recut_max_quantity;
@@ -162,3 +164,12 @@ window.addEventListener('load', function () {
         });
     }, 1000); // 1000 milliseconds = 1 second
 });
+
+window.goToMainUrl = goToMainUrl;
+window.markWorkorderAsDone = markWorkorderAsDone;
+window.markNestAsDone = markNestAsDone;
+window.recutPart = recutPart;
+window.validateRecutQuantity = validateRecutQuantity;
+window.openRecutDialog = openRecutDialog;
+window.getWorkorderNameFromUrl = getWorkorderNameFromUrl;
+window.submitRecutPart = submitRecutPart;

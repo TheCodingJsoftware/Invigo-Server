@@ -6,14 +6,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <meta name="google" content="notranslate">
-    <link href="https://cdn.jsdelivr.net/npm/beercss@3.6.13/dist/cdn/beer.min.css" rel="stylesheet">
-    <script type="module" src="https://cdn.jsdelivr.net/npm/beercss@3.6.13/dist/cdn/beer.min.js"></script>
-    <link href="/static/css/theme.css" rel="stylesheet">
-    <link href="/static/css/style.css" rel="stylesheet">
+    <link href="/beer.css" rel="stylesheet">
+    <script type="module" src="/beer.js"></script>
     <link rel="icon" href="/static/icon.png">
     <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=yes" />
-    <script src="https://www.kryogenix.org/code/browser/sorttable/sorttable.js"></script>
     <title>Workorder</title>
+    <script src="/dist/js/workorder.bundle.js"></script>
 </head>
 
 <body class="dark">
@@ -40,7 +38,7 @@
             </div>
             {% for nest_data in workorder_data %}
                 <article class="border no-padding">
-                    <img class="workorder-image" src="/image/{{nest_data.image_path}}" class="responsive">
+                    <img class="responsive workorder-image" src="/image/{{nest_data.image_path}}" class="responsive">
                     <div class="padding">
                         <h5>
                             {{nest_data.name}}
@@ -147,7 +145,8 @@
     </dialog>
     <div class="snackbar top" id="recut-submitted">Recut submitted.</div>
     <div class="snackbar error top" id="snackbar-error"></div>
-    <script src="/static/js/workorder.js"></script>
+    <link href="/static/css/theme.css" rel="stylesheet">
+    <link href="/static/css/style.css" rel="stylesheet">
 </body>
 
 </html>

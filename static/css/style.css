@@ -144,7 +144,7 @@
 
 /* workorder.html */
 
-.workorder-image img{
+.workorder-image{
     -webkit-filter: invert(0.9);
     filter: invert(0.9);
 }

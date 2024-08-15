@@ -1,3 +1,8 @@
+import "beercss";
+import flatpickr from 'flatpickr';
+import { Chart, registerables } from 'chart.js';
+import 'chartjs-adapter-date-fns';
+import { MatrixController, MatrixElement } from 'chartjs-chart-matrix';
 import {
     getAssemblies,
     isAssemblyComplete,
@@ -14,8 +19,11 @@ import {
     getPartsCount,
     getColorForProcessTag,
     calculateAssemblyProgress,
+    getPreference,
+    savePreference,
 } from './utils.js';
-
+Chart.register(...registerables);
+Chart.register(MatrixController, MatrixElement);
 
 class Accordion {
     constructor(delailElement) {
@@ -126,14 +134,14 @@ class HeatMap {
 
         this.populateProcessSelections();
 
-        if (this.workspaceSettings.tags.length > 0 && !this.currentProcess) {
-            this.processSelections.value = this.workspaceSettings.tags[0];
-        }
+        this.processSelections.value = getPreference(this.container, 'lastSelectedProcess', { 'value': 'Everything' }).value;
 
         this.processSelections.addEventListener('change', () => {
             this.currentProcess = this.processSelections.value;
+            savePreference(this.container, 'lastSelectedProcess', this.currentProcess);
             this.loadHeatMap();
         });
+
         this.currentProcess = this.processSelections.value;
         this.loadHeatMap();
     }
@@ -171,7 +179,7 @@ class HeatMap {
                 // If the job is active on the current date
                 if (jobStartDate <= currentDate && currentDate <= jobEndDate) {
                     const flowtag_timeline = job.job_data.flowtag_timeline;
-                    if (this.currentProcess === "Everything"){
+                    if (this.currentProcess === "Everything") {
                         Object.keys(flowtag_timeline).forEach(tagName => {
                             const tag = flowtag_timeline[tagName]
                             const tagStartDate = new Date(tag.starting_date);
@@ -182,7 +190,7 @@ class HeatMap {
                                 totalHourCount += processExpectedTimeSeconds / durationDays / 60;
                             }
                         });
-                    }else if (flowtag_timeline.hasOwnProperty(this.currentProcess)) {
+                    } else if (flowtag_timeline.hasOwnProperty(this.currentProcess)) {
                         const tag = flowtag_timeline[this.currentProcess];
                         const tagStartDate = new Date(tag.starting_date);
                         const tagEndDate = new Date(tag.ending_date);
@@ -386,7 +394,7 @@ class AssembliesInProcessChart {
         this.currentProcess = null;
         this.chartInstance = null;
 
-        this.useWorkspaceArchiveData = false;
+        this.useWorkspaceArchiveData = null;
         this.startDate = null;
         this.endDate = null;
     }
@@ -397,44 +405,109 @@ class AssembliesInProcessChart {
         this.barChartCanvas = this.containerDiv.querySelector('#bar-chart');
         this.dateRangePicker = this.containerDiv.querySelector('#date-range-picker');
         this.processSelections = this.containerDiv.querySelector('#process-tags');
-        this.useWorkspaceCheckbox = this.containerDiv.querySelector('#use-workspace-archives')
+        this.useWorkspaceArchivesCheckbox = this.containerDiv.querySelector('#use-workspace-archives')
         this.thisWeekButton = this.containerDiv.querySelector("#this-week");
         this.thisMonthButton = this.containerDiv.querySelector("#this-month");
         this.thisYearButton = this.containerDiv.querySelector("#this-year");
 
         this.populateProcessSelections();
+
+        this.useWorkspaceArchivesCheckbox.checked = getPreference(this.container, 'useWorkspaceArchives', { 'value': false }).value;
+        this.processSelections.value = getPreference(this.container, 'lastSelectedProcess', { 'value': 'Everything' }).value;
+
         this.setupDateRangePicker();
 
         this.currentProcess = this.processSelections.value;
+        this.useWorkspaceArchiveData = this.useWorkspaceArchivesCheckbox.checked;
 
-        this.useWorkspaceCheckbox.addEventListener('click', () => {
-            this.useWorkspaceArchiveData = this.useWorkspaceCheckbox.checked;
-            this.loadChart()
+        const rangeSelection = getPreference(this.container, "rangeSelection", {
+            'thisWeek': false,
+            'thisMonth': false,
+            'thisYear': true
+        });
+
+        if (rangeSelection.value) {
+            if (rangeSelection.value.thisWeek !== undefined) {
+                this.thisWeekButton.checked = rangeSelection.value.thisWeek;
+            }
+            if (rangeSelection.value.thisMonth !== undefined) {
+                this.thisMonthButton.checked = rangeSelection.value.thisMonth;
+            }
+            if (rangeSelection.value.thisYear !== undefined) {
+                this.thisYearButton.checked = rangeSelection.value.thisYear;
+            }
+        } else {
+            this.thisYearButton.checked = true; // Default
+        }
+
+        this.useWorkspaceArchivesCheckbox.addEventListener('click', () => {
+            this.useWorkspaceArchiveData = this.useWorkspaceArchivesCheckbox.checked;
+            savePreference(this.container, 'useWorkspaceArchives', this.useWorkspaceArchiveData);
+            this.loadChart();
         });
 
         this.thisWeekButton.addEventListener('click', () => {
+            savePreference(this.container, "rangeSelection", {
+                'thisWeek': this.thisWeekButton.checked,
+                'thisMonth': this.thisMonthButton.checked,
+                'thisYear': this.thisYearButton.checked,
+            });
             this.setThisWeek();
         });
 
         this.thisMonthButton.addEventListener('click', () => {
+            savePreference(this.container, "rangeSelection", {
+                'thisWeek': this.thisWeekButton.checked,
+                'thisMonth': this.thisMonthButton.checked,
+                'thisYear': this.thisYearButton.checked,
+            });
             this.setThisMonth();
         });
 
         this.thisYearButton.addEventListener('click', () => {
+            savePreference(this.container, "rangeSelection", {
+                'thisWeek': this.thisWeekButton.checked,
+                'thisMonth': this.thisMonthButton.checked,
+                'thisYear': this.thisYearButton.checked,
+            });
             this.setThisYear();
         });
 
         this.processSelections.addEventListener('change', () => {
             this.currentProcess = this.processSelections.value;
+            savePreference(this.container, 'lastSelectedProcess', this.currentProcess);
             this.loadChart();
         });
-        this.setThisYear();
+
+        try {
+            this.startDate = new Date(getPreference(this.container, "startDate", null).value);
+            this.endDate = new Date(getPreference(this.container, "endDate", null).value);
+            if (this.startDate && this.endDate) {
+                this.setDateRange(this.startDate, this.endDate)
+            } else {
+                this.loadRange();
+            }
+        } catch (error) {
+            this.loadRange();
+        }
+    }
+
+    loadRange() {
+        if (this.thisWeekButton.checked) {
+            this.setThisWeek();
+        } else if (this.thisMonthButton.checked) {
+            this.setThisMonth();
+        } else {
+            this.setThisYear();
+        }
     }
 
     setDateRange(startDate, endDate) {
         this.dateRangePicker._flatpickr.setDate([startDate, endDate], true);
         this.startDate = startDate;
         this.endDate = endDate;
+        savePreference(this.container, 'startDate', this.startDate)
+        savePreference(this.container, 'endDate', this.endDate)
         this.loadChart()
     }
 
@@ -482,6 +555,16 @@ class AssembliesInProcessChart {
                 if (startDate && endDate) {
                     this.startDate = startDate;
                     this.endDate = endDate;
+                    savePreference(this.container, 'startDate', this.startDate)
+                    savePreference(this.container, 'endDate', this.endDate)
+                    savePreference(this.container, "rangeSelection", {
+                        'thisWeek': false,
+                        'thisMonth': false,
+                        'thisYear': false,
+                    });
+                    this.thisWeekButton.checked = false;
+                    this.thisMonthButton.checked = false;
+                    this.thisYearButton.checked = false;
                     this.loadChart();
                 }
             }
@@ -513,11 +596,6 @@ class AssembliesInProcessChart {
             option.textContent = tag;
             this.processSelections.appendChild(option);
         });
-
-        // Set the first option as selected if nothing else is selected
-        if (this.workspaceSettings.tags.length > 0 && !this.currentProcess) {
-            this.processSelections.value = 'Everything';
-        }
     }
 
     getAllJobs() {
@@ -623,10 +701,10 @@ class SelectAssemblyChart {
         this.thisMonthButton = null;
         this.thisYearButton = null;
 
-        this.currentProcess = null;
+        this.currentAssembly = null;
         this.chartInstance = null;
 
-        this.useWorkspaceArchiveData = false;
+        this.useWorkspaceArchiveData = null;
         this.startDate = null;
         this.endDate = null;
     }
@@ -636,45 +714,112 @@ class SelectAssemblyChart {
 
         this.barChartCanvas = this.containerDiv.querySelector('#bar-chart');
         this.dateRangePicker = this.containerDiv.querySelector('#date-range-picker');
-        this.processSelections = this.containerDiv.querySelector('#process-tags');
-        this.useWorkspaceCheckbox = this.containerDiv.querySelector('#use-workspace-archives')
+        this.assemblySelections = this.containerDiv.querySelector('#assembly-selection');
+        this.useWorkspaceArchivesCheckbox = this.containerDiv.querySelector('#use-workspace-archives')
         this.thisWeekButton = this.containerDiv.querySelector("#this-week");
         this.thisMonthButton = this.containerDiv.querySelector("#this-month");
         this.thisYearButton = this.containerDiv.querySelector("#this-year");
 
-        this.populateProcessSelections();
+        this.populateAssemblySelections();
+
+        this.useWorkspaceArchivesCheckbox.checked = getPreference(this.container, 'useWorkspaceArchives', { 'value': false }).value;
+        const lastSelectedAssembly = getPreference(this.container, 'lastSelectedAssembly', { 'value': null }).value
+        if (lastSelectedAssembly) {
+            this.assemblySelections.value = lastSelectedAssembly;
+        }
         this.setupDateRangePicker();
 
-        this.currentProcess = this.processSelections.value;
+        this.currentAssembly = this.assemblySelections.value;
+        this.useWorkspaceArchiveData = this.useWorkspaceArchivesCheckbox.checked;
 
-        this.useWorkspaceCheckbox.addEventListener('click', () => {
-            this.useWorkspaceArchiveData = this.useWorkspaceCheckbox.checked;
-            this.loadChart()
+        const rangeSelection = getPreference(this.container, "rangeSelection", {
+            'thisWeek': false,
+            'thisMonth': false,
+            'thisYear': true
+        });
+
+        if (rangeSelection.value) {
+            if (rangeSelection.value.thisWeek !== undefined) {
+                this.thisWeekButton.checked = rangeSelection.value.thisWeek;
+            }
+            if (rangeSelection.value.thisMonth !== undefined) {
+                this.thisMonthButton.checked = rangeSelection.value.thisMonth;
+            }
+            if (rangeSelection.value.thisYear !== undefined) {
+                this.thisYearButton.checked = rangeSelection.value.thisYear;
+            }
+        } else {
+            this.thisYearButton.checked = true; // Default
+        }
+
+        this.useWorkspaceArchivesCheckbox.addEventListener('click', () => {
+            this.useWorkspaceArchiveData = this.useWorkspaceArchivesCheckbox.checked;
+            savePreference(this.container, 'useWorkspaceArchives', this.useWorkspaceArchiveData);
+            this.loadChart();
         });
 
         this.thisWeekButton.addEventListener('click', () => {
+            savePreference(this.container, "rangeSelection", {
+                'thisWeek': this.thisWeekButton.checked,
+                'thisMonth': this.thisMonthButton.checked,
+                'thisYear': this.thisYearButton.checked,
+            });
             this.setThisWeek();
         });
 
         this.thisMonthButton.addEventListener('click', () => {
+            savePreference(this.container, "rangeSelection", {
+                'thisWeek': this.thisWeekButton.checked,
+                'thisMonth': this.thisMonthButton.checked,
+                'thisYear': this.thisYearButton.checked,
+            });
             this.setThisMonth();
         });
 
         this.thisYearButton.addEventListener('click', () => {
+            savePreference(this.container, "rangeSelection", {
+                'thisWeek': this.thisWeekButton.checked,
+                'thisMonth': this.thisMonthButton.checked,
+                'thisYear': this.thisYearButton.checked,
+            });
             this.setThisYear();
         });
 
-        this.processSelections.addEventListener('change', () => {
-            this.currentProcess = this.processSelections.value;
+        this.assemblySelections.addEventListener('change', () => {
+            this.currentAssembly = this.assemblySelections.value;
+            savePreference(this.container, "lastSelectedAssembly", this.currentAssembly)
             this.loadChart();
         });
-        this.setThisYear();
+
+        try {
+            this.startDate = new Date(getPreference(this.container, "startDate", null).value);
+            this.endDate = new Date(getPreference(this.container, "endDate", null).value);
+            if (this.startDate && this.endDate) {
+                this.setDateRange(this.startDate, this.endDate)
+            } else {
+                this.loadRange();
+            }
+        } catch (error) {
+            this.loadRange()
+        }
+    }
+
+    loadRange() {
+        if (this.thisWeekButton.checked) {
+            this.setThisWeek();
+        } else if (this.thisMonthButton.checked) {
+            this.setThisMonth();
+        } else {
+            this.setThisYear();
+        }
     }
 
     setDateRange(startDate, endDate) {
         this.dateRangePicker._flatpickr.setDate([startDate, endDate], true);
         this.startDate = startDate;
         this.endDate = endDate;
+        savePreference(this.container, 'startDate', this.startDate)
+        savePreference(this.container, 'endDate', this.endDate)
         this.loadChart()
     }
 
@@ -722,14 +867,24 @@ class SelectAssemblyChart {
                 if (startDate && endDate) {
                     this.startDate = startDate;
                     this.endDate = endDate;
+                    savePreference(this.container, 'startDate', this.startDate)
+                    savePreference(this.container, 'endDate', this.endDate)
+                    savePreference(this.container, "rangeSelection", {
+                        'thisWeek': false,
+                        'thisMonth': false,
+                        'thisYear': false,
+                    });
+                    this.thisWeekButton.checked = false;
+                    this.thisMonthButton.checked = false;
+                    this.thisYearButton.checked = false;
                     this.loadChart();
                 }
             }
         });
     }
 
-    populateProcessSelections() {
-        this.processSelections.innerHTML = '';
+    populateAssemblySelections() {
+        this.assemblySelections.innerHTML = '';
 
         const uniqueAssemblies = new Set();
         this.getAllJobs().forEach(job => {
@@ -741,7 +896,7 @@ class SelectAssemblyChart {
         uniqueAssemblies.forEach(assemblyName => {
             const option = document.createElement('option');
             option.textContent = assemblyName;
-            this.processSelections.appendChild(option);
+            this.assemblySelections.appendChild(option);
         });
 
     }
@@ -792,7 +947,7 @@ class SelectAssemblyChart {
 
     loadChart() {
         const ctx = this.barChartCanvas.getContext('2d');
-        const processCounts = this.countAssembliesAtProcess(this.currentProcess);
+        const processCounts = this.countAssembliesAtProcess(this.currentAssembly);
 
         const labels = Object.keys(processCounts);
         const data = Object.values(processCounts);
@@ -829,7 +984,6 @@ class SelectAssemblyChart {
 
         this.chartInstance = new Chart(ctx, config);
     }
-
 }
 
 class AllAssembliesChart {
@@ -851,7 +1005,7 @@ class AllAssembliesChart {
         this.currentProcess = null;
         this.chartInstance = null;
 
-        this.useWorkspaceArchiveData = false;
+        this.useWorkspaceArchiveData = null;
         this.startDate = null;
         this.endDate = null;
     }
@@ -861,37 +1015,99 @@ class AllAssembliesChart {
 
         this.barChartCanvas = this.containerDiv.querySelector('#bar-chart');
         this.dateRangePicker = this.containerDiv.querySelector('#date-range-picker');
-        this.useWorkspaceCheckbox = this.containerDiv.querySelector('#use-workspace-archives')
+        this.useWorkspaceArchivesCheckbox = this.containerDiv.querySelector('#use-workspace-archives')
         this.thisWeekButton = this.containerDiv.querySelector("#this-week");
         this.thisMonthButton = this.containerDiv.querySelector("#this-month");
         this.thisYearButton = this.containerDiv.querySelector("#this-year");
 
+        this.useWorkspaceArchivesCheckbox.checked = getPreference(this.container, 'useWorkspaceArchives', { 'value': false }).value;
+
         this.setupDateRangePicker();
 
-        this.useWorkspaceCheckbox.addEventListener('click', () => {
-            this.useWorkspaceArchiveData = this.useWorkspaceCheckbox.checked;
-            this.loadChart()
+        this.useWorkspaceArchiveData = this.useWorkspaceArchivesCheckbox.checked;
+
+        const rangeSelection = getPreference(this.container, "rangeSelection", {
+            'thisWeek': false,
+            'thisMonth': false,
+            'thisYear': true
+        });
+
+        if (rangeSelection.value) {
+            if (rangeSelection.value.thisWeek !== undefined) {
+                this.thisWeekButton.checked = rangeSelection.value.thisWeek;
+            }
+            if (rangeSelection.value.thisMonth !== undefined) {
+                this.thisMonthButton.checked = rangeSelection.value.thisMonth;
+            }
+            if (rangeSelection.value.thisYear !== undefined) {
+                this.thisYearButton.checked = rangeSelection.value.thisYear;
+            }
+        } else {
+            this.thisYearButton.checked = true; // Default
+        }
+
+        this.useWorkspaceArchivesCheckbox.addEventListener('click', () => {
+            this.useWorkspaceArchiveData = this.useWorkspaceArchivesCheckbox.checked;
+            savePreference(this.container, 'useWorkspaceArchives', this.useWorkspaceArchiveData);
+            this.loadChart();
         });
 
         this.thisWeekButton.addEventListener('click', () => {
+            savePreference(this.container, "rangeSelection", {
+                'thisWeek': this.thisWeekButton.checked,
+                'thisMonth': this.thisMonthButton.checked,
+                'thisYear': this.thisYearButton.checked,
+            });
             this.setThisWeek();
         });
 
         this.thisMonthButton.addEventListener('click', () => {
+            savePreference(this.container, "rangeSelection", {
+                'thisWeek': this.thisWeekButton.checked,
+                'thisMonth': this.thisMonthButton.checked,
+                'thisYear': this.thisYearButton.checked,
+            });
             this.setThisMonth();
         });
 
         this.thisYearButton.addEventListener('click', () => {
+            savePreference(this.container, "rangeSelection", {
+                'thisWeek': this.thisWeekButton.checked,
+                'thisMonth': this.thisMonthButton.checked,
+                'thisYear': this.thisYearButton.checked,
+            });
             this.setThisYear();
         });
 
-        this.setThisYear();
+        try {
+            this.startDate = new Date(getPreference(this.container, "startDate", null).value);
+            this.endDate = new Date(getPreference(this.container, "endDate", null).value);
+            if (this.startDate && this.endDate) {
+                this.setDateRange(this.startDate, this.endDate)
+            } else {
+                this.loadRange();
+            }
+        } catch (error) {
+            this.loadRange()
+        }
+    }
+
+    loadRange() {
+        if (this.thisWeekButton.checked) {
+            this.setThisWeek();
+        } else if (this.thisMonthButton.checked) {
+            this.setThisMonth();
+        } else {
+            this.setThisYear();
+        }
     }
 
     setDateRange(startDate, endDate) {
         this.dateRangePicker._flatpickr.setDate([startDate, endDate], true);
         this.startDate = startDate;
         this.endDate = endDate;
+        savePreference(this.container, 'startDate', this.startDate)
+        savePreference(this.container, 'endDate', this.endDate)
         this.loadChart()
     }
 
@@ -939,6 +1155,16 @@ class AllAssembliesChart {
                 if (startDate && endDate) {
                     this.startDate = startDate;
                     this.endDate = endDate;
+                    savePreference(this.container, 'startDate', this.startDate)
+                    savePreference(this.container, 'endDate', this.endDate)
+                    savePreference(this.container, "rangeSelection", {
+                        'thisWeek': false,
+                        'thisMonth': false,
+                        'thisYear': false,
+                    });
+                    this.thisWeekButton.checked = false;
+                    this.thisMonthButton.checked = false;
+                    this.thisYearButton.checked = false;
                     this.loadChart();
                 }
             }
@@ -1091,7 +1317,7 @@ class LaserCutPartsInProcessChart {
         this.currentProcess = null;
         this.chartInstance = null;
 
-        this.useWorkspaceArchiveData = false;
+        this.useWorkspaceArchiveData = null;
         this.startDate = null;
         this.endDate = null;
     }
@@ -1102,44 +1328,108 @@ class LaserCutPartsInProcessChart {
         this.barChartCanvas = this.containerDiv.querySelector('#bar-chart');
         this.dateRangePicker = this.containerDiv.querySelector('#date-range-picker');
         this.processSelections = this.containerDiv.querySelector('#process-tags');
-        this.useWorkspaceCheckbox = this.containerDiv.querySelector('#use-workspace-archives')
+        this.useWorkspaceArchivesCheckbox = this.containerDiv.querySelector('#use-workspace-archives')
         this.thisWeekButton = this.containerDiv.querySelector("#this-week");
         this.thisMonthButton = this.containerDiv.querySelector("#this-month");
         this.thisYearButton = this.containerDiv.querySelector("#this-year");
 
         this.populateProcessSelections();
+
+        this.useWorkspaceArchivesCheckbox.checked = getPreference(this.container, 'useWorkspaceArchives', { 'value': false }).value;
+        this.processSelections.value = getPreference(this.container, 'lastSelectedProcess', { 'value': 'Everything' }).value;
+
         this.setupDateRangePicker();
 
         this.currentProcess = this.processSelections.value;
+        this.useWorkspaceArchiveData = this.useWorkspaceArchivesCheckbox.checked;
 
-        this.useWorkspaceCheckbox.addEventListener('click', () => {
-            this.useWorkspaceArchiveData = this.useWorkspaceCheckbox.checked;
-            this.loadChart()
+        const rangeSelection = getPreference(this.container, "rangeSelection", {
+            'thisWeek': false,
+            'thisMonth': false,
+            'thisYear': true
+        });
+
+        if (rangeSelection.value) {
+            if (rangeSelection.value.thisWeek !== undefined) {
+                this.thisWeekButton.checked = rangeSelection.value.thisWeek;
+            }
+            if (rangeSelection.value.thisMonth !== undefined) {
+                this.thisMonthButton.checked = rangeSelection.value.thisMonth;
+            }
+            if (rangeSelection.value.thisYear !== undefined) {
+                this.thisYearButton.checked = rangeSelection.value.thisYear;
+            }
+        } else {
+            this.thisYearButton.checked = true; // Default
+        }
+
+        this.useWorkspaceArchivesCheckbox.addEventListener('click', () => {
+            this.useWorkspaceArchiveData = this.useWorkspaceArchivesCheckbox.checked;
+            savePreference(this.container, 'useWorkspaceArchives', this.useWorkspaceArchiveData);
+            this.loadChart();
         });
 
         this.thisWeekButton.addEventListener('click', () => {
+            savePreference(this.container, "rangeSelection", {
+                'thisWeek': this.thisWeekButton.checked,
+                'thisMonth': this.thisMonthButton.checked,
+                'thisYear': this.thisYearButton.checked,
+            });
             this.setThisWeek();
         });
 
         this.thisMonthButton.addEventListener('click', () => {
+            savePreference(this.container, "rangeSelection", {
+                'thisWeek': this.thisWeekButton.checked,
+                'thisMonth': this.thisMonthButton.checked,
+                'thisYear': this.thisYearButton.checked,
+            });
             this.setThisMonth();
         });
 
         this.thisYearButton.addEventListener('click', () => {
+            savePreference(this.container, "rangeSelection", {
+                'thisWeek': this.thisWeekButton.checked,
+                'thisMonth': this.thisMonthButton.checked,
+                'thisYear': this.thisYearButton.checked,
+            });
             this.setThisYear();
         });
 
         this.processSelections.addEventListener('change', () => {
             this.currentProcess = this.processSelections.value;
+            savePreference(this.container, "lastSelectedProcess", this.currentProcess);
             this.loadChart();
         });
-        this.setThisYear();
+
+        try {
+            this.startDate = new Date(getPreference(this.container, "startDate", null).value);
+            this.endDate = new Date(getPreference(this.container, "endDate", null).value);
+            if (this.startDate && this.endDate) {
+                this.setDateRange(this.startDate, this.endDate)
+            } else {
+                this.loadRange();
+            }
+        } catch (error) {
+            this.loadRange()
+        }
     }
 
+    loadRange() {
+        if (this.thisWeekButton.checked) {
+            this.setThisWeek();
+        } else if (this.thisMonthButton.checked) {
+            this.setThisMonth();
+        } else {
+            this.setThisYear();
+        }
+    }
     setDateRange(startDate, endDate) {
         this.dateRangePicker._flatpickr.setDate([startDate, endDate], true);
         this.startDate = startDate;
         this.endDate = endDate;
+        savePreference(this.container, 'startDate', this.startDate)
+        savePreference(this.container, 'endDate', this.endDate)
         this.loadChart()
     }
 
@@ -1187,6 +1477,16 @@ class LaserCutPartsInProcessChart {
                 if (startDate && endDate) {
                     this.startDate = startDate;
                     this.endDate = endDate;
+                    savePreference(this.container, 'startDate', this.startDate)
+                    savePreference(this.container, 'endDate', this.endDate)
+                    savePreference(this.container, "rangeSelection", {
+                        'thisWeek': false,
+                        'thisMonth': false,
+                        'thisYear': false,
+                    });
+                    this.thisWeekButton.checked = false;
+                    this.thisMonthButton.checked = false;
+                    this.thisYearButton.checked = false;
                     this.loadChart();
                 }
             }
@@ -1314,7 +1614,7 @@ class LaserCutPartsInProcessChart {
     }
 }
 
-class AssemblyProgressionLayout{
+class AssemblyProgressionLayout {
     constructor(workspace, workspaceArchives, workspaceSettings, container) {
         this.workspace = workspace;
         this.workspaceArchives = workspaceArchives;
@@ -1326,7 +1626,7 @@ class AssemblyProgressionLayout{
 
     }
 
-    initialize(){
+    initialize() {
         this.containerDiv = document.querySelector(this.container);
         this.jobsList = this.containerDiv.querySelector('#jobs-list');
         this.loadView();
@@ -1435,9 +1735,9 @@ class AssemblyProgressionLayout{
 
                         const processLabel = document.createElement('div');
                         processLabel.className = 'small-margin';
-                        if (isAssemblyPartsComplete(assembly)){
+                        if (isAssemblyPartsComplete(assembly)) {
                             processLabel.textContent = 'Current'; // Replace with 'Current' or tag name
-                        }else{
+                        } else {
                             processLabel.textContent = tag;
                             processButton.disabled = true;
                         }
@@ -1559,7 +1859,7 @@ class WorkspaceDashboard {
         }
     }
 
-    loadLayouts(){
+    loadLayouts() {
         if (!this.assemblyProgressionLayout) {
             this.assemblyProgressionLayout = new AssemblyProgressionLayout(this.workspace, this.workspaceArchives, this.workspaceSettings, '#assembly-progression-container');
             this.assemblyProgressionLayout.initialize();
