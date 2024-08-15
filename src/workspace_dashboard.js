@@ -115,10 +115,10 @@ class Accordion {
 }
 
 class HeatMap {
-    constructor(productionPlan, workspaceSettings, container) {
+    constructor(container, productionPlan, workspaceSettings) {
+        this.container = container;
         this.productionPlan = productionPlan;
         this.workspaceSettings = workspaceSettings;
-        this.container = container;
         this.containerDiv = null;
         this.heatmapCanvas = null;
         this.currentProcess = null;
@@ -159,7 +159,7 @@ class HeatMap {
         });
     }
 
-    generateData() {
+    generateData() { 
         const data = [];
         const startDate = new Date(new Date().getFullYear(), 0, 1); // Jan 1st of current year
         const endDate = new Date(new Date().getFullYear(), 11, 31); // Dec 31st of current year
@@ -376,11 +376,11 @@ class HeatMap {
 }
 
 class AssembliesInProcessChart {
-    constructor(workspace, workspaceArchives, workspaceSettings, container) {
+    constructor(container, workspace, workspaceArchives, workspaceSettings) {
+        this.container = container;
         this.workspace = workspace;
         this.workspaceArchives = workspaceArchives;
         this.workspaceSettings = workspaceSettings;
-        this.container = container;
 
         this.containerDiv = null;
 
@@ -409,6 +409,12 @@ class AssembliesInProcessChart {
         this.thisWeekButton = this.containerDiv.querySelector("#this-week");
         this.thisMonthButton = this.containerDiv.querySelector("#this-month");
         this.thisYearButton = this.containerDiv.querySelector("#this-year");
+
+        const uniqueName = `radio-group-${this.container}`;
+        const radioButtons = this.containerDiv.querySelectorAll('input[type="radio"]');
+        radioButtons.forEach(radio => {
+            radio.name = uniqueName;
+        });
 
         this.populateProcessSelections();
 
@@ -686,11 +692,11 @@ class AssembliesInProcessChart {
 }
 
 class SelectAssemblyChart {
-    constructor(workspace, workspaceArchives, workspaceSettings, container) {
+    constructor(container, workspace, workspaceArchives, workspaceSettings) {
+        this.container = container;
         this.workspace = workspace;
         this.workspaceArchives = workspaceArchives;
         this.workspaceSettings = workspaceSettings;
-        this.container = container;
 
         this.containerDiv = null;
 
@@ -719,6 +725,12 @@ class SelectAssemblyChart {
         this.thisWeekButton = this.containerDiv.querySelector("#this-week");
         this.thisMonthButton = this.containerDiv.querySelector("#this-month");
         this.thisYearButton = this.containerDiv.querySelector("#this-year");
+
+        const uniqueName = `radio-group-${this.container}`;
+        const radioButtons = this.containerDiv.querySelectorAll('input[type="radio"]');
+        radioButtons.forEach(radio => {
+            radio.name = uniqueName;
+        });
 
         this.populateAssemblySelections();
 
@@ -987,11 +999,11 @@ class SelectAssemblyChart {
 }
 
 class AllAssembliesChart {
-    constructor(workspace, workspaceArchives, workspaceSettings, container) {
+    constructor(container, workspace, workspaceArchives, workspaceSettings) {
+        this.container = container;
         this.workspace = workspace;
         this.workspaceArchives = workspaceArchives;
         this.workspaceSettings = workspaceSettings;
-        this.container = container;
 
         this.containerDiv = null;
 
@@ -1021,6 +1033,12 @@ class AllAssembliesChart {
         this.thisYearButton = this.containerDiv.querySelector("#this-year");
 
         this.useWorkspaceArchivesCheckbox.checked = getPreference(this.container, 'useWorkspaceArchives', { 'value': false }).value;
+
+        const uniqueName = `radio-group-${this.container}`;
+        const radioButtons = this.containerDiv.querySelectorAll('input[type="radio"]');
+        radioButtons.forEach(radio => {
+            radio.name = uniqueName;
+        });
 
         this.setupDateRangePicker();
 
@@ -1299,11 +1317,11 @@ class AllAssembliesChart {
 }
 
 class LaserCutPartsInProcessChart {
-    constructor(workspace, workspaceArchives, workspaceSettings, container) {
+    constructor(container, workspace, workspaceArchives, workspaceSettings) {
+        this.container = container;
         this.workspace = workspace;
         this.workspaceArchives = workspaceArchives;
         this.workspaceSettings = workspaceSettings;
-        this.container = container;
 
         this.containerDiv = null;
         this.barChartCanvas = null;
@@ -1332,6 +1350,12 @@ class LaserCutPartsInProcessChart {
         this.thisWeekButton = this.containerDiv.querySelector("#this-week");
         this.thisMonthButton = this.containerDiv.querySelector("#this-month");
         this.thisYearButton = this.containerDiv.querySelector("#this-year");
+
+        const uniqueName = `radio-group-${this.container}`;
+        const radioButtons = this.containerDiv.querySelectorAll('input[type="radio"]');
+        radioButtons.forEach(radio => {
+            radio.name = uniqueName;
+        });
 
         this.populateProcessSelections();
 
@@ -1614,16 +1638,15 @@ class LaserCutPartsInProcessChart {
     }
 }
 
-class AssemblyProgressionLayout {
-    constructor(workspace, workspaceArchives, workspaceSettings, container) {
+class ActivityPage{
+    constructor(container, workspace, workspaceArchives, workspaceSettings) {
+        this.container = container;
         this.workspace = workspace;
         this.workspaceArchives = workspaceArchives;
         this.workspaceSettings = workspaceSettings;
-        this.container = container;
 
         this.containerDiv = null;
         this.jobsList = null;
-
     }
 
     initialize() {
@@ -1794,7 +1817,109 @@ class AssemblyProgressionLayout {
             new Accordion(detailElement);
         });
     }
+}
 
+class HeatmapsPage{
+    constructor(container, productionPlan, workspace, workspaceSettings){
+        this.container = container;
+        this.productionPlan = productionPlan;
+        this.workspace = workspace;
+        this.workspaceSettings = workspaceSettings;
+
+        this.productionPlanHeatMap = null;
+        this.workspaceHeatmap = null;
+    }
+
+    initialize(){
+        this.loadHeatmaps();
+    }
+
+    loadHeatmaps() {
+        if (!this.productionPlanHeatMap) {
+            this.productionPlanHeatMap = new HeatMap('#production-plan-heatmap-container', this.productionPlan, this.workspaceSettings);
+            this.productionPlanHeatMap.initialize();
+        } else {
+            this.productionPlanHeatMap.loadHeatMap();
+        }
+        if (!this.workspaceHeatmap) {
+            this.workspaceHeatmap = new HeatMap('#workspace-heatmap-container', this.workspace, this.workspaceSettings);
+            this.workspaceHeatmap.initialize();
+        } else {
+            this.workspaceHeatmap.loadChart();
+        }
+    }
+}
+
+class AssemblyGraphsPage{
+    constructor(container, workspace, workspaceArchives, workspaceSettings){
+        this.container = container;
+        this.workspace = workspace;
+        this.workspaceArchives = workspaceArchives;
+        this.workspaceSettings = workspaceSettings;
+
+        this.assemblyInProcessChart1 = null;
+        this.assemblyInProcessChart2 = null;
+        this.assemblyInProcessChart3 = null;
+
+        this.selectAssemblyChart1 = null;
+        this.selectAssemblyChart2 = null;
+
+        this.allAssembliesChart1 = null;
+    }
+ 
+    initialize(){
+        this.assemblyInProcessChart1 = new AssembliesInProcessChart('#assemblies-in-process-chart-container-1', this.workspace, this.workspaceArchives, this.workspaceSettings);
+        this.assemblyInProcessChart1.initialize();
+        this.assemblyInProcessChart2 = new AssembliesInProcessChart('#assemblies-in-process-chart-container-2', this.workspace, this.workspaceArchives, this.workspaceSettings);
+        this.assemblyInProcessChart2.initialize();
+        this.assemblyInProcessChart3 = new AssembliesInProcessChart('#assemblies-in-process-chart-container-3', this.workspace, this.workspaceArchives, this.workspaceSettings);
+        this.assemblyInProcessChart3.initialize();
+        this.selectAssemblyChart1 = new SelectAssemblyChart('#select-assembly-chart-container-1', this.workspace, this.workspaceArchives, this.workspaceSettings);
+        this.selectAssemblyChart1.initialize();
+        this.selectAssemblyChart2 = new SelectAssemblyChart('#select-assembly-chart-container-2', this.workspace, this.workspaceArchives, this.workspaceSettings);
+        this.selectAssemblyChart2.initialize();
+        this.allAssembliesChart1 = new AllAssembliesChart('#all-assemblies-chart-container-1', this.workspace, this.workspaceArchives, this.workspaceSettings);
+        this.allAssembliesChart1.initialize();
+    }
+
+    loadGraphs() {
+        this.assemblyInProcessChart1.loadChart();
+        this.assemblyInProcessChart2.loadChart();
+        this.assemblyInProcessChart3.loadChart();
+
+        this.selectAssemblyChart1.loadChart();
+        this.selectAssemblyChart2.loadChart();
+
+        this.allAssembliesChart1.loadChart();
+    }
+}
+
+class PartGraphsPage{
+    constructor(container, workspace, workspaceArchives, workspaceSettings){
+        this.container = container;
+        this.workspace = workspace;
+        this.workspaceArchives = workspaceArchives;
+        this.workspaceSettings = workspaceSettings;
+
+        this.laserCutPartsChart1 = null;
+        this.laserCutPartsChart2 = null;
+        this.laserCutPartsChart3 = null;
+    }
+ 
+    initialize(){
+        this.laserCutPartsChart1 = new LaserCutPartsInProcessChart('#laser-cut-parts-in-process-chart-container-1', this.workspace, this.workspaceArchives, this.workspaceSettings);
+        this.laserCutPartsChart1.initialize();
+        this.laserCutPartsChart2 = new LaserCutPartsInProcessChart('#laser-cut-parts-in-process-chart-container-2', this.workspace, this.workspaceArchives, this.workspaceSettings);
+        this.laserCutPartsChart2.initialize();
+        this.laserCutPartsChart3 = new LaserCutPartsInProcessChart('#laser-cut-parts-in-process-chart-container-3', this.workspace, this.workspaceArchives, this.workspaceSettings);
+        this.laserCutPartsChart3.initialize();
+    }
+
+    loadGraphs() {
+        this.laserCutPartsChart1.loadChart();
+        this.laserCutPartsChart2.loadChart();
+        this.laserCutPartsChart3.loadChart();
+    }
 }
 
 class WorkspaceDashboard {
@@ -1805,26 +1930,11 @@ class WorkspaceDashboard {
         this.workspaceSettings = null;
         this.productionPlan = null
 
-        // Graphs
-        this.productionPlanHeatMap = null;
-        this.workspaceHeatmap = null;
+        this.heatMapsPage = null;
+        this.assemblyGraphsPage = null;
+        this.partGraphsPage = null;
+        this.jobActivityPage = null;
 
-        this.assemblyInProcessChart1 = null;
-        this.assemblyInProcessChart2 = null;
-        this.assemblyInProcessChart3 = null;
-
-        this.selectAssemblyChart1 = null;
-        this.selectAssemblyChart2 = null;
-
-        this.allAssembliesChart1 = null;
-
-        this.laserCutPartsChart1 = null;
-        this.laserCutPartsChart2 = null;
-
-        // Dialogs
-        this.assemblyProgressionLayout = null;
-
-        // Web socket
         this.socket = null;
     }
 
@@ -1834,14 +1944,27 @@ class WorkspaceDashboard {
         this.workspaceSettings = await this.loadWorkspaceSettings();
         this.productionPlan = await this.loadProductionPlan();
         if (this.workspace && this.workspaceArchives && this.workspaceSettings && this.productionPlan) {
-            this.loadLaserCutPartsInProcessCharts();
-            this.loadAssembliesInProcessCharts();
-            this.loadAssemblyCharts();
-            this.loadProductionPlanHeatmap();
-            this.loadWorkspaceHeatmap();
-            this.loadLayouts();
+            this.assemblyGraphsPage = new AssemblyGraphsPage('#assembly-graphs', this.workspace, this.workspaceArchives, this.workspaceSettings);
+            this.assemblyGraphsPage.initialize();
+            
+            this.partGraphsPage = new PartGraphsPage('#parts-graphs', this.workspace, this.workspaceArchives, this.workspaceSettings);
+            this.partGraphsPage.initialize();
+            
+            this.heatMapsPage = new HeatmapsPage('#heatmaps', this.workspace, this.productionPlan, this.workspaceSettings);
+            this.heatMapsPage.initialize();
+
+            this.jobActivityPage = new ActivityPage('#activity', this.workspace, this.workspaceArchives, this.workspaceSettings);
+            this.jobActivityPage.initialize();
+
             this.setupWebSocket();
         }
+    }
+
+    loadPages(){
+        this.heatMapsPage.loadHeatmaps();
+        this.assemblyGraphsPage.loadGraphs();
+        this.partGraphsPage.loadGraphs();
+        this.jobActivityPage.loadView();
     }
 
     async reloadView() {
@@ -1850,96 +1973,7 @@ class WorkspaceDashboard {
         this.workspaceSettings = await this.loadWorkspaceSettings();
         this.productionPlan = await this.loadProductionPlan();
         if (this.workspace && this.workspaceArchives && this.workspaceSettings && this.productionPlan) {
-            this.loadLaserCutPartsInProcessCharts();
-            this.loadAssembliesInProcessCharts();
-            this.loadAssemblyCharts();
-            this.loadProductionPlanHeatmap();
-            this.loadWorkspaceHeatmap();
-            this.loadLayouts();
-        }
-    }
-
-    loadLayouts() {
-        if (!this.assemblyProgressionLayout) {
-            this.assemblyProgressionLayout = new AssemblyProgressionLayout(this.workspace, this.workspaceArchives, this.workspaceSettings, '#assembly-progression-container');
-            this.assemblyProgressionLayout.initialize();
-        } else {
-            this.assemblyProgressionLayout.loadView();
-        }
-    }
-
-    loadProductionPlanHeatmap() {
-        if (!this.productionPlanHeatMap) {
-            this.productionPlanHeatMap = new HeatMap(this.productionPlan, this.workspaceSettings, '#production-plan-heatmap-container');
-            this.productionPlanHeatMap.initialize();
-        } else {
-            this.productionPlanHeatMap.loadHeatMap();
-        }
-    }
-
-    loadWorkspaceHeatmap() {
-        if (!this.workspaceHeatmap) {
-            this.workspaceHeatmap = new HeatMap(this.workspace, this.workspaceSettings, '#workspace-heatmap-container');
-            this.workspaceHeatmap.initialize();
-        } else {
-            this.workspaceHeatmap.loadChart();
-        }
-    }
-
-    loadAssemblyCharts() {
-        if (!this.selectAssemblyChart1) {
-            this.selectAssemblyChart1 = new SelectAssemblyChart(this.workspace, this.workspaceArchives, this.workspaceSettings, '#select-assembly-chart-container-1');
-            this.selectAssemblyChart1.initialize();
-        } else {
-            this.selectAssemblyChart1.loadChart();
-        }
-        if (!this.selectAssemblyChart2) {
-            this.selectAssemblyChart2 = new SelectAssemblyChart(this.workspace, this.workspaceArchives, this.workspaceSettings, '#select-assembly-chart-container-2');
-            this.selectAssemblyChart2.initialize();
-        } else {
-            this.selectAssemblyChart2.loadChart();
-        }
-        if (!this.allAssembliesChart1) {
-            this.allAssembliesChart1 = new AllAssembliesChart(this.workspace, this.workspaceArchives, this.workspaceSettings, '#all-assemblies-chart-container-1');
-            this.allAssembliesChart1.initialize();
-        } else {
-            this.allAssembliesChart1.loadChart();
-        }
-    }
-
-    loadAssembliesInProcessCharts() {
-        if (!this.assemblyInProcessChart1) {
-            this.assemblyInProcessChart1 = new AssembliesInProcessChart(this.workspace, this.workspaceArchives, this.workspaceSettings, '#assemblies-in-process-chart-container-1');
-            this.assemblyInProcessChart1.initialize();
-        } else {
-            this.assemblyInProcessChart1.loadChart();
-        }
-        if (!this.assemblyInProcessChar2) {
-            this.assemblyInProcessChart2 = new AssembliesInProcessChart(this.workspace, this.workspaceArchives, this.workspaceSettings, '#assemblies-in-process-chart-container-2');
-            this.assemblyInProcessChart2.initialize();
-        } else {
-            this.assemblyInProcessChart2.loadChart();
-        }
-        if (!this.assemblyInProcessChar3) {
-            this.assemblyInProcessChart3 = new AssembliesInProcessChart(this.workspace, this.workspaceArchives, this.workspaceSettings, '#assemblies-in-process-chart-container-3');
-            this.assemblyInProcessChart3.initialize();
-        } else {
-            this.assemblyInProcessChart3.loadChart();
-        }
-    }
-
-    loadLaserCutPartsInProcessCharts() {
-        if (!this.laserCutPartsChart1) {
-            this.laserCutPartsChart1 = new LaserCutPartsInProcessChart(this.workspace, this.workspaceArchives, this.workspaceSettings, '#laser-cut-parts-in-process-chart-container-1');
-            this.laserCutPartsChart1.initialize();
-        } else {
-            this.laserCutPartsChart1.loadChart();
-        }
-        if (!this.laserCutPartsChart2) {
-            this.laserCutPartsChart2 = new LaserCutPartsInProcessChart(this.workspace, this.workspaceArchives, this.workspaceSettings, '#laser-cut-parts-in-process-chart-container-2');
-            this.laserCutPartsChart2.initialize();
-        } else {
-            this.laserCutPartsChart2.loadChart();
+            this.loadPages();
         }
     }
 
