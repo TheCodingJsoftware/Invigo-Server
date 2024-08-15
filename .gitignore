@@ -166,10 +166,11 @@ images
 logs
 previous_quotes
 saved_quotes
-saved_jobs
+saved_jobsg
 order_number.json
 backups
 run.bat
+update.bat
 *.zip
 *.json
 *.log
