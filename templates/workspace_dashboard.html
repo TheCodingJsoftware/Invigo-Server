@@ -540,8 +540,32 @@
                 </article>
             </div>
             <div id="activity" class="page padding">
-                <div id="jobs-list">
+                <div class="grid padding">
+                    <div class="s6">
+                        <div class="field label prefix border">
+                            <i>search</i>
+                            <input id="search-input" type="search">
+                            <label>Search</label>
+                            <span class="helper">Search by assembly names.</span>
+                        </div>
+                    </div>
+                    <div class="s6">
+                        <div class="field label suffix border">
+                            <select id="process-tags">
+                                <!-- Options will be populated dynamically -->
+                            </select>
+                            <label>Select Process</label>
+                            <i>arrow_drop_down</i>
+                            <span class="helper">Filter by processes.</span>
+                        </div>
+                    </div>
                 </div>
+                <article class="job-container">
+                    <h3>Jobs</h3>
+                    <br>
+                    <div id="jobs-list">
+                    </div>
+                </article>
             </div>
         </div>
     </main>

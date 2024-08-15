@@ -1645,22 +1645,133 @@ class ActivityPage{
         this.workspaceArchives = workspaceArchives;
         this.workspaceSettings = workspaceSettings;
 
+        this.currentProcess = null;
+        this.currentSearchInput = null;
+
         this.containerDiv = null;
         this.jobsList = null;
+        this.processSelections = null;
+        this.searchInput = null;
     }
 
     initialize() {
         this.containerDiv = document.querySelector(this.container);
+        this.processSelections = this.containerDiv.querySelector('#process-tags');
+        this.searchInput = this.containerDiv.querySelector('#search-input');
         this.jobsList = this.containerDiv.querySelector('#jobs-list');
-        this.loadView();
-    }
+        
+        this.populateProcessSelections();
 
+        this.currentProcess = this.processSelections.value;
+        this.currentSearchInput = this.searchInput.value;
+        
+        this.processSelections.addEventListener('change', () => {
+            this.currentProcess = this.processSelections.value;
+            savePreference(this.container, "lastSelectedProcess", this.currentProcess);
+            this.filter();
+        });
+        
+        this.searchInput.value = getPreference(this.container, 'searchInput', {'value': ''}).value;
+        this.currentSearchInput = this.searchInput.value;
+
+        this.searchInput.addEventListener('change', () => {
+            this.currentSearchInput = this.searchInput.value;
+            savePreference(this.container, "searchInput", this.currentSearchInput);
+            this.filter();
+        })
+
+        this.loadView();
+        this.filter();
+    }
+    filter() {
+        const jobsList = document.getElementById('jobs-list');
+        const searchText = this.currentSearchInput.toLowerCase();
+        const selectedProcess = this.currentProcess;
+    
+        const jobDetailsList = jobsList.querySelectorAll('.job-details');
+        let anyJobVisible = false;
+    
+        jobDetailsList.forEach(jobDetails => {
+            let jobMatches = false;
+    
+            const assemblyArticles = jobDetails.querySelectorAll('.assembly-article');
+    
+            assemblyArticles.forEach(assemblyArticle => {
+                const assemblyName = assemblyArticle.getAttribute('data-assembly-name').toLowerCase();
+                const assemblyProcess = assemblyArticle.getAttribute('data-assembly-process');
+                const isPartsComplete = assemblyArticle.getAttribute('data-parts-complete') === 'true';
+                const isAssemblyComplete = assemblyArticle.getAttribute('data-assembly-complete') === 'true';
+    
+                let matchesText = true;
+                let matchesProcess = true;
+    
+                if (searchText && !assemblyName.includes(searchText)) {
+                    matchesText = false;
+                }
+    
+                if (selectedProcess !== "Everything") {
+                    if (selectedProcess === "Finished") {
+                        if (!isAssemblyComplete || !isPartsComplete) {
+                            matchesProcess = false;
+                        }
+                    } else if (selectedProcess === "Parts Pending") {
+                        if (isPartsComplete) {
+                            matchesProcess = false;
+                        }
+                    } else {
+                        if (assemblyProcess !== selectedProcess || !isPartsComplete) {
+                            matchesProcess = false;
+                        }
+                    }
+                }
+    
+                if (matchesText && matchesProcess) {
+                    assemblyArticle.classList.remove('hidden');
+                    jobMatches = true; 
+                } else {
+                    assemblyArticle.classList.add('hidden');
+                }
+            });
+    
+            if (!jobMatches) {
+                jobDetails.classList.add('hidden');
+            } else {
+                jobDetails.classList.remove('hidden');
+                anyJobVisible = true;
+    
+                if (searchText || selectedProcess !== "Everything") {
+                    jobDetails.open = true;
+                    jobDetails.querySelector('.job-article').classList.add('primary');
+                } else {
+                    jobDetails.open = false;
+                    jobDetails.querySelector('.job-article').classList.remove('primary');
+                }
+            }
+        });
+    
+        const noAssembliesMessage = document.getElementById('no-assemblies-message');
+        if (!anyJobVisible) {
+            if (!noAssembliesMessage) {
+                const messageElement = document.createElement('p');
+                messageElement.id = 'no-assemblies-message';
+                messageElement.textContent = 'No assemblies found';
+                jobsList.appendChild(messageElement);
+            }
+        } else {
+            if (noAssembliesMessage) {
+                noAssembliesMessage.remove();
+            }
+        }
+    }
+    
+    
     loadView() {
         this.jobsList.innerHTML = '';  // Clear the current content
 
         this.workspace.jobs.forEach(job => {
             const jobDetails = document.createElement('details');
             jobDetails.className = "bottom-margin job-details"
+            jobDetails.setAttribute("data-job-name", job.job_data.name);
 
             const jobSummary = document.createElement('summary');
             jobSummary.className = 'none';
@@ -1694,8 +1805,20 @@ class ActivityPage{
             assembliesContainer.className = 'padding no-margin assembly-container no-shadow';
 
             getAssemblies(job).forEach(assembly => {
+                const assemblyName = assembly.assembly_data.name;
+                const currentProcessIndex = assembly.assembly_data.current_flow_tag_index;
+                const isComplete = isAssemblyComplete(assembly);
+                const isPartsComplete = isAssemblyPartsComplete(assembly);
+                let currentAssemblyProcess = assembly.assembly_data.flow_tag.tags[currentProcessIndex];
+                if (currentAssemblyProcess === undefined){
+                    currentAssemblyProcess = "Finished";
+                }
                 const assemblyArticle = document.createElement('article');
                 assemblyArticle.className = 'no-padding assembly-article';
+                assemblyArticle.setAttribute('data-assembly-name', assemblyName);
+                assemblyArticle.setAttribute('data-assembly-process', currentAssemblyProcess);
+                assemblyArticle.setAttribute('data-parts-complete', isPartsComplete);
+                assemblyArticle.setAttribute('data-assembly-complete', isComplete);
 
                 const assemblyGrid = document.createElement('div');
                 assemblyGrid.className = 'row';
@@ -1717,16 +1840,16 @@ class ActivityPage{
                 textPadding.className = 'padding';
 
                 const assemblyTitle = document.createElement('h5');
-                assemblyTitle.textContent = assembly.assembly_data.name;
+                assemblyTitle.textContent = assemblyName;
                 textPadding.appendChild(assemblyTitle);
 
                 const assemblyDescription = document.createElement('p');
 
-                if (isAssemblyPartsComplete(assembly)) {
-                    if (isAssemblyComplete(assembly)) {
+                if (isPartsComplete) {
+                    if (isComplete) {
                         assemblyDescription.textContent = "Assembly is finished";
                     } else {
-                        assemblyDescription.textContent = `Current process: ${assembly.assembly_data.flow_tag.tags[assembly.assembly_data.current_flow_tag_index]}`;
+                        assemblyDescription.textContent = `Current process: ${currentAssemblyProcess}`;
                     }
                 } else {
                     assemblyDescription.textContent = "Parts still pending";
@@ -1812,10 +1935,53 @@ class ActivityPage{
             this.jobsList.appendChild(jobDetails);
         });
 
-
         this.containerDiv.querySelectorAll("details").forEach((detailElement) => {
             new Accordion(detailElement);
         });
+        
+        setTimeout(function () {
+            document.querySelectorAll('img').forEach(function (img) {
+                img.onerror = function () {
+                    this.classList.add('hidden');
+                };
+                if (!img.complete || img.naturalWidth === 0) {
+                    img.onerror();
+                }
+            });
+        }, 1000);
+    }
+    
+    populateProcessSelections() {
+        this.processSelections.innerHTML = '';
+
+        const everythingOption = document.createElement('option');
+        everythingOption.textContent = 'Everything';
+        this.processSelections.appendChild(everythingOption);
+
+        const partsPendingOption = document.createElement('option');
+        partsPendingOption.textContent = 'Parts Pending';
+        this.processSelections.appendChild(partsPendingOption);
+
+        const finishedOption = document.createElement('option');
+        finishedOption.textContent = 'Finished';
+        this.processSelections.appendChild(finishedOption);
+
+        const uniqueTags = new Set();
+        this.workspace.jobs.forEach(job => {
+            getAssemblies(job).forEach(assembly => {
+                assembly.assembly_data.flow_tag.tags.forEach(tag => {
+                    uniqueTags.add(tag);
+                })
+            });
+        });
+
+        uniqueTags.forEach(tag => {
+            const option = document.createElement('option');
+            option.textContent = tag;
+            this.processSelections.appendChild(option);
+        });
+
+        this.processSelections.value = getPreference(this.container, 'lastSelectedProcess', { 'value': 'Everything' }).value;
     }
 }
 

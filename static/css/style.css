@@ -39,7 +39,9 @@
     background-color: var(--surface-container-high);
     box-shadow: var(--elevate2);
 }
-
+.job-container{
+    background-color: var(--surface-container-high);
+}
 /* index.html */
 
 .grid-container{
