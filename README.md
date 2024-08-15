@@ -17,16 +17,16 @@ LAN file sharing server that Invigo relies on to keep all clients synced and a w
     pip install -r requirements.txt
     ```
 
-    OR for active development
-
-    ```bash
-    npx webpack --watch --config webpack.config.js
-    ```
-
 4. Build with
 
     ```bash
     npx webpack --config webpack.config.js
+    ```
+
+    OR for active development
+
+    ```bash
+    npx webpack --watch --config webpack.config.js
     ```
 
 5. Create a json file called `credentials.json` then set your email credentials in order send emails via SMTP:
