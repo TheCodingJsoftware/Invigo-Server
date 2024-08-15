@@ -19,8 +19,8 @@ import {
     getPartsCount,
     getColorForProcessTag,
     calculateAssemblyProgress,
-    getPreference,
     savePreference,
+    getPreference,
 } from './utils.js';
 Chart.register(...registerables);
 Chart.register(MatrixController, MatrixElement);
