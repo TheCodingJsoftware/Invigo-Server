@@ -393,7 +393,25 @@ function updateNestContainerClass() {
     });
 }
 
+
+function updateNavbarLocation(){
+    const isMobile = window.innerWidth <= 768; // Adjust the width threshold for mobile screens
+    const container = document.querySelector('#printout-controls');
+    if (isMobile) {
+        if (container.classList.contains('left')) {
+            container.classList.remove('left');
+        }
+    } else {
+        if (!container.classList.contains('left')) {
+            container.classList.add('left');
+        }
+    }
+}
+
 window.addEventListener('load', updateNestContainerClass);
+window.addEventListener('resize', updateNavbarLocation);
+
+window.addEventListener('load', updateNavbarLocation);
 window.addEventListener('resize', updateNestContainerClass);
 
 window.addEventListener('load', function () {
