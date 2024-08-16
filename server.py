@@ -27,6 +27,7 @@ from ansi2html import Ansi2HTMLConverter
 from filelock import FileLock, Timeout
 from markupsafe import Markup
 from natsort import natsorted
+from tabulate import tabulate
 from tornado.ioloop import IOLoop, PeriodicCallback
 
 from utils.custom_print import CustomPrint
@@ -46,7 +47,6 @@ from utils.inventory_updater import (
     set_sheet_quantity,
     sheet_exists,
 )
-from utils.server_colors import Colors
 from utils.send_email import send, send_error_log
 from utils.sheet_report import generate_sheet_report
 from utils.sheet_settings.sheet_settings import SheetSettings
@@ -299,27 +299,38 @@ class ServerLogsHandler(tornado.web.RequestHandler):
     def convert_set_to_list(self, s: set[tornado.websocket.WebSocketHandler]) -> list[tornado.websocket.WebSocketHandler]:
         return list(map(lambda x: x, s))
 
-
     def print_clients(self):
         with open("users.json", "r", encoding="utf-8") as f:
             users: dict[str, dict[str, str]] = json.load(f)
+
         software_clients: list[str] = [client.request.remote_ip for client in self.convert_set_to_list(connected_clients)]
         web_clients: list[str] = [client.request.remote_ip for client in self.convert_set_to_list(web_connected_clients)]
 
         all_clients = list(set(list(users.keys()) + software_clients + web_clients))
-        string = ""
+
+        table_data = []
+
         for i, client in enumerate(all_clients, start=1):
             client_name = users.get(client, {}).get("name", "Unknown")
+            client_version = users.get(client, {}).get("latest_version", "Unknown")
+            client_last_connected = users.get(client, {}).get("latest_connection", "Unknown")
+
             if client in software_clients and client in web_clients:
-                client = f" {i}. {Colors.OKGREEN}{client:<10s} {client_name:<10s} Connected via software and web{Colors.BOLD}"
-            if client in software_clients:
-                client = f" {i}. {Colors.OKGREEN}{client:<10s} {client_name:<10s} Connected via software{Colors.BOLD}"
+                status = "Connected via software and web"
+            elif client in software_clients:
+                status = "Connected via software"
             elif client in web_clients:
-                client = f" {i}. {Colors.OKGREEN}{client:<10s} {client_name:<10s} Connected via web{Colors.BOLD}"
+                status = "Connected via web"
             else:
-                client = f" {i}. {Colors.ERROR}{client:<10s} {client_name:<10s} Disconnected{Colors.BOLD}"
-            string += f"{client:>10s}\n"
-        return string + "\n"
+                status = "Disconnected"
+
+            table_data.append([i, client, client_name, client_version, client_last_connected, status])
+
+        headers = ["#", "IP Address", "Client", "Version", "Latest Connection", "Connection Status"]
+
+        table_string = tabulate(table_data, headers=headers)
+
+        return table_string + "\n"
 
     def get(self):
         with open("users.json", "r", encoding="utf-8") as f:
