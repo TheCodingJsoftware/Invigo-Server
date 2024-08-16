@@ -17,6 +17,7 @@ module.exports = {
         workorder: './src/workorder.js',
         workspace_archives_dashboard: './src/workspace_archives_dashboard.js',
         workspace_dashboard: './src/workspace_dashboard.js',
+        printout: './src/printout.js',
     },
     output: {
         filename: '[name].bundle.js',
@@ -36,7 +37,6 @@ module.exports = {
             patterns: [
                 { from: './src/sorttable.js', to: 'sorttable.js' },
                 { from: './src/qrcode.min.js', to: 'qrcode.min.js' },
-                { from: './src/printout.js', to: 'printout.js' },
             ],
         }),
     ],
