@@ -60,8 +60,8 @@ details>summary {
         display: none;
     }
     #printout-controls{
-        display: none;
-        position: relative;
+        display: none !important;
+        position: relative !important;
     }
 
     .group_details {
