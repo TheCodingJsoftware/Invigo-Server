@@ -115,7 +115,7 @@ class ConnectHandler(tornado.web.RequestHandler):
         client_name = client_data.get("client_name")
         latest_version = client_data.get("version")
 
-        file_path = "trusted_users.json"
+        file_path = "users.json"
         lock = FileLock(f"{file_path}.lock", timeout=10)  # Set a timeout for acquiring the lock
         try:
             with lock:
@@ -158,7 +158,7 @@ class ConnectHandler(tornado.web.RequestHandler):
 class GetClientNameHandler(tornado.web.RequestHandler):
     def get(self):
         client_ip = str(self.request.remote_ip)
-        file_path = "trusted_users.json"
+        file_path = "users.json"
         lock = FileLock(f"{file_path}.lock", timeout=10)
 
         try:
@@ -182,7 +182,7 @@ class GetClientNameHandler(tornado.web.RequestHandler):
 class IsClientTrustedHandler(tornado.web.RequestHandler):
     def get(self):
         client_ip = str(self.request.remote_ip)
-        file_path = "trusted_users.json"
+        file_path = "users.json"
         lock = FileLock(f"{file_path}.lock", timeout=10)
 
         try:

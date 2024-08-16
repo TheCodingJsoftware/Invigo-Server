@@ -165,7 +165,7 @@ data/
 credentials.json
 settings.json
 package-lock.json
-trusted_users.json
+users.json
 images
 logs
 previous_quotes
