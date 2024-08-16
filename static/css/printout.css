@@ -92,14 +92,6 @@ details>summary {
     font-size: 16px
 }
 
-.responsiveTable th {
-    background-color: #92c9e6;
-    color: #ffffff
-}
-
-.responsiveTable tbody tr:nth-child(even) {
-    background-color: #d1e8f5
-}
 
 @media (max-width:1000px) {
     .responsiveTable thead {
@@ -119,7 +111,7 @@ details>summary {
     }
 
     .responsiveTable td {
-        padding-left: 50%;
+        padding-left: 50% !important;
         text-align: left;
         position: relative
     }
