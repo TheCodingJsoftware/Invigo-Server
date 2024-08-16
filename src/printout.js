@@ -1,4 +1,5 @@
 import "beercss"
+import "material-dynamic-colors";
 
 const checkboxConfig = {
     "quote": {

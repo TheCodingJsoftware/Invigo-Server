@@ -55,10 +55,13 @@ details>summary {
     #showNests,
     #showSheets,
     .checkbox,
-    #printout-controls,
     .nested-parts,
     details:not([open]) {
         display: none;
+    }
+    #printout-controls{
+        display: none;
+        position: relative;
     }
 
     .group_details {
@@ -86,8 +89,6 @@ details>summary {
 
 .responsiveTable td,
 .responsiveTable th {
-    padding: 12px 15px;
-    border: 1px solid #ddd;
     text-align: center;
     font-size: 16px
 }
