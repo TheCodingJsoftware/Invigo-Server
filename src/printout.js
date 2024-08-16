@@ -1,5 +1,4 @@
 import "beercss"
-import "jquery"
 
 const checkboxConfig = {
     "quote": {
@@ -217,22 +216,27 @@ window.addEventListener('load', function () {
     }, 1000); // 1000 milliseconds = 1 second
 });
 
-$('details.assembly_details').each(function () {
-    const summary = $(this).children('summary');
-    const summaryText = summary.text();
-    const span = $('<span>').text(summaryText);
-    summary.text('').append(span);
+document.querySelectorAll('details.assembly_details').forEach(function (detailsElement) {
+    const summary = detailsElement.querySelector('summary');
+    const summaryText = summary.textContent;
+
+    const span = document.createElement('span');
+    span.textContent = summaryText;
+
+    // Clear the summary text and append the span
+    summary.textContent = '';
+    summary.appendChild(span);
 
     // Initially hide the summary text if the details element is open
-    if (this.open) {
-        span.hide();
+    if (detailsElement.open) {
+        span.style.display = 'none';
     }
 
-    $(this).on('toggle', function () {
-        if (this.open) {
-            span.hide();
+    detailsElement.addEventListener('toggle', function () {
+        if (detailsElement.open) {
+            span.style.display = 'none';
         } else {
-            span.show();
+            span.style.display = 'inline';
         }
     });
 });
