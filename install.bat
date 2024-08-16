@@ -1,4 +1,4 @@
 @echo off
-cd /d "C:\Users\Invigo\Desktop\Invigo-Server"
+cd /d "%~dp0"
 python setup.py
 pause
