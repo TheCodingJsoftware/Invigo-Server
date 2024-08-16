@@ -253,8 +253,8 @@ document.querySelectorAll('.qr-item').forEach(async item => {
     const name = item.getAttribute('data-name');
     let encodedUrl;
     let qrDiv = item.querySelector('.qr-code');
+    const sheetsUrl = baseUrl + "sheets_in_inventory/";
 
-    sheetsUrl = baseUrl + "sheets_in_inventory/";
     encodedUrl = encodeURI(sheetsUrl + name.replace(/ /g, "_"));
     new QRCode(qrDiv, {
         text: encodedUrl,
