@@ -203,18 +203,6 @@ if (storedTargetColumn) {
     document.body.className = defaultTarget;
 }
 
-window.addEventListener('load', function () {
-    setTimeout(function () {
-        document.querySelectorAll('img').forEach(function (img) {
-            img.onerror = function () {
-                this.classList.add('hidden');
-            };
-            if (!img.complete || img.naturalWidth === 0) {
-                img.onerror();
-            }
-        });
-    }, 1000); // 1000 milliseconds = 1 second
-});
 
 document.querySelectorAll('details.assembly_details').forEach(function (detailsElement) {
     const summary = detailsElement.querySelector('summary');
@@ -384,4 +372,39 @@ usePageBreakcheckbox.addEventListener('change', function () {
     } else {
         pageBreakDivs.forEach(div => div.classList.remove('page-break'));
     }
+});
+
+function updateNestContainerClass() {
+    const isMobile = window.innerWidth <= 768; // Adjust the width threshold for mobile screens
+    const containers = document.querySelectorAll('#sheets-layout #nest-container');
+
+    containers.forEach(container => {
+        if (isMobile) {
+            if (container.classList.contains('s6')) {
+                container.classList.remove('s6');
+                container.classList.add('s12');
+            }
+        } else {
+            if (container.classList.contains('s12')) {
+                container.classList.remove('s12');
+                container.classList.add('s6');
+            }
+        }
+    });
+}
+
+window.addEventListener('load', updateNestContainerClass);
+window.addEventListener('resize', updateNestContainerClass);
+
+window.addEventListener('load', function () {
+    setTimeout(function () {
+        document.querySelectorAll('img').forEach(function (img) {
+            img.onerror = function () {
+                this.classList.add('hidden');
+            };
+            if (!img.complete || img.naturalWidth === 0) {
+                img.onerror();
+            }
+        });
+    }, 1000); // 1000 milliseconds = 1 second
 });
