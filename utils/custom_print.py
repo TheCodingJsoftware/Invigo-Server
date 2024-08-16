@@ -47,16 +47,10 @@ def print_clients():
     all_clients = list(set(list(users.keys()) + connected_clients))
     string = ""
     for i, client in enumerate(all_clients, start=1):
-        try:
-            if client in all_clients:
-                if client in connected_clients:
-                    client = f" {i}. {Colors.OKGREEN}{client:<10s} {users[client]["name"]:<10s} Connected{Colors.BOLD}"
-                else:
-                    client = f" {i}. {Colors.ERROR}{client:<10s} {users[client]["name"]:<10s} Disconnected{Colors.BOLD}"
-        except IndexError:
-            client = "index error"
-        except KeyError:
-            if "Connected clients:" not in client:
-                client = f" {i}. {Colors.WARNING}{client:<10s} {'UNKNOWN':<10s} Connected{Colors.BOLD}"
+        if client in all_clients:
+            if client in connected_clients:
+                client = f" {i}. {Colors.OKGREEN}{client:<10s} {users[client]["name"]:<10s} Connected{Colors.BOLD}"
+            else:
+                client = f" {i}. {Colors.ERROR}{client:<10s} {users[client]["name"]:<10s} Disconnected{Colors.BOLD}"
         string += f"{client:>10s}\n"
     return string + "\n"
