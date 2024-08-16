@@ -120,7 +120,7 @@ class ConnectHandler(tornado.web.RequestHandler):
         try:
             with lock:
                 if os.path.exists(file_path):
-                    with open(file_path, "rb") as file:
+                    with open(file_path, "r", encoding="utf-8") as file:
                         data: dict[str, dict[str, Union[str, bool]]] = json.load(file)
                 else:
                     data = {}
@@ -130,7 +130,7 @@ class ConnectHandler(tornado.web.RequestHandler):
                 data[client_ip].update({"name": client_name})
                 data[client_ip].update({"latest_version": latest_version})
 
-                with open(file_path, "wb") as file:
+                with open(file_path, "w", encoding="utf-8") as file:
                     json.dump(data, file, sort_keys=True, indent=4)
 
             # Send a success response back to the client
@@ -153,7 +153,7 @@ class GetClientNameHandler(tornado.web.RequestHandler):
         try:
             with lock:
                 if os.path.exists(file_path):
-                    with open(file_path, "rb") as file:
+                    with open(file_path, "r", encoding="utf-8") as file:
                         data: dict[str, dict[str, Union[str, bool]]] = json.load(file)
                     client_name = data.get(client_ip, {}).get("name", "Unknown")
                     self.write({"status": "success", "client_name": client_name})
@@ -177,7 +177,7 @@ class IsClientTrustedHandler(tornado.web.RequestHandler):
         try:
             with lock:
                 if os.path.exists(file_path):
-                    with open(file_path, "rb") as file:
+                    with open(file_path, "r", encoding="utf-8") as file:
                         data: dict[str, dict[str, Union[str, bool]]] = json.load(file)
                     is_trusted = data.get(client_ip, {}).get("trusted", False)
                     self.write({"status": "success", "is_trusted": is_trusted})
