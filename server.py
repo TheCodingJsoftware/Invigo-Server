@@ -108,7 +108,6 @@ class WebSocketWebHandler(tornado.websocket.WebSocketHandler):
         )
 
 
-
 class ConnectHandler(tornado.web.RequestHandler):
     def post(self):
         client_ip = str(self.request.remote_ip)
