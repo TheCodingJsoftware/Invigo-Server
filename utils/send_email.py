@@ -11,7 +11,7 @@ SMTP_HOST = "smtp-mail.outlook.com"
 SMTP_PORT = 587
 
 
-def send(subject: str, body: str, recipients: list[str], connected_clients):
+def send(subject: str, body: str, recipients: list[str]):
     with open("credentials.json", "r", encoding="utf-8") as credentialsFile:
         credentials = json.load(credentialsFile)
 
@@ -32,17 +32,14 @@ def send(subject: str, body: str, recipients: list[str], connected_clients):
     server.ehlo()
     server.login(USERNAME, PASSWORD)
     server.sendmail(USERNAME, recipients, msg.as_string())
-    CustomPrint.print(
-        f'INFO - Email sent to "{recipients}"',
-        connected_clients=connected_clients,
-    )
+    CustomPrint.print(f'INFO - Email sent to "{recipients}"')
 
 
-def send_error_log(body: str, connected_clients):
+def send_error_log(body: str):
     if "User: Jared" in body:
         CustomPrint.print(
             "INFO - Email aborted because its development server.",
-            connected_clients=connected_clients,
+
         )
 
         return
@@ -65,7 +62,4 @@ def send_error_log(body: str, connected_clients):
     server.ehlo()
     server.login(USERNAME, PASSWORD)
     server.sendmail(USERNAME, ERROR_LOG_RECEIVER, msg.as_string())
-    CustomPrint.print(
-        f"INFO - Email sent to {ERROR_LOG_RECEIVER}",
-        connected_clients=connected_clients,
-    )
+    CustomPrint.print(f"INFO - Email sent to {ERROR_LOG_RECEIVER}")

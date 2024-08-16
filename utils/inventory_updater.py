@@ -7,8 +7,10 @@ from utils.custom_print import CustomPrint
 from utils.inventory.order import Order
 from utils.inventory.sheet import Sheet
 from utils.inventory.sheets_inventory import SheetsInventory
+from utils.sheet_settings import SheetSettings
 
-sheets_inventory = SheetsInventory(None)
+sheet_settings = SheetSettings()
+sheets_inventory = SheetsInventory(sheet_settings)
 
 
 def get_cutoff_sheets() -> list[Sheet]:
@@ -27,7 +29,8 @@ def add_sheet(
     sheets_inventory.load_data()
     length = float(sheet_dim.split("x")[0].strip())
     width = float(sheet_dim.split("x")[1].strip())
-    new_sheet = Sheet({
+    new_sheet = Sheet(
+        {
             "quantity": sheet_count,
             "thickness": thickness,
             "material": material,
@@ -40,7 +43,7 @@ def add_sheet(
     new_sheet.latest_change_quantity = f"Item added at {datetime.now().strftime('%B %d %A %Y %I:%M:%S %p')} via server"
     sheets_inventory.add_sheet(new_sheet)
     sheets_inventory.save()
-    CustomPrint.print(f'INFO - Added "{sheet_name}" to Cutoff', connected_clients=_connected_clients)
+    CustomPrint.print(f'INFO - Added "{sheet_name}" to Cutoff')
     signal_clients_for_changes(_connected_clients, changed_files=["sheets_inventory.json"])
 
 
@@ -51,7 +54,6 @@ def remove_cutoff_sheet(sheet_name: str, _connected_clients):
     sheets_inventory.save()
     CustomPrint.print(
         f'INFO - Removed "{sheet_name}" from Cutoff',
-        connected_clients=_connected_clients,
     )
     signal_clients_for_changes(_connected_clients, changed_files=["sheets_inventory.json"])
 
@@ -103,7 +105,6 @@ def sheet_exists(sheet_name: str) -> bool:
 def signal_clients_for_changes(connected_clients: set[tornado.websocket.WebSocketHandler], changed_files: list[str]) -> None:
     CustomPrint.print(
         f"INFO - Signaling {len(connected_clients)} clients",
-        connected_clients=connected_clients,
     )
     for client in connected_clients:
         if client.ws_connection and client.ws_connection.stream.socket:
@@ -111,5 +112,4 @@ def signal_clients_for_changes(connected_clients: set[tornado.websocket.WebSocke
             client.write_message(message)
             CustomPrint.print(
                 f"INFO - Signaling {client.request.remote_ip} to download {changed_files}",
-                connected_clients=connected_clients,
             )

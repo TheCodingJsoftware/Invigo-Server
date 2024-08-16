@@ -82,14 +82,12 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
 
         CustomPrint.print(
             f"INFO - Software connection established with: {self.request.remote_ip}",
-            connected_clients=connected_clients,
         )
 
     def on_close(self):
         connected_clients.remove(self)
         CustomPrint.print(
             f"INFO - Software connection ended with: {self.request.remote_ip}",
-            connected_clients=connected_clients,
         )
 
 
@@ -98,14 +96,12 @@ class WebSocketWebHandler(tornado.websocket.WebSocketHandler):
         web_connected_clients.add(self)
         CustomPrint.print(
             f"INFO - Web connection established with: {self.request.remote_ip}",
-            connected_clients=web_connected_clients,
         )
 
     def on_close(self):
         web_connected_clients.remove(self)
         CustomPrint.print(
             f"INFO - Web connection ended with: {self.request.remote_ip}",
-            connected_clients=web_connected_clients,
         )
 
 
@@ -133,9 +129,7 @@ class ConnectHandler(tornado.web.RequestHandler):
                         "name": client_name,
                         "trusted": False,
                         "latest_version": latest_version,
-                        "latest_connection": datetime.now().strftime(
-                            "%Y-%m-%d %H:%M:%S"
-                        ),
+                        "latest_connection": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                     },
                 )
                 data[client_ip].update({"name": client_name})
@@ -282,7 +276,6 @@ class WorkspaceArchivesHandler(tornado.web.RequestHandler):
                 if isinstance(data, list):
                     all_jobs.extend(data)
 
-        print(files)
         self.write(msgspec.json.encode(all_jobs))
 
 
@@ -561,19 +554,16 @@ class FileReceiveHandler(tornado.web.RequestHandler):
                     self.write(data)
                 CustomPrint.print(
                     f'INFO - {self.request.remote_ip} downloaded "{filename}"',
-                    connected_clients=connected_clients,
                 )
         except FileNotFoundError:
             CustomPrint.print(
                 f'ERROR - File "{filename}" not found.',
-                connected_clients=connected_clients,
             )
             self.set_status(404)
             self.write(f'File "{filename}" not found.')
         except Timeout:
             CustomPrint.print(
                 f'WARN - {self.request.remote_ip} Could not acquire lock for "{filename}".',
-                connected_clients=connected_clients,
             )
             self.set_status(503)
             self.write(f"Could not acquire lock for {filename}. Try again later.")
@@ -591,12 +581,10 @@ def update_inventory_file_to_pinecone(file_name: str):
         shutil.copy2(f"data\\{file_name}", f"Z:\\Invigo\\{file_name}")
         CustomPrint.print(
             f'INFO - Uploaded "{file_name}" to Pinecone',
-            connected_clients=connected_clients,
         )
     except Exception as e:
         CustomPrint.print(
             f"ERROR - Upload to Pinecone error: {e}",
-            connected_clients=connected_clients,
         )
 
 
@@ -621,7 +609,6 @@ class FileUploadHandler(tornado.web.RequestHandler):
 
                     CustomPrint.print(
                         f'INFO - {self.request.remote_ip} uploaded "{filename}"',
-                        connected_clients=connected_clients,
                     )
 
                     if should_signal_connect_clients:
@@ -630,7 +617,6 @@ class FileUploadHandler(tornado.web.RequestHandler):
                 except Timeout:
                     CustomPrint.print(
                         f'WARN - {self.request.remote_ip} Could not acquire lock for "{filename}".',
-                        connected_clients=connected_clients,
                     )
                     self.set_status(503)
                     self.write(f"Could not acquire lock for {filename}. Try again later.")
@@ -642,7 +628,6 @@ class FileUploadHandler(tornado.web.RequestHandler):
             self.write("No file received.")
             CustomPrint.print(
                 f"ERROR - No file received from {self.request.remote_ip}.",
-                connected_clients=connected_clients,
             )
 
 
@@ -665,21 +650,18 @@ class ProductionPlannerFileUploadHandler(tornado.web.RequestHandler):
             except Timeout:
                 CustomPrint.print(
                     f'WARN - {self.request.remote_ip} Could not acquire lock for "{filename}".',
-                    connected_clients=connected_clients,
                 )
                 self.write(f"Could not acquire lock for {filename}. Try again later.")
                 return
 
             CustomPrint.print(
                 f'INFO - Web {self.request.remote_ip} uploaded "{filename}"',
-                connected_clients=connected_clients,
             )
             signal_clients_for_changes(self.request.remote_ip, [filename], client_type="web")
         else:
             self.write("No file received.")
             CustomPrint.print(
                 f"ERROR - No file received from  {self.request.remote_ip}.",
-                connected_clients=connected_clients,
             )
 
 
@@ -694,12 +676,11 @@ class WorkspaceFileUploader(tornado.web.RequestHandler):
                 file.write(file_data)
             CustomPrint.print(
                 f'INFO - {self.request.remote_ip} uploaded "{file_name}"',
-                connected_clients=connected_clients,
             )
             self.write("File uploaded successfully.")
         else:
             self.write("No file received.")
-            CustomPrint.print("ERROR - No file received.", connected_clients=connected_clients)
+            CustomPrint.print("ERROR - No file received.")
 
 
 class WorkspaceFileHandler(tornado.web.RequestHandler):
@@ -712,7 +693,6 @@ class WorkspaceFileHandler(tornado.web.RequestHandler):
                 self.write(f.read())
             CustomPrint.print(
                 f'INFO - Sent "{file_name}" to {self.request.remote_ip}',
-                connected_clients=connected_clients,
             )
         else:
             self.set_status(404)
@@ -731,7 +711,6 @@ class ImageHandler(tornado.web.RequestHandler):
                     self.write(f.read())
                 CustomPrint.print(
                     f'INFO - Sent "{image_name}" to {self.request.remote_ip}',
-                    connected_clients=connected_clients,
                 )
             else:
                 self.set_status(404)
@@ -744,7 +723,6 @@ class CommandHandler(tornado.web.RequestHandler):
         command = self.get_argument("command")
         CustomPrint.print(
             f'INFO - Command "{command}" from {self.request.remote_ip}',
-            connected_clients=connected_clients,
         )
         if command == "send_sheet_report":
             generate_sheet_report(connected_clients)
@@ -767,7 +745,6 @@ class SetOrderNumberHandler(tornado.web.RequestHandler):
 
             CustomPrint.print(
                 f"INFO - {self.request.remote_ip} set order number to {order_number})",
-                connected_clients=connected_clients,
             )
             self.write("Order number updated successfully.")
         except Exception as e:
@@ -795,7 +772,6 @@ class GetOrderNumberHandler(tornado.web.RequestHandler):
 
         CustomPrint.print(
             f"INFO - Sent order number ({next_order_number}) to {self.request.remote_ip}",
-            connected_clients=connected_clients,
         )
         self.write({"order_number": next_order_number})
 
@@ -861,7 +837,6 @@ class AddCutoffSheetHandler(tornado.web.RequestHandler):
         )
         CustomPrint.print(
             f"INFO - {self.request.remote_ip} visited /add_cutoff_sheet",
-            connected_clients=connected_clients,
         )
         self.write(rendered_template)
 
@@ -872,17 +847,10 @@ class AddCutoffSheetHandler(tornado.web.RequestHandler):
         thickness = self.get_argument("thickness")
         quantity = int(self.get_argument("quantity"))
 
-        add_sheet(
-            thickness=thickness,
-            material=material,
-            sheet_dim=f"{length:.3f}x{width:.3f}",
-            sheet_count=quantity,
-            _connected_clients=connected_clients,
-        )
+        add_sheet(thickness, material, f"{length:.3f}x{width:.3f}", quantity, connected_clients)
 
         CustomPrint.print(
             f"INFO - {self.request.remote_ip} added cutoff sheet",
-            connected_clients=connected_clients,
         )
 
         self.redirect("/add_cutoff_sheet")
@@ -926,7 +894,7 @@ async def gather_quote_directories_info(base_directory: str, specific_dirs: list
                         dir_path = dir_path.replace(f"{base_directory}\\", "")
                         gathered_data[dir_path] = dir_info
                     except Exception as e:
-                        print(f"Error processing {dir_path}: {str(e)}")
+                        CustomPrint.print(f"ERROR - Error processing {dir_path}: {str(e)}")
         return gathered_data
 
     directories = await tornado.ioloop.IOLoop.current().run_in_executor(executor, blocking_io)
@@ -984,7 +952,7 @@ async def gather_job_directories_info(base_directory: str, specific_dirs: list[s
                         dir_path = dir_path.replace(f"{base_directory}\\", "")
                         gathered_data[dir_path] = dir_info
                     except Exception as e:
-                        print(f"Gather Job Info - Error processing {dir_path}: {str(e)}")
+                        CustomPrint.print(f"ERROR - Gather Job Info - Error processing {dir_path}: {str(e)}")
         return gathered_data
 
     directories = await tornado.ioloop.IOLoop.current().run_in_executor(executor, blocking_io)
@@ -1035,7 +1003,6 @@ class LoadJobHandler(tornado.web.RequestHandler):
 
             CustomPrint.print(
                 f"INFO - {self.request.remote_ip} loaded job: {folder_name}",
-                connected_clients=connected_clients,
             )
 
             self.write(html_content)
@@ -1049,7 +1016,6 @@ class SendErrorReportHandler(tornado.web.RequestHandler):
         error_log = self.get_argument("error_log")
         CustomPrint.print(
             f"INFO - {self.request.remote_ip} sent error_log",
-            connected_clients=connected_clients,
         )
         if error_log is not None:
             log_file_name = f'Error Log - {datetime.now().strftime("%B %d %A %Y %I_%M_%S %p")}.log'
@@ -1064,7 +1030,6 @@ class SendErrorReportHandler(tornado.web.RequestHandler):
 
             send_error_log(
                 body=f"{html_error_log_url}\n{error_log}",
-                connected_clients=connected_clients,
             )
         else:
             self.set_status(400)
@@ -1078,11 +1043,10 @@ class SendEmailHandler(tornado.web.RequestHandler):
 
         email_list = emails.split(",")
         try:
-            send(title, message, email_list, connected_clients=connected_clients)
+            send(title, message, email_list)
 
             CustomPrint.print(
                 f"INFO - {self.request.remote_ip} initiated send email: {title}",
-                connected_clients=connected_clients,
             )
 
             self.write("Email sent successfully.")
@@ -1111,8 +1075,6 @@ class UploadJobHandler(tornado.web.RequestHandler):
             with open(html_file_path, "w", encoding="utf-8") as f:
                 f.write(html_file_contents)
 
-            print(folder, job_file_path, html_file_path)
-
             signal_clients_for_changes(
                 client_to_ignore=self.request.remote_ip,
                 changed_files=["reload_saved_jobs"],
@@ -1120,7 +1082,6 @@ class UploadJobHandler(tornado.web.RequestHandler):
 
             CustomPrint.print(
                 f"INFO - {self.request.remote_ip} uploaded job: {folder}",
-                connected_clients=connected_clients,
             )
 
             self.write(
@@ -1151,7 +1112,6 @@ class DownloadJobHandler(tornado.web.RequestHandler):
                         break
             CustomPrint.print(
                 f"INFO - {self.request.remote_ip} downloaded job: {folder_name}",
-                connected_clients=connected_clients,
             )
             self.finish()
         else:
@@ -1232,7 +1192,6 @@ class UpdateJobSettingsHandler(tornado.web.RequestHandler):
 
                 CustomPrint.print(
                     f"INFO - {self.request.remote_ip} changed job setting '{key_to_change}' to '{new_value}': {folder}",
-                    connected_clients=connected_clients,
                 )
 
                 self.write(
@@ -1253,7 +1212,6 @@ class DeleteJobHandler(tornado.web.RequestHandler):
     def post(self, folder_name: str):  # saved_jobs/[PATH]/[JOB_NAME]
         CustomPrint.print(
             f"INFO - Deleting - {folder_name}",
-            connected_clients=connected_clients,
         )
 
         folder_name = folder_name.replace("\\", "/")
@@ -1285,7 +1243,6 @@ class DeleteJobHandler(tornado.web.RequestHandler):
 
         CustomPrint.print(
             f"INFO - {self.request.remote_ip} deleted job: {folder_name}",
-            connected_clients=connected_clients,
         )
 
         self.write({"status": "success", "message": "Quote deleted successfully."})
@@ -1373,7 +1330,6 @@ class UploadWorkorderHandler(tornado.web.RequestHandler):
 
             CustomPrint.print(
                 f"INFO - {self.request.remote_ip} uploaded workorder: {folder}",
-                connected_clients=connected_clients,
             )
 
             self.write(
@@ -1397,7 +1353,6 @@ class LoadWorkorderHandler(tornado.web.RequestHandler):
 
             CustomPrint.print(
                 f"INFO - {self.request.remote_ip} loaded workorder printout: {folder_name}",
-                connected_clients=connected_clients,
             )
 
             self.write(html_content)
@@ -1416,7 +1371,6 @@ class WorkorderHandler(tornado.web.RequestHandler):
 
             CustomPrint.print(
                 f"INFO - {self.request.remote_ip} loaded workorder: {folder_name}",
-                connected_clients=connected_clients,
             )
 
             template = env.get_template("workorder.html")
@@ -1675,7 +1629,6 @@ class UploadQuoteHandler(tornado.web.RequestHandler):
 
             CustomPrint.print(
                 f"INFO - {self.request.remote_ip} uploaded quote: {folder}",
-                connected_clients=connected_clients,
             )
 
             self.write(
@@ -1708,7 +1661,6 @@ class DownloadQuoteHandler(tornado.web.RequestHandler):
                         break
             CustomPrint.print(
                 f"INFO - {self.request.remote_ip} downloaded quote: {folder_name}",
-                connected_clients=connected_clients,
             )
             self.finish()
         else:
@@ -1726,7 +1678,6 @@ class LoadQuoteHandler(tornado.web.RequestHandler):
 
             CustomPrint.print(
                 f"INFO - {self.request.remote_ip} loaded quote: {folder_name}",
-                connected_clients=connected_clients,
             )
 
             self.write(html_content)
@@ -1739,7 +1690,6 @@ class DeleteQuoteHandler(tornado.web.RequestHandler):
     def post(self, folder_name):
         CustomPrint.print(
             f"INFO - Deleting - {folder_name}",
-            connected_clients=connected_clients,
         )
 
         json_file_path = os.path.join(folder_name, "data.json")
@@ -1770,7 +1720,6 @@ class DeleteQuoteHandler(tornado.web.RequestHandler):
 
         CustomPrint.print(
             f"INFO - {self.request.remote_ip} deleted quote: {folder_name}",
-            connected_clients=connected_clients,
         )
 
         self.write({"status": "success", "message": "Quote deleted successfully."})
@@ -1810,7 +1759,6 @@ class UpdateQuoteSettingsHandler(tornado.web.RequestHandler):
 
         CustomPrint.print(
             f"INFO - {self.request.remote_ip} changed quote setting '{key_to_change}' to '{new_value}': {folder}",
-            connected_clients=connected_clients,
         )
 
         self.write(
@@ -1967,7 +1915,6 @@ def signal_clients_for_changes(
 
     CustomPrint.print(
         f"INFO - Signaling {len(clients)} {client_type} clients",
-        connected_clients=clients,
     )
 
     def send_message(client: tornado.websocket.WebSocketHandler, message):
@@ -1975,7 +1922,6 @@ def signal_clients_for_changes(
             client.write_message(message)
             CustomPrint.print(
                 f"INFO - Signaling {client.request.remote_ip} to download {changed_files}",
-                connected_clients=clients,
             )
 
     message = msgspec.json.encode({"action": "download", "files": changed_files})
@@ -1984,7 +1930,6 @@ def signal_clients_for_changes(
         if client.request.remote_ip == client_to_ignore:
             CustomPrint.print(
                 f"INFO - Ignoring {client.request.remote_ip} since it sent {changed_files}",
-                connected_clients=clients,
             )
             continue
 
@@ -2001,21 +1946,21 @@ def hourly_backup_inventory_files() -> None:
     files_to_backup = os.listdir(f"{os.path.dirname(os.path.realpath(__file__))}/data")
     path_to_zip_file: str = f"{os.path.dirname(os.path.realpath(__file__))}/backups/Hourly Backup - {datetime.now().strftime('%I %p')}.zip"
     zip_files(path_to_zip_file, files_to_backup)
-    CustomPrint.print("INFO - Hourly backup complete", connected_clients=connected_clients)
+    CustomPrint.print("INFO - Hourly backup complete")
 
 
 def daily_backup_inventory_files() -> None:
     files_to_backup = os.listdir(f"{os.path.dirname(os.path.realpath(__file__))}/data")
     path_to_zip_file: str = f"{os.path.dirname(os.path.realpath(__file__))}/backups/Daily Backup - {datetime.now().strftime('%d %B')}.zip"
     zip_files(path_to_zip_file, files_to_backup)
-    CustomPrint.print("INFO - Daily backup complete", connected_clients=connected_clients)
+    CustomPrint.print("INFO - Daily backup complete")
 
 
 def weekly_backup_inventory_files() -> None:
     files_to_backup = os.listdir(f"{os.path.dirname(os.path.realpath(__file__))}/data")
     path_to_zip_file: str = f"{os.path.dirname(os.path.realpath(__file__))}/backups/Weekly Backup - {datetime.now().strftime('%W')}.zip"
     zip_files(path_to_zip_file, files_to_backup)
-    CustomPrint.print("INFO - Weekly backup complete", connected_clients=connected_clients)
+    CustomPrint.print("INFO - Weekly backup complete")
 
 
 def zip_files(path_to_zip_file: str, files_to_backup: list[str]) -> None:
@@ -2032,7 +1977,6 @@ def zip_files(path_to_zip_file: str, files_to_backup: list[str]) -> None:
 def check_production_plan_for_jobs() -> None:
     CustomPrint.print(
         "INFO - Checking for jobs to be moved from production plan to workspace",
-        connected_clients=connected_clients,
     )
     jobs_added = False
     components_inventory = ComponentsInventory()
@@ -2076,7 +2020,6 @@ def check_production_plan_for_jobs() -> None:
 
             CustomPrint.print(
                 f"INFO - Job, '{job.name}' added to workspace from production plan and started timers.",
-                connected_clients=connected_clients,
             )
 
     if jobs_added:
@@ -2085,7 +2028,6 @@ def check_production_plan_for_jobs() -> None:
         production_plan.save()
         CustomPrint.print(
             "INFO - Workspace and production plan updated, signaling clients to update files.",
-            connected_clients=connected_clients,
         )
         signal_clients_for_changes(
             client_to_ignore=None,
@@ -2106,7 +2048,6 @@ def check_production_plan_for_jobs() -> None:
     else:
         CustomPrint.print(
             "INFO - No jobs were added to workspace from production plan.",
-            connected_clients=connected_clients,
         )
 
 
@@ -2135,12 +2076,10 @@ def check_if_jobs_are_complete() -> None:
         if job.is_job_finished():
             CustomPrint.print(
                 f"INFO - Job, '{job.name}' is finished and will be moved from workspace to workspace history.",
-                connected_clients=connected_clients,
             )
             workspace_history.add_job(job)
             CustomPrint.print(
                 f"INFO - Added '{job.name}' to workspace history.",
-                connected_clients=connected_clients,
             )
             completed_jobs.append(job)
 
@@ -2149,13 +2088,11 @@ def check_if_jobs_are_complete() -> None:
             workspace.remove_job(job)
             CustomPrint.print(
                 f"INFO - Removed '{job.name}' from workspace.",
-                connected_clients=connected_clients,
             )
         workspace_history.save()
         workspace.save()
         CustomPrint.print(
             "INFO - Workspace and workspace history updated, signaling clients to update files.",
-            connected_clients=connected_clients,
         )
         signal_clients_for_changes(
             client_to_ignore=None,
