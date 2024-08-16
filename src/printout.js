@@ -375,7 +375,7 @@ usePageBreakcheckbox.addEventListener('change', function () {
 });
 
 function updateNestContainerClass() {
-    const isMobile = window.innerWidth <= 768; // Adjust the width threshold for mobile screens
+    const isMobile = window.innerWidth <= 1000; // Adjust the width threshold for mobile screens
     const containers = document.querySelectorAll('#sheets-layout #nest-container');
 
     containers.forEach(container => {
@@ -395,7 +395,7 @@ function updateNestContainerClass() {
 
 
 function updateNavbarLocation(){
-    const isMobile = window.innerWidth <= 768; // Adjust the width threshold for mobile screens
+    const isMobile = window.innerWidth <= 1000; // Adjust the width threshold for mobile screens
     const container = document.querySelector('#printout-controls');
     if (isMobile) {
         if (container.classList.contains('left')) {

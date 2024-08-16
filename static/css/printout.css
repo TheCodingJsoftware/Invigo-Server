@@ -24,21 +24,21 @@ details>summary {
     display: none;
 }
 
-.hidden{
+.hidden {
     display: none;
 }
 
-.qr-code img{
+.qr-code img {
     cursor: pointer;
     width: 256px;
     height: 256px;
 }
 
-.assembly_data{
+.assembly_data {
     display: flex;
 }
 
-#printout-controls{
+#printout-controls {
     display: grid;
     grid-template-columns: 1fr;
     align-items: center;
@@ -48,16 +48,90 @@ details>summary {
 }
 
 @media print {
-    .tabs, #showCoverPageLabel, #showAssemblies, #showNests, #showSheets, .checkbox, #printout-controls, .nested-parts, details:not([open]) {
+
+    .tabs,
+    #showCoverPageLabel,
+    #showAssemblies,
+    #showNests,
+    #showSheets,
+    .checkbox,
+    #printout-controls,
+    .nested-parts,
+    details:not([open]) {
         display: none;
     }
+
     .group_details {
         border-color: transparent;
     }
+
     .page-break {
         page-break-after: always;
     }
-    .nest, .sheets-table, .assembly-table, #sheets-layout, #nests-layout, #assemblies-list-layout{
+
+    .nest,
+    .sheets-table,
+    .assembly-table,
+    #sheets-layout,
+    #nests-layout,
+    #assemblies-list-layout {
         page-break-inside: avoid;
+    }
+}
+
+.responsiveTable {
+    width: 100%;
+    border-collapse: collapse
+}
+
+.responsiveTable td,
+.responsiveTable th {
+    padding: 12px 15px;
+    border: 1px solid #ddd;
+    text-align: center;
+    font-size: 16px
+}
+
+.responsiveTable th {
+    background-color: #92c9e6;
+    color: #ffffff
+}
+
+.responsiveTable tbody tr:nth-child(even) {
+    background-color: #d1e8f5
+}
+
+@media (max-width:1000px) {
+    .responsiveTable thead {
+        display: none
+    }
+
+    .responsiveTable,
+    .responsiveTable tbody,
+    .responsiveTable tr,
+    .responsiveTable td {
+        display: block;
+        width: 100%
+    }
+
+    .responsiveTable tr {
+        margin-bottom: 15px
+    }
+
+    .responsiveTable td {
+        padding-left: 50%;
+        text-align: left;
+        position: relative
+    }
+
+    .responsiveTable td::before {
+        content: attr(data-label);
+        position: absolute;
+        left: 0;
+        width: 50%;
+        padding-left: 15px;
+        font-size: 15px;
+        font-weight: bold;
+        text-align: left
     }
 }
