@@ -7,7 +7,6 @@ import sys
 import threading
 import time
 import zipfile
-from filelock import FileLock, Timeout
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timedelta
 from functools import partial
@@ -23,15 +22,17 @@ import schedule
 import tornado.ioloop
 import tornado.web
 import tornado.websocket
-from tornado.ioloop import IOLoop, PeriodicCallback
 from ansi2html import Ansi2HTMLConverter
+from filelock import FileLock, Timeout
 from markupsafe import Markup
 from natsort import natsorted
+from tornado.ioloop import IOLoop, PeriodicCallback
 
 from utils.custom_print import CustomPrint, print_clients
 from utils.inventory.components_inventory import ComponentsInventory
 from utils.inventory.laser_cut_inventory import LaserCutInventory
 from utils.inventory.laser_cut_part import LaserCutPart
+from utils.inventory.nest import Nest
 from utils.inventory.order import Order
 from utils.inventory.paint_inventory import PaintInventory
 from utils.inventory.sheets_inventory import SheetsInventory
@@ -47,18 +48,15 @@ from utils.inventory_updater import (
 from utils.send_email import send, send_error_log
 from utils.sheet_report import generate_sheet_report
 from utils.sheet_settings.sheet_settings import SheetSettings
-from utils.workspace.job import JobStatus
-from utils.workspace.workspace_settings import WorkspaceSettings
-from utils.workspace.workspace import Workspace
-from utils.workspace.workspace_item_group import WorkspaceItemGroup
-from utils.inventory.nest import Nest
-from utils.workspace.job_manager import JobManager
-from utils.workspace.workorder import Workorder
-from utils.workspace.workspace_history import WorkspaceHistory
-from utils.workspace.job import Job
 from utils.workspace.generate_printout import WorkspaceJobPrintout
+from utils.workspace.job import Job, JobStatus
+from utils.workspace.job_manager import JobManager
 from utils.workspace.production_plan import ProductionPlan
-
+from utils.workspace.workorder import Workorder
+from utils.workspace.workspace import Workspace
+from utils.workspace.workspace_history import WorkspaceHistory
+from utils.workspace.workspace_item_group import WorkspaceItemGroup
+from utils.workspace.workspace_settings import WorkspaceSettings
 
 # Store connected clients
 connected_clients: set[tornado.websocket.WebSocketHandler] = set()
@@ -188,7 +186,6 @@ class WorkspaceArchivesHandler(tornado.web.RequestHandler):
 
         print(files)
         self.write(msgspec.json.encode(all_jobs))
-
 
 
 class WorkspaceSettingsJsonHandler(tornado.web.RequestHandler):
@@ -362,14 +359,14 @@ class FetchDataHandler(tornado.web.RequestHandler):
                     with zipfile.ZipFile(file_path, "r") as zip_ref:
                         with zip_ref.open(f"{inventory_type}.json") as f:
                             inventory = msgspec.json.decode(f.read())
-                            try: # Old inventory format
+                            try:  # Old inventory format
                                 if inventory_type == "components_inventory":
                                     item = inventory["components"][item_name]
                                 elif inventory_type == "laser_cut_inventory":
                                     item = inventory["laser_cut_parts"][item_name]
                                 elif inventory_type == "sheets_inventory":
                                     item = inventory["sheets"][item_name]
-                            except TypeError: # New inventory format
+                            except TypeError:  # New inventory format
                                 if inventory_type == "components_inventory":
                                     for component_data in inventory["components"]:
                                         if item_name == component_data["part_name"]:
@@ -383,10 +380,10 @@ class FetchDataHandler(tornado.web.RequestHandler):
                                         try:
                                             if item_name == sheet_data["name"]:
                                                 item = sheet_data
-                                        except KeyError: # Have to generate name
+                                        except KeyError:  # Have to generate name
                                             if item_name == f"{sheet_data['thickness']} {sheet_data['material']} {sheet_data['length']:.3f}x{sheet_data['width']:.3f}":
                                                 item = sheet_data
-                            except KeyError: # The part might not exist yet in older backups
+                            except KeyError:  # The part might not exist yet in older backups
                                 continue
                             try:
                                 if item:
@@ -396,7 +393,7 @@ class FetchDataHandler(tornado.web.RequestHandler):
                                         prices.append(item["price"])
                                     except KeyError:  # Sheets don't have prices
                                         prices.append(None)
-                            except UnboundLocalError: # Item has not been found
+                            except UnboundLocalError:  # Item has not been found
                                 continue
 
         # Combine lists into a list of tuples and sort by date
@@ -411,7 +408,6 @@ class FetchDataHandler(tornado.web.RequestHandler):
         self.write({"dates": dates, "quantities": quantities, "prices": prices})
 
 
-
 class FileReceiveHandler(tornado.web.RequestHandler):
     def get(self, filename: str):
         file_path = self.get_file_path(filename)
@@ -423,15 +419,24 @@ class FileReceiveHandler(tornado.web.RequestHandler):
                     self.set_header("Content-Type", "application/json")
                     self.set_header("Content-Disposition", f'attachment; filename="{filename}"')
                     self.write(data)
-                CustomPrint.print(f'INFO - {self.request.remote_ip} downloaded "{filename}"', connected_clients=connected_clients)
+                CustomPrint.print(
+                    f'INFO - {self.request.remote_ip} downloaded "{filename}"',
+                    connected_clients=connected_clients,
+                )
         except FileNotFoundError:
-            CustomPrint.print(f'ERROR - File "{filename}" not found.', connected_clients=connected_clients)
+            CustomPrint.print(
+                f'ERROR - File "{filename}" not found.',
+                connected_clients=connected_clients,
+            )
             self.set_status(404)
             self.write(f'File "{filename}" not found.')
         except Timeout:
-            CustomPrint.print(f'WARN - {self.request.remote_ip} Could not acquire lock for "{filename}".', connected_clients=connected_clients)
+            CustomPrint.print(
+                f'WARN - {self.request.remote_ip} Could not acquire lock for "{filename}".',
+                connected_clients=connected_clients,
+            )
             self.set_status(503)
-            self.write(f'Could not acquire lock for {filename}. Try again later.')
+            self.write(f"Could not acquire lock for {filename}. Try again later.")
 
     def get_file_path(self, filename: str) -> str:
         if filename.endswith(".job"):
@@ -455,7 +460,6 @@ def update_inventory_file_to_pinecone(file_name: str):
         )
 
 
-
 class FileUploadHandler(tornado.web.RequestHandler):
     async def post(self):
         file_info = self.request.files.get("file")
@@ -475,22 +479,31 @@ class FileUploadHandler(tornado.web.RequestHandler):
                         threading.Thread(target=update_inventory_file_to_pinecone, args=(filename,)).start()
                         should_signal_connect_clients = True
 
-                    CustomPrint.print(f'INFO - {self.request.remote_ip} uploaded "{filename}"', connected_clients=connected_clients)
+                    CustomPrint.print(
+                        f'INFO - {self.request.remote_ip} uploaded "{filename}"',
+                        connected_clients=connected_clients,
+                    )
 
                     if should_signal_connect_clients:
-                        signal_clients_for_changes(self.request.remote_ip, [filename], client_type='software')
-                        signal_clients_for_changes(None, [filename], client_type='web')
+                        signal_clients_for_changes(self.request.remote_ip, [filename], client_type="software")
+                        signal_clients_for_changes(None, [filename], client_type="web")
                 except Timeout:
-                    CustomPrint.print(f'WARN - {self.request.remote_ip} Could not acquire lock for "{filename}".', connected_clients=connected_clients)
+                    CustomPrint.print(
+                        f'WARN - {self.request.remote_ip} Could not acquire lock for "{filename}".',
+                        connected_clients=connected_clients,
+                    )
                     self.set_status(503)
-                    self.write(f'Could not acquire lock for {filename}. Try again later.')
-            elif filename.lower().endswith((".jpeg", ".jpg", '.png')):
+                    self.write(f"Could not acquire lock for {filename}. Try again later.")
+            elif filename.lower().endswith((".jpeg", ".jpg", ".png")):
                 filename = os.path.basename(filename)
                 with open(f"images/{filename}", "wb") as file:
                     file.write(file_data)
         else:
             self.write("No file received.")
-            CustomPrint.print(f"ERROR - No file received from {self.request.remote_ip}.", connected_clients=connected_clients)
+            CustomPrint.print(
+                f"ERROR - No file received from {self.request.remote_ip}.",
+                connected_clients=connected_clients,
+            )
 
 
 class ProductionPlannerFileUploadHandler(tornado.web.RequestHandler):
@@ -510,7 +523,10 @@ class ProductionPlannerFileUploadHandler(tornado.web.RequestHandler):
                         file.write(file_data)
                     threading.Thread(target=update_inventory_file_to_pinecone, args=(filename,)).start()
             except Timeout:
-                CustomPrint.print(f'WARN - {self.request.remote_ip} Could not acquire lock for "{filename}".', connected_clients=connected_clients)
+                CustomPrint.print(
+                    f'WARN - {self.request.remote_ip} Could not acquire lock for "{filename}".',
+                    connected_clients=connected_clients,
+                )
                 self.write(f"Could not acquire lock for {filename}. Try again later.")
                 return
 
@@ -518,7 +534,7 @@ class ProductionPlannerFileUploadHandler(tornado.web.RequestHandler):
                 f'INFO - Web {self.request.remote_ip} uploaded "{filename}"',
                 connected_clients=connected_clients,
             )
-            signal_clients_for_changes(self.request.remote_ip, [filename], client_type='web')
+            signal_clients_for_changes(self.request.remote_ip, [filename], client_type="web")
         else:
             self.write("No file received.")
             CustomPrint.print(
@@ -654,20 +670,16 @@ class SheetQuantityHandler(tornado.web.RequestHandler):
             self.write("Sheet not found")
 
     def load_trusted_users(self, file_path: str):
-        with open(file_path, 'r', encoding="utf-8") as file:
+        with open(file_path, "r", encoding="utf-8") as file:
             return [line.strip() for line in file if line.strip()]
 
     def load_page(self, sheet_name):
 
-        trusted_users = self.load_trusted_users('trusted_users.txt')
+        trusted_users = self.load_trusted_users("trusted_users.txt")
 
         quantity = get_sheet_quantity(sheet_name=sheet_name)
         pending_data = get_sheet_pending_data(sheet_name=sheet_name)
-        template = (
-            env.get_template("sheet_template.html")
-            if self.request.remote_ip in trusted_users
-            else env.get_template("sheet_template_read_only.html")
-        )
+        template = env.get_template("sheet_template.html") if self.request.remote_ip in trusted_users else env.get_template("sheet_template_read_only.html")
 
         rendered_template = template.render(sheet_name=sheet_name, quantity=quantity, pending_data=pending_data)
 
@@ -815,10 +827,10 @@ async def gather_job_directories_info(base_directory: str, specific_dirs: list[s
                             job_data = msgspec.json.decode(f.read())
 
                         modified_timestamp = os.path.getmtime(job_data_path)
-                        formatted_modified_date = datetime.fromtimestamp(modified_timestamp).strftime('%Y-%m-%d %I:%M:%S %p')
+                        formatted_modified_date = datetime.fromtimestamp(modified_timestamp).strftime("%Y-%m-%d %I:%M:%S %p")
 
                         dir_info = {
-                            "dir": root.replace("\\", '/'),
+                            "dir": root.replace("\\", "/"),
                             "name": dirname,
                             "modified_date": modified_timestamp,
                             "formated_modified_date": formatted_modified_date,
@@ -1016,7 +1028,15 @@ class AddJobToProductionPlannerHandler(tornado.web.RequestHandler):
             self.paint_inventory = PaintInventory(self.components_inventory)
             self.sheets_inventory = SheetsInventory(self.sheet_settings)
             self.laser_cut_inventory = LaserCutInventory(self.paint_inventory, self.workspace_settings)
-            self.job_manager = JobManager(self.sheet_settings, self.sheets_inventory, self.workspace_settings, self.components_inventory, self.laser_cut_inventory, self.paint_inventory, None)
+            self.job_manager = JobManager(
+                self.sheet_settings,
+                self.sheets_inventory,
+                self.workspace_settings,
+                self.components_inventory,
+                self.laser_cut_inventory,
+                self.paint_inventory,
+                None,
+            )
             self.workspace = Workspace(self.workspace_settings, self.job_manager)
             self.production_plan = ProductionPlan(self.workspace_settings, self.job_manager)
 
@@ -1149,7 +1169,15 @@ class ProductionPlannerJobPrintoutHandler(tornado.web.RequestHandler):
             self.paint_inventory = PaintInventory(self.components_inventory)
             self.sheets_inventory = SheetsInventory(self.sheet_settings)
             self.laser_cut_inventory = LaserCutInventory(self.paint_inventory, self.workspace_settings)
-            self.job_manager = JobManager(self.sheet_settings, self.sheets_inventory, self.workspace_settings, self.components_inventory, self.laser_cut_inventory, self.paint_inventory, self)
+            self.job_manager = JobManager(
+                self.sheet_settings,
+                self.sheets_inventory,
+                self.workspace_settings,
+                self.components_inventory,
+                self.laser_cut_inventory,
+                self.paint_inventory,
+                self,
+            )
 
             job = Job(data, self.job_manager)
             printout = WorkspaceJobPrintout(job, "WORKORDER")
@@ -1287,7 +1315,13 @@ async def update_laser_cut_parts_process(nest_or_workorder: Union[Workorder, Nes
     workspace.save()
     workspace.laser_cut_inventory.save()
 
-    signal_clients_for_changes(client_to_ignore=None, changed_files=[f"{workspace.filename}.json", f"{workspace.laser_cut_inventory.filename}.json"])
+    signal_clients_for_changes(
+        client_to_ignore=None,
+        changed_files=[
+            f"{workspace.filename}.json",
+            f"{workspace.laser_cut_inventory.filename}.json",
+        ],
+    )
 
 
 class MarkWorkorderDoneHandler(tornado.web.RequestHandler):
@@ -1304,7 +1338,15 @@ class MarkWorkorderDoneHandler(tornado.web.RequestHandler):
                 self.paint_inventory = PaintInventory(self.components_inventory)
                 self.sheets_inventory = SheetsInventory(self.sheet_settings)
                 self.laser_cut_inventory = LaserCutInventory(self.paint_inventory, self.workspace_settings)
-                self.job_manager = JobManager(self.sheet_settings, self.sheets_inventory, self.workspace_settings, self.components_inventory, self.laser_cut_inventory, self.paint_inventory, self)
+                self.job_manager = JobManager(
+                    self.sheet_settings,
+                    self.sheets_inventory,
+                    self.workspace_settings,
+                    self.components_inventory,
+                    self.laser_cut_inventory,
+                    self.paint_inventory,
+                    self,
+                )
                 self.workspace = Workspace(self.workspace_settings, self.job_manager)
 
                 self.workorder = Workorder(self.workorder_data, self.sheet_settings, self.laser_cut_inventory)
@@ -1315,7 +1357,7 @@ class MarkWorkorderDoneHandler(tornado.web.RequestHandler):
 
                 workorder_data_path = os.path.join("workorders", workorder_id, "data.json")
 
-                with open(workorder_data_path, 'wb') as f:
+                with open(workorder_data_path, "wb") as f:
                     f.write(msgspec.json.encode(self.workorder.to_dict()))
 
                 self.write({"status": "success", "message": "Workorder marked as done."})
@@ -1338,7 +1380,15 @@ class MarkNestDoneHandler(tornado.web.RequestHandler):
                 self.paint_inventory = PaintInventory(self.components_inventory)
                 self.sheets_inventory = SheetsInventory(self.sheet_settings)
                 self.laser_cut_inventory = LaserCutInventory(self.paint_inventory, self.workspace_settings)
-                self.job_manager = JobManager(self.sheet_settings, self.sheets_inventory, self.workspace_settings, self.components_inventory, self.laser_cut_inventory, self.paint_inventory, self)
+                self.job_manager = JobManager(
+                    self.sheet_settings,
+                    self.sheets_inventory,
+                    self.workspace_settings,
+                    self.components_inventory,
+                    self.laser_cut_inventory,
+                    self.paint_inventory,
+                    self,
+                )
                 self.workspace = Workspace(self.workspace_settings, self.job_manager)
 
                 self.nest = Nest(self.nest_data, self.sheet_settings, self.laser_cut_inventory)
@@ -1348,7 +1398,7 @@ class MarkNestDoneHandler(tornado.web.RequestHandler):
                 workorder_data_path = os.path.join("workorders", workorder_id, "data.json")
 
                 with open(workorder_data_path, "rb") as f:
-                    workorder_data: dict = msgspec.json.decode(f.read())
+                    workorder_data: list[dict] = msgspec.json.decode(f.read())
 
                 self.workorder = Workorder(workorder_data, self.sheet_settings, self.laser_cut_inventory)
                 new_nests: list[Nest] = []
@@ -1359,7 +1409,7 @@ class MarkNestDoneHandler(tornado.web.RequestHandler):
 
                 self.workorder.nests = new_nests
 
-                with open(workorder_data_path, 'wb') as f:
+                with open(workorder_data_path, "wb") as f:
                     f.write(msgspec.json.encode(self.workorder.to_dict()))
 
                 self.write({"status": "success", "message": "Nest marked as done."})
@@ -1382,20 +1432,35 @@ class RecutPartHandler(tornado.web.RequestHandler):
                 self.paint_inventory = PaintInventory(self.components_inventory)
                 self.sheets_inventory = SheetsInventory(self.sheet_settings)
                 self.laser_cut_inventory = LaserCutInventory(self.paint_inventory, self.workspace_settings)
-                self.job_manager = JobManager(self.sheet_settings, self.sheets_inventory, self.workspace_settings, self.components_inventory, self.laser_cut_inventory, self.paint_inventory, self)
+                self.job_manager = JobManager(
+                    self.sheet_settings,
+                    self.sheets_inventory,
+                    self.workspace_settings,
+                    self.components_inventory,
+                    self.laser_cut_inventory,
+                    self.paint_inventory,
+                    self,
+                )
                 self.workspace = Workspace(self.workspace_settings, self.job_manager)
 
-                self.laser_cut_part_to_recut = LaserCutPart(self.recut_data['laser_cut_part'], self.laser_cut_inventory)
+                self.laser_cut_part_to_recut = LaserCutPart(self.recut_data["laser_cut_part"], self.laser_cut_inventory)
                 self.laser_cut_part_to_recut.recut = True
 
-                self.recut_nest = Nest(self.recut_data['nest'], self.sheet_settings, self.laser_cut_inventory)
+                self.recut_nest = Nest(
+                    self.recut_data["nest"],
+                    self.sheet_settings,
+                    self.laser_cut_inventory,
+                )
 
-                self.recut_quantity = int(self.recut_data['quantity'])
+                self.recut_quantity = int(self.recut_data["quantity"])
 
                 for workspace_part_group in self.workspace.get_grouped_laser_cut_parts(self.workspace.get_all_laser_cut_parts_with_similar_tag("picking")):
                     if workspace_part_group.base_part.name == self.laser_cut_part_to_recut.name:
                         workspace_part_group.mark_as_recut(self.recut_quantity)
-                        self.laser_cut_inventory.add_or_update_laser_cut_part(self.laser_cut_part_to_recut, f"Workorder recut: {self.recut_nest.get_name()}")
+                        self.laser_cut_inventory.add_or_update_laser_cut_part(
+                            self.laser_cut_part_to_recut,
+                            f"Workorder recut: {self.recut_nest.get_name()}",
+                        )
                         break
 
                 workorder_data_path = os.path.join("workorders", workorder_id, "data.json")
@@ -1418,15 +1483,26 @@ class RecutPartHandler(tornado.web.RequestHandler):
                     if found_recut_part:
                         break
 
-                with open(workorder_data_path, 'wb') as f:
+                with open(workorder_data_path, "wb") as f:
                     f.write(msgspec.json.encode(self.workorder.to_dict()))
 
                 self.workspace.save()
                 self.workspace.laser_cut_inventory.save()
 
-                signal_clients_for_changes(client_to_ignore=None, changed_files=[f"{self.workspace.filename}.json", f"{self.workspace.laser_cut_inventory.filename}.json"])
+                signal_clients_for_changes(
+                    client_to_ignore=None,
+                    changed_files=[
+                        f"{self.workspace.filename}.json",
+                        f"{self.workspace.laser_cut_inventory.filename}.json",
+                    ],
+                )
 
-                self.write({"status": "success", "message": "Recut part processed successfully."})
+                self.write(
+                    {
+                        "status": "success",
+                        "message": "Recut part processed successfully.",
+                    }
+                )
             except Exception as e:
                 self.set_status(500)
                 self.write({"status": "error", "message": str(e)})
@@ -1677,39 +1753,47 @@ class InventoryTablesHandler(tornado.web.RequestHandler):
                     "price": component.price,
                     "use_exchange_rate": component.use_exchange_rate,
                     "part_number": component.part_number,
-                } for component in components_inventory.get_components_by_category(category)
+                }
+                for component in components_inventory.get_components_by_category(category)
             ]
         elif inventory_type == "laser_cut_inventory":
             data = [
                 {
                     "part_name": laser_cut_part.name,
                     "quantity": laser_cut_part.quantity,
-                    "price": round(laser_cut_part.price,2),
+                    "price": round(laser_cut_part.price, 2),
                     "part_dim": laser_cut_part.part_dim,
                     "thickness": laser_cut_part.gauge,
                     "material": laser_cut_part.material,
                     "weight": laser_cut_part.weight,
                     "surface_area": laser_cut_part.surface_area,
-                } for laser_cut_part in laser_cut_inventory.get_laser_cut_parts_by_category(category)
+                }
+                for laser_cut_part in laser_cut_inventory.get_laser_cut_parts_by_category(category)
             ]
         elif inventory_type == "paint_inventory":
             if category == "primer":
-                data = [{
-                    "name": primer.name,
-                    "color": primer.color,
-                } for primer in paint_inventory.primers
-            ]
+                data = [
+                    {
+                        "name": primer.name,
+                        "color": primer.color,
+                    }
+                    for primer in paint_inventory.primers
+                ]
             elif category == "paint":
-                data = [{
-                    "name": paint.name,
-                    "color": paint.color,
-                } for paint in paint_inventory.paints
-            ]
+                data = [
+                    {
+                        "name": paint.name,
+                        "color": paint.color,
+                    }
+                    for paint in paint_inventory.paints
+                ]
             elif category == "powder":
-                data = [{
-                    "name": powder.name,
-                    "color": powder.color,
-                    } for powder in paint_inventory.powders
+                data = [
+                    {
+                        "name": powder.name,
+                        "color": powder.color,
+                    }
+                    for powder in paint_inventory.powders
                 ]
         elif inventory_type == "sheet_settings":
             if category == "price_per_pound":
@@ -1721,7 +1805,8 @@ class InventoryTablesHandler(tornado.web.RequestHandler):
                     "quantity": sheet.quantity,
                     "thickness": sheet.thickness,
                     "material": sheet.material,
-                } for sheet in sheets_inventory.get_sheets_by_category(category)
+                }
+                for sheet in sheets_inventory.get_sheets_by_category(category)
             ]
         template = env.get_template("inventory_table.html")
         rendered_template = template.render(
@@ -1733,8 +1818,12 @@ class InventoryTablesHandler(tornado.web.RequestHandler):
         self.write(rendered_template)
 
 
-def signal_clients_for_changes(client_to_ignore, changed_files: list[str], client_type: Literal["software", "web"] = 'software') -> None:
-    clients = connected_clients if client_type == 'software' else web_connected_clients
+def signal_clients_for_changes(
+    client_to_ignore,
+    changed_files: list[str],
+    client_type: Literal["software", "web"] = "software",
+) -> None:
+    clients = connected_clients if client_type == "software" else web_connected_clients
 
     CustomPrint.print(
         f"INFO - Signaling {len(clients)} {client_type} clients",
@@ -1801,7 +1890,10 @@ def zip_files(path_to_zip_file: str, files_to_backup: list[str]) -> None:
 
 
 def check_production_plan_for_jobs() -> None:
-    CustomPrint.print("INFO - Checking for jobs to be moved from production plan to workspace", connected_clients=connected_clients)
+    CustomPrint.print(
+        "INFO - Checking for jobs to be moved from production plan to workspace",
+        connected_clients=connected_clients,
+    )
     jobs_added = False
     components_inventory = ComponentsInventory()
     sheet_settings = SheetSettings()
@@ -1809,7 +1901,15 @@ def check_production_plan_for_jobs() -> None:
     paint_inventory = PaintInventory(components_inventory)
     sheets_inventory = SheetsInventory(sheet_settings)
     laser_cut_inventory = LaserCutInventory(paint_inventory, workspace_settings)
-    job_manager = JobManager(sheet_settings, sheets_inventory, workspace_settings, components_inventory, laser_cut_inventory, paint_inventory, None)
+    job_manager = JobManager(
+        sheet_settings,
+        sheets_inventory,
+        workspace_settings,
+        components_inventory,
+        laser_cut_inventory,
+        paint_inventory,
+        None,
+    )
     workspace = Workspace(workspace_settings, job_manager)
     production_plan = ProductionPlan(workspace_settings, job_manager)
 
@@ -1834,17 +1934,40 @@ def check_production_plan_for_jobs() -> None:
             for laser_cut_part in new_job.get_all_laser_cut_parts():
                 laser_cut_part.timer.start_timer()
 
-            CustomPrint.print(f"INFO - Job, '{job.name}' added to workspace from production plan and started timers.", connected_clients=connected_clients)
+            CustomPrint.print(
+                f"INFO - Job, '{job.name}' added to workspace from production plan and started timers.",
+                connected_clients=connected_clients,
+            )
 
     if jobs_added:
         laser_cut_inventory.save()
         workspace.save()
         production_plan.save()
-        CustomPrint.print("INFO - Workspace and production plan updated, signaling clients to update files.", connected_clients=connected_clients)
-        signal_clients_for_changes(client_to_ignore=None, changed_files=[f"{workspace.filename}.json", f"{production_plan.filename}.json"], client_type="web")
-        signal_clients_for_changes(client_to_ignore=None, changed_files=[f"{workspace.filename}.json", f"{laser_cut_inventory.filename}.json"], client_type="software")
+        CustomPrint.print(
+            "INFO - Workspace and production plan updated, signaling clients to update files.",
+            connected_clients=connected_clients,
+        )
+        signal_clients_for_changes(
+            client_to_ignore=None,
+            changed_files=[
+                f"{workspace.filename}.json",
+                f"{production_plan.filename}.json",
+            ],
+            client_type="web",
+        )
+        signal_clients_for_changes(
+            client_to_ignore=None,
+            changed_files=[
+                f"{workspace.filename}.json",
+                f"{laser_cut_inventory.filename}.json",
+            ],
+            client_type="software",
+        )
     else:
-        CustomPrint.print("INFO - No jobs were added to workspace from production plan.", connected_clients=connected_clients)
+        CustomPrint.print(
+            "INFO - No jobs were added to workspace from production plan.",
+            connected_clients=connected_clients,
+        )
 
 
 def check_if_jobs_are_complete() -> None:
@@ -1854,7 +1977,15 @@ def check_if_jobs_are_complete() -> None:
     paint_inventory = PaintInventory(components_inventory)
     sheets_inventory = SheetsInventory(sheet_settings)
     laser_cut_inventory = LaserCutInventory(paint_inventory, workspace_settings)
-    job_manager = JobManager(sheet_settings, sheets_inventory, workspace_settings, components_inventory, laser_cut_inventory, paint_inventory, None)
+    job_manager = JobManager(
+        sheet_settings,
+        sheets_inventory,
+        workspace_settings,
+        components_inventory,
+        laser_cut_inventory,
+        paint_inventory,
+        None,
+    )
     workspace = Workspace(workspace_settings, job_manager)
     workspace_history = WorkspaceHistory(job_manager)
 
@@ -1862,20 +1993,46 @@ def check_if_jobs_are_complete() -> None:
 
     for job in workspace.jobs:
         if job.is_job_finished():
-            CustomPrint.print(f"INFO - Job, '{job.name}' is finished and will be moved from workspace to workspace history.", connected_clients=connected_clients)
+            CustomPrint.print(
+                f"INFO - Job, '{job.name}' is finished and will be moved from workspace to workspace history.",
+                connected_clients=connected_clients,
+            )
             workspace_history.add_job(job)
-            CustomPrint.print(f"INFO - Added '{job.name}' to workspace history.", connected_clients=connected_clients)
+            CustomPrint.print(
+                f"INFO - Added '{job.name}' to workspace history.",
+                connected_clients=connected_clients,
+            )
             completed_jobs.append(job)
 
     if completed_jobs:
         for job in completed_jobs:
             workspace.remove_job(job)
-            CustomPrint.print(f"INFO - Removed '{job.name}' from workspace.", connected_clients=connected_clients)
+            CustomPrint.print(
+                f"INFO - Removed '{job.name}' from workspace.",
+                connected_clients=connected_clients,
+            )
         workspace_history.save()
         workspace.save()
-        CustomPrint.print("INFO - Workspace and workspace history updated, signaling clients to update files.", connected_clients=connected_clients)
-        signal_clients_for_changes(client_to_ignore=None, changed_files=[f"{workspace.filename}.json", f"{workspace_history.filename}.json"], client_type="web")
-        signal_clients_for_changes(client_to_ignore=None, changed_files=[f"{workspace.filename}.json", f"{laser_cut_inventory.filename}.json"], client_type="software")
+        CustomPrint.print(
+            "INFO - Workspace and workspace history updated, signaling clients to update files.",
+            connected_clients=connected_clients,
+        )
+        signal_clients_for_changes(
+            client_to_ignore=None,
+            changed_files=[
+                f"{workspace.filename}.json",
+                f"{workspace_history.filename}.json",
+            ],
+            client_type="web",
+        )
+        signal_clients_for_changes(
+            client_to_ignore=None,
+            changed_files=[
+                f"{workspace.filename}.json",
+                f"{laser_cut_inventory.filename}.json",
+            ],
+            client_type="software",
+        )
 
 
 def schedule_thread():
@@ -1920,7 +2077,10 @@ if __name__ == "__main__":
             (r"/ws/web", WebSocketWebHandler),
             # Source file handlers
             (r"/flatpickr.css", FlatpickrCSSFileHandler),
-            (r'/material-symbols-rounded.woff2', MaterialSymbolsRoundedFileHandler), # Used by production planner
+            (
+                r"/material-symbols-rounded.woff2",
+                MaterialSymbolsRoundedFileHandler,
+            ),  # Used by production planner
             (r"/dist/(.*)", tornado.web.StaticFileHandler, {"path": "dist"}),
             # Log handlers
             (r"/server_log", ServerLogsHandler),
@@ -1997,4 +2157,3 @@ if __name__ == "__main__":
     app.listen(80)
     CustomPrint.print("INFO - Invigo server started")
     tornado.ioloop.IOLoop.current().start()
-
