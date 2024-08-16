@@ -29,7 +29,7 @@ from markupsafe import Markup
 from natsort import natsorted
 from tornado.ioloop import IOLoop, PeriodicCallback
 
-from utils.custom_print import CustomPrint, print_clients
+from utils.custom_print import CustomPrint
 from utils.inventory.components_inventory import ComponentsInventory
 from utils.inventory.laser_cut_inventory import LaserCutInventory
 from utils.inventory.laser_cut_part import LaserCutPart
@@ -46,6 +46,7 @@ from utils.inventory_updater import (
     set_sheet_quantity,
     sheet_exists,
 )
+from utils.server_colors import Colors
 from utils.send_email import send, send_error_log
 from utils.sheet_report import generate_sheet_report
 from utils.sheet_settings.sheet_settings import SheetSettings
@@ -294,10 +295,41 @@ class WorkspaceSettingsJsonHandler(tornado.web.RequestHandler):
 
 
 class ServerLogsHandler(tornado.web.RequestHandler):
+
+    def convert_set_to_list(self, s: set[tornado.websocket.WebSocketHandler]) -> list[tornado.websocket.WebSocketHandler]:
+        return list(map(lambda x: x, s))
+
+
+    def print_clients(self):
+        with open("users.json", "r", encoding="utf-8") as f:
+            users: dict[str, dict[str, str]] = json.load(f)
+        software_clients: list[str] = [client.request.remote_ip for client in self.convert_set_to_list(connected_clients)]
+        web_clients: list[str] = [client.request.remote_ip for client in self.convert_set_to_list(web_connected_clients)]
+
+        all_clients = list(set(list(users.keys()) + software_clients + web_clients))
+        string = ""
+        for i, client in enumerate(all_clients, start=1):
+            client_name = users.get(client, {}).get("name", "Unknown")
+            if client in software_clients and client in web_clients:
+                client = f" {i}. {Colors.OKGREEN}{client:<10s} {client_name:<10s} Connected via software and web{Colors.BOLD}"
+            if client in software_clients:
+                client = f" {i}. {Colors.OKGREEN}{client:<10s} {client_name:<10s} Connected via software{Colors.BOLD}"
+            elif client in web_clients:
+                client = f" {i}. {Colors.OKGREEN}{client:<10s} {client_name:<10s} Connected via web{Colors.BOLD}"
+            else:
+                client = f" {i}. {Colors.ERROR}{client:<10s} {client_name:<10s} Disconnected{Colors.BOLD}"
+            string += f"{client:>10s}\n"
+        return string + "\n"
+
     def get(self):
-        logs = print_clients() + sys.stdout.getvalue()
+        with open("users.json", "r", encoding="utf-8") as f:
+            users: dict[str, dict[str, str]] = json.load(f)
+        logs = sys.stdout.getvalue()
+        for ip, details in users.items():
+            name = details.get("name", ip)
+            logs = logs.replace(ip, name)
         converter = Ansi2HTMLConverter()
-        logs = converter.convert(logs)
+        logs = converter.convert(self.print_clients()) + converter.convert(logs)
         logs = Markup(logs)  # Mark the logs as safe HTML
         self.write(logs)
 
