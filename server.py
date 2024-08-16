@@ -1,5 +1,6 @@
 import asyncio
 import glob
+import json
 import os
 import re
 import shutil
@@ -105,6 +106,92 @@ class WebSocketWebHandler(tornado.websocket.WebSocketHandler):
             f"INFO - Web connection ended with: {self.request.remote_ip}",
             connected_clients=web_connected_clients,
         )
+
+
+
+class ConnectHandler(tornado.web.RequestHandler):
+    def post(self):
+        client_ip = str(self.request.remote_ip)
+        client_data: dict[str, str] = msgspec.json.decode(self.request.body)
+        client_name = client_data.get("client_name")
+        latest_version = client_data.get("version")
+
+        file_path = "trusted_users.json"
+        lock = FileLock(f"{file_path}.lock", timeout=10)  # Set a timeout for acquiring the lock
+        try:
+            with lock:
+                if os.path.exists(file_path):
+                    with open(file_path, "rb") as file:
+                        data: dict[str, dict[str, Union[str, bool]]] = json.load(file)
+                else:
+                    data = {}
+
+                # Update or set the client's information
+                data.setdefault(client_ip, {"name": client_name, "trusted": False, "latest_version": latest_version})
+                data[client_ip].update({"name": client_name})
+                data[client_ip].update({"latest_version": latest_version})
+
+                with open(file_path, "wb") as file:
+                    json.dump(data, file, sort_keys=True, indent=4)
+
+            # Send a success response back to the client
+            self.write({"status": "success", "message": "Client data updated successfully."})
+
+        except FileNotFoundError:
+            self.set_status(404)
+            self.write(f'File "{file_path}" not found.')
+        except Timeout:
+            self.set_status(503)
+            self.write(f"Could not acquire lock for {file_path}. Try again later.")
+
+
+class GetClientNameHandler(tornado.web.RequestHandler):
+    def get(self):
+        client_ip = str(self.request.remote_ip)
+        file_path = "trusted_users.json"
+        lock = FileLock(f"{file_path}.lock", timeout=10)
+
+        try:
+            with lock:
+                if os.path.exists(file_path):
+                    with open(file_path, "rb") as file:
+                        data: dict[str, dict[str, Union[str, bool]]] = json.load(file)
+                    client_name = data.get(client_ip, {}).get("name", "Unknown")
+                    self.write({"status": "success", "client_name": client_name})
+                else:
+                    self.set_status(404)
+                    self.write({"status": "error", "message": "Trusted users file not found."})
+        except FileNotFoundError:
+            self.set_status(404)
+            self.write({"status": "error", "message": f'File "{file_path}" not found.'})
+        except Timeout:
+            self.set_status(503)
+            self.write({"status": "error", "message": f"Could not acquire lock for {file_path}. Try again later."})
+
+
+class IsClientTrustedHandler(tornado.web.RequestHandler):
+    def get(self):
+        client_ip = str(self.request.remote_ip)
+        file_path = "trusted_users.json"
+        lock = FileLock(f"{file_path}.lock", timeout=10)
+
+        try:
+            with lock:
+                if os.path.exists(file_path):
+                    with open(file_path, "rb") as file:
+                        data: dict[str, dict[str, Union[str, bool]]] = json.load(file)
+                    is_trusted = data.get(client_ip, {}).get("trusted", False)
+                    self.write({"status": "success", "is_trusted": is_trusted})
+                else:
+                    self.set_status(404)
+                    self.write({"status": "error", "message": "Trusted users file not found."})
+
+        except FileNotFoundError:
+            self.set_status(404)
+            self.write({"status": "error", "message": f'File "{file_path}" not found.'})
+        except Timeout:
+            self.set_status(503)
+            self.write({"status": "error", "message": f"Could not acquire lock for {file_path}. Try again later."})
 
 
 class MaterialSymbolsRoundedFileHandler(tornado.web.RequestHandler):
@@ -2075,12 +2162,12 @@ if __name__ == "__main__":
             (r"/", MainHandler),
             (r"/ws", WebSocketHandler),
             (r"/ws/web", WebSocketWebHandler),
+            (r"/connect", ConnectHandler),
+            (r"/get_client_name", GetClientNameHandler),
+            (r"/is_client_trusted", IsClientTrustedHandler),
             # Source file handlers
             (r"/flatpickr.css", FlatpickrCSSFileHandler),
-            (
-                r"/material-symbols-rounded.woff2",
-                MaterialSymbolsRoundedFileHandler,
-            ),  # Used by production planner
+            (r"/material-symbols-rounded.woff2", MaterialSymbolsRoundedFileHandler),  # Used by production planner for icons
             (r"/dist/(.*)", tornado.web.StaticFileHandler, {"path": "dist"}),
             # Log handlers
             (r"/server_log", ServerLogsHandler),

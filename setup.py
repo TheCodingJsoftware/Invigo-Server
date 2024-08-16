@@ -107,6 +107,10 @@ def main():
         with open("order_number.json", "w", encoding="utf-8") as f:
             json.dump({"order_number": 0}, f)
 
+    if not os.path.exists("trusted_users.json"):
+        with open("trusted_users.json.json", "w", encoding="utf-8") as f:
+            json.dump({}, f)
+
     print("Installing npm packages...")
     install_npm_packages()
 
