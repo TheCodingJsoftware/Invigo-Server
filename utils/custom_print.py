@@ -1,16 +1,12 @@
+import json
+
 from datetime import datetime
+
+import tornado.websocket
 
 from utils.server_colors import Colors
 
-messages = []
-connected_clients = []
-verified_clients: dict = {
-    "10.0.0.217": "Jared",
-    "10.0.0.75": "Jordan",
-    "10.0.0.155": "Justin",
-    "10.0.0.5": "Lynden",
-}
-
+connected_clients: set[tornado.websocket.WebSocketHandler] = set()
 
 def convert_set_to_list(s):
     return list(map(lambda x: x, s))
@@ -45,16 +41,18 @@ class CustomPrint:
 
 
 def print_clients():
-    all_clients = list(set(list(verified_clients.keys()) + connected_clients))
-    all_clients.insert(0, f"{Colors.BOLD}Connected clients: ({len(connected_clients)})")
+    with open("users.json", "r", encoding="utf-8") as f:
+        users: dict[str, dict[str, str]] = json.load(f)
+
+    all_clients = list(set(list(users.keys()) + connected_clients))
     string = ""
-    for i, client in enumerate(all_clients):
+    for i, client in enumerate(all_clients, start=1):
         try:
             if client in all_clients:
                 if client in connected_clients:
-                    client = f" {i}. {Colors.OKGREEN}{client:<10s} {verified_clients[client]:<10s} Connected{Colors.BOLD}"
+                    client = f" {i}. {Colors.OKGREEN}{client:<10s} {users[client]["name"]:<10s} Connected{Colors.BOLD}"
                 else:
-                    client = f" {i}. {Colors.ERROR}{client:<10s} {verified_clients[client]:<10s} Disconnected{Colors.BOLD}"
+                    client = f" {i}. {Colors.ERROR}{client:<10s} {users[client]["name"]:<10s} Disconnected{Colors.BOLD}"
         except IndexError:
             client = "index error"
         except KeyError:
