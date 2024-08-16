@@ -161,7 +161,10 @@ cython_debug/
 
 # Custom
 .vscode
-data
+data/
+credentials.json
+settings.json
+trusted_users.json
 images
 logs
 previous_quotes
@@ -173,7 +176,6 @@ run.bat
 update.bat
 install.bat
 *.zip
-*.json
 *.log
 trusted_users.txt
 workorders
