@@ -400,10 +400,12 @@ function updateNavbarLocation(){
     if (isMobile) {
         if (container.classList.contains('left')) {
             container.classList.remove('left');
+            container.classList.remove('border');
         }
     } else {
         if (!container.classList.contains('left')) {
             container.classList.add('left');
+            container.classList.add('border');
         }
     }
 }
