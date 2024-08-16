@@ -126,9 +126,20 @@ class ConnectHandler(tornado.web.RequestHandler):
                     data = {}
 
                 # Update or set the client's information
-                data.setdefault(client_ip, {"name": client_name, "trusted": False, "latest_version": latest_version})
+                data.setdefault(
+                    client_ip,
+                    {
+                        "name": client_name,
+                        "trusted": False,
+                        "latest_version": latest_version,
+                        "latest_connection": datetime.now().strftime(
+                            "%Y-%m-%d %H:%M:%S"
+                        ),
+                    },
+                )
                 data[client_ip].update({"name": client_name})
                 data[client_ip].update({"latest_version": latest_version})
+                data[client_ip].update({"latest_connection": datetime.now().strftime("%Y-%m-%d %H:%M:%S")})
 
                 with open(file_path, "w", encoding="utf-8") as file:
                     json.dump(data, file, sort_keys=True, indent=4)
