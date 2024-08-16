@@ -36,6 +36,7 @@ module.exports = {
             patterns: [
                 { from: './src/sorttable.js', to: 'sorttable.js' },
                 { from: './src/qrcode.min.js', to: 'qrcode.min.js' },
+                { from: './src/printout.js', to: 'printout.js' },
             ],
         }),
     ],

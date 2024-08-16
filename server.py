@@ -2200,7 +2200,7 @@ if __name__ == "__main__":
             (r"/load_job/(.*)", LoadJobHandler),
             (r"/update_job_settings", UpdateJobSettingsHandler),
             (r"/delete_job/(.*)", DeleteJobHandler),
-            (r"/jobs", JobPrintoutsHandler),
+            (r"/job_printouts", JobPrintoutsHandler),
             (r"/add_job/(.*)", AddJobToProductionPlannerHandler),
             # Dashboard handlers
             (r"/production_planner", ProductionPlannerHandler),

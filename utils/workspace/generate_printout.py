@@ -12,6 +12,23 @@ from utils.workspace.assembly import Assembly
 from utils.workspace.job import Job
 
 
+class Head:
+    def __init__(self, title: str, description: str) -> None:
+        self.html = f'''
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1">
+                <meta http-equiv="X-UA-Compatible" content="ie=edge">
+                <meta name="google" content="notranslate">
+                <link rel="stylesheet" type="text/css" href="/static/css/theme.css">
+                <link rel="stylesheet" type="text/css" href="/static/css/printout.css">
+                <title>{title}</title>
+                <meta property="og:title" content="{title}" />
+                <meta property="og:description" content="{description}" />
+                <script src="/dist/js/qrcode.min.js"></script>
+                <script src="/dist/js/printout.js"></script>
+            </head>'''
+
 class CoverPage:
     def __init__(self, order_number: float, date_shipped: str, date_expected: str, ship_to: str):
         self.order_number = order_number
@@ -673,35 +690,12 @@ class WorkspaceJobPrintout:
         self.program_directory = os.path.dirname(os.path.realpath(sys.argv[0]))
         self.server_directory = f"http://{get_server_ip_address()}:{get_server_port()}"
 
-        with open("utils/workspace/printout.css", "r", encoding="utf-8") as printout_css_file:
-            self.printout_css = printout_css_file.read()
-
-        with open("utils/workspace/printout.js", "r", encoding="utf-8") as printout_js_file:
-            self.printout_js = printout_js_file.read()
-
     def generate(self) -> str:
         header_html = PrintoutHeader(self.job.name, self.printout_type).html
+        head_html = Head(f"{self.printout_type.title()} - {self.job.name}", self.job.ship_to).html
         html = f"""<!DOCTYPE html>
-                <html>
-                    <head>
-                        <meta charset="UTF-8">
-                        <meta name="viewport" content="width=device-width, initial-scale=1">
-                        <meta http-equiv="X-UA-Compatible" content="ie=edge">
-                        <meta name="google" content="notranslate">
-                        <script src="https://cdn.jsdelivr.net/gh/davidshimjs/qrcodejs/qrcode.min.js"></script>
-                        <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
-                        <link href="https://cdn.jsdelivr.net/npm/beercss@3.6.8/dist/cdn/beer.min.css" rel="stylesheet">
-                        <script type="module" src="https://cdn.jsdelivr.net/npm/beercss@3.6.8/dist/cdn/beer.min.js"></script>
-                        <script type="module" src="https://cdn.jsdelivr.net/npm/material-dynamic-colors@1.1.2/dist/cdn/material-dynamic-colors.min.js"></script>
-                        <link rel="stylesheet" type="text/css" href="/static/css/theme.css">
-                        <title>{self.printout_type.title()} {self.job.name}</title>
-                        <meta property="og:title" content="{self.printout_type.title()} - {self.job.name}" />
-                        <meta property="og:description" content="{self.job.ship_to}" />
-                    </head>
-        <style>
-            {self.printout_css}
-        </style>
-        <body class="quote">
+                <html>{head_html}
+        <body class="{self.printout_type.lower()}">
         <nav class="left l" id="printout-controls">
             <div class="left-align">
                 <label class="checkbox">
@@ -823,9 +817,6 @@ class WorkspaceJobPrintout:
         html += nests_table.generate_laser_cut_part_popups()
 
         html += "</main></body>"
-        html += f"""<script>
-            {self.printout_js}
-        </script>"""
         return html
 
 
@@ -838,35 +829,12 @@ class WorkorderPrintout:
         self.server_directory = f"http://{get_server_ip_address()}:{get_server_port()}"
         self.should_include_qr_to_workorder = should_include_qr_to_workorder
 
-        with open("utils/workspace/printout.css", "r", encoding="utf-8") as printout_css_file:
-            self.printout_css = printout_css_file.read()
-
-        with open("utils/workspace/printout.js", "r", encoding="utf-8") as printout_js_file:
-            self.printout_js = printout_js_file.read()
-
     def generate(self) -> str:
         header_html = PrintoutHeader("Nested Parts", self.printout_type).html
+        head_html = Head(f"{self.printout_type.title()} - Nest Printout", "Workspace Nest Printout").html
         html = f"""<!DOCTYPE html>
-                <html>
-                    <head>
-                        <meta charset="UTF-8">
-                        <meta name="viewport" content="width=device-width, initial-scale=1">
-                        <meta http-equiv="X-UA-Compatible" content="ie=edge">
-                        <meta name="google" content="notranslate">
-                        <script src="https://cdn.jsdelivr.net/gh/davidshimjs/qrcodejs/qrcode.min.js"></script>
-                        <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
-                        <link href="https://cdn.jsdelivr.net/npm/beercss@3.6.8/dist/cdn/beer.min.css" rel="stylesheet">
-                        <script type="module" src="https://cdn.jsdelivr.net/npm/beercss@3.6.8/dist/cdn/beer.min.js"></script>
-                        <script type="module" src="https://cdn.jsdelivr.net/npm/material-dynamic-colors@1.1.2/dist/cdn/material-dynamic-colors.min.js"></script>
-                        <link rel="stylesheet" type="text/css" href="/static/css/theme.css">
-                        <title>{self.printout_type.title()} Workspace Nests Printout</title>
-                        <meta property="og:title" content="{self.printout_type.title()} -  Workspace Nests Printout" />
-                        <meta property="og:description" content="Workspace Nests Printout" />
-                    </head>
-        <style>
-            {self.printout_css}
-        </style>
-        <body class="quote">
+                <html>{head_html}
+        <body class="{self.printout_type.lower()}">
         <nav class="left l" id="printout-controls">
             <div class="left-align">
                 <label class="checkbox">
@@ -906,7 +874,4 @@ class WorkorderPrintout:
         html += nests_table.generate_laser_cut_part_popups()
 
         html += "</main></body>"
-        html += f"""<script>
-            {self.printout_js}
-        </script>"""
         return html
