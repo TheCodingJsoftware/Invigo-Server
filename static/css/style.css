@@ -1,3 +1,9 @@
+@font-face {
+    font-family: "GreyQo";
+    src: url("/static/fonts/GreyQo-Regular.ttf") format("truetype");
+    font-weight: 400;
+    font-style: normal;
+}
 
 .hidden {
     display: none;
@@ -43,6 +49,16 @@
     background-color: var(--surface-container-high);
 }
 /* index.html */
+.fade-in {
+    opacity: 0;
+}
+
+.cursive{
+    font-family: "GreyQo", sans-serif;
+    font-weight: bold;
+    font-style: normal;
+    font-size: 56pt;
+}
 
 .grid-container{
     display: grid;
