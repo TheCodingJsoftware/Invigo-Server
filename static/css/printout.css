@@ -47,54 +47,7 @@ details>summary {
     padding: 1em;
 }
 
-@media print {
-
-    .tabs,
-    #showCoverPageLabel,
-    #showAssemblies,
-    #showNests,
-    #showSheets,
-    .checkbox,
-    .nested-parts,
-    details:not([open]) {
-        display: none;
-    }
-    #printout-controls{
-        display: none !important;
-        position: relative !important;
-    }
-
-    .group_details {
-        border-color: transparent;
-    }
-
-    .page-break {
-        page-break-after: always;
-    }
-
-    .nest,
-    .sheets-table,
-    .assembly-table,
-    #sheets-layout,
-    #nests-layout,
-    #assemblies-list-layout {
-        page-break-inside: avoid;
-    }
-}
-
-.responsiveTable {
-    width: 100%;
-    border-collapse: collapse
-}
-
-.responsiveTable td,
-.responsiveTable th {
-    text-align: center;
-    font-size: 16px
-}
-
-
-@media (max-width:1000px) {
+@media (max-width:600px) {
     .responsiveTable thead {
         display: none
     }
@@ -126,5 +79,53 @@ details>summary {
         font-size: 15px;
         font-weight: bold;
         text-align: left
+    }
+}
+
+.responsiveTable {
+    width: 100%;
+    border-collapse: collapse
+}
+
+.responsiveTable td,
+.responsiveTable th {
+    text-align: center;
+    font-size: 16px
+}
+
+@media print {
+    .tabs,
+    #showCoverPageLabel,
+    #showAssemblies,
+    #showNests,
+    #showSheets,
+    .checkbox,
+    .column-toggle,
+    .nested-parts,
+    label .checkbox,
+    input[type="checkbox"],
+    #printout-controls,
+    details:not([open]) {
+        display: none !important;
+    }
+    body{
+        padding-inline-start: 0% !important;
+    }
+
+    .group_details {
+        border-color: transparent !important;
+    }
+
+    .page-break {
+        page-break-after: always !important;
+    }
+
+    .nest,
+    .sheets-table,
+    .assembly-table,
+    #sheets-layout,
+    #nests-layout,
+    #assemblies-list-layout {
+        page-break-inside: avoid !important;
     }
 }

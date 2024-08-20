@@ -1118,6 +1118,7 @@ class GanttGraph {
         this.loadConfig()
         this.data.length = 0;
         this.links.length = 0;
+        this.idCounter = 1;
 
         gantt.init("gantt_here");
         gantt.parse(this.loadData());
@@ -1372,8 +1373,8 @@ class WorkspaceScheduler {
     loadGanttGraph() {
         if (!this.gnattGraph) {
             this.ganttGraph = new GanttGraph(this.productionPlan, this.workspaceSettings);
+            this.ganttGraph.initialize();
         }
-        this.ganttGraph.initialize();
         this.ganttGraph.render();
     }
 
@@ -1432,7 +1433,7 @@ class WorkspaceScheduler {
         this.socket.onmessage = (event) => {
             const message = JSON.parse(event.data);
             if (message.action === 'download' && (message.files.includes('production_plan.json') || message.files.includes('production_plan'))) {
-                console.log('Workspace update received. Reloading...');
+                console.log('Production plan update received. Reloading...');
                 this.reloadView();
             }
         };

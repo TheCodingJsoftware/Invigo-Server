@@ -159,7 +159,7 @@ class HeatMap {
         });
     }
 
-    generateData() { 
+    generateData() {
         const data = [];
         const startDate = new Date(new Date().getFullYear(), 0, 1); // Jan 1st of current year
         const endDate = new Date(new Date().getFullYear(), 11, 31); // Dec 31st of current year
@@ -1659,18 +1659,18 @@ class ActivityPage{
         this.processSelections = this.containerDiv.querySelector('#process-tags');
         this.searchInput = this.containerDiv.querySelector('#search-input');
         this.jobsList = this.containerDiv.querySelector('#jobs-list');
-        
+
         this.populateProcessSelections();
 
         this.currentProcess = this.processSelections.value;
         this.currentSearchInput = this.searchInput.value;
-        
+
         this.processSelections.addEventListener('change', () => {
             this.currentProcess = this.processSelections.value;
             savePreference(this.container, "lastSelectedProcess", this.currentProcess);
             this.filter();
         });
-        
+
         this.searchInput.value = getPreference(this.container, 'searchInput', {'value': ''}).value;
         this.currentSearchInput = this.searchInput.value;
 
@@ -1683,32 +1683,33 @@ class ActivityPage{
         this.loadView();
         this.filter();
     }
+
     filter() {
         const jobsList = document.getElementById('jobs-list');
         const searchText = this.currentSearchInput.toLowerCase();
         const selectedProcess = this.currentProcess;
-    
+
         const jobDetailsList = jobsList.querySelectorAll('.job-details');
         let anyJobVisible = false;
-    
+
         jobDetailsList.forEach(jobDetails => {
             let jobMatches = false;
-    
+
             const assemblyArticles = jobDetails.querySelectorAll('.assembly-article');
-    
+
             assemblyArticles.forEach(assemblyArticle => {
                 const assemblyName = assemblyArticle.getAttribute('data-assembly-name').toLowerCase();
                 const assemblyProcess = assemblyArticle.getAttribute('data-assembly-process');
                 const isPartsComplete = assemblyArticle.getAttribute('data-parts-complete') === 'true';
                 const isAssemblyComplete = assemblyArticle.getAttribute('data-assembly-complete') === 'true';
-    
+
                 let matchesText = true;
                 let matchesProcess = true;
-    
+
                 if (searchText && !assemblyName.includes(searchText)) {
                     matchesText = false;
                 }
-    
+
                 if (selectedProcess !== "Everything") {
                     if (selectedProcess === "Finished") {
                         if (!isAssemblyComplete || !isPartsComplete) {
@@ -1724,21 +1725,21 @@ class ActivityPage{
                         }
                     }
                 }
-    
+
                 if (matchesText && matchesProcess) {
                     assemblyArticle.classList.remove('hidden');
-                    jobMatches = true; 
+                    jobMatches = true;
                 } else {
                     assemblyArticle.classList.add('hidden');
                 }
             });
-    
+
             if (!jobMatches) {
                 jobDetails.classList.add('hidden');
             } else {
                 jobDetails.classList.remove('hidden');
                 anyJobVisible = true;
-    
+
                 if (searchText || selectedProcess !== "Everything") {
                     jobDetails.open = true;
                     jobDetails.querySelector('.job-article').classList.add('primary');
@@ -1748,7 +1749,7 @@ class ActivityPage{
                 }
             }
         });
-    
+
         const noAssembliesMessage = document.getElementById('no-assemblies-message');
         if (!anyJobVisible) {
             if (!noAssembliesMessage) {
@@ -1763,8 +1764,7 @@ class ActivityPage{
             }
         }
     }
-    
-    
+
     loadView() {
         this.jobsList.innerHTML = '';  // Clear the current content
 
@@ -1777,7 +1777,7 @@ class ActivityPage{
             jobSummary.className = 'none';
 
             const jobArticle = document.createElement('article');
-            jobArticle.className = 'small-round small-padding job-article';
+            jobArticle.className = 'small-padding job-article';
 
             const jobCompletionProgress = getJobCompletionProgress(job).toFixed(2) * 100;
             const jobProgress = document.createElement('progress');
@@ -1938,7 +1938,7 @@ class ActivityPage{
         this.containerDiv.querySelectorAll("details").forEach((detailElement) => {
             new Accordion(detailElement);
         });
-        
+
         setTimeout(function () {
             document.querySelectorAll('img').forEach(function (img) {
                 img.onerror = function () {
@@ -1950,7 +1950,7 @@ class ActivityPage{
             });
         }, 1000);
     }
-    
+
     populateProcessSelections() {
         this.processSelections.innerHTML = '';
 
@@ -2032,7 +2032,7 @@ class AssemblyGraphsPage{
 
         this.allAssembliesChart1 = null;
     }
- 
+
     initialize(){
         this.assemblyInProcessChart1 = new AssembliesInProcessChart('#assemblies-in-process-chart-container-1', this.workspace, this.workspaceArchives, this.workspaceSettings);
         this.assemblyInProcessChart1.initialize();
@@ -2071,7 +2071,7 @@ class PartGraphsPage{
         this.laserCutPartsChart2 = null;
         this.laserCutPartsChart3 = null;
     }
- 
+
     initialize(){
         this.laserCutPartsChart1 = new LaserCutPartsInProcessChart('#laser-cut-parts-in-process-chart-container-1', this.workspace, this.workspaceArchives, this.workspaceSettings);
         this.laserCutPartsChart1.initialize();
@@ -2112,10 +2112,10 @@ class WorkspaceDashboard {
         if (this.workspace && this.workspaceArchives && this.workspaceSettings && this.productionPlan) {
             this.assemblyGraphsPage = new AssemblyGraphsPage('#assembly-graphs', this.workspace, this.workspaceArchives, this.workspaceSettings);
             this.assemblyGraphsPage.initialize();
-            
+
             this.partGraphsPage = new PartGraphsPage('#parts-graphs', this.workspace, this.workspaceArchives, this.workspaceSettings);
             this.partGraphsPage.initialize();
-            
+
             this.heatMapsPage = new HeatmapsPage('#heatmaps', this.workspace, this.productionPlan, this.workspaceSettings);
             this.heatMapsPage.initialize();
 

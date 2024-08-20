@@ -43,12 +43,10 @@ def generate_sheet_report(clients) -> None:
             "Invigo - Weekly Report: Sheets in Inventory",
             "Nothing low in quantity, Wo-hoo! Have a marvelous week.",
             ["lynden@pineymfg.com"],
-            connected_clients,
         )
     else:
         send(
             "Invigo - Weekly Report: Sheets in Inventory",
             message_to_send,
             ["lynden@pineymfg.com"],
-            connected_clients,
         )

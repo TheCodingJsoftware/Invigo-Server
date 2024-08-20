@@ -29,12 +29,7 @@ def check_installation(command, name):
 def install_npm_packages():
     npm_path = shutil.which('npm')
     if npm_path:
-        npm_packages = [
-            'webpack', 'webpack-dev-server', 'style-loader', 'css-loader', 'copy-webpack-plugin', 'webpack-cli', 'beercss',
-            'material-dynamic-colors', 'jquery', 'flatpickr', 'chart.js', 'bootstrap',
-            'chartjs-chart-matrix', 'date-fns', 'chartjs-adapter-date-fns', 'dhtmlx-gantt'
-        ]
-        subprocess.check_call([npm_path, 'install', '--save-dev'] + npm_packages)
+        subprocess.check_call([npm_path, 'install'])
     else:
         print("npm is not installed or not in your PATH.")
         sys.exit(1)

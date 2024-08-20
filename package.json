@@ -18,5 +18,22 @@
     "webpack": "^5.93.0",
     "webpack-cli": "^5.1.4",
     "webpack-dev-server": "^5.0.4"
-  }
+  },
+  "name": "invigo-server",
+  "description": "LAN file sharing server that Invigo relies on to keep all clients synced and a website with built in production planning and analytics.",
+  "version": "1.0.0",
+  "main": "webpack.config.js",
+  "scripts": {
+    "run": "python server.py"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/TheCodingJsoftware/Invigo-Server.git"
+  },
+  "author": "Jared Gross",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/TheCodingJsoftware/Invigo-Server/issues"
+  },
+  "homepage": "https://github.com/TheCodingJsoftware/Invigo-Server#readme"
 }

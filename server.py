@@ -127,7 +127,7 @@ class ConnectHandler(tornado.web.RequestHandler):
                     client_ip,
                     {
                         "name": client_name,
-                        "trusted": False,
+                        "trusted": True,
                         "latest_version": latest_version,
                         "latest_connection": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                     },
@@ -185,7 +185,7 @@ class IsClientTrustedHandler(tornado.web.RequestHandler):
                 if os.path.exists(file_path):
                     with open(file_path, "r", encoding="utf-8") as file:
                         data: dict[str, dict[str, Union[str, bool]]] = json.load(file)
-                    is_trusted = data.get(client_ip, {}).get("trusted", False)
+                    is_trusted = data.get(client_ip, {}).get("trusted", True)
                     self.write({"status": "success", "is_trusted": is_trusted})
                 else:
                     self.set_status(404)

@@ -161,6 +161,7 @@ cython_debug/
 
 # Custom
 .vscode
+.vs
 data/
 credentials.json
 settings.json

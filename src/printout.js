@@ -17,6 +17,7 @@ const checkboxConfig = {
         "paint": true,
         "show-total-cost": true,
         "show-assembly-process": true,
+        "net-weight-layout": true,
     },
     "workorder": {
         "picture": true,
@@ -33,6 +34,7 @@ const checkboxConfig = {
         "paint": true,
         "show-total-cost": false,
         "show-assembly-process": true,
+        "net-weight-layout": true,
     },
     "packingslip": {
         "picture": true,
@@ -49,6 +51,7 @@ const checkboxConfig = {
         "paint": true,
         "show-total-cost": false,
         "show-assembly-process": false,
+        "net-weight-layout": true,
     }
 };
 
@@ -376,7 +379,7 @@ usePageBreakcheckbox.addEventListener('change', function () {
 });
 
 function updateNestContainerClass() {
-    const isMobile = window.innerWidth <= 1000; // Adjust the width threshold for mobile screens
+    const isMobile = window.innerWidth <= 600; // Adjust the width threshold for mobile screens
     const containers = document.querySelectorAll('#sheets-layout #nest-container');
 
     containers.forEach(container => {
@@ -396,7 +399,7 @@ function updateNestContainerClass() {
 
 
 function updateNavbarLocation(){
-    const isMobile = window.innerWidth <= 1000; // Adjust the width threshold for mobile screens
+    const isMobile = window.innerWidth <= 600; // Adjust the width threshold for mobile screens
     const container = document.querySelector('#printout-controls');
     if (isMobile) {
         if (container.classList.contains('left')) {
