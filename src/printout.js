@@ -381,8 +381,21 @@ usePageBreakcheckbox.addEventListener('change', function () {
 function updateNestContainerClass() {
     const isMobile = window.innerWidth <= 600; // Adjust the width threshold for mobile screens
     const containers = document.querySelectorAll('#sheets-layout #nest-container');
-
+    const coverPageContainer = document.querySelector('#cover-page grid article');
     containers.forEach(container => {
+        if (isMobile) {
+            if (container.classList.contains('s6')) {
+                container.classList.remove('s6');
+                container.classList.add('s12');
+            }
+        } else {
+            if (container.classList.contains('s12')) {
+                container.classList.remove('s12');
+                container.classList.add('s6');
+            }
+        }
+    });
+    coverPageContainers.forEach(container => {
         if (isMobile) {
             if (container.classList.contains('s6')) {
                 container.classList.remove('s6');
