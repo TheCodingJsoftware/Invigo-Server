@@ -381,7 +381,7 @@ usePageBreakcheckbox.addEventListener('change', function () {
 function updateNestContainerClass() {
     const isMobile = window.innerWidth <= 600; // Adjust the width threshold for mobile screens
     const containers = document.querySelectorAll('#sheets-layout #nest-container');
-    const coverPageContainers = document.querySelector('#cover-page grid article');
+    const coverPageContainers = document.querySelectorAll('#cover-page grid article');
     containers.forEach(container => {
         if (isMobile) {
             if (container.classList.contains('s6')) {
