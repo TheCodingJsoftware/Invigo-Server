@@ -3,13 +3,14 @@ from typing import TYPE_CHECKING, Union
 
 from natsort import natsorted
 
+from ui.theme import theme_var
 from utils.inventory.component import Component
 from utils.inventory.laser_cut_part import LaserCutPart
 from utils.inventory.nest import Nest
 from utils.workspace.assembly import Assembly
-from utils.workspace.tag import Tag
-from utils.workspace.job_price_calculator import JobPriceCalculator
 from utils.workspace.job_flowtag_timeline import JobFlowtagTimeline
+from utils.workspace.job_price_calculator import JobPriceCalculator
+from utils.workspace.tag import Tag
 
 if TYPE_CHECKING:
     from utils.workspace.job_manager import JobManager
@@ -19,18 +20,20 @@ class JobStatus(Enum):
     PLANNING = auto()
     QUOTING = auto()
     QUOTED = auto()
+    QUOTE_CONFIRMED = auto()
     TEMPLATE = auto()
     WORKSPACE = auto()
     ARCHIVE = auto()
 
 
 class JobColor(Enum):
-    PLANNING = ("#eabf3e", JobStatus.PLANNING)
-    QUOTING = ("#69ea3e", JobStatus.QUOTING)
-    QUOTED = ("#69ea3e", JobStatus.QUOTED)
-    TEMPLATE = ("#ea693e", JobStatus.TEMPLATE)
-    WORKSPACE = ("#3daee9", JobStatus.WORKSPACE)
-    ARCHIVE = ("#943eea", JobStatus.ARCHIVE)
+    PLANNING = (theme_var("job-planning"), JobStatus.PLANNING)
+    QUOTING = (theme_var("job-quoting"), JobStatus.QUOTING)
+    QUOTED = (theme_var("job-quoted"), JobStatus.QUOTED)
+    QUOTE_CONFIRMED = (theme_var("job-quote-confirmed"), JobStatus.QUOTE_CONFIRMED)
+    TEMPLATE = (theme_var("job-template"), JobStatus.TEMPLATE)
+    WORKSPACE = (theme_var("job-workspace"), JobStatus.WORKSPACE)
+    ARCHIVE = (theme_var("job-archive"), JobStatus.ARCHIVE)
 
     @classmethod
     def get_color(cls, job_status: JobStatus):
@@ -44,7 +47,7 @@ class Job:
         self.ship_to: str = ""
         self.starting_date: str = ""
         self.ending_date: str = ""
-        self.color: str = "#eabf3e"  # default
+        self.color: str = theme_var("job-planning")  # default
         self.assemblies: list[Assembly] = []
         self.nests: list[Nest] = []
         self.moved_job_to_workspace = False
@@ -146,6 +149,13 @@ class Job:
     def sort_components(self):
         self.grouped_components = natsorted(self.grouped_components, key=lambda laser_cut_part: laser_cut_part.name)
 
+    def get_net_weight(self) -> float:
+        total_weight = 0.0
+        for assembly in self.get_all_assemblies():
+            for laser_cut_part in assembly.laser_cut_parts:
+                total_weight += laser_cut_part.weight * laser_cut_part.quantity * assembly.quantity
+        return total_weight
+
     def get_all_assemblies(self) -> list[Assembly]:
         assemblies: list[Assembly] = []
         assemblies.extend(self.assemblies)
@@ -168,7 +178,7 @@ class Job:
         return laser_cut_parts
 
     def get_grouped_laser_cut_parts(self) -> list[LaserCutPart]:
-        '''Used in printouts'''
+        """Used in printouts"""
         self.group_laser_cut_parts()
         return self.grouped_laser_cut_parts
 
@@ -263,7 +273,7 @@ class Job:
             "job_data": {
                 "name": self.name,
                 "type": self.status.value,
-                "order_number": int(self.order_number), # Just in case
+                "order_number": int(self.order_number),  # Just in case
                 "ship_to": self.ship_to,
                 "starting_date": self.starting_date,
                 "ending_date": self.ending_date,
