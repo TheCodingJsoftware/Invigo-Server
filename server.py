@@ -1346,7 +1346,7 @@ class UploadWorkorderHandler(tornado.web.RequestHandler):
             self.write({"status": "error", "message": str(e)})
 
 
-class LoadWorkorderHandler(tornado.web.RequestHandler):
+class LoadWorkorderPrintoutHandler(tornado.web.RequestHandler):
     def get(self, folder_name):
         html_file_path = os.path.join("workorders", folder_name, "page.html")
 
@@ -2217,7 +2217,7 @@ if __name__ == "__main__":
             # Workorder handlers
             (r"/upload_workorder", UploadWorkorderHandler),
             (r"/workorder/(.*)", WorkorderHandler),
-            (r"/workorder_printout/(.*)", LoadWorkorderHandler),
+            (r"/workorder_printout/(.*)", LoadWorkorderPrintoutHandler),
             (r"/mark_workorder_done/(.*)", MarkWorkorderDoneHandler),
             (r"/mark_nest_done/(.*)", MarkNestDoneHandler),
             (r"/recut_part/(.*)", RecutPartHandler),

@@ -288,7 +288,7 @@ if (workorderDiv) {
     var imgElement = qrDiv.querySelector('img');
     if (imgElement) {
         // Add the desired class to the img element
-        imgElement.classList.add('responsive');
+        imgElement.classList.add('workorder-qr-code');
     }
     // Set cursor to pointer and add click event to open the URL in a new tab
     qrDiv.addEventListener('click', function () {
