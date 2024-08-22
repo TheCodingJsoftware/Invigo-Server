@@ -760,6 +760,7 @@ class GetOrderNumberHandler(tornado.web.RequestHandler):
                 "planning",
                 "quoting",
                 "quoted",
+                "quote_confirmed",
                 "template",
             ],
         )
