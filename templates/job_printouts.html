@@ -30,7 +30,7 @@
         </div>
         <div class="tabs scroll">
             {% for directory in specific_dirs %}
-                <a href="#{{ directory }}" data-ui="#{{ directory }}" {% if loop.first %}class="active" {% endif %}>{{directory.capitalize()}}</a>
+                <a href="#{{ directory }}" data-ui="#{{ directory }}" {% if loop.first %}class="active" {% endif %}>{{directory.replace('_', ' ').title()}}</a>
             {% endfor %}
         </div>
         {% for directory in specific_dirs %}

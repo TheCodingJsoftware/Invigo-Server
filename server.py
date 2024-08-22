@@ -967,6 +967,7 @@ class GetJobsHandler(tornado.web.RequestHandler):
                 "planning",
                 "quoting",
                 "quoted",
+                "quote_confirmed",
                 "template",
             ],
         )
@@ -979,6 +980,7 @@ class JobPrintoutsHandler(tornado.web.RequestHandler):
             "planning",
             "quoting",
             "quoted",
+            "quote_confirmed",
             "template",
         ]
         directories_info = await gather_job_directories_info(

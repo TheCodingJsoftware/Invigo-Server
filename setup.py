@@ -74,7 +74,7 @@ def main():
 
     root_directories = ["data", "data/workspace", "images", "logs", "backups"]
     quotes_subdirs = ["packing_slips", "quotes", "workorders"]
-    jobs_subdirs = ["planning", "template", "quoting", "quoted"]
+    jobs_subdirs = ["planning", "template", "quoting", "quoted", "quote_confirmed"]
 
     for directory in root_directories:
         create_directory(directory)
