@@ -103,7 +103,28 @@ details>summary {
   border-radius: .75rem;
   padding: 1rem;
 }
+.grid {
+    display: flex;
+    flex-wrap: wrap;
+}
 
+.s6 {
+    flex: 1 1 50%;
+    display: flex;
+    flex-direction: column;
+}
+
+#nest-container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+article.nest {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
 @media print {
     .tabs,
     #showCoverPageLabel,

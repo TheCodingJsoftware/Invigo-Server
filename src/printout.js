@@ -439,6 +439,9 @@ window.addEventListener('load', function () {
             img.onerror = function () {
                 this.classList.add('hidden');
             };
+            if (img.src.includes('404.jpeg')) {
+                img.classList.add('hidden');
+            }
             if (!img.complete || img.naturalWidth === 0) {
                 img.onerror();
             }
