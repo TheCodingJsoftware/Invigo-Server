@@ -97,6 +97,12 @@ details>summary {
     text-align: center;
     font-size: 16px
 }
+.workorder-qr-code{
+  margin: auto;
+  border: .0625rem solid var(--outline);
+  border-radius: .75rem;
+  padding: 1rem;
+}
 
 @media print {
     .tabs,
@@ -123,6 +129,7 @@ details>summary {
 
     .page-break {
         page-break-after: always !important;
+        break-after: always !important;
     }
 
     .nest,
@@ -131,6 +138,7 @@ details>summary {
     #sheets-layout,
     #nests-layout,
     #assemblies-list-layout {
-        page-break-inside: avoid !important;
+      page-break-inside: avoid !important;
+      break-after: avoid !important;
     }
 }
