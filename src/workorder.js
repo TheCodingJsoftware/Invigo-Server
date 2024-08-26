@@ -1,4 +1,6 @@
 import "beercss"
+import '../static/css/style.css';
+import '../static/css/theme.css';
 
 var recut_laser_cut_part;
 var recut_nest;

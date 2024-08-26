@@ -1,4 +1,6 @@
 import "beercss"
+import '../static/css/style.css';
+import '../static/css/theme.css';
 
 document.addEventListener('DOMContentLoaded', function () {
     document.querySelectorAll('.add-quantity-button').forEach(button => {
