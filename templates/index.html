@@ -9,100 +9,131 @@
     <link rel="icon" href="/static/icon.png">
     <title>Invigo</title>
     <meta property="og:title" content="Invigo" />
-    <meta property="og:description" content="Invigo Website Homepage." />
+    <meta property="og:description" content="Invigo Homepage." />
     <script src="/dist/js/index.bundle.js"></script>
 </head>
+
+<style>
+    @font-face {
+        font-family: GreyQo;
+        src: url('/static/fonts/GreyQo-Regular.ttf') format("truetype");
+    }
+
+    .grey-qo-regular {
+        font-family: "GreyQo", cursive;
+        font-weight: 400;
+        font-style: normal;
+    }
+</style>
 
 <body class="dark">
     <header class="transparent bottom-padding">
         <nav>
-            <h2 class="max center-align cursive">
+            <h2 class="max center-align grey-qo-regular" style="font-family: GreyQo;">
                 Invigo
             </h2>
             <button class="square transparent extra">
-              <img class="responsive" src="/static/icon.png">
+                <img class="responsive" src="/static/icon.png">
             </button>
         </nav>
     </header>
     <main class="responsive l m">
         <br>
         <div class="grid-container center-align">
-            <button class="left-align border small-round responsive extra primary" onclick="window.location.href='/inventory'">
+            <button class="left-align border small-round responsive extra primary"
+                onclick="window.location.href='/inventory'">
                 <i>inventory_2</i>
                 <span>Inventory</span>
                 <div class="tooltip bottom">All inventories and their categories.</div>
             </button>
-            <button class="left-align border small-round responsive extra primary" onclick="window.location.href='/add_cutoff_sheet'">
+            <button class="left-align border small-round responsive extra primary"
+                onclick="window.location.href='/add_cutoff_sheet'">
                 <i>library_add</i>
                 <span>Add Cutoff Sheet</span>
                 <div class="tooltip bottom">Add and view cutoff sheets.</div>
             </button>
-            <button class="left-align border small-round responsive extra primary" onclick="window.location.href='/sheet_qr_codes'">
+            <button class="left-align border small-round responsive extra primary"
+                onclick="window.location.href='/sheet_qr_codes'">
                 <i>qr_code</i>
                 <span>Sheet QR Codes</span>
-                <div class="tooltip bottom">All sheets in inventory with their respective QR codes in a ready-to-print layout.</div>
+                <div class="tooltip bottom">All sheets in inventory with their respective QR codes in a ready-to-print
+                    layout.</div>
             </button>
-            <button class="left-align border small-round responsive extra primary" onclick="window.location.href='/production_planner'">
+            <button class="left-align border small-round responsive extra primary"
+                onclick="window.location.href='/production_planner'">
                 <i>edit_calendar</i>
                 <span>Production Planner</span>
                 <div class="tooltip bottom">Plan and manage workspaces schedule.</div>
             </button>
-            <button class="left-align border small-round responsive extra primary" onclick="window.location.href='/workspace_dashboard'">
+            <button class="left-align border small-round responsive extra primary"
+                onclick="window.location.href='/workspace_dashboard'">
                 <i>browse_activity</i>
                 <span>Workspace Dashboard</span>
                 <div class="tooltip bottom">Analytics for workspace.</div>
             </button>
-            <button class="left-align border small-round responsive extra primary" onclick="window.location.href='/workspace_archives_dashboard'">
+            <button class="left-align border small-round responsive extra primary"
+                onclick="window.location.href='/workspace_archives_dashboard'">
                 <i>work_history</i>
                 <span>Workspace Archives</span>
                 <div class="tooltip bottom">Analytics for workspace archives.</div>
             </button>
-            <button class="left-align border small-round responsive extra primary" onclick="window.location.href='/job_printouts'">
+            <button class="left-align border small-round responsive extra primary"
+                onclick="window.location.href='/job_printouts'">
                 <i>home_storage</i>
                 <span>Job Printouts</span>
                 <div class="tooltip bottom">View all saved jobs.</div>
             </button>
-            <button class="left-align border small-round responsive extra primary" onclick="window.location.href='/workorders'">
+            <button class="left-align border small-round responsive extra primary"
+                onclick="window.location.href='/workorders'">
                 <i>checklist</i>
                 <span>Workorders</span>
                 <div class="tooltip bottom">View all active workorders.</div>
             </button>
-            <button class="left-align border small-round responsive extra primary" onclick="window.location.href='/way_back_machine'">
+            <button class="left-align border small-round responsive extra primary"
+                onclick="window.location.href='/way_back_machine'">
                 <i>history</i>
                 <span>Way Back Machine</span>
                 <div class="tooltip bottom">Track any inventory item's price and quantity from daily backups.</div>
             </button>
-            <button class="left-align border small-round responsive extra primary" onclick="window.location.href='https://github.com/TheCodingJsoftware/Invigo/wiki'">
+            <button class="left-align border small-round responsive extra primary"
+                onclick="window.location.href='https://github.com/TheCodingJsoftware/Invigo/wiki'">
                 <i>globe</i>
                 <span>Wiki</span>
-                <div class="tooltip bottom">GitHub wiki page with frequently asked questions about how to use Invigo.</div>
+                <div class="tooltip bottom">GitHub wiki page with frequently asked questions about how to use Invigo.
+                </div>
             </button>
-            <button class="left-align border small-round responsive extra primary" onclick="window.location.href='/server_log'">
+            <button class="left-align border small-round responsive extra primary"
+                onclick="window.location.href='/server_log'">
                 <i>article</i>
                 <span>Server Log</span>
                 <div class="tooltip bottom">Live log for the Invigo-Server.</div>
             </button>
-            <button class="left-align border small-round responsive extra primary" onclick="window.location.href='/logs'">
+            <button class="left-align border small-round responsive extra primary"
+                onclick="window.location.href='/logs'">
                 <i>problem</i>
                 <span>Logs</span>
                 <div class="tooltip bottom">All daily server logs and user error logs.</div>
             </button>
-            <button class="left-align border small-round responsive extra primary" onclick="window.location.href='https://github.com/TheCodingJsoftware/Inventory-Manager'">
+            <button class="left-align border small-round responsive extra primary"
+                onclick="window.location.href='https://github.com/TheCodingJsoftware/Inventory-Manager'">
                 <i>code</i>
                 <span>Invigo</span>
                 <div class="tooltip bottom">View source code for Invigo.</div>
             </button>
-            <button class="left-align border small-round responsive extra primary" onclick="window.location.href='https://github.com/TheCodingJsoftware/Invigo-Server'">
+            <button class="left-align border small-round responsive extra primary"
+                onclick="window.location.href='https://github.com/TheCodingJsoftware/Invigo-Server'">
                 <i>code</i>
                 <span>Invigo-Server</span>
                 <div class="tooltip bottom">View source code for Invigo-Server.</div>
             </button>
-            <button class="left-align border small-round responsive extra primary" onclick="window.location.href='https://github.com/TheCodingJsoftware/Invigo-Web'">
+            <button class="left-align border small-round responsive extra primary"
+                onclick="window.location.href='https://github.com/TheCodingJsoftware/Invigo-Web'">
                 <i>code</i>
                 <span>Invigo-Web</span>
                 <div class="tooltip bottom">View source code for Invigo-Web.</div>
             </button>
-            <button class="left-align border small-round responsive extra primary" onclick="window.location.href='http://10.0.0.10:5051/download'">
+            <button class="left-align border small-round responsive extra primary"
+                onclick="window.location.href='http://10.0.0.10:5051/download'">
                 <i>download</i>
                 <span>Download</span>
                 <div class="tooltip bottom">Downloads Invigo.zip from Invigo-Web portal.</div>
@@ -115,7 +146,7 @@
                 <i>inventory_2</i>
                 <div class="max">
                     <h6 class="small">Inventory</h6>
-                <div>All inventories and their categories.</div>
+                    <div>All inventories and their categories.</div>
                 </div>
             </a>
             <div class="divider"></div>
@@ -123,7 +154,7 @@
                 <i>library_add</i>
                 <div class="max">
                     <h6 class="small">Add Cutoff Sheet</h6>
-                <div>Add and view cutoff sheets.</div>
+                    <div>Add and view cutoff sheets.</div>
                 </div>
             </a>
             <div class="divider"></div>
@@ -131,7 +162,7 @@
                 <i>qr_code</i>
                 <div class="max">
                     <h6 class="small">Sheet QR Codes</h6>
-                <div>All sheets in inventory with their respective QR codes in a ready-to-print layout.</div>
+                    <div>All sheets in inventory with their respective QR codes in a ready-to-print layout.</div>
                 </div>
             </a>
             <div class="divider"></div>
@@ -139,7 +170,7 @@
                 <i>edit_calendar</i>
                 <div class="max">
                     <h6 class="small">Production Planner</h6>
-                <div>Plan and manage workspaces schedule.</div>
+                    <div>Plan and manage workspaces schedule.</div>
                 </div>
             </a>
             <div class="divider"></div>
@@ -147,7 +178,7 @@
                 <i>browse_activity</i>
                 <div class="max">
                     <h6 class="small">Workspace Dashboard</h6>
-                <div>Analytics for workspace.</div>
+                    <div>Analytics for workspace.</div>
                 </div>
             </a>
             <div class="divider"></div>
@@ -155,7 +186,7 @@
                 <i>work_history</i>
                 <div class="max">
                     <h6 class="small">Workspace Archives</h6>
-                <div>Analytics for workspace archives.</div>
+                    <div>Analytics for workspace archives.</div>
                 </div>
             </a>
             <div class="divider"></div>
@@ -163,7 +194,7 @@
                 <i>home_storage</i>
                 <div class="max">
                     <h6 class="small">Job Printouts</h6>
-                <div>View all saved jobs.</div>
+                    <div>View all saved jobs.</div>
                 </div>
             </a>
             <div class="divider"></div>
@@ -171,7 +202,7 @@
                 <i>checklist</i>
                 <div class="max">
                     <h6 class="small">Workorders</h6>
-                <div>View all active workorders.</div>
+                    <div>View all active workorders.</div>
                 </div>
             </a>
             <div class="divider"></div>
@@ -179,7 +210,7 @@
                 <i>history</i>
                 <div class="max">
                     <h6 class="small">Way Back Machine</h6>
-                <div>Track any inventory item's price and quantity from daily backups.</div>
+                    <div>Track any inventory item's price and quantity from daily backups.</div>
                 </div>
             </a>
             <div class="divider"></div>
@@ -187,7 +218,7 @@
                 <i>globe</i>
                 <div class="max">
                     <h6 class="small">Wiki</h6>
-                <div>GitHub wiki page with frequently asked questions about how to use Invigo.</div>
+                    <div>GitHub wiki page with frequently asked questions about how to use Invigo.</div>
                 </div>
             </a>
             <div class="divider"></div>
@@ -195,7 +226,7 @@
                 <i>article</i>
                 <div class="max">
                     <h6 class="small">Server Log</h6>
-                <div>Live log for the Invigo-Server.</div>
+                    <div>Live log for the Invigo-Server.</div>
                 </div>
             </a>
             <div class="divider"></div>
@@ -203,15 +234,16 @@
                 <i>problem</i>
                 <div class="max">
                     <h6 class="small">Logs</h6>
-                <div>All daily server logs and user error logs.</div>
+                    <div>All daily server logs and user error logs.</div>
                 </div>
             </a>
             <div class="divider"></div>
-            <a class="row padding surface-container wave" href="https://github.com/TheCodingJsoftware/Inventory-Manager">
+            <a class="row padding surface-container wave"
+                href="https://github.com/TheCodingJsoftware/Inventory-Manager">
                 <i>code</i>
                 <div class="max">
                     <h6 class="small">Invigo</h6>
-                <div>View source code for Invigo.</div>
+                    <div>View source code for Invigo.</div>
                 </div>
             </a>
             <div class="divider"></div>
@@ -219,7 +251,7 @@
                 <i>code</i>
                 <div class="max">
                     <h6 class="small">Invigo-Server</h6>
-                <div>View source code for Invigo-Server (this).</div>
+                    <div>View source code for Invigo-Server (this).</div>
                 </div>
             </a>
             <div class="divider"></div>
@@ -235,7 +267,7 @@
                 <i>download</i>
                 <div class="max">
                     <h6 class="small">Download</h6>
-                <div>Downloads Invigo.zip from Invigo-Web portal.</div>
+                    <div>Downloads Invigo.zip from Invigo-Web portal.</div>
                 </div>
             </a>
         </article>
