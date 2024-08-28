@@ -65,7 +65,7 @@ connected_clients: set[tornado.websocket.WebSocketHandler] = set()
 web_connected_clients: set[tornado.websocket.WebSocketHandler] = set()
 
 # Configure Jinja2 template environment
-loader = jinja2.FileSystemLoader("templates")
+loader = jinja2.FileSystemLoader("dist/html")
 env = jinja2.Environment(loader=loader)
 
 
