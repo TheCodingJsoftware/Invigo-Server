@@ -27,7 +27,10 @@ details>summary {
 .hidden {
     display: none;
 }
-
+.assembly-image{
+    max-width: 150px;
+    height: auto;
+}
 .assembly-image img {
     width: 256px;
     height: 256px;
