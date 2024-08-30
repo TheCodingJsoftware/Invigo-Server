@@ -25,7 +25,7 @@ details>summary {
 }
 
 .hidden {
-    display: none;
+    display: none !important;
 }
 .assembly-image{
     max-width: 150px;
@@ -124,6 +124,18 @@ article.nest {
     display: flex;
     flex-direction: column;
 }
+.nest,
+.sheets-table,
+.assembly-table,
+#sheets-layout,
+#nests-layout,
+#assemblies-list-layout {
+  page-break-inside: avoid !important;
+}
+.assembly_details,
+.nest-summary{
+  page-break-inside: avoid !important;
+}
 @media print {
     .tabs,
     #showCoverPageLabel,
@@ -152,13 +164,4 @@ article.nest {
         break-after: always !important;
     }
 
-    .nest,
-    .sheets-table,
-    .assembly-table,
-    #sheets-layout,
-    #nests-layout,
-    #assemblies-list-layout {
-      page-break-inside: avoid !important;
-      break-after: avoid !important;
-    }
 }
