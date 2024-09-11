@@ -25,7 +25,7 @@ details>summary {
 }
 
 .hidden {
-    display: none;
+    display: none !important;
 }
 .assembly-image{
     max-width: 150px;
