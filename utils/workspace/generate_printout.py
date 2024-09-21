@@ -20,19 +20,19 @@ class Head:
                 <meta name="viewport" content="width=device-width, initial-scale=1">
                 <meta http-equiv="X-UA-Compatible" content="ie=edge">
                 <meta name="google" content="notranslate">
-                <link rel="stylesheet" type="text/css" href="/static/css/theme.css">
-                <link rel="stylesheet" type="text/css" href="/static/css/printout.css">
                 <title>{title}</title>
                 <meta property="og:title" content="{title}" />
                 <meta property="og:description" content="{description}" />
+                <link href="/dist/css/printout.bundle.css" rel="stylesheet">
                 <script src="/dist/js/qrcode.min.js"></script>
                 <script type="module" src="/dist/js/printout.bundle.js"></script>
             </head>"""
 
 
 class CoverPage:
-    def __init__(self, order_number: float, date_shipped: str, date_expected: str, ship_to: str):
+    def __init__(self, order_number: float, PO_number: float, date_shipped: str, date_expected: str, ship_to: str):
         self.order_number = order_number
+        self.PO_number = PO_number
         self.date_shipped = date_shipped
         self.date_expected = date_expected
         self.ship_to = ship_to
@@ -43,37 +43,35 @@ class CoverPage:
         formatted_date_expected = datetime.strptime(self.date_expected, "%Y-%m-%d %I:%M %p").strftime("%Y-%m-%dT%H:%M")
 
         return f"""<div id="cover-page">
-                <div class="field label prefix border max">
-                    <i>numbers</i>
-                    <input type="number" id="order-number" value={int(self.order_number)}>
-                    <label>Order Number</label>
-                </div>
-
                 <div class="grid">
-                    <article class="border s6">
-                        <div class="field label prefix border">
-                            <i>today</i>
-                            <input type="datetime-local" value="{formatted_date_shipped}">
-                            <label>Date Shipped</label>
-                            <i>schedule</i>
-                        </div>
-                        <div class="field label prefix border">
-                            <i>date_range</i>
-                            <input type="datetime-local" value="{formatted_date_expected}">
-                            <label>Date Expected</label>
-                            <i>schedule</i>
-                        </div>
-                    </article>
-                    <article class="border s6">
-                        <div class="field textarea label border">
-                            <textarea>{self.ship_to}</textarea>
-                            <label>Ship To</label>
-                        </div>
-                        <div class="field border">
-                            <input type="text">
-                            <span class="helper">Received in good order by</span>
-                        </div>
-                    </article>
+                    <div class="field label prefix border max s2">
+                        <i>numbers</i>
+                        <input type="number" id="order-number" value={int(self.order_number)}>
+                        <label>Order Number</label>
+                    </div>
+                    <div class="field label prefix border max s2">
+                        <i>numbers</i>
+                        <input type="number" id="PO-number" value={int(self.PO_number)}>
+                        <label>PO Number</label>
+                    </div>
+                    <div class="field prefix border s4">
+                        <i>today</i>
+                        <input type="text">
+                        <span class="helper">Date Shipped</span>
+                    </div>
+                    <div class="field label prefix border s4">
+                        <i>date_range</i>
+                        <input type="datetime-local" value="{formatted_date_expected}">
+                        <label>Date Expected</label>
+                    </div>
+                    <div class="field textarea label border s6">
+                        <textarea>{self.ship_to}</textarea>
+                        <label>Ship To</label>
+                    </div>
+                    <div class="field border extra s6">
+                        <input type="text">
+                        <span class="helper">Received in good order by</span>
+                    </div>
                 </div>
             </div>
         </div><br>"""
@@ -230,7 +228,7 @@ class SheetImages:
                 html += f"""
                 <div class="s6" id="nest-container">
                     <article class="nest no-padding border">
-                        <img src="{self.server_directory}/image/{nest.image_path}" class="responsive small nest_image">
+                        <img src="{self.server_directory}/image/{nest.image_path}" class="responsive nest_image">
                         <div class="{'right-align' if i % 2 == 0 else 'left-align'}">
                             <button class="nested-parts transparent small small-round">
                                 <i>format_list_bulleted</i>
@@ -332,6 +330,7 @@ class LaserCutPartsTable:
             "Part",
             "Material",
             "Process",
+            "Notes",
             "Shelf #",
             "Unit Qty",
             "Qty",
@@ -381,13 +380,13 @@ class LaserCutPartsTable:
         return total
 
     def get_paint(self, laser_cut_part: LaserCutPart) -> str:
-        html = '<div class="no-padding small-text">'
+        html = '<div class="no-padding small-text grid center-align">'
         if laser_cut_part.uses_primer and laser_cut_part.primer_item:
-            html += f'<div class="row no-margin"><div style="height: 20px; width: 20px; background-color: {laser_cut_part.primer_item.color}; border-radius: 5px;"></div>{laser_cut_part.primer_item.name}</div>'
+            html += f'<div class="no-margin s12"><div class="tiny-margin" style="height: 20px; width: 20px; display: inline-flex; background-color: {laser_cut_part.primer_item.color}; border-radius: 5px;"></div><span class="tiny-margin">{laser_cut_part.primer_item.name}</span></div>'
         if laser_cut_part.uses_paint and laser_cut_part.paint_item:
-            html += f'<div class="row no-margin"><div style="height: 20px; width: 20px; background-color: {laser_cut_part.paint_item.color}; border-radius: 5px;"></div>{laser_cut_part.paint_item.name}</div>'
+            html += f'<div class="no-margin s12"><div class="tiny-margin" style="height: 20px; width: 20px; display: inline-flex; background-color: {laser_cut_part.paint_item.color}; border-radius: 5px;"></div><span class="tiny-margin">{laser_cut_part.paint_item.name}</span></div>'
         if laser_cut_part.uses_powder and laser_cut_part.powder_item:
-            html += f'<div class="row no-margin"><div style="height: 20px; width: 20px; background-color: {laser_cut_part.powder_item.color}; border-radius: 5px;"></div>{laser_cut_part.powder_item.name}</div>'
+            html += f'<div class="no-margin s12"><div class="tiny-margin" style="height: 20px; width: 20px; display: inline-flex; background-color: {laser_cut_part.powder_item.color}; border-radius: 5px;"></div><span class="tiny-margin">{laser_cut_part.powder_item.name}</span></div>'
         if not (laser_cut_part.uses_primer or laser_cut_part.uses_paint or laser_cut_part.uses_powder):
             html = ""
         else:
@@ -412,21 +411,23 @@ class LaserCutPartsTable:
             </td>
             <td class="small-text min" data-label="{self.headers[1]}" data-column="1" data-name="material">{laser_cut_part.gauge}<br>{laser_cut_part.material}</td>
             <td class="small-text" data-label="{self.headers[2]}" data-column="2" data-name="process">{laser_cut_part.flowtag.get_flow_string()}{self.get_paint(laser_cut_part)}</td>
-            <td class="small-text" data-label="{self.headers[3]}" data-column="3" data-name="shelf-#">{laser_cut_part.shelf_number}</td>
-            <td class="small-text min" data-label="{self.headers[4]}" data-column="4" data-name="unit-qty">{laser_cut_part.quantity:,.2f}</td>
-            <td class="small-text min" data-label="{self.headers[5]}" data-column="5" data-name="qty">{(laser_cut_part.quantity * self.assembly_quantity):,.2f}</td>
-            <td class="small-text min" data-label="{self.headers[6]}" data-column="6" data-name="unit-price">${unit_price:,.2f}</td>
-            <td class="small-text" data-label="{self.headers[7]}" data-column="7" data-name="price">${(unit_price * laser_cut_part.quantity * self.assembly_quantity):,.2f}</td>
+            <td class="small-text left-align" data-label="{self.headers[3]}" data-column="3" data-name="notes">{laser_cut_part.notes}</td>
+            <td class="small-text" data-label="{self.headers[4]}" data-column="4" data-name="shelf-#">{laser_cut_part.shelf_number}</td>
+            <td class="small-text min" data-label="{self.headers[5]}" data-column="5" data-name="unit-qty">{laser_cut_part.quantity:,.2f}</td>
+            <td class="small-text min" data-label="{self.headers[6]}" data-column="6" data-name="qty">{(laser_cut_part.quantity * self.assembly_quantity):,.2f}</td>
+            <td class="small-text min" data-label="{self.headers[7]}" data-column="7" data-name="unit-price">${unit_price:,.2f}</td>
+            <td class="small-text" data-label="{self.headers[8]}" data-column="8" data-name="price">${(unit_price * laser_cut_part.quantity * self.assembly_quantity):,.2f}</td>
             </tr>"""
         html += f"""<tr>
                 <th class="small-text" data-label="{self.headers[0]}" data-column="0" data-name="part"></th>
                 <th class="small-text" data-label="{self.headers[1]}" data-column="1" data-name="material"></th>
                 <th class="small-text" data-label="{self.headers[2]}" data-column="2" data-name="process"></th>
-                <th class="small-text" data-label="{self.headers[3]}" data-column="3" data-name="shelf-#"></th>
-                <th class="small-text" data-label="{self.headers[4]}" data-column="4" data-name="unit-qty"></th>
-                <th class="small-text" data-label="{self.headers[5]}" data-column="5" data-name="qty"></th>
-                <th class="small-text" data-label="{self.headers[6]}" data-column="6" data-name="unit-price"></th>
-                <th class="small-text min" data-label="{self.headers[7]}" data-column="7" data-name="price">Total: ${self.get_total_cost():,.2f}</th>
+                <th class="small-text" data-label="{self.headers[3]}" data-column="3" data-name="notes"></th>
+                <th class="small-text" data-label="{self.headers[4]}" data-column="4" data-name="shelf-#"></th>
+                <th class="small-text" data-label="{self.headers[5]}" data-column="5" data-name="unit-qty"></th>
+                <th class="small-text" data-label="{self.headers[6]}" data-column="6" data-name="qty"></th>
+                <th class="small-text" data-label="{self.headers[7]}" data-column="7" data-name="unit-price"></th>
+                <th class="small-text min" data-label="{self.headers[8]}" data-column="8" data-name="price">Total: ${self.get_total_cost():,.2f}</th>
             </tr></tbody></table>"""
         return html
 
@@ -437,7 +438,7 @@ class ComponentsTable:
         self.assembly_quantity = assembly_quantity
         self.components = components
         self.server_directory = f"http://{get_server_ip_address()}:{get_server_port()}"
-        self.headers = ["Part", "Part #", "Shelf #", "Unit Qty", "Qty", "Unit Price", "Price"]
+        self.headers = ["Part", "Part #", "Notes", "Shelf #", "Unit Qty", "Qty", "Unit Price", "Price"]
 
     def format_filename(self, s: str):
         valid_chars = f"-_.() {string.ascii_letters}{string.digits}"
@@ -493,20 +494,22 @@ class ComponentsTable:
                 <span class="small-text">{component.part_name}</span>
             </td>
             <td class="small-text min" data-label="{self.headers[1]}" data-column="1" data-name="part-#">{component.part_number}</td>
-            <td class="small-text" data-label="{self.headers[2]}" data-column="2" data-name="shelf-#">{component.shelf_number}</td>
-            <td class="small-text min" data-label="{self.headers[3]}" data-column="3" data-name="unit-qty">{component.quantity:,.2f}</td>
-            <td class="small-text min" data-label="{self.headers[4]}" data-column="4" data-name="qty">{(component.quantity * self.assembly_quantity):,.2f}</td>
-            <td class="small-text min" data-label="{self.headers[5]}" data-column="5" data-name="unit-price">${unit_price:,.2f}</td>
-            <td class="small-text" data-label="{self.headers[6]}" data-column="6" data-name="price">${(unit_price * component.quantity * self.assembly_quantity):,.2f}</td>
+            <td class="small-text left-align" data-label="{self.headers[2]}" data-column="2" data-name="notes">{component.notes}</td>
+            <td class="small-text" data-label="{self.headers[3]}" data-column="3" data-name="shelf-#">{component.shelf_number}</td>
+            <td class="small-text min" data-label="{self.headers[4]}" data-column="4" data-name="unit-qty">{component.quantity:,.2f}</td>
+            <td class="small-text min" data-label="{self.headers[5]}" data-column="5" data-name="qty">{(component.quantity * self.assembly_quantity):,.2f}</td>
+            <td class="small-text min" data-label="{self.headers[6]}" data-column="6" data-name="unit-price">${unit_price:,.2f}</td>
+            <td class="small-text" data-label="{self.headers[7]}" data-column="7" data-name="price">${(unit_price * component.quantity * self.assembly_quantity):,.2f}</td>
             </tr>"""
         html += f"""</tbody><tfoot><tr>
         <th class="small-text" data-label="{self.headers[0]}" data-column="0" data-name="picture"></th>
         <th class="small-text" data-label="{self.headers[1]}" data-column="1" data-name="part-#"></th>
-        <th class="small-text" data-label="{self.headers[2]}" data-column="2" data-name="shelf-#"></th>
-        <th class="small-text" data-label="{self.headers[3]}" data-column="3" data-name="unit-qty"></th>
-        <th class="small-text" data-label="{self.headers[4]}" data-column="4" data-name="qty"></th>
-        <th class="small-text" data-label="{self.headers[5]}" data-column="5" data-name="unit-price"></th>
-        <th class="small-text min" data-label="{self.headers[6]}" data-column="6" data-name="price">Total: ${self.get_total_cost():,.2f}</th>
+        <th class="small-text" data-label="{self.headers[2]}" data-column="2" data-name="notes"></th>
+        <th class="small-text" data-label="{self.headers[3]}" data-column="3" data-name="shelf-#"></th>
+        <th class="small-text" data-label="{self.headers[4]}" data-column="4" data-name="unit-qty"></th>
+        <th class="small-text" data-label="{self.headers[5]}" data-column="5" data-name="qty"></th>
+        <th class="small-text" data-label="{self.headers[6]}" data-column="6" data-name="unit-price"></th>
+        <th class="small-text min" data-label="{self.headers[7]}" data-column="7" data-name="price">Total: ${self.get_total_cost():,.2f}</th>
         </tr></tfoot></table>"""
         return html
 
@@ -560,10 +563,10 @@ class AssemblyTable:
         else:
             for assembly in self.job.get_all_assemblies():
                 html += f"""
-                <a class="row padding surface-container wave" onclick="ui('#A-{self.format_filename(assembly.name)}');">
+                <a class="row tiny-padding surface-container wave" onclick="ui('#A-{self.format_filename(assembly.name)}');">
                     <img src="{self.server_directory}/image/{assembly.assembly_image}" class="assembly_image round">
                     <div class="max">
-                        <h6 class="small">{assembly.name}</h6>
+                        <h6>{assembly.name}</h6>
                         <div id="assembly-proess-layout">{assembly.flowtag.get_flow_string()}</div>
                     </div>
                     <h5>× {int(assembly.quantity)}</h5>
@@ -779,7 +782,7 @@ class WorkspaceJobPrintout:
             {header_html}<br>
         """
 
-        cover_page = CoverPage(self.job.order_number, self.job.starting_date, self.job.ending_date, self.job.ship_to)
+        cover_page = CoverPage(self.job.order_number, self.job.PO_number, self.job.starting_date, self.job.ending_date, self.job.ship_to)
 
         html += cover_page.generate()
 
@@ -803,7 +806,7 @@ class WorkspaceJobPrintout:
             <a class="active" data-ui="#assemblies-list"> <i>data_table</i>Assemblies List</a>
             <a data-ui="#parts-list"> <i>format_list_bulleted</i>Grouped Parts List</a>
         </div>"""
-        html += '<div class="page hidden" id="assemblies-layout">'
+        html += '<div class="page" id="assemblies-layout">'
         if self.job.assemblies:
             job_div = JobDiv(self.job)
             html += job_div.generate()
@@ -828,7 +831,7 @@ class WorkspaceJobPrintout:
         grouped_components = self.job.get_grouped_components()
         grouped_components_table = ComponentsTable(self.job, 1, grouped_components)
 
-        html += '<div class="page hidden" id="parts-list">'
+        html += '<div class="page" id="parts-list">'
         if grouped_laser_cut_parts or grouped_components:
             if grouped_laser_cut_parts:
                 html += '<h5 class="center-align">Laser Cut Parts:</h5>'
@@ -843,13 +846,15 @@ class WorkspaceJobPrintout:
 
         if grouped_components or grouped_laser_cut_parts:
             html += f"""
-            <div id="net-weight-layout">
-                <h6 class="center-align bold">Net Weight: {self.job.get_net_weight():,.2f} lb</h6>
-            </div>
-            <div id="total-cost-layout">
-                <h6 class="center-align bold">Total Cost: ${self.job.price_calculator.get_job_cost():,.2f}</h6>
-                <p class="small-text center-align bold underline">No tax is included in this quote.</p>
-                <p class="small-text center-align">Payment past due date will receive 1.5% interest rate per month of received goods.</p>
+            <div class="grid row max center-align">
+                <div id="net-weight-layout" class="s6">
+                    <h6 class="center-align bold">Net Weight: {self.job.get_net_weight():,.2f} lb</h6>
+                </div>
+                <div id="total-cost-layout" class="s6">
+                    <h6 class="center-align bold">Total Cost: ${self.job.price_calculator.get_job_cost():,.2f}</h6>
+                    <p class="small-text no-margin center-align bold underline">No tax is included in this quote.</p>
+                    <p class="small-text no-margin center-align">Payment past due date will receive 1.5% interest rate per month of received goods.</p>
+                </div>
             </div>"""
 
         if grouped_laser_cut_parts:
@@ -899,7 +904,7 @@ class WorkorderPrintout:
                 </a>
                 <a class="surface-container">
                     <label class="checkbox">
-                        <input type="checkbox" id="usePageBreaks" data-name="use-page-breaks" data-layout="page-break" checked>
+                        <input type="checkbox" id="usePageBreaks" data-name="use-page-breaks" data-layout="page-break">
                         <span>Use Page Breaks</span>
                     </label>
                 </a>
