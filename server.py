@@ -589,7 +589,7 @@ def update_inventory_file_to_pinecone(file_name: str):
 
 
 class FileUploadHandler(tornado.web.RequestHandler):
-    async def post(self):
+    def post(self):
         file_info = self.request.files.get("file")
         should_signal_connect_clients = False
         if file_info:
