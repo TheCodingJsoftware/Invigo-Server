@@ -2,6 +2,11 @@
     cursor: pointer;
 }
 
+.logo{
+    width: 100px;
+    height: auto;
+}
+
 details {
     border: 1px solid lightgrey;
     border-radius: 10px;
