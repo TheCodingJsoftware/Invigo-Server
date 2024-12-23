@@ -11,8 +11,25 @@ function getWorkorderNameFromUrl() {
     const parts = url.split('/');
     return parts[parts.length - 1]; // Assuming the workorder name is the last part of the URL
 }
+function parsePythonStyleJson(pythonStyleJson) {
+    // Replace single quotes with double quotes for JSON compliance
+    let validJson = pythonStyleJson
+        .replace(/'/g, '"') // Convert single quotes to double quotes
+        .replace(/True/g, 'true') // Convert Python's True to JSON's true
+        .replace(/False/g, 'false') // Convert Python's False to JSON's false
+        .replace(/None/g, 'null'); // Convert Python's None to JSON's null
 
-async function markWorkorderAsDone(workorder_data) {
+    // Parse the corrected JSON string
+    try {
+        return JSON.parse(validJson);
+    } catch (error) {
+        console.error("Failed to parse JSON:", error);
+        return null;
+    }
+}
+
+async function markWorkorderAsDone(button) {
+    const workorder_data = parsePythonStyleJson(button.getAttribute('data-workorder'));
     const workorder_name = getWorkorderNameFromUrl();
     try {
         const response = await fetch(`/mark_workorder_done/${workorder_name}`, {
@@ -35,7 +52,8 @@ async function markWorkorderAsDone(workorder_data) {
     }
 }
 
-async function markNestAsDone(nest_data) {
+async function markNestAsDone(button) {
+    const nest_data = parsePythonStyleJson(button.getAttribute('data-nest'));
     const workorder_name = getWorkorderNameFromUrl();
     try {
         const response = await fetch(`/mark_nest_done/${workorder_name}`, {
@@ -71,7 +89,10 @@ function validateRecutQuantity() {
     }
 }
 
-function openRecutDialog(nest_data, laser_cut_part){
+function openRecutDialog(button){
+    const laser_cut_part = parsePythonStyleJson(button.getAttribute('data-part'));
+    const nest_data = parsePythonStyleJson(button.getAttribute('data-nest'));
+
     recut_laser_cut_part = laser_cut_part;
     recut_nest = nest_data;
 
@@ -160,6 +181,9 @@ window.addEventListener('load', function () {
             img.onerror = function () {
                 this.classList.add('hidden');
             };
+            if (img.src.includes('404.jpeg')) {
+                img.classList.add('hidden');
+            }
             if (!img.complete || img.naturalWidth === 0) {
                 img.onerror();
             }

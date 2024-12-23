@@ -20,7 +20,7 @@
             <h5 class="max">
                 Workorder
             </h5>
-            <a href="/workorder_printout/{{workorder_id}}">
+            <a class="transparent circle" href="/workorder_printout/{{workorder_id}}">
                 <i>print</i>
             </a>
         </nav>
@@ -28,7 +28,7 @@
     <main class="responsive">
         {% if workorder_data %}
             <div class="center-align padding">
-                <button class="small-round extra" onclick='markWorkorderAsDone({{workorder_data | tojson | safe }})'>
+                <button class="small-round extra" data-workorder='{{ workorder_data|safe }}' onclick='markWorkorderAsDone(this)'>
                     <i>done_all</i>
                     <span>Picked All Sheets</span>
                 </button>
@@ -44,7 +44,7 @@
                             {% endif %}
                         </h5>
                         <div class="right-align padding">
-                            <button class="small-round" onclick='markNestAsDone({{nest_data | tojson | safe }})'>
+                            <button class="small-round" data-nest='{{nest_data|safe}}' onclick='markNestAsDone(this)'>
                                 <i>check</i>
                                 {% if nest_data.sheet_count > 1 %}
                                     <span>{{nest_data.sheet_count}} Sheets Picked</span>
@@ -56,7 +56,7 @@
                         {% for laser_cut_part in nest_data.laser_cut_parts %}
                         <details>
                             <summary class="none no-padding">
-                                <a class="row wave padding surface-container">
+                                <a class="row ripple padding surface-container">
                                     <img class="workorder-image" class="round" src="/{{laser_cut_part.image_index}}">
                                     <div>
                                         <h6 class="small">{{laser_cut_part.name}}</h6>
@@ -73,7 +73,7 @@
                                         </div>
                                     </div>
                                     <label>
-                                        × {{(laser_cut_part.quantity_in_nest * nest_data.sheet_count) - laser_cut_part.recut_count}}
+                                        × {{(laser_cut_part.quantity) - laser_cut_part.recut_count}}
                                     </label>
                                 </a>
                             </summary>
@@ -81,8 +81,8 @@
                                 {% if laser_cut_part.recut %}
                                 <p>Recut count: {{laser_cut_part.recut_count}}</p>
                                 {% endif %}
-                                {% if (laser_cut_part.quantity_in_nest * nest_data.sheet_count) - laser_cut_part.recut_count > 0 %}
-                                <button class="small-round" onclick='openRecutDialog({{nest_data | tojson | safe }}, {{laser_cut_part | tojson | safe }})'>
+                                {% if (laser_cut_part.quantity) - laser_cut_part.recut_count > 0 %}
+                                <button class="small-round" data-nest='{{nest_data|safe}}' data-part='{{laser_cut_part | safe }}' onclick='openRecutDialog(this)'>
                                     <span class="small-text no-wrap no-padding">Recut</span>
                                 </button>
                                 {% endif %}
