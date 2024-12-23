@@ -1,3 +1,41 @@
+html,
+body,
+div,
+article,
+p,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+ul,
+li,
+span,
+a,
+button,
+input,
+textarea,
+select,
+details,
+details[open],
+summary,
+footer,
+header,
+nav {
+    transition: background-color 0.3s ease-in-out, color 0.1s ease;
+}
+
+::selection {
+    background-color: var(--primary);
+    color: var(--on-primary);
+}
+
+::-moz-selection {
+    background-color: var(--primary);
+    color: var(--on-primary);
+}
+
 .summary {
     cursor: pointer;
 }
@@ -103,7 +141,6 @@ details>summary {
     font-size: 16px
 }
 .workorder-qr-code{
-  margin: auto;
   border: .0625rem solid var(--outline);
   border-radius: .75rem;
   padding: 1rem;
@@ -150,7 +187,8 @@ article.nest {
     label .checkbox,
     input[type="checkbox"],
     #printout-controls,
-    details:not([open]) {
+    details:not([open]),
+    #theme-toggle {
         display: none !important;
     }
     body{
@@ -165,5 +203,7 @@ article.nest {
         page-break-after: always !important;
         break-after: always !important;
     }
-
+    img{
+        filter: invert(0) !important;
+    }
 }
