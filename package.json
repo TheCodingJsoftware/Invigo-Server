@@ -26,7 +26,8 @@
   "version": "1.0.0",
   "main": "webpack.config.js",
   "scripts": {
-    "run": "python server.py"
+    "run": "python server.py",
+    "build": "webpack --config webpack.config.js"
   },
   "repository": {
     "type": "git",

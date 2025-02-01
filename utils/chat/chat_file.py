@@ -10,7 +10,7 @@ class ChatFile:
         self.file_name: str = file_name
         self.chats: list[Chat] = []
         self.chat_data: dict[str, Chat] = {}
-        self.FOLDER_LOCATION: str = f"{os.getcwd()}/data"
+        self.FOLDER_LOCATION: str = os.path.join(os.getenv("DATA_PATH"), "data")
         self.__create_file()
         self.load_data()
 

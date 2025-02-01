@@ -1,0 +1,11 @@
+.venv
+.vscode
+.git
+__pycache__
+.mypy_cache
+data
+saved_quotes
+saved_jobs
+previous_quotes
+logs
+backups

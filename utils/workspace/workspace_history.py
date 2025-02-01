@@ -12,7 +12,8 @@ class WorkspaceHistory:
         self.jobs: list[Job] = []
 
         self.filename: str = f"workspace_{datetime.now().year}_history"
-        self.FOLDER_LOCATION: str = f"{os.getcwd()}/data"
+        self.FOLDER_LOCATION: str = os.path.join(os.getenv("DATA_PATH"), "data")
+
         self.job_manager = job_manager
 
         self.__create_file()

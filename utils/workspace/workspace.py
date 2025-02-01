@@ -21,7 +21,7 @@ class Workspace:
         self.jobs: list[Job] = []
 
         self.filename = filename
-        self.FOLDER_LOCATION = f"{os.getcwd()}/data"
+        self.FOLDER_LOCATION: str = os.path.join(os.getenv("DATA_PATH"), "data")
 
         self.workspace_settings = workspace_settings
         self.job_manager = job_manager

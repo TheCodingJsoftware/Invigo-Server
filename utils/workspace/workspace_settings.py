@@ -12,7 +12,7 @@ from utils.workspace.tag_status import TagStatus
 class WorkspaceSettings:
     def __init__(self):
         self.filename: str = "workspace_settings"
-        self.FOLDER_LOCATION: str = f"{os.getcwd()}/data"
+        self.FOLDER_LOCATION: str = os.path.join(os.getenv("DATA_PATH"), "data")
         self.notes: str = ""
         self.tags: list[Tag] = []
         self.flow_tags_group: list[Flowtags] = []

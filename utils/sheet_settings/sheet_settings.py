@@ -19,7 +19,7 @@ class SheetSettings:
         self.pounds_per_square_foot: PoundsPerSquareFoot = PoundsPerSquareFoot()
         self.price_per_pound: PricePerPound = PricePerPound()
         self.cost_for_laser: dict[str, float] = {}
-        self.FOLDER_LOCATION: str = f"{os.getcwd()}/data"
+        self.FOLDER_LOCATION: str = os.path.join(os.getenv("DATA_PATH"), "data")
         self.load_data()
 
     def get_materials(self) -> list[str]:

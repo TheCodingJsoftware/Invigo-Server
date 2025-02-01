@@ -2,14 +2,13 @@ import os
 from datetime import datetime
 
 import msgspec
-from PyQt6.QtGui import QFont
 
 
 class Settings:
     def __init__(self):
         self.data = {}
         self.file_name: str = "settings"
-        self.FOLDER_LOCATION: str = f"{os.getcwd()}/"
+        self.FOLDER_LOCATION: str = os.getenv("DATA_PATH")
         self.__create_file()
         self.load_data()
         self.default_settings()
@@ -67,14 +66,14 @@ class Settings:
             ["lynden", "jared", "laserpc", "laser pc", "justin", "jordan"],
         )
         self.data.setdefault("quote_nest_directories", [])
-        font = QFont("Segoe UI", 8, 400)
         self.data.setdefault(
             "tables_font",
             {
-                "family": font.family(),
-                "pointSize": font.pointSize(),
-                "weight": font.weight(),
-                "italic": font.italic(),
+                "family":"Segoe UI",
+                "pointSize":8,
+                "weight":400,
+                "italic":
+                False
             },
         )
         self.data.setdefault(

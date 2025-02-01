@@ -2,8 +2,6 @@ import contextlib
 import os
 import re
 
-from PyQt6.QtWidgets import QApplication
-
 
 UI_PATH = f"{os.getcwd()}/ui/"
 STYLE_PATH = os.path.join(UI_PATH, "style", "style.qss")
@@ -40,7 +38,7 @@ def theme_var(variable_name: str) -> str:
     return THEME_VARIABLES.get(variable_name, "red")
 
 
-def set_theme(app: QApplication, theme: str):
+def set_theme(app, theme: str):
     global THEME_VARIABLES
 
     with contextlib.suppress(TypeError):

@@ -1,7 +1,5 @@
 from enum import Enum
 
-from PyQt6.QtCore import QDate
-
 
 class SortingMethod(Enum):
     A_TO_Z = "A ➜ Z"
@@ -22,5 +20,5 @@ class WorkspaceFilter:
         self.thickness_filter: dict[str, bool] = {}
         self.paint_filter: dict[str, bool] = {}
         self.sorting_method: SortingMethod = ""
-        self.date_range: tuple[QDate, QDate] = ()
+        self.date_range = ()
         self.enable_date_range: bool = False
