@@ -31,6 +31,7 @@ from tabulate import tabulate
 from tornado.ioloop import IOLoop, PeriodicCallback
 
 from utils.custom_print import CustomPrint
+from utils.database.workspace_db import WorkspaceDB
 from utils.inventory.components_inventory import ComponentsInventory
 from utils.inventory.laser_cut_inventory import LaserCutInventory
 from utils.inventory.laser_cut_part import LaserCutPart
@@ -71,6 +72,8 @@ web_connected_clients: set[tornado.websocket.WebSocketHandler] = set()
 # Configure Jinja2 template environment
 loader = jinja2.FileSystemLoader("dist/html")
 env = jinja2.Environment(loader=loader)
+
+workspace_db = WorkspaceDB()
 
 
 class MainHandler(tornado.web.RequestHandler):
@@ -1099,6 +1102,63 @@ async def gather_job_directories_info(base_directory: str, specific_dirs: list[s
     )
     return directories
 
+
+async def initialize_workspace_db():
+    await workspace_db.connect()
+
+class WorkspaceAddJobHandler(tornado.web.RequestHandler):
+    async def post(self):
+        try:
+            data = msgspec.json.decode(self.request.body)
+
+            self.components_inventory = ComponentsInventory()
+            self.sheet_settings = SheetSettings()
+            self.workspace_settings = WorkspaceSettings()
+            self.paint_inventory = PaintInventory(self.components_inventory)
+            self.sheets_inventory = SheetsInventory(self.sheet_settings)
+            self.laser_cut_inventory = LaserCutInventory(
+                self.paint_inventory, self.workspace_settings
+            )
+            self.job_manager = JobManager(
+                self.sheet_settings,
+                self.sheets_inventory,
+                self.workspace_settings,
+                self.components_inventory,
+                self.laser_cut_inventory,
+                self.paint_inventory,
+                None,
+            )
+            job = Job(data, self.job_manager)
+
+            item_id = await workspace_db.add_job(job)
+
+            await workspace_db.close()
+            self.write({"status": "success", "id": item_id})
+        except Exception as e:
+            self.set_status(400)
+            self.write({"error": str(e)})
+
+
+class WorkspaceGetAllJobsHandler(tornado.web.RequestHandler):
+    async def get(self):
+        try:
+            job_data = await workspace_db.get_all_jobs()
+            print(job_data)
+            self.write({"success": True, "jobs": job_data})
+        except Exception as e:
+            self.set_status(400)
+            self.write({"error": str(e)})
+
+
+class WorkspaceGetJobHandler(tornado.web.RequestHandler):
+    async def get(self, job_id):
+        try:
+            job_id = int(job_id)
+            job_data = await workspace_db.get_job_by_id(job_id)
+            self.write(msgspec.json.encode(job_data))
+        except Exception as e:
+            self.set_status(400)
+            self.write({"error": str(e)})
 
 class GetJobsHandler(tornado.web.RequestHandler):
     async def get(self):
@@ -2453,6 +2513,10 @@ def make_app():
             # Email handlers
             (r"/send_error_report", SendErrorReportHandler),
             (r"/send_email", SendEmailHandler),
+            # Workspace Handlers
+            (r"/workspace_add_job", WorkspaceAddJobHandler),
+            (r"/workspace_get_all_jobs", WorkspaceGetAllJobsHandler),
+            (r"/workspace_get_job/(.*)", WorkspaceGetJobHandler),
             # Job handlers
             (r"/get_jobs", GetJobsHandler),
             (r"/upload_job", UploadJobHandler),
@@ -2512,6 +2576,8 @@ if __name__ == "__main__":
 
     thread = threading.Thread(target=schedule_thread)
     thread.start()
+
+    tornado.ioloop.IOLoop.current().run_sync(initialize_workspace_db)
 
     app = tornado.httpserver.HTTPServer(make_app())
     # executor = concurrent.futures.ThreadPoolExecutor(max_workers=10)
