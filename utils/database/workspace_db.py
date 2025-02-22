@@ -124,9 +124,9 @@ class WorkspaceDB:
             component_data = json.dumps(component.to_dict())  # Convert Component to JSON
             await self._insert_entry(assembly_id, 'component', component_data)
 
-        # for structural_steel_part in assembly.structural_steel_parts:
-        #     structural_steel_part_data = json.dumps(structural_steel_part.to_dict())  # Convert StructuralSteelPart to JSON
-        #     await self._insert_entry(assembly_id, 'structural_steel_part', structural_steel_part_data)
+        for structural_steel_part in assembly.structural_steel_components:
+            structural_steel_part_data = json.dumps(structural_steel_part.to_dict())  # Convert StructuralSteelPart to JSON
+            await self._insert_entry(assembly_id, 'structural_steel_part', structural_steel_part_data)
 
         # Recursively insert sub-assemblies
         for sub_assembly in assembly.get_sub_assemblies():

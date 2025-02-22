@@ -12,7 +12,7 @@ from utils.workspace.tag_status import TagStatus
 class WorkspaceSettings:
     def __init__(self):
         self.filename: str = "workspace_settings"
-        self.FOLDER_LOCATION: str = os.path.join(os.getenv("DATA_PATH"), "data")
+        self.FOLDER_LOCATION: str = f"{os.getcwd()}/data"
         self.notes: str = ""
         self.tags: list[Tag] = []
         self.flow_tags_group: list[Flowtags] = []
@@ -56,7 +56,7 @@ class WorkspaceSettings:
         return tag
 
     def create_flow_tag(self, flow_tags: Flowtags, name: str):
-        flow_tag = Flowtag(name, [], self)
+        flow_tag = Flowtag({"name": name}, self)
         self.add_flow_tag(flow_tags, flow_tag)
 
     def get_all_flow_tags(self) -> list[Flowtag]:
@@ -73,13 +73,25 @@ class WorkspaceSettings:
         return None
 
     def get_all_assembly_flow_tags(self) -> dict[str, Flowtag]:
-        return {flow_tag.get_flow_string(): flow_tag for flow_tag in self.get_all_flow_tags() if flow_tag.group == Group.ASSEMBLY}
+        return {
+            flow_tag.get_flow_string(): flow_tag
+            for flow_tag in self.get_all_flow_tags()
+            if flow_tag.group == Group.ASSEMBLY
+        }
 
     def get_all_laser_cut_part_flow_tags(self) -> dict[str, Flowtag]:
-        return {flow_tag.get_flow_string(): flow_tag for flow_tag in self.get_all_flow_tags() if flow_tag.group == Group.LASER_CUT_PART}
+        return {
+            flow_tag.get_flow_string(): flow_tag
+            for flow_tag in self.get_all_flow_tags()
+            if flow_tag.group == Group.LASER_CUT_PART
+        }
 
     def get_all_component_flow_tags(self) -> dict[str, Flowtag]:
-        return {flow_tag.get_flow_string(): flow_tag for flow_tag in self.get_all_flow_tags() if flow_tag.group == Group.COMPONENT}
+        return {
+            flow_tag.get_flow_string(): flow_tag
+            for flow_tag in self.get_all_flow_tags()
+            if flow_tag.group == Group.COMPONENT
+        }
 
     def add_flow_tag(self, flow_tags: Flowtags, flow_tag: Flowtag):
         flow_tags.add_flow_tag(flow_tag)
@@ -96,7 +108,9 @@ class WorkspaceSettings:
             self._reset_file()
 
     def _reset_file(self):
-        with open(f"{self.FOLDER_LOCATION}/{self.filename}.json", "w", encoding="utf-8") as file:
+        with open(
+            f"{self.FOLDER_LOCATION}/{self.filename}.json", "w", encoding="utf-8"
+        ) as file:
             file.write("{}")
 
     def load_data(self):
@@ -128,7 +142,7 @@ Tags such as, "Staging", "Editing", and "Planning" cannot be used as flow tags, 
             flow_tag_group = Flowtags(group)
             self.flow_tags_group.append(flow_tag_group)
             for flow_tag_data in flow_tags:
-                flow_tag = Flowtag(flow_tag_data["name"], flow_tag_data, self)
+                flow_tag = Flowtag(flow_tag_data, self)
                 flow_tag_group.group = flow_tag.group
                 flow_tag_group.add_flow_tag(flow_tag)
 

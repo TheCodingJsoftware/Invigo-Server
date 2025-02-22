@@ -15,8 +15,8 @@ if TYPE_CHECKING:
 
 
 class Flowtag:
-    def __init__(self, name: str, data: list[str], workspace_settings):
-        self.name = name
+    def __init__(self, data: dict[str, Union[str, list[str]]], workspace_settings):
+        self.name = ""
         self.tags: list[Tag] = []
         self.group: Group = Group.LASER_CUT_PART
         self.workspace_settings: WorkspaceSettings = workspace_settings
@@ -38,8 +38,12 @@ class Flowtag:
         self.name = data.get("name", "")
         self.group = Group(data.get("group", 0))
 
-        self.add_quantity_tag = self.workspace_settings.get_tag(data.get("add_quantity_tag"))
-        self.remove_quantity_tag = self.workspace_settings.get_tag(data.get("remove_quantity_tag"))
+        self.add_quantity_tag = self.workspace_settings.get_tag(
+            data.get("add_quantity_tag")
+        )
+        self.remove_quantity_tag = self.workspace_settings.get_tag(
+            data.get("remove_quantity_tag")
+        )
 
         self.tags.clear()
         tags = data.get("tags", [])
@@ -83,16 +87,24 @@ class Flowtag:
             return {
                 "name": self.name,
                 "group": self.group.value,
-                "add_quantity_tag": self.add_quantity_tag.name if self.add_quantity_tag else None,
-                "remove_quantity_tag": self.remove_quantity_tag.name if self.remove_quantity_tag else None,
+                "add_quantity_tag": self.add_quantity_tag.name
+                if self.add_quantity_tag
+                else None,
+                "remove_quantity_tag": self.remove_quantity_tag.name
+                if self.remove_quantity_tag
+                else None,
                 "tags": [tag.name for tag in self.tags],
             }
         except AttributeError:  # no flow tag
             return {
                 "name": "",
                 "group": self.group.value,
-                "add_quantity_tag": self.add_quantity_tag.name if self.add_quantity_tag else None,
-                "remove_quantity_tag": self.remove_quantity_tag.name if self.remove_quantity_tag else None,
+                "add_quantity_tag": self.add_quantity_tag.name
+                if self.add_quantity_tag
+                else None,
+                "remove_quantity_tag": self.remove_quantity_tag.name
+                if self.remove_quantity_tag
+                else None,
                 "tags": [],
             }
 

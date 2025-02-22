@@ -39,6 +39,7 @@ from utils.inventory.nest import Nest
 from utils.inventory.order import Order
 from utils.inventory.paint_inventory import PaintInventory
 from utils.inventory.sheets_inventory import SheetsInventory
+from utils.inventory.structural_steel_inventory import StructuralSteelInventory
 from utils.inventory_updater import (
     add_sheet,
     get_cutoff_sheets,
@@ -51,6 +52,7 @@ from utils.inventory_updater import (
 from utils.send_email import send, send_error_log
 from utils.sheet_report import generate_sheet_report
 from utils.sheet_settings.sheet_settings import SheetSettings
+from utils.structural_steel_settings.structural_steel_settings import StructuralSteelSettings
 from utils.workspace.generate_printout import WorkspaceJobPrintout
 from utils.workspace.job import Job, JobStatus
 from utils.workspace.job_manager import JobManager
@@ -1113,12 +1115,14 @@ class WorkspaceAddJobHandler(tornado.web.RequestHandler):
 
             self.components_inventory = ComponentsInventory()
             self.sheet_settings = SheetSettings()
+            self.structrual_steel_settings = StructuralSteelSettings()
             self.workspace_settings = WorkspaceSettings()
             self.paint_inventory = PaintInventory(self.components_inventory)
             self.sheets_inventory = SheetsInventory(self.sheet_settings)
             self.laser_cut_inventory = LaserCutInventory(
                 self.paint_inventory, self.workspace_settings
             )
+            self.structural_steel_inventory = StructuralSteelInventory(self.structrual_steel_settings, self.workspace_settings)
             self.job_manager = JobManager(
                 self.sheet_settings,
                 self.sheets_inventory,
@@ -1126,6 +1130,7 @@ class WorkspaceAddJobHandler(tornado.web.RequestHandler):
                 self.components_inventory,
                 self.laser_cut_inventory,
                 self.paint_inventory,
+                self.structural_steel_inventory,
                 None,
             )
             job = Job(data, self.job_manager)
@@ -1333,12 +1338,14 @@ class AddJobToProductionPlannerHandler(tornado.web.RequestHandler):
         try:
             self.components_inventory = ComponentsInventory()
             self.sheet_settings = SheetSettings()
+            self.structrual_steel_settings = StructuralSteelSettings()
             self.workspace_settings = WorkspaceSettings()
             self.paint_inventory = PaintInventory(self.components_inventory)
             self.sheets_inventory = SheetsInventory(self.sheet_settings)
             self.laser_cut_inventory = LaserCutInventory(
                 self.paint_inventory, self.workspace_settings
             )
+            self.structural_steel_inventory = StructuralSteelInventory(self.structrual_steel_settings, self.workspace_settings)
             self.job_manager = JobManager(
                 self.sheet_settings,
                 self.sheets_inventory,
@@ -1346,6 +1353,7 @@ class AddJobToProductionPlannerHandler(tornado.web.RequestHandler):
                 self.components_inventory,
                 self.laser_cut_inventory,
                 self.paint_inventory,
+                self.structural_steel_inventory,
                 None,
             )
             self.workspace = Workspace(self.workspace_settings, self.job_manager)
@@ -1486,12 +1494,14 @@ class ProductionPlannerJobPrintoutHandler(tornado.web.RequestHandler):
 
             self.components_inventory = ComponentsInventory()
             self.sheet_settings = SheetSettings()
+            self.structrual_steel_settings = StructuralSteelSettings()
             self.workspace_settings = WorkspaceSettings()
             self.paint_inventory = PaintInventory(self.components_inventory)
             self.sheets_inventory = SheetsInventory(self.sheet_settings)
             self.laser_cut_inventory = LaserCutInventory(
                 self.paint_inventory, self.workspace_settings
             )
+            self.structural_steel_inventory = StructuralSteelInventory(self.structrual_steel_settings, self.workspace_settings)
             self.job_manager = JobManager(
                 self.sheet_settings,
                 self.sheets_inventory,
@@ -1499,7 +1509,8 @@ class ProductionPlannerJobPrintoutHandler(tornado.web.RequestHandler):
                 self.components_inventory,
                 self.laser_cut_inventory,
                 self.paint_inventory,
-                self,
+                self.structural_steel_inventory,
+                None,
             )
 
             job = Job(data, self.job_manager)
@@ -1680,12 +1691,14 @@ class MarkWorkorderDoneHandler(tornado.web.RequestHandler):
 
                 self.components_inventory = ComponentsInventory()
                 self.sheet_settings = SheetSettings()
+                self.structrual_steel_settings = StructuralSteelSettings()
                 self.workspace_settings = WorkspaceSettings()
                 self.paint_inventory = PaintInventory(self.components_inventory)
                 self.sheets_inventory = SheetsInventory(self.sheet_settings)
                 self.laser_cut_inventory = LaserCutInventory(
                     self.paint_inventory, self.workspace_settings
                 )
+                self.structural_steel_inventory = StructuralSteelInventory(self.structrual_steel_settings, self.workspace_settings)
                 self.job_manager = JobManager(
                     self.sheet_settings,
                     self.sheets_inventory,
@@ -1693,7 +1706,8 @@ class MarkWorkorderDoneHandler(tornado.web.RequestHandler):
                     self.components_inventory,
                     self.laser_cut_inventory,
                     self.paint_inventory,
-                    self,
+                    self.structural_steel_inventory,
+                    None,
                 )
                 self.workspace = Workspace(self.workspace_settings, self.job_manager)
 
@@ -1730,12 +1744,14 @@ class MarkNestDoneHandler(tornado.web.RequestHandler):
 
                 self.components_inventory = ComponentsInventory()
                 self.sheet_settings = SheetSettings()
+                self.structrual_steel_settings = StructuralSteelSettings()
                 self.workspace_settings = WorkspaceSettings()
                 self.paint_inventory = PaintInventory(self.components_inventory)
                 self.sheets_inventory = SheetsInventory(self.sheet_settings)
                 self.laser_cut_inventory = LaserCutInventory(
                     self.paint_inventory, self.workspace_settings
                 )
+                self.structural_steel_inventory = StructuralSteelInventory(self.structrual_steel_settings, self.workspace_settings)
                 self.job_manager = JobManager(
                     self.sheet_settings,
                     self.sheets_inventory,
@@ -1743,7 +1759,8 @@ class MarkNestDoneHandler(tornado.web.RequestHandler):
                     self.components_inventory,
                     self.laser_cut_inventory,
                     self.paint_inventory,
-                    self,
+                    self.structural_steel_inventory,
+                    None,
                 )
                 self.workspace = Workspace(self.workspace_settings, self.job_manager)
 
@@ -1790,12 +1807,14 @@ class RecutPartHandler(tornado.web.RequestHandler):
 
                 self.components_inventory = ComponentsInventory()
                 self.sheet_settings = SheetSettings()
+                self.structrual_steel_settings = StructuralSteelSettings()
                 self.workspace_settings = WorkspaceSettings()
                 self.paint_inventory = PaintInventory(self.components_inventory)
                 self.sheets_inventory = SheetsInventory(self.sheet_settings)
                 self.laser_cut_inventory = LaserCutInventory(
                     self.paint_inventory, self.workspace_settings
                 )
+                self.structural_steel_inventory = StructuralSteelInventory(self.structrual_steel_settings, self.workspace_settings)
                 self.job_manager = JobManager(
                     self.sheet_settings,
                     self.sheets_inventory,
@@ -1803,7 +1822,8 @@ class RecutPartHandler(tornado.web.RequestHandler):
                     self.components_inventory,
                     self.laser_cut_inventory,
                     self.paint_inventory,
-                    self,
+                    self.structural_steel_inventory,
+                    None,
                 )
                 self.workspace = Workspace(self.workspace_settings, self.job_manager)
 
@@ -2308,10 +2328,12 @@ def check_production_plan_for_jobs() -> None:
     jobs_added = False
     components_inventory = ComponentsInventory()
     sheet_settings = SheetSettings()
+    structural_steel_settings = StructuralSteelSettings()
     workspace_settings = WorkspaceSettings()
     paint_inventory = PaintInventory(components_inventory)
     sheets_inventory = SheetsInventory(sheet_settings)
     laser_cut_inventory = LaserCutInventory(paint_inventory, workspace_settings)
+    structural_steel_inventory = StructuralSteelInventory(structural_steel_settings, workspace_settings)
     job_manager = JobManager(
         sheet_settings,
         sheets_inventory,
@@ -2319,6 +2341,7 @@ def check_production_plan_for_jobs() -> None:
         components_inventory,
         laser_cut_inventory,
         paint_inventory,
+        structural_steel_inventory,
         None,
     )
     workspace = Workspace(workspace_settings, job_manager)
@@ -2386,10 +2409,12 @@ def check_production_plan_for_jobs() -> None:
 def check_if_jobs_are_complete() -> None:
     components_inventory = ComponentsInventory()
     sheet_settings = SheetSettings()
+    structural_steel_settings = StructuralSteelSettings()
     workspace_settings = WorkspaceSettings()
     paint_inventory = PaintInventory(components_inventory)
     sheets_inventory = SheetsInventory(sheet_settings)
     laser_cut_inventory = LaserCutInventory(paint_inventory, workspace_settings)
+    structural_steel_inventory = StructuralSteelInventory(structural_steel_settings, workspace_settings)
     job_manager = JobManager(
         sheet_settings,
         sheets_inventory,
@@ -2397,6 +2422,7 @@ def check_if_jobs_are_complete() -> None:
         components_inventory,
         laser_cut_inventory,
         paint_inventory,
+        structural_steel_inventory,
         None,
     )
     workspace = Workspace(workspace_settings, job_manager)

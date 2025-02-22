@@ -1,19 +1,25 @@
-from typing import TYPE_CHECKING
-
 from utils.inventory.components_inventory import ComponentsInventory
 from utils.inventory.laser_cut_inventory import LaserCutInventory
 from utils.inventory.paint_inventory import PaintInventory
 from utils.inventory.sheets_inventory import SheetsInventory
+from utils.inventory.structural_steel_inventory import StructuralSteelInventory
 from utils.sheet_settings.sheet_settings import SheetSettings
 from utils.workspace.workspace_settings import WorkspaceSettings
 
-if TYPE_CHECKING:
-    from main import MainWindow
-
 
 class JobManager:
-    def __init__(self, sheet_settings: SheetSettings, sheets_inventory: SheetsInventory, workspace_settings: WorkspaceSettings, components_inventory: ComponentsInventory, laser_cut_inventory: LaserCutInventory, paint_inventory: PaintInventory, parent):
-        self.parent: MainWindow = parent
+    def __init__(
+        self,
+        sheet_settings: SheetSettings,
+        sheets_inventory: SheetsInventory,
+        workspace_settings: WorkspaceSettings,
+        components_inventory: ComponentsInventory,
+        laser_cut_inventory: LaserCutInventory,
+        paint_inventory: PaintInventory,
+        structural_steel_inventory: StructuralSteelInventory,
+        parent,
+    ):
+        self.parent = parent
 
         self.sheet_settings = sheet_settings
         self.sheets_inventory = sheets_inventory
@@ -21,6 +27,7 @@ class JobManager:
         self.components_inventory = components_inventory
         self.laser_cut_inventory = laser_cut_inventory
         self.paint_inventory = paint_inventory
+        self.structural_steel_inventory = structural_steel_inventory
 
     def sync_changes(self, tab_name: str):
         self.parent.sync_changes(tab_name)
