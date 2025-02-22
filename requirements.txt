@@ -11,7 +11,6 @@ colormap==1.1.0
 contourpy==1.2.1
 cryptography==43.0.3
 cycler==0.12.1
-dotenv-python==0.0.1
 filelock==3.15.4
 fonttools==4.53.1
 humanfriendly==10.0
