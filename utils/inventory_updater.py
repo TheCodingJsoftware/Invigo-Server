@@ -8,6 +8,9 @@ from utils.inventory.order import Order
 from utils.inventory.sheet import Sheet
 from utils.inventory.sheets_inventory import SheetsInventory
 from utils.sheet_settings import SheetSettings
+from dotenv import load_dotenv
+
+load_dotenv()
 
 sheet_settings = SheetSettings()
 sheets_inventory = SheetsInventory(sheet_settings)
