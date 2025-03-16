@@ -8,6 +8,18 @@ from utils.workspace.job import Job
 from utils.workspace.assembly import Assembly
 from utils.inventory.nest import Nest
 
+import functools
+
+def ensure_connection(func):
+    """Decorator to ensure the database connection is active before executing a query."""
+    @functools.wraps(func)
+    async def wrapper(self: "WorkspaceDB", *args, **kwargs):
+        if self.db_pool is None or self.db_pool._closed:
+            print("Reconnecting to database...")
+            await self.connect()
+        return await func(self, *args, **kwargs)
+    return wrapper
+
 
 class WorkspaceDB:
     def __init__(self):
@@ -16,17 +28,27 @@ class WorkspaceDB:
         load_dotenv()
 
     async def connect(self):
-        """Create an async connection pool."""
-        if self.db_pool is None:
-            self.db_pool = await asyncpg.create_pool(
-                user=os.getenv("POSTGRES_USER"),
-                password=os.getenv("POSTGRES_PASSWORD"),
-                database=os.getenv("POSTGRES_DB"),
-                host=os.getenv("POSTGRES_HOST"),
-                port=os.getenv("POSTGRES_PORT"),
-            )
-            await self._create_table_if_not_exists()
+        """Create an async connection pool with automatic reconnection."""
+        if self.db_pool is None or self.db_pool._closed:  # Check if the pool is closed
+            try:
+                self.db_pool = await asyncpg.create_pool(
+                    user=os.getenv("POSTGRES_USER"),
+                    password=os.getenv("POSTGRES_PASSWORD"),
+                    database=os.getenv("POSTGRES_DB"),
+                    host=os.getenv("POSTGRES_HOST"),
+                    port=os.getenv("POSTGRES_PORT"),
+                    min_size=1,
+                    max_size=5,
+                    timeout=60,
+                    command_timeout=60,
+                    max_inactive_connection_lifetime=60,
+                )
+                await self._create_table_if_not_exists()
+            except asyncpg.exceptions.PostgresError as e:
+                print(f"Database connection error: {e}")
+                self.db_pool = None
 
+    @ensure_connection
     async def _create_table_if_not_exists(self):
         """Creates the workspace table if it does not exist."""
         query = """
@@ -40,6 +62,7 @@ class WorkspaceDB:
         async with self.db_pool.acquire() as conn:
             await conn.execute(query)
 
+    @ensure_connection
     async def get_all_jobs(self):
         """Retrieve all jobs from the workspace."""
         query = "SELECT * FROM workspace WHERE type = 'job'"
@@ -47,6 +70,7 @@ class WorkspaceDB:
             rows = await conn.fetch(query)
         return [dict(row) for row in rows]
 
+    @ensure_connection
     async def get_job_by_id(self, job_id: int):
         """Retrieve a specific job and its related assemblies and parts."""
         async with self.db_pool.acquire() as conn:
@@ -64,6 +88,7 @@ class WorkspaceDB:
 
         return job_data
 
+    @ensure_connection
     async def get_children(self, conn, parent_id: int):
         """Recursively fetch all child assemblies and parts for a given parent."""
         child_query = "SELECT * FROM workspace WHERE parent_id = $1"
@@ -81,6 +106,7 @@ class WorkspaceDB:
 
         return children
 
+    @ensure_connection
     async def add_job(self, job: Job):
         """ Adds a Job and its related assemblies, sub-assemblies, and parts recursively. """
         job_data = json.dumps(job.to_dict()['job_data'])  # Convert Job object to JSON
@@ -94,6 +120,48 @@ class WorkspaceDB:
             await self._insert_nest(nest, job_id)
 
         return job_id  # Return the top-level job ID
+
+    @ensure_connection
+    async def delete_job(self, job_id: int):
+        """Delete a job and its related assemblies, sub-assemblies, and parts recursively."""
+        await self._delete_entry(job_id)
+
+    async def _delete_entry(self, entry_id: int):
+        query = """
+        DELETE FROM workspace
+        WHERE id = $1
+        RETURNING id
+        """
+        async with self.db_pool.acquire() as conn:
+            await conn.execute(query, entry_id)
+
+    @ensure_connection
+    async def get_entry_by_id(self, entry_id: int) -> dict:
+        """Retrieve a specific entry."""
+        async with self.db_pool.acquire() as conn:
+            entry_query = "SELECT * FROM workspace WHERE id = $1"
+            entry_row = await conn.fetchrow(entry_query, entry_id)
+            if not entry_row:
+                return None
+            entry_data = dict(entry_row)
+        return entry_data
+
+    async def update_entry(self, job_id: int, job_data: dict):
+        """Update a job and its related assemblies, sub-assemblies, and parts recursively."""
+        job_data = json.dumps(job_data)  # Convert Job object to JSON
+        await self._update_entry(job_id, job_data)  # Update the job first (root entry)
+
+    @ensure_connection
+    async def _update_entry(self, entry_id: int, data):
+        query = """
+        UPDATE workspace
+        SET data = $2
+        WHERE id = $1
+        RETURNING id
+        """
+        async with self.db_pool.acquire() as conn:
+            new_id = await conn.fetchval(query, entry_id, data)
+        return new_id
 
     async def _insert_entry(self, parent_id: int, entry_type: Literal['job', 'assembly', 'nest', 'laser_cut_part', 'component'], data):
         """Helper function to insert an entry into the workspace table."""
@@ -133,6 +201,6 @@ class WorkspaceDB:
             await self._insert_assembly_recursive(sub_assembly, assembly_id)
 
     async def close(self):
-        """Close the database connection pool."""
         if self.db_pool:
             await self.db_pool.close()
+            self.db_pool = None

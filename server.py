@@ -116,6 +116,42 @@ class WebSocketWebHandler(tornado.websocket.WebSocketHandler):
         )
 
 
+def get_client_name(ip: str) -> str:
+    file_path = os.path.join(os.getenv("DATA_PATH"), "users.json")
+    lock = FileLock(
+        f"{file_path}.lock", timeout=10
+    )  # Set a timeout for acquiring the lock
+    try:
+        with lock:
+            if os.path.exists(file_path):
+                with open(file_path, "r", encoding="utf-8") as file:
+                    data: dict[str, dict[str, Union[str, bool]]] = json.load(file)
+                    for client_name, client_data in data.items():
+                        if client_data["ip"] == ip:
+                            return client_name
+    except Exception as e:
+        print(e)
+        return None
+
+
+def is_client_trusted(ip: str) -> bool:
+    file_path = os.path.join(os.getenv("DATA_PATH"), "users.json")
+    lock = FileLock(
+        f"{file_path}.lock", timeout=10
+    )  # Set a timeout for acquiring the lock
+    try:
+        with lock:
+            if os.path.exists(file_path):
+                with open(file_path, "r", encoding="utf-8") as file:
+                    data: dict[str, dict[str, Union[str, bool]]] = json.load(file)
+                    for client_name, client_data in data.items():
+                        if client_data["ip"] == ip:
+                            return client_data["trusted"]
+    except Exception as e:
+        print(e)
+        return False
+
+
 class ConnectHandler(tornado.web.RequestHandler):
     def post(self):
         client_ip = str(self.request.remote_ip)
@@ -137,9 +173,9 @@ class ConnectHandler(tornado.web.RequestHandler):
 
                 # Update or set the client's information
                 data.setdefault(
-                    client_ip,
+                    client_name,
                     {
-                        "name": client_name,
+                        "ip": client_ip,
                         "trusted": False,
                         "latest_version": latest_version,
                         "latest_connection": datetime.now().strftime(
@@ -147,9 +183,9 @@ class ConnectHandler(tornado.web.RequestHandler):
                         ),
                     },
                 )
-                data[client_ip].update({"name": client_name})
-                data[client_ip].update({"latest_version": latest_version})
-                data[client_ip].update(
+                data[client_name].update({"ip": client_ip})
+                data[client_name].update({"latest_version": latest_version})
+                data[client_name].update(
                     {"latest_connection": datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
                 )
 
@@ -172,64 +208,21 @@ class ConnectHandler(tornado.web.RequestHandler):
 class GetClientNameHandler(tornado.web.RequestHandler):
     def get(self):
         client_ip = str(self.request.remote_ip)
-        file_path = os.path.join(os.getenv("DATA_PATH"), "users.json")
-        lock = FileLock(f"{file_path}.lock", timeout=10)
-
-        try:
-            with lock:
-                if os.path.exists(file_path):
-                    with open(file_path, "r", encoding="utf-8") as file:
-                        data: dict[str, dict[str, Union[str, bool]]] = json.load(file)
-                    client_name = data.get(client_ip, {}).get("name", "Unknown")
-                    self.write({"status": "success", "client_name": client_name})
-                else:
-                    self.set_status(404)
-                    self.write(
-                        {"status": "error", "message": "Trusted users file not found."}
-                    )
-        except FileNotFoundError:
+        client_name = get_client_name(client_ip)
+        if client_name:
+            self.set_status(200)
+            self.write({"status": "success", "client_name": client_name})
+        else:
             self.set_status(404)
-            self.write({"status": "error", "message": f'File "{file_path}" not found.'})
-        except Timeout:
-            self.set_status(503)
             self.write(
-                {
-                    "status": "error",
-                    "message": f"Could not acquire lock for {file_path}. Try again later.",
-                }
+                {"status": "error", "message": "Trusted users file not found."}
             )
 
 
 class IsClientTrustedHandler(tornado.web.RequestHandler):
     def get(self):
         client_ip = str(self.request.remote_ip)
-        file_path = os.path.join(os.getenv("DATA_PATH"), "users.json")
-        lock = FileLock(f"{file_path}.lock", timeout=10)
-
-        try:
-            with lock:
-                if os.path.exists(file_path):
-                    with open(file_path, "r", encoding="utf-8") as file:
-                        data: dict[str, dict[str, Union[str, bool]]] = json.load(file)
-                    is_trusted = data.get(client_ip, {}).get("trusted", False)
-                    self.write({"status": "success", "is_trusted": is_trusted})
-                else:
-                    self.set_status(404)
-                    self.write(
-                        {"status": "error", "message": "Trusted users file not found."}
-                    )
-
-        except FileNotFoundError:
-            self.set_status(404)
-            self.write({"status": "error", "message": f'File "{file_path}" not found.'})
-        except Timeout:
-            self.set_status(503)
-            self.write(
-                {
-                    "status": "error",
-                    "message": f"Could not acquire lock for {file_path}. Try again later.",
-                }
-            )
+        self.write({"status": "success", "is_trusted": is_client_trusted(client_ip)})
 
 
 class MaterialSymbolsRoundedFileHandler(tornado.web.RequestHandler):
@@ -337,7 +330,8 @@ class ServerLogsHandler(tornado.web.RequestHandler):
     def print_clients(self):
         users_path = os.path.join(os.getenv("DATA_PATH"), "users.json")
         with open(users_path, "r", encoding="utf-8") as f:
-            users: dict[str, dict[str, str]] = json.load(f)
+            user_data: dict[str, dict[str, str]] = json.load(f)
+        user_data_ips = [client_data["ip"] for client_data in user_data.values()]
 
         software_clients: list[str] = [
             client.request.remote_ip
@@ -348,14 +342,14 @@ class ServerLogsHandler(tornado.web.RequestHandler):
             for client in self.convert_set_to_list(web_connected_clients)
         ]
 
-        all_clients = list(set(list(users.keys()) + software_clients + web_clients))
+        all_clients = list(set(list(user_data_ips) + software_clients + web_clients))
 
         table_data = []
 
         for i, client in enumerate(all_clients, start=1):
-            client_name = users.get(client, {}).get("name", "Unknown")
-            client_version = users.get(client, {}).get("latest_version", "Unknown")
-            client_last_connected = users.get(client, {}).get(
+            client_name = get_client_name(client)
+            client_version = user_data.get(client_name, {}).get("latest_version", "Unknown")
+            client_last_connected = user_data.get(client_name, {}).get(
                 "latest_connection", "Unknown"
             )
 
@@ -389,9 +383,8 @@ class ServerLogsHandler(tornado.web.RequestHandler):
         with open("users.json", "r", encoding="utf-8") as f:
             users: dict[str, dict[str, str]] = json.load(f)
         logs = sys.stdout.getvalue()
-        for ip, details in users.items():
-            name = details.get("name", ip)
-            logs = logs.replace(ip, name)
+        for client_name, client_data in users.items():
+            logs = logs.replace(client_data['ip'], client_name)
         converter = Ansi2HTMLConverter()
         logs = converter.convert(self.print_clients()) + converter.convert(logs)
         logs = Markup(logs)  # Mark the logs as safe HTML
@@ -1134,11 +1127,29 @@ class WorkspaceAddJobHandler(tornado.web.RequestHandler):
                 None,
             )
             job = Job(data, self.job_manager)
+            job_id = await workspace_db.add_job(job)
+            CustomPrint.print(
+                f"INFO - {self.request.remote_ip} add job: {job.name} id: {job_id}",
+            )
 
-            item_id = await workspace_db.add_job(job)
+            signal_clients_for_changes(
+                # None, [f'workspace_get_job/{job_id}']
+                self.request.remote_ip, [f'workspace_get_job/{job_id}']
+            )
+            self.write({"status": "success", "id": job_id})
+        except Exception as e:
+            self.set_status(400)
+            self.write({"error": str(e)})
 
-            await workspace_db.close()
-            self.write({"status": "success", "id": item_id})
+
+class WorkspaceDeleteJobHandler(tornado.web.RequestHandler):
+    async def post(self, job_id):
+        try:
+            await workspace_db.delete_job(job_id)
+            CustomPrint.print(
+                f"INFO - {self.request.remote_ip} deleted job: {job_id}",
+            )
+            self.write({"status": "success", "message": f"Job {job_id} deleted successfully."})
         except Exception as e:
             self.set_status(400)
             self.write({"error": str(e)})
@@ -1148,7 +1159,9 @@ class WorkspaceGetAllJobsHandler(tornado.web.RequestHandler):
     async def get(self):
         try:
             job_data = await workspace_db.get_all_jobs()
-            print(job_data)
+            CustomPrint.print(
+                f"INFO - {self.request.remote_ip} get all jobs",
+            )
             self.write({"success": True, "jobs": job_data})
         except Exception as e:
             self.set_status(400)
@@ -1159,8 +1172,43 @@ class WorkspaceGetJobHandler(tornado.web.RequestHandler):
     async def get(self, job_id):
         try:
             job_id = int(job_id)
+            CustomPrint.print(
+                f"INFO - {self.request.remote_ip} get job: {job_id}",
+            )
             job_data = await workspace_db.get_job_by_id(job_id)
             self.write(msgspec.json.encode(job_data))
+        except Exception as e:
+            self.set_status(400)
+            self.write({"error": str(e)})
+
+class WorkspaceGetEntryHandler(tornado.web.RequestHandler):
+    async def get(self, entry_id):
+        try:
+            entry_id = int(entry_id)
+            CustomPrint.print(
+                f"INFO - {self.request.remote_ip} get entry: {entry_id}",
+            )
+            entry_data = await workspace_db.get_entry_by_id(entry_id)
+            self.write(msgspec.json.encode(entry_data))
+        except Exception as e:
+            self.set_status(400)
+            self.write({"error": str(e)})
+
+
+class WorkspaceUpdateEntryHandler(tornado.web.RequestHandler):
+    async def post(self, entry_id):
+        try:
+            entry_id = int(entry_id)
+            CustomPrint.print(
+                f"INFO - {self.request.remote_ip} updated entry: {entry_id}",
+            )
+            data = msgspec.json.decode(self.request.body)
+            await workspace_db.update_entry(entry_id, data)
+            signal_clients_for_changes(
+                None, [f'workspace_get_entry/{entry_id}']
+                # self.request.remote_ip, [f'workspace_get_entry/{entry_id}']
+            )
+            self.write({"status": "success", "message": "Entry updated successfully."})
         except Exception as e:
             self.set_status(400)
             self.write({"error": str(e)})
@@ -2541,8 +2589,11 @@ def make_app():
             (r"/send_email", SendEmailHandler),
             # Workspace Handlers
             (r"/workspace_add_job", WorkspaceAddJobHandler),
+            (r"/workspace_delete_job/(.*)", WorkspaceDeleteJobHandler),
             (r"/workspace_get_all_jobs", WorkspaceGetAllJobsHandler),
             (r"/workspace_get_job/(.*)", WorkspaceGetJobHandler),
+            (r"/workspace_get_entry/(.*)", WorkspaceGetEntryHandler),
+            (r"/workspace_update_entry/(.*)", WorkspaceUpdateEntryHandler),
             # Job handlers
             (r"/get_jobs", GetJobsHandler),
             (r"/upload_job", UploadJobHandler),
