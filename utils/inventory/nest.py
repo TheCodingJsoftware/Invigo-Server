@@ -1,5 +1,7 @@
 from typing import Union
 
+from natsort import natsorted
+
 from utils.inventory.laser_cut_inventory import LaserCutInventory
 from utils.inventory.laser_cut_part import LaserCutPart
 from utils.inventory.sheet import Sheet
@@ -13,7 +15,10 @@ class Nest:
         sheet_settings: SheetSettings,
         laser_cut_inventory: LaserCutInventory,
     ):
+        self.id: int = -1
         self.name: str = ""
+        self.cutting_method: str = "CO2"
+        self.notes: str = ""
         self.sheet_settings = sheet_settings
         self.laser_cut_inventory = laser_cut_inventory
         self.sheet_count: int = 0
@@ -42,16 +47,24 @@ class Nest:
         sheet_surface_area = self.sheet.length * self.sheet.width
         total_laser_cut_part_surface_area = 0.0
         for laser_cut_part in self.laser_cut_parts:
-            total_laser_cut_part_surface_area += laser_cut_part.surface_area
+            total_laser_cut_part_surface_area += (
+                laser_cut_part.surface_area * laser_cut_part.quantity
+            )
         try:
             return (1 - (total_laser_cut_part_surface_area / sheet_surface_area)) * 100
         except ZeroDivisionError:
             return 0.0
 
     def get_sheet_cost(self) -> float:
-        if price_per_pound := self.sheet_settings.get_price_per_pound(self.sheet.material):
-            if pounds_per_square_foot := self.sheet_settings.get_pounds_per_square_foot(self.sheet.material, self.sheet.thickness):
-                pounds_per_sheet = ((self.sheet.length * self.sheet.width) / 144) * pounds_per_square_foot
+        if price_per_pound := self.sheet_settings.get_price_per_pound(
+            self.sheet.material
+        ):
+            if pounds_per_square_foot := self.sheet_settings.get_pounds_per_square_foot(
+                self.sheet.material, self.sheet.thickness
+            ):
+                pounds_per_sheet = (
+                    (self.sheet.length * self.sheet.width) / 144
+                ) * pounds_per_square_foot
                 return price_per_pound * pounds_per_sheet
         return 0.0
 
@@ -64,8 +77,26 @@ class Nest:
     def get_name(self) -> str:
         return f"{self.sheet.thickness} {self.sheet.material} {self.get_sheet_dimension()} {self.name}"
 
+    def sort_laser_cut_parts(self):
+        self.laser_cut_parts = natsorted(
+            self.laser_cut_parts, key=lambda laser_cut_part: laser_cut_part.part_number
+        )
+
+    def get_nest_recut_part_summary(self) -> str:
+        summary = ""
+        for part in self.laser_cut_parts:
+            if part.recut:
+                if part.recut_count_notes == 1:
+                    summary += f"{part.name} has {part.recut_count_notes} recut\n"
+                else:
+                    summary += f"{part.name} has {part.recut_count_notes} recuts\n"
+        return summary
+
     def load_data(self, data: dict[str, float | int | str | dict[str, float | str]]):
+        self.id = data.get("id", -1)
         self.name = data.get("name", "")
+        self.cutting_method = data.get("cutting_method", "CO2")
+        self.notes = data.get("notes", "")
         self.sheet_count = data.get("sheet_count", 0)
         self.scrap_percentage = data.get("scrap_percentage", 0.0)
         self.sheet_cut_time = data.get("sheet_cut_time", 0.0)
@@ -73,9 +104,14 @@ class Nest:
         self.laser_cut_parts.clear()
         for laser_cut_part_data in data.get("laser_cut_parts", []):
             try:
-                laser_cut_part = LaserCutPart(laser_cut_part_data, self.laser_cut_inventory)
+                laser_cut_part = LaserCutPart(
+                    laser_cut_part_data, self.laser_cut_inventory
+                )
             except AttributeError:  # Old inventory format
-                laser_cut_part = LaserCutPart(data["laser_cut_parts"][laser_cut_part_data], self.laser_cut_inventory)
+                laser_cut_part = LaserCutPart(
+                    data["laser_cut_parts"][laser_cut_part_data],
+                    self.laser_cut_inventory,
+                )
                 laser_cut_part.name = laser_cut_part_data
             laser_cut_part.nest = self
             self.laser_cut_parts.append(laser_cut_part)
@@ -96,11 +132,16 @@ class Nest:
 
     def to_dict(self) -> dict[str, Union[float, int, str]]:
         return {
+            "id": self.id,
             "name": self.name,
+            "cutting_method": self.cutting_method,
             "sheet_count": self.sheet_count,
             "scrap_percentage": self.scrap_percentage,
             "sheet_cut_time": self.sheet_cut_time,
             "image_path": self.image_path,
-            "laser_cut_parts": [laser_cut_part.to_dict() for laser_cut_part in self.laser_cut_parts],
+            "notes": self.notes,
+            "laser_cut_parts": [
+                laser_cut_part.to_dict() for laser_cut_part in self.laser_cut_parts
+            ],
             "sheet": self.sheet.to_dict(),
         }

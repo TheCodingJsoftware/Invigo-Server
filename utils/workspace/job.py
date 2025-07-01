@@ -44,6 +44,7 @@ class JobColor(Enum):
 
 class Job:
     def __init__(self, data: dict, job_manager):
+        self.id = -1
         self.name: str = ""
         self.order_number: float = 0.0
         self.PO_number: float = 0.0
@@ -214,8 +215,12 @@ class Job:
     def get_grouped_components(self) -> list[Component]:
         return self.group_components()
 
-    def load_settings(self, data: dict[str, dict[str, object]]):
+    def get_workspace_name(self) -> str:
+        return f"{self.id}. {self.name} #{self.order_number}: {self.starting_date} - {self.ending_date}"
+
+    def load_settings(self, data):
         job_data = data.get("job_data", {})
+        self.id = job_data.get("id", -1)
         self.name = job_data.get("name", "")
         self.order_number = job_data.get("order_number", 0)
         self.PO_number = job_data.get("PO_number", 0)
@@ -230,6 +235,7 @@ class Job:
         self.price_calculator.load_settings(job_data.get("price_settings", {}))
 
     def update_inventory_items_data(self):
+        laser_cut_parts_to_update = []
         for laser_cut_part in self.get_all_laser_cut_parts():
             if (
                 inventory_laser_cut_part
@@ -237,6 +243,7 @@ class Job:
                     laser_cut_part.name
                 )
             ):
+                laser_cut_parts_to_update.append(inventory_laser_cut_part)
                 inventory_laser_cut_part.bending_files = laser_cut_part.bending_files
                 inventory_laser_cut_part.welding_files = laser_cut_part.welding_files
                 inventory_laser_cut_part.cnc_milling_files = (
@@ -263,14 +270,17 @@ class Job:
                     laser_cut_part.powder_transfer_efficiency
                 )
 
-        self.laser_cut_inventory.save()
+        self.laser_cut_inventory.save_laser_cut_parts(laser_cut_parts_to_update)
 
+        components_to_save = []
         for component in self.get_all_components():
             if inventory_component := self.components_inventory.get_component_by_name(
                 component.name
             ):
                 inventory_component.image_path = component.image_path
-        self.components_inventory.save()
+                components_to_save.append(inventory_component)
+        # self.components_inventory.save_local_copy()
+        self.components_inventory.save_components(components_to_save)
 
     def is_valid(self) -> tuple[bool, str]:
         for assembly in self.get_all_assemblies():
@@ -309,10 +319,11 @@ class Job:
             data.get("job_data", {}).get("flowtag_timeline", {})
         )
 
-    def to_dict(self) -> dict[str, dict[str, Union[list[dict[str, object]], object]]]:
+    def to_dict(self):
         self.unsaved_changes = False
         return {
             "job_data": {
+                "id": self.id,
                 "name": self.name,
                 "type": self.status.value,
                 "order_number": int(self.order_number),  # Just in case

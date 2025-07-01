@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta http-equiv="X-UA-Compatible" content="ie=edge">
+        <meta name="google" content="notranslate">
+        <link rel="icon" href="/static/icon.png">
+        <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=yes" />
+        <title>Inventory</title>
+    </head>
+
+    <body class="dark" onload="document.body.classList.add('loaded')">
+        <header class="fixed primary">
+            <nav>
+                <button class="circle transparent" onclick="window.location.href = '/'">
+                    <i>arrow_back</i>
+                </button>
+                <h5 class="max">
+                    Inventory
+                </h5>
+            </nav>
+        </header>
+        <main class="responsive">
+            <article class="border round">
+                <h4 class="center-align">Components Inventory</h4>
+                <nav class="center-align no-space wrap" id="components-inventory-container">
+                    {% for category in components_categories %}
+                    <button class="chip fill tiny-margin"
+                        onclick="window.location.href='/inventory/components_inventory/{{category | urlencode_path}}'">
+                        <span>{{category}}</span>
+                    </button>
+                    {% endfor %}
+                </nav>
+            </article>
+            <article class="border round">
+                <h4 class="center-align">Laser Cut Parts Inventory</h4>
+                <nav class="center-align no-space wrap" id="laser-cut-parts-inventory-container">
+                    {% for category in laser_cut_parts_categories %}
+                    <button class="chip fill tiny-margin"
+                        onclick="window.location.href='/inventory/laser_cut_parts_inventory/{{category | urlencode_path}}'">
+                        <span>{{category}}</span>
+                    </button>
+                    {% endfor %}
+                </nav>
+            </article>
+            <article class="border round">
+                <h4 class="center-align">Sheets Inventory</h4>
+                <nav class="center-align no-space wrap" id="sheets-inventory-container">
+                    {% for category in sheets_categories %}
+                    <button class="chip fill tiny-margin"
+                        onclick="window.location.href='/inventory/sheets_inventory/{{category | urlencode_path}}'">
+                        <span>{{category}}</span>
+                    </button>
+                    {% endfor %}
+                </nav>
+            </article>
+            <article class="border round">
+                <h4 class="center-align">Coatings Inventory</h4>
+                <nav class="center-align no-space wrap" id="coatings-inventory-container">
+                    {% for category in coatings_categories %}
+                    <button class="chip fill tiny-margin"
+                        onclick="window.location.href='/inventory/coatings_inventory/{{category | urlencode_path}}'">
+                        <span>{{category}}</span>
+                    </button>
+                    {% endfor %}
+                </nav>
+            </article>
+        </main>
+    </body>
+
+</html>

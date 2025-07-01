@@ -1,9 +1,9 @@
 import json
+import logging
 import smtplib
 from email.mime import multipart, text
 
-from utils.custom_print import CustomPrint
-
+from config.environments import Environment
 
 ERROR_LOG_RECEIVER = "jared@pinelandfarms.ca"
 
@@ -12,7 +12,9 @@ SMTP_PORT = 587
 
 
 def send(subject: str, body: str, recipients: list[str]):
-    with open("credentials.json", "r", encoding="utf-8") as credentialsFile:
+    with open(
+        f"{Environment.DATA_PATH}/credentials.json", "r", encoding="utf-8"
+    ) as credentialsFile:
         credentials = json.load(credentialsFile)
 
     USERNAME: str = credentials["username"]
@@ -32,18 +34,15 @@ def send(subject: str, body: str, recipients: list[str]):
     server.ehlo()
     server.login(USERNAME, PASSWORD)
     server.sendmail(USERNAME, recipients, msg.as_string())
-    CustomPrint.print(f'INFO - Email sent to "{recipients}"')
+    logging.info(f'Email sent to "{recipients}"')
 
 
 def send_error_log(body: str):
     if "User: Jared" in body:
-        CustomPrint.print(
-            "INFO - Email aborted because its development server.",
-
-        )
-
         return
-    with open("credentials.json", "r", encoding="utf-8") as credentialsFile:
+    with open(
+        f"{Environment.DATA_PATH}/credentials.json", "r", encoding="utf-8"
+    ) as credentialsFile:
         credentials = json.load(credentialsFile)
     USERNAME: str = credentials["username"]
     PASSWORD = credentials["password"]
@@ -62,4 +61,4 @@ def send_error_log(body: str):
     server.ehlo()
     server.login(USERNAME, PASSWORD)
     server.sendmail(USERNAME, ERROR_LOG_RECEIVER, msg.as_string())
-    CustomPrint.print(f"INFO - Email sent to {ERROR_LOG_RECEIVER}")
+    logging.info(f"Email sent to {ERROR_LOG_RECEIVER}")

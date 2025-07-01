@@ -32,6 +32,7 @@ class LaserCutPart(InventoryItem):
             self.laser_cut_inventory.workspace_settings
         )
 
+        self.id = -1
         self.quantity: int = 0
         self.red_quantity_limit: int = 10
         self.yellow_quantity_limit: int = 20
@@ -67,36 +68,36 @@ class LaserCutPart(InventoryItem):
         self.recoat_count: int = 0
 
         self.uses_primer: bool = False
-        self.primer_name: str = None
-        self.primer_item: Primer = None
+        self.primer_name: str = ""
+        self.primer_item: Primer | None = None
         self.primer_overspray: float = 66.67
         self.cost_for_primer: float = 0.0
 
         self.uses_paint: bool = False
-        self.paint_name: str = None
-        self.paint_item: Paint = None
+        self.paint_name: str = ""
+        self.paint_item: Paint | None = None
         self.paint_overspray: float = 66.67
         self.cost_for_paint: float = 0.0
 
         self.uses_powder: bool = False
-        self.powder_name: str = None
-        self.powder_item: Powder = None
+        self.powder_name: str = ""
+        self.powder_item: Powder | None = None
         self.powder_transfer_efficiency: float = 66.67
         self.cost_for_powder_coating: float = 0.0
 
-        self.flowtag: Flowtag = None
+        self.flowtag: Flowtag | None = None
         self.current_flow_tag_index: int = 0
         self.current_flow_tag_status_index: int = 0
         self.bending_files: list[str] = []
         self.welding_files: list[str] = []
         self.cnc_milling_files: list[str] = []
-        self.timer: FlowtagTimer = None
-        self.flowtag_data: FlowtagData = None
+        self.timer: FlowtagTimer | None = None
+        self.flowtag_data: FlowtagData | None = None
 
         # NOTE Only for Quote Generator and load_nest.py
         self.recut_count_notes: int = 0
-        self.nest: Nest = None
-        self.quantity_on_sheet: int = None
+        self.nest: Nest | None = None
+        self.quantity_on_sheet: int = 0
         self.matched_to_sheet_cost_price: float = 0.0
 
         self.load_data(data)
@@ -112,54 +113,65 @@ class LaserCutPart(InventoryItem):
         return 0
 
     def mark_as_recoat(self):
-        self.timer.stop(self.get_current_tag())
-        self.current_flow_tag_index = self.get_first_tag_index_with_similar_keyword(
-            ["powder", "coating", "liquid", "paint", "gloss", "prime"]
-        )
-        self.current_flow_tag_status_index = 0
-        self.recoat = True
-        self.recoat_count += 1
+        if current_tag := self.get_current_tag():
+            self.timer.stop(current_tag)
+            self.current_flow_tag_index = self.get_first_tag_index_with_similar_keyword(
+                ["powder", "coating", "liquid", "paint", "gloss", "prime"]
+            )
+            self.current_flow_tag_status_index = 0
+            self.recoat = True
+            self.recoat_count += 1
 
     def unmark_as_recoat(self):
         self.recoat = False
         self.move_to_next_process()
 
     def mark_as_recut(self):
-        self.timer.stop(self.get_current_tag())
-        self.current_flow_tag_index = 0
-        self.current_flow_tag_status_index = 0
-        self.recut = True
-        self.recut_count += 1
+        if current_tag := self.get_current_tag():
+            self.timer.stop(current_tag)
+            self.current_flow_tag_index = 0
+            self.current_flow_tag_status_index = 0
+            self.recut = True
+            self.recut_count += 1
 
     def unmark_as_recut(self):
         self.recut = False
         self.move_to_next_process()
 
     def move_to_next_process(self):
-        self.timer.stop(self.get_current_tag())
-        self.check_update_quantity_tags()
-        if not self.is_process_finished():
-            self.current_flow_tag_index += 1
-            self.current_flow_tag_status_index = 0
-            self.recut = False
-            self.recoat = False
-            self.timer.start(self.get_current_tag())
+        if current_tag := self.get_current_tag():
+            self.timer.stop(current_tag)
+            self.check_update_quantity_tags()
+            if not self.is_process_finished():
+                self.current_flow_tag_index += 1
+                self.current_flow_tag_status_index = 0
+                self.recut = False
+                self.recoat = False
+                self.timer.start(current_tag)
+
+    def get_files(self, file_type: str) -> list[str]:
+        all_files: set[str] = set()
+        files = getattr(self, file_type)
+        for file in files:
+            all_files.add(file)
+        return list(all_files)
 
     def check_update_quantity_tags(self):
-        if (
-            self.flowtag.add_quantity_tag
-            and self.get_current_tag().name == self.flowtag.add_quantity_tag.name
-        ):
-            self.laser_cut_inventory.add_or_update_laser_cut_part(
-                self, f"workspace tag: {self.get_current_tag().name}"
-            )
-        if (
-            self.flowtag.remove_quantity_tag
-            and self.get_current_tag().name == self.flowtag.remove_quantity_tag.name
-        ):
-            self.laser_cut_inventory.remove_laser_cut_part_quantity(
-                self, f"workspace tag: {self.get_current_tag().name}"
-            )
+        if current_tag := self.get_current_tag():
+            if (
+                self.flowtag.add_quantity_tag
+                and current_tag.name == self.flowtag.add_quantity_tag.name
+            ):
+                self.laser_cut_inventory.add_or_update_laser_cut_part(
+                    self, f"workspace tag: {current_tag.name}"
+                )
+            if (
+                self.flowtag.remove_quantity_tag
+                and current_tag.name == self.flowtag.remove_quantity_tag.name
+            ):
+                self.laser_cut_inventory.remove_laser_cut_part_quantity(
+                    self, f"workspace tag: {current_tag.name}"
+                )
 
     def get_current_tag(self) -> Optional[Tag]:
         try:
@@ -214,6 +226,7 @@ class LaserCutPart(InventoryItem):
         if isinstance(category, str):
             category = self.laser_cut_inventory.get_category(category)
         self.category_quantities[category] = quantity
+        return quantity
 
     def print_category_quantities(self) -> str:
         return "".join(
@@ -221,7 +234,8 @@ class LaserCutPart(InventoryItem):
             for i, category in enumerate(self.categories)
         )
 
-    def load_data(self, data: dict[str, Union[str, int, float, bool]]):
+    def load_data(self, data: dict):
+        self.id = data.get("id", -1)
         self.name = data.get("name", "")
         self.quantity = data.get(
             "quantity", 0
@@ -281,9 +295,7 @@ class LaserCutPart(InventoryItem):
         self.recoat = data.get("recoat", False)
         self.recoat_count = data.get("recoat_count", 0)
 
-        self.flowtag = Flowtag(
-            data.get("flow_tag", {}), self.workspace_settings
-        )
+        self.flowtag = Flowtag(data.get("flow_tag", {}), self.workspace_settings)
         self.current_flow_tag_index = data.get("current_flow_tag_index", 0)
         self.current_flow_tag_status_index = data.get(
             "current_flow_tag_status_index", 0
@@ -316,7 +328,7 @@ class LaserCutPart(InventoryItem):
             if category.name in categories:
                 self.categories.append(category)
 
-    def load_part_data(self, data: dict[str, Union[str, int, float, bool]]):
+    def load_part_data(self, data: dict):
         """Only updates part information from nest files."""
         self.machine_time = data.get("machine_time", 0.0)
         self.weight = data.get("weight", 0.0)
@@ -332,13 +344,14 @@ class LaserCutPart(InventoryItem):
         self.sheet_dim = data.get("sheet_dim", "")
         self.part_dim = data.get("part_dim", "")
         self.geofile_name = data.get("geofile_name", "")
-        self.quantity_on_sheet = data.get("quantity_on_sheet")
+        self.quantity_on_sheet = data.get("quantity_on_sheet", 0)
 
     def get_copy(self) -> "LaserCutPart":
         return copy.deepcopy(self)
 
-    def to_dict(self) -> dict[str, dict]:
+    def to_dict(self) -> dict:
         return {
+            "id": self.id,
             "name": self.name,
             "part_number": self.part_number,
             "gauge": self.gauge,

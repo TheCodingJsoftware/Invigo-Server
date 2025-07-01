@@ -1,0 +1,177 @@
+.hidden {
+    display: none !important;
+}
+
+body:not(.loaded) {
+    display: none;
+}
+
+.handle {
+    cursor: move;
+}
+
+@keyframes flash-border {
+  0%   { border-color: transparent; background-color: var(--surface-container-low);}
+  25%  { border-color: var(--primary); background-color: var(--surface-variant); }
+  50% { border-color: transparent;  background-color: var(--surface-container-low);}
+  75% { border-color: var(--primary); background-color: var(--surface-variant); }
+  100% { border-color: var(--outline-variant); background-color: var(--surface-container-low);}
+}
+
+.flash-border {
+  animation: flash-border 1s ease-in-out;
+}
+
+.assembly-image{
+    height: 100% !important;
+    width: auto;
+}
+
+.assembly-image-list{
+    /* width: 128px !important;
+    height: auto !important; */
+}
+.nest-image {
+    height: 100% !important;
+    width: auto;
+}
+
+.nest-image-list{
+    width: auto !important;
+    height: 150px !important;
+}
+
+.slot {
+    min-height: 60px;
+    border-radius: 32px;
+    margin: 3px;
+    padding: 3px;
+}
+
+.slot::after {
+    /* content: attr(data-swapy-slot); */
+    position: absolute;
+    top: 0;
+    right: 0;
+    font-size: 12pt;
+    color: var(--on-primary-container);
+}
+
+.slot[data-swapy-highlighted] {
+    background: var(--surface-variant);
+    border: 1px solid var(--primary) !important;
+    transition: background-color var(--speed3) ease-in-out,
+                border-color var(--speed1) ease;
+}
+
+/* .item[data-swapy-dragging] {
+    opacity: 0.6;
+} */
+[data-swapy-item] article:not(.hidden) {
+    margin: 3px;
+}
+
+[data-swapy-item] article.hidden {
+    margin: 0; /* or omit if default */
+}
+
+.rotate-0 {
+    transform: rotate(0deg);
+    transition: transform var(--speed3) ease;
+}
+
+.rotate-180 {
+    transform: rotate(180deg);
+    transition: transform var(--speed3) ease;
+}
+
+.page-break-item {
+    margin: auto;
+}
+
+.content-wrapper {
+    max-height: 0;
+    opacity: 0;
+    overflow: hidden;
+    transform: scaleY(0.98);
+    transition: max-height var(--speed3) ease, opacity var(--speed3) ease, transform var(--speed3) ease;
+    transform-origin: top;
+    pointer-events: none;
+    border-radius: 0 !important;
+}
+
+.content-wrapper.expanded {
+    opacity: 1;
+    transform: scaleY(1);
+    pointer-events: auto;
+}
+
+.logo {
+    width: 100px;
+    height: auto;
+}
+
+.page-break-inside {
+    page-break-inside: avoid !important;
+}
+
+.show-on-print {
+    display: none;
+}
+
+@media print {
+    .snackbar{
+        display: none !important;
+    }
+
+    .hide-on-print {
+        display: none !important;
+    }
+
+    .show-on-print {
+        display: block !important;
+    }
+
+    .slot::after {
+        display: none;
+    }
+
+    .slot {
+        border: none !important;
+        margin: 0;
+    }
+
+    .handle {
+        display: none;
+    }
+
+    body {
+        padding-inline-start: 0% !important;
+    }
+
+    .page-break {
+        page-break-after: always !important;
+        break-after: always !important;
+    }
+
+    img {
+        filter: invert(0) !important;
+    }
+
+    .slot {
+        border: none !important;
+        min-height: 0px !important;
+        margin: 0px !important;
+    }
+    [data-swapy-slot] > article.hidden {
+        background-color: red;
+    }
+    div#nested-sheets-parts-container > article{
+        border-color: transparent !important;
+        padding: 0px !important;
+    }
+    div#parts-layout-container > article{
+        border-color: transparent !important;
+        padding: 0px !important;
+    }
+}

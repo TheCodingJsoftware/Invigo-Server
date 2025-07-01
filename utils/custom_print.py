@@ -8,9 +8,15 @@ class CustomPrint:
     def print(*args, **kwargs):
         text = " ".join(str(arg) for arg in args)
         formatted_text = f"{Colors.BOLD}{str(datetime.now())} - {text}{Colors.ENDC}"
-        formatted_text = formatted_text.replace("INFO", f"{Colors.OKGREEN}INFO{Colors.BOLD}")  # Green
-        formatted_text = formatted_text.replace("ERROR", f"{Colors.ERROR}ERROR{Colors.BOLD}")  # Red
-        formatted_text = formatted_text.replace("WARN", f"{Colors.WARNING}WARN{Colors.BOLD}")  # Yellow
+        formatted_text = formatted_text.replace(
+            "INFO", f"{Colors.OKGREEN}INFO{Colors.BOLD}"
+        )  # Green
+        formatted_text = formatted_text.replace(
+            "ERROR", f"{Colors.ERROR}ERROR{Colors.BOLD}"
+        )  # Red
+        formatted_text = formatted_text.replace(
+            "WARN", f"{Colors.WARNING}WARN{Colors.BOLD}"
+        )  # Yellow
         print(formatted_text)
 
         CustomPrint.log_to_file(text)

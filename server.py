@@ -24,6 +24,7 @@ import tornado.ioloop
 import tornado.web
 import tornado.websocket
 from ansi2html import Ansi2HTMLConverter
+from dotenv import load_dotenv
 from filelock import FileLock, Timeout
 from markupsafe import Markup
 from natsort import natsorted
@@ -52,7 +53,9 @@ from utils.inventory_updater import (
 from utils.send_email import send, send_error_log
 from utils.sheet_report import generate_sheet_report
 from utils.sheet_settings.sheet_settings import SheetSettings
-from utils.structural_steel_settings.structural_steel_settings import StructuralSteelSettings
+from utils.structural_steel_settings.structural_steel_settings import (
+    StructuralSteelSettings,
+)
 from utils.workspace.generate_printout import WorkspaceJobPrintout
 from utils.workspace.job import Job, JobStatus
 from utils.workspace.job_manager import JobManager
@@ -62,8 +65,6 @@ from utils.workspace.workspace import Workspace
 from utils.workspace.workspace_history import WorkspaceHistory
 from utils.workspace.workspace_item_group import WorkspaceItemGroup
 from utils.workspace.workspace_settings import WorkspaceSettings
-
-from dotenv import load_dotenv
 
 load_dotenv()
 
@@ -92,13 +93,13 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
         connected_clients.add(self)
 
         CustomPrint.print(
-            f"INFO - Software connection established with: {self.request.remote_ip}",
+            f"Software connection established with: {self.request.remote_ip}",
         )
 
     def on_close(self):
         connected_clients.remove(self)
         CustomPrint.print(
-            f"INFO - Software connection ended with: {self.request.remote_ip}",
+            f"Software connection ended with: {self.request.remote_ip}",
         )
 
 
@@ -106,13 +107,13 @@ class WebSocketWebHandler(tornado.websocket.WebSocketHandler):
     def open(self):
         web_connected_clients.add(self)
         CustomPrint.print(
-            f"INFO - Web connection established with: {self.request.remote_ip}",
+            f"Web connection established with: {self.request.remote_ip}",
         )
 
     def on_close(self):
         web_connected_clients.remove(self)
         CustomPrint.print(
-            f"INFO - Web connection ended with: {self.request.remote_ip}",
+            f"Web connection ended with: {self.request.remote_ip}",
         )
 
 
@@ -214,9 +215,7 @@ class GetClientNameHandler(tornado.web.RequestHandler):
             self.write({"status": "success", "client_name": client_name})
         else:
             self.set_status(404)
-            self.write(
-                {"status": "error", "message": "Trusted users file not found."}
-            )
+            self.write({"status": "error", "message": "Trusted users file not found."})
 
 
 class IsClientTrustedHandler(tornado.web.RequestHandler):
@@ -348,7 +347,9 @@ class ServerLogsHandler(tornado.web.RequestHandler):
 
         for i, client in enumerate(all_clients, start=1):
             client_name = get_client_name(client)
-            client_version = user_data.get(client_name, {}).get("latest_version", "Unknown")
+            client_version = user_data.get(client_name, {}).get(
+                "latest_version", "Unknown"
+            )
             client_last_connected = user_data.get(client_name, {}).get(
                 "latest_connection", "Unknown"
             )
@@ -384,7 +385,7 @@ class ServerLogsHandler(tornado.web.RequestHandler):
             users: dict[str, dict[str, str]] = json.load(f)
         logs = sys.stdout.getvalue()
         for client_name, client_data in users.items():
-            logs = logs.replace(client_data['ip'], client_name)
+            logs = logs.replace(client_data["ip"], client_name)
         converter = Ansi2HTMLConverter()
         logs = converter.convert(self.print_clients()) + converter.convert(logs)
         logs = Markup(logs)  # Mark the logs as safe HTML
@@ -652,17 +653,17 @@ class FileReceiveHandler(tornado.web.RequestHandler):
                     )
                     self.write(data)
                 CustomPrint.print(
-                    f'INFO - {self.request.remote_ip} downloaded "{filename}"',
+                    f'{self.request.remote_ip} downloaded "{filename}"',
                 )
         except FileNotFoundError:
             CustomPrint.print(
-                f'ERROR - File "{filename}" not found.',
+                f'File "{filename}" not found.',
             )
             self.set_status(404)
             self.write(f'File "{filename}" not found.')
         except Timeout:
             CustomPrint.print(
-                f'WARN - {self.request.remote_ip} Could not acquire lock for "{filename}".',
+                f'{self.request.remote_ip} Could not acquire lock for "{filename}".',
             )
             self.set_status(503)
             self.write(f"Could not acquire lock for {filename}. Try again later.")
@@ -672,11 +673,11 @@ def update_inventory_file_to_pinecone(file_name: str):
     try:
         shutil.copy2(f"data\\{file_name}", f"Z:\\Invigo\\{file_name}")
         CustomPrint.print(
-            f'INFO - Uploaded "{file_name}" to Pinecone',
+            f'Uploaded "{file_name}" to Pinecone',
         )
     except Exception as e:
         CustomPrint.print(
-            f"ERROR - Upload to Pinecone error: {e}",
+            f"Upload to Pinecone error: {e}",
         )
 
 
@@ -702,7 +703,7 @@ class FileUploadHandler(tornado.web.RequestHandler):
                         should_signal_connect_clients = True
 
                     CustomPrint.print(
-                        f'INFO - {self.request.remote_ip} uploaded "{filename}"',
+                        f'{self.request.remote_ip} uploaded "{filename}"',
                     )
 
                     if should_signal_connect_clients:
@@ -712,7 +713,7 @@ class FileUploadHandler(tornado.web.RequestHandler):
                         signal_clients_for_changes(None, [filename], client_type="web")
                 except Timeout:
                     CustomPrint.print(
-                        f'WARN - {self.request.remote_ip} Could not acquire lock for "{filename}".',
+                        f'{self.request.remote_ip} Could not acquire lock for "{filename}".',
                     )
                     self.set_status(503)
                     self.write(
@@ -725,7 +726,7 @@ class FileUploadHandler(tornado.web.RequestHandler):
         else:
             self.write("No file received.")
             CustomPrint.print(
-                f"ERROR - No file received from {self.request.remote_ip}.",
+                f"No file received from {self.request.remote_ip}.",
             )
 
 
@@ -749,13 +750,13 @@ class ProductionPlannerFileUploadHandler(tornado.web.RequestHandler):
                     ).start()
             except Timeout:
                 CustomPrint.print(
-                    f'WARN - {self.request.remote_ip} Could not acquire lock for "{filename}".',
+                    f'{self.request.remote_ip} Could not acquire lock for "{filename}".',
                 )
                 self.write(f"Could not acquire lock for {filename}. Try again later.")
                 return
 
             CustomPrint.print(
-                f'INFO - Web {self.request.remote_ip} uploaded "{filename}"',
+                f'Web {self.request.remote_ip} uploaded "{filename}"',
             )
             signal_clients_for_changes(
                 self.request.remote_ip, [filename], client_type="web"
@@ -763,7 +764,7 @@ class ProductionPlannerFileUploadHandler(tornado.web.RequestHandler):
         else:
             self.write("No file received.")
             CustomPrint.print(
-                f"ERROR - No file received from  {self.request.remote_ip}.",
+                f"No file received from  {self.request.remote_ip}.",
             )
 
 
@@ -780,12 +781,12 @@ class WorkspaceFileUploader(tornado.web.RequestHandler):
             with open(os.path.join(file_path, file_name), "wb") as file:
                 file.write(file_data)
             CustomPrint.print(
-                f'INFO - {self.request.remote_ip} uploaded "{file_name}"',
+                f'{self.request.remote_ip} uploaded "{file_name}"',
             )
             self.write("File uploaded successfully.")
         else:
             self.write("No file received.")
-            CustomPrint.print("ERROR - No file received.")
+            CustomPrint.print("No file received.")
 
 
 class WorkspaceFileHandler(tornado.web.RequestHandler):
@@ -799,7 +800,7 @@ class WorkspaceFileHandler(tornado.web.RequestHandler):
             with open(filepath, "rb") as f:
                 self.write(f.read())
             CustomPrint.print(
-                f'INFO - Sent "{file_name}" to {self.request.remote_ip}',
+                f'Sent "{file_name}" to {self.request.remote_ip}',
             )
         else:
             self.set_status(404)
@@ -817,7 +818,7 @@ class ImageHandler(tornado.web.RequestHandler):
                     self.set_header("Content-Type", "image/jpeg")
                     self.write(f.read())
                 CustomPrint.print(
-                    f'INFO - Sent "{image_name}" to {self.request.remote_ip}',
+                    f'Sent "{image_name}" to {self.request.remote_ip}',
                 )
             else:
                 self.set_status(404)
@@ -829,7 +830,7 @@ class CommandHandler(tornado.web.RequestHandler):
     def post(self):
         command = self.get_argument("command")
         CustomPrint.print(
-            f'INFO - Command "{command}" from {self.request.remote_ip}',
+            f'Command "{command}" from {self.request.remote_ip}',
         )
         if command == "send_sheet_report":
             generate_sheet_report(connected_clients)
@@ -851,7 +852,7 @@ class SetOrderNumberHandler(tornado.web.RequestHandler):
                 file.write(msgspec.json.encode(json_file))
 
             CustomPrint.print(
-                f"INFO - {self.request.remote_ip} set order number to {order_number})",
+                f"{self.request.remote_ip} set order number to {order_number})",
             )
             self.write("Order number updated successfully.")
         except Exception as e:
@@ -879,7 +880,7 @@ class GetOrderNumberHandler(tornado.web.RequestHandler):
         next_order_number = max_order_number + 1
 
         CustomPrint.print(
-            f"INFO - Sent order number ({next_order_number}) to {self.request.remote_ip}",
+            f"Sent order number ({next_order_number}) to {self.request.remote_ip}",
         )
         self.write({"order_number": next_order_number})
 
@@ -951,7 +952,7 @@ class AddCutoffSheetHandler(tornado.web.RequestHandler):
             cutoff_sheets=get_cutoff_sheets(),
         )
         CustomPrint.print(
-            f"INFO - {self.request.remote_ip} visited /add_cutoff_sheet",
+            f"{self.request.remote_ip} visited /add_cutoff_sheet",
         )
         self.set_header("Cache-Control", "max-age=3600")
         self.set_header("Content-Type", "text/html")
@@ -973,7 +974,7 @@ class AddCutoffSheetHandler(tornado.web.RequestHandler):
         )
 
         CustomPrint.print(
-            f"INFO - {self.request.remote_ip} added cutoff sheet",
+            f"{self.request.remote_ip} added cutoff sheet",
         )
 
         self.redirect("/add_cutoff_sheet")
@@ -1019,9 +1020,7 @@ async def gather_quote_directories_info(base_directory: str, specific_dirs: list
                         dir_path = dir_path.replace(f"{base_directory}\\", "")
                         gathered_data[dir_path] = dir_info
                     except Exception as e:
-                        CustomPrint.print(
-                            f"ERROR - Error processing {dir_path}: {str(e)}"
-                        )
+                        CustomPrint.print(f"Error processing {dir_path}: {str(e)}")
         return gathered_data
 
     directories = await tornado.ioloop.IOLoop.current().run_in_executor(
@@ -1088,7 +1087,7 @@ async def gather_job_directories_info(base_directory: str, specific_dirs: list[s
                         gathered_data[dir_path] = dir_info
                     except Exception as e:
                         CustomPrint.print(
-                            f"ERROR - Gather Job Info - Error processing {dir_path}: {str(e)}"
+                            f"Gather Job Error processing {dir_path}: {str(e)}"
                         )
         return gathered_data
 
@@ -1100,6 +1099,7 @@ async def gather_job_directories_info(base_directory: str, specific_dirs: list[s
 
 async def initialize_workspace_db():
     await workspace_db.connect()
+
 
 class WorkspaceAddJobHandler(tornado.web.RequestHandler):
     async def post(self):
@@ -1115,7 +1115,9 @@ class WorkspaceAddJobHandler(tornado.web.RequestHandler):
             self.laser_cut_inventory = LaserCutInventory(
                 self.paint_inventory, self.workspace_settings
             )
-            self.structural_steel_inventory = StructuralSteelInventory(self.structrual_steel_settings, self.workspace_settings)
+            self.structural_steel_inventory = StructuralSteelInventory(
+                self.structrual_steel_settings, self.workspace_settings
+            )
             self.job_manager = JobManager(
                 self.sheet_settings,
                 self.sheets_inventory,
@@ -1129,13 +1131,15 @@ class WorkspaceAddJobHandler(tornado.web.RequestHandler):
             job = Job(data, self.job_manager)
             job_id = await workspace_db.add_job(job)
             CustomPrint.print(
-                f"INFO - {self.request.remote_ip} add job: {job.name} id: {job_id}",
+                f"{self.request.remote_ip} add job: {job.name} id: {job_id}",
             )
 
             signal_clients_for_changes(
-                # None, [f'workspace_get_job/{job_id}']
-                self.request.remote_ip, [f'workspace_get_job/{job_id}']
+                # None, [f'workspace/get_job/{job_id}']
+                self.request.remote_ip,
+                [f"workspace/get_job/{job_id}"],
             )
+            self.set_header("Content-Type", "application/json")
             self.write({"status": "success", "id": job_id})
         except Exception as e:
             self.set_status(400)
@@ -1147,9 +1151,12 @@ class WorkspaceDeleteJobHandler(tornado.web.RequestHandler):
         try:
             await workspace_db.delete_job(job_id)
             CustomPrint.print(
-                f"INFO - {self.request.remote_ip} deleted job: {job_id}",
+                f"{self.request.remote_ip} deleted job: {job_id}",
             )
-            self.write({"status": "success", "message": f"Job {job_id} deleted successfully."})
+            self.set_header("Content-Type", "application/json")
+            self.write(
+                {"status": "success", "message": f"Job {job_id} deleted successfully."}
+            )
         except Exception as e:
             self.set_status(400)
             self.write({"error": str(e)})
@@ -1160,8 +1167,9 @@ class WorkspaceGetAllJobsHandler(tornado.web.RequestHandler):
         try:
             job_data = await workspace_db.get_all_jobs()
             CustomPrint.print(
-                f"INFO - {self.request.remote_ip} get all jobs",
+                f"{self.request.remote_ip} get all jobs",
             )
+            self.set_header("Content-Type", "application/json")
             self.write({"success": True, "jobs": job_data})
         except Exception as e:
             self.set_status(400)
@@ -1173,22 +1181,55 @@ class WorkspaceGetJobHandler(tornado.web.RequestHandler):
         try:
             job_id = int(job_id)
             CustomPrint.print(
-                f"INFO - {self.request.remote_ip} get job: {job_id}",
+                f"{self.request.remote_ip} get job: {job_id}",
             )
             job_data = await workspace_db.get_job_by_id(job_id)
+            self.set_header("Content-Type", "application/json")
             self.write(msgspec.json.encode(job_data))
         except Exception as e:
             self.set_status(400)
             self.write({"error": str(e)})
+
 
 class WorkspaceGetEntryHandler(tornado.web.RequestHandler):
     async def get(self, entry_id):
         try:
             entry_id = int(entry_id)
             CustomPrint.print(
-                f"INFO - {self.request.remote_ip} get entry: {entry_id}",
+                f"{self.request.remote_ip} get entry: {entry_id}",
             )
             entry_data = await workspace_db.get_entry_by_id(entry_id)
+            self.set_header("Content-Type", "application/json")
+            self.write(msgspec.json.encode(entry_data))
+        except Exception as e:
+            self.set_status(400)
+            self.write({"error": str(e)})
+
+
+class WorkspaceGetRecutPartsFromJobHandler(tornado.web.RequestHandler):
+    async def get(self, job_id: int = None):
+        try:
+            if job_id:
+                job_id = int(job_id)
+            CustomPrint.print(
+                f"{self.request.remote_ip} get all recut parts for job: {job_id}",
+            )
+            entry_data = await workspace_db.get_all_recut_parts(job_id)
+            self.set_header("Content-Type", "application/json")
+            self.write(msgspec.json.encode(entry_data))
+        except Exception as e:
+            self.set_status(400)
+            self.write({"error": str(e)})
+
+
+class WorkspaceGetAllRecutPartsHandler(tornado.web.RequestHandler):
+    async def get(self):
+        try:
+            CustomPrint.print(
+                f"{self.request.remote_ip} get all recut parts from workspace.",
+            )
+            entry_data = await workspace_db.get_all_recut_parts()
+            self.set_header("Content-Type", "application/json")
             self.write(msgspec.json.encode(entry_data))
         except Exception as e:
             self.set_status(400)
@@ -1200,18 +1241,22 @@ class WorkspaceUpdateEntryHandler(tornado.web.RequestHandler):
         try:
             entry_id = int(entry_id)
             CustomPrint.print(
-                f"INFO - {self.request.remote_ip} updated entry: {entry_id}",
+                f"{self.request.remote_ip} updated entry: {entry_id}",
             )
             data = msgspec.json.decode(self.request.body)
             await workspace_db.update_entry(entry_id, data)
             signal_clients_for_changes(
-                None, [f'workspace_get_entry/{entry_id}']
-                # self.request.remote_ip, [f'workspace_get_entry/{entry_id}']
+                # ! Only used for testing purposes. Remove when done.
+                # None, [f'workspace/get_entry/{entry_id}']
+                self.request.remote_ip,
+                [f"workspace/get_entry/{entry_id}"],
             )
+            self.set_header("Content-Type", "application/json")
             self.write({"status": "success", "message": "Entry updated successfully."})
         except Exception as e:
             self.set_status(400)
             self.write({"error": str(e)})
+
 
 class GetJobsHandler(tornado.web.RequestHandler):
     async def get(self):
@@ -1225,6 +1270,7 @@ class GetJobsHandler(tornado.web.RequestHandler):
                 "template",
             ],
         )
+        self.set_header("Content-Type", "application/json")
         self.write(msgspec.json.encode(directories_info))
 
 
@@ -1258,7 +1304,7 @@ class LoadJobHandler(tornado.web.RequestHandler):
                 html_content = file.read()
 
             CustomPrint.print(
-                f"INFO - {self.request.remote_ip} loaded job: {folder_name}",
+                f"{self.request.remote_ip} loaded job: {folder_name}",
             )
 
             self.set_header("Cache-Control", "max-age=3600")
@@ -1273,16 +1319,16 @@ class SendErrorReportHandler(tornado.web.RequestHandler):
     def post(self):
         error_log = self.get_argument("error_log")
         CustomPrint.print(
-            f"INFO - {self.request.remote_ip} sent error_log",
+            f"{self.request.remote_ip} sent error_log",
         )
         if error_log is not None:
             log_file_name = (
-                f'Error Log - {datetime.now().strftime("%B %d %A %Y %I_%M_%S %p")}.log'
+                f"Error Log - {datetime.now().strftime('%B %d %A %Y %I_%M_%S %p')}.log"
             )
             error_log_url = f"http://invi.go/logs#{quote(log_file_name, safe='')}"
             html_error_log_url = f'<a href="{error_log_url}">Error Log</a>'
             with open(
-                f"{os.getenv("DATA_PATH")}/logs/{log_file_name}",
+                f"{os.getenv('DATA_PATH')}/logs/{log_file_name}",
                 "w",
                 encoding="utf-8",
             ) as error_file:
@@ -1306,7 +1352,7 @@ class SendEmailHandler(tornado.web.RequestHandler):
             send(title, message, email_list)
 
             CustomPrint.print(
-                f"INFO - {self.request.remote_ip} initiated send email: {title}",
+                f"{self.request.remote_ip} initiated send email: {title}",
             )
 
             self.write("Email sent successfully.")
@@ -1341,7 +1387,7 @@ class UploadJobHandler(tornado.web.RequestHandler):
             )
 
             CustomPrint.print(
-                f"INFO - {self.request.remote_ip} uploaded job: {folder}",
+                f"{self.request.remote_ip} uploaded job: {folder}",
             )
 
             self.write(
@@ -1373,7 +1419,7 @@ class DownloadJobHandler(tornado.web.RequestHandler):
                     else:
                         break
             CustomPrint.print(
-                f"INFO - {self.request.remote_ip} downloaded job: {folder_name}",
+                f"{self.request.remote_ip} downloaded job: {folder_name}",
             )
             self.finish()
         else:
@@ -1393,7 +1439,9 @@ class AddJobToProductionPlannerHandler(tornado.web.RequestHandler):
             self.laser_cut_inventory = LaserCutInventory(
                 self.paint_inventory, self.workspace_settings
             )
-            self.structural_steel_inventory = StructuralSteelInventory(self.structrual_steel_settings, self.workspace_settings)
+            self.structural_steel_inventory = StructuralSteelInventory(
+                self.structrual_steel_settings, self.workspace_settings
+            )
             self.job_manager = JobManager(
                 self.sheet_settings,
                 self.sheets_inventory,
@@ -1467,7 +1515,7 @@ class UpdateJobSettingsHandler(tornado.web.RequestHandler):
                 )
 
                 CustomPrint.print(
-                    f"INFO - {self.request.remote_ip} changed job setting '{key_to_change}' to '{new_value}': {folder}",
+                    f"{self.request.remote_ip} changed job setting '{key_to_change}' to '{new_value}': {folder}",
                 )
 
                 self.write(
@@ -1489,7 +1537,7 @@ class DeleteJobHandler(tornado.web.RequestHandler):
         folder_name = os.path.join(os.getenv("DATA_PATH"), folder_name)
 
         CustomPrint.print(
-            f"INFO - Deleting - {folder_name}",
+            f"Deleting - {folder_name}",
         )
 
         folder_name = folder_name.replace("\\", "/")
@@ -1520,7 +1568,7 @@ class DeleteJobHandler(tornado.web.RequestHandler):
         )
 
         CustomPrint.print(
-            f"INFO - {self.request.remote_ip} deleted job: {folder_name}",
+            f"{self.request.remote_ip} deleted job: {folder_name}",
         )
 
         self.write({"status": "success", "message": "Quote deleted successfully."})
@@ -1549,7 +1597,9 @@ class ProductionPlannerJobPrintoutHandler(tornado.web.RequestHandler):
             self.laser_cut_inventory = LaserCutInventory(
                 self.paint_inventory, self.workspace_settings
             )
-            self.structural_steel_inventory = StructuralSteelInventory(self.structrual_steel_settings, self.workspace_settings)
+            self.structural_steel_inventory = StructuralSteelInventory(
+                self.structrual_steel_settings, self.workspace_settings
+            )
             self.job_manager = JobManager(
                 self.sheet_settings,
                 self.sheets_inventory,
@@ -1620,7 +1670,7 @@ class UploadWorkorderHandler(tornado.web.RequestHandler):
                 f.write(html_file_contents)
 
             CustomPrint.print(
-                f"INFO - {self.request.remote_ip} uploaded workorder: {folder}",
+                f"{self.request.remote_ip} uploaded workorder: {folder}",
             )
 
             self.write(
@@ -1645,7 +1695,7 @@ class LoadWorkorderPrintoutHandler(tornado.web.RequestHandler):
                 html_content = file.read()
 
             CustomPrint.print(
-                f"INFO - {self.request.remote_ip} loaded workorder printout: {folder_name}",
+                f"{self.request.remote_ip} loaded workorder printout: {folder_name}",
             )
 
             self.set_header("Cache-Control", "max-age=3600")
@@ -1667,7 +1717,7 @@ class WorkorderHandler(tornado.web.RequestHandler):
                 data = msgspec.json.decode(file.read())
 
             CustomPrint.print(
-                f"INFO - {self.request.remote_ip} loaded workorder: {folder_name}",
+                f"{self.request.remote_ip} loaded workorder: {folder_name}",
             )
 
             template = env.get_template("workorder.html")
@@ -1746,7 +1796,9 @@ class MarkWorkorderDoneHandler(tornado.web.RequestHandler):
                 self.laser_cut_inventory = LaserCutInventory(
                     self.paint_inventory, self.workspace_settings
                 )
-                self.structural_steel_inventory = StructuralSteelInventory(self.structrual_steel_settings, self.workspace_settings)
+                self.structural_steel_inventory = StructuralSteelInventory(
+                    self.structrual_steel_settings, self.workspace_settings
+                )
                 self.job_manager = JobManager(
                     self.sheet_settings,
                     self.sheets_inventory,
@@ -1799,7 +1851,9 @@ class MarkNestDoneHandler(tornado.web.RequestHandler):
                 self.laser_cut_inventory = LaserCutInventory(
                     self.paint_inventory, self.workspace_settings
                 )
-                self.structural_steel_inventory = StructuralSteelInventory(self.structrual_steel_settings, self.workspace_settings)
+                self.structural_steel_inventory = StructuralSteelInventory(
+                    self.structrual_steel_settings, self.workspace_settings
+                )
                 self.job_manager = JobManager(
                     self.sheet_settings,
                     self.sheets_inventory,
@@ -1862,7 +1916,9 @@ class RecutPartHandler(tornado.web.RequestHandler):
                 self.laser_cut_inventory = LaserCutInventory(
                     self.paint_inventory, self.workspace_settings
                 )
-                self.structural_steel_inventory = StructuralSteelInventory(self.structrual_steel_settings, self.workspace_settings)
+                self.structural_steel_inventory = StructuralSteelInventory(
+                    self.structrual_steel_settings, self.workspace_settings
+                )
                 self.job_manager = JobManager(
                     self.sheet_settings,
                     self.sheets_inventory,
@@ -1982,7 +2038,7 @@ class UploadQuoteHandler(tornado.web.RequestHandler):
             )
 
             CustomPrint.print(
-                f"INFO - {self.request.remote_ip} uploaded quote: {folder}",
+                f"{self.request.remote_ip} uploaded quote: {folder}",
             )
 
             self.write(
@@ -2014,7 +2070,7 @@ class DownloadQuoteHandler(tornado.web.RequestHandler):
                     else:
                         break
             CustomPrint.print(
-                f"INFO - {self.request.remote_ip} downloaded quote: {folder_name}",
+                f"{self.request.remote_ip} downloaded quote: {folder_name}",
             )
             self.finish()
         else:
@@ -2031,7 +2087,7 @@ class LoadQuoteHandler(tornado.web.RequestHandler):
                 html_content = file.read()
 
             CustomPrint.print(
-                f"INFO - {self.request.remote_ip} loaded quote: {folder_name}",
+                f"{self.request.remote_ip} loaded quote: {folder_name}",
             )
 
             self.write(html_content)
@@ -2043,7 +2099,7 @@ class LoadQuoteHandler(tornado.web.RequestHandler):
 class DeleteQuoteHandler(tornado.web.RequestHandler):
     def post(self, folder_name):
         CustomPrint.print(
-            f"INFO - Deleting - {folder_name}",
+            f"Deleting - {folder_name}",
         )
 
         json_file_path = os.path.join(folder_name, "data.json")
@@ -2073,7 +2129,7 @@ class DeleteQuoteHandler(tornado.web.RequestHandler):
         )
 
         CustomPrint.print(
-            f"INFO - {self.request.remote_ip} deleted quote: {folder_name}",
+            f"{self.request.remote_ip} deleted quote: {folder_name}",
         )
 
         self.write({"status": "success", "message": "Quote deleted successfully."})
@@ -2112,7 +2168,7 @@ class UpdateQuoteSettingsHandler(tornado.web.RequestHandler):
         )
 
         CustomPrint.print(
-            f"INFO - {self.request.remote_ip} changed quote setting '{key_to_change}' to '{new_value}': {folder}",
+            f"{self.request.remote_ip} changed quote setting '{key_to_change}' to '{new_value}': {folder}",
         )
 
         self.write(
@@ -2157,7 +2213,7 @@ class InventoryHandler(tornado.web.RequestHandler):
         for category in categories:
             data["Components Inventory"].update(
                 {
-                    category.name: f'/inventory/components_inventory/{quote(category.name, safe="")}'
+                    category.name: f"/inventory/components_inventory/{quote(category.name, safe='')}"
                 }
             )
 
@@ -2168,7 +2224,7 @@ class InventoryHandler(tornado.web.RequestHandler):
         for category in categories:
             data["Laser Cut Inventory"].update(
                 {
-                    category.name: f'/inventory/laser_cut_inventory/{quote(category.name, safe="")}'
+                    category.name: f"/inventory/laser_cut_inventory/{quote(category.name, safe='')}"
                 }
             )
 
@@ -2179,7 +2235,7 @@ class InventoryHandler(tornado.web.RequestHandler):
         for category in categories:
             data["Paint Inventory"].update(
                 {
-                    category.name: f'/inventory/paint_inventory/{quote(category.name, safe="")}'
+                    category.name: f"/inventory/paint_inventory/{quote(category.name, safe='')}"
                 }
             )
 
@@ -2190,7 +2246,7 @@ class InventoryHandler(tornado.web.RequestHandler):
         for category in categories:
             data["Sheets Inventory"].update(
                 {
-                    category.name: f'/inventory/sheets_inventory/{quote(category.name, safe="")}'
+                    category.name: f"/inventory/sheets_inventory/{quote(category.name, safe='')}"
                 }
             )
 
@@ -2307,14 +2363,14 @@ def signal_clients_for_changes(
     clients = connected_clients if client_type == "software" else web_connected_clients
 
     CustomPrint.print(
-        f"INFO - Signaling {len(clients)} {client_type} clients",
+        f"Signaling {len(clients)} {client_type} clients",
     )
 
     def send_message(client: tornado.websocket.WebSocketHandler, message):
         if client.ws_connection and client.ws_connection.stream.socket:
             client.write_message(message)
             CustomPrint.print(
-                f"INFO - Signaling {client.request.remote_ip} to download {changed_files}",
+                f"Signaling {client.request.remote_ip} to download {changed_files}",
             )
 
     message = msgspec.json.encode({"action": "download", "files": changed_files})
@@ -2322,7 +2378,7 @@ def signal_clients_for_changes(
     for client in clients:
         if client.request.remote_ip == client_to_ignore:
             CustomPrint.print(
-                f"INFO - Ignoring {client.request.remote_ip} since it sent {changed_files}",
+                f"Ignoring {client.request.remote_ip} since it sent {changed_files}",
             )
             continue
 
@@ -2338,31 +2394,31 @@ def signal_clients_for_changes(
 
 
 def hourly_backup_inventory_files() -> None:
-    files_to_backup = os.listdir(f"{os.getenv("DATA_PATH")}/data")
-    path_to_zip_file: str = f"{os.getenv("DATA_PATH")}/backups/Hourly Backup - {datetime.now().strftime('%I %p')}.zip"
+    files_to_backup = os.listdir(f"{os.getenv('DATA_PATH')}/data")
+    path_to_zip_file: str = f"{os.getenv('DATA_PATH')}/backups/Hourly Backup - {datetime.now().strftime('%I %p')}.zip"
     zip_files(path_to_zip_file, files_to_backup)
-    CustomPrint.print("INFO - Hourly backup complete")
+    CustomPrint.print("Hourly backup complete")
 
 
 def daily_backup_inventory_files() -> None:
-    files_to_backup = os.listdir(f"{os.getenv("DATA_PATH")}/data")
-    path_to_zip_file: str = f"{os.getenv("DATA_PATH")}/backups/Daily Backup - {datetime.now().strftime('%d %B')}.zip"
+    files_to_backup = os.listdir(f"{os.getenv('DATA_PATH')}/data")
+    path_to_zip_file: str = f"{os.getenv('DATA_PATH')}/backups/Daily Backup - {datetime.now().strftime('%d %B')}.zip"
     zip_files(path_to_zip_file, files_to_backup)
-    CustomPrint.print("INFO - Daily backup complete")
+    CustomPrint.print("Daily backup complete")
 
 
 def weekly_backup_inventory_files() -> None:
-    files_to_backup = os.listdir(f"{os.getenv("DATA_PATH")}/data")
-    path_to_zip_file: str = f"{os.getenv("DATA_PATH")}/backups/Weekly Backup - {datetime.now().strftime('%W')}.zip"
+    files_to_backup = os.listdir(f"{os.getenv('DATA_PATH')}/data")
+    path_to_zip_file: str = f"{os.getenv('DATA_PATH')}/backups/Weekly Backup - {datetime.now().strftime('%W')}.zip"
     zip_files(path_to_zip_file, files_to_backup)
-    CustomPrint.print("INFO - Weekly backup complete")
+    CustomPrint.print("Weekly backup complete")
 
 
 def zip_files(path_to_zip_file: str, files_to_backup: list[str]) -> None:
     file = zipfile.ZipFile(path_to_zip_file, mode="w")
     for file_path in files_to_backup:
         file.write(
-            f"{os.getenv("DATA_PATH")}/data/{file_path}",
+            f"{os.getenv('DATA_PATH')}/data/{file_path}",
             file_path,
             compress_type=zipfile.ZIP_DEFLATED,
         )
@@ -2371,7 +2427,7 @@ def zip_files(path_to_zip_file: str, files_to_backup: list[str]) -> None:
 
 def check_production_plan_for_jobs() -> None:
     CustomPrint.print(
-        "INFO - Checking for jobs to be moved from production plan to workspace",
+        "Checking for jobs to be moved from production plan to workspace",
     )
     jobs_added = False
     components_inventory = ComponentsInventory()
@@ -2381,7 +2437,9 @@ def check_production_plan_for_jobs() -> None:
     paint_inventory = PaintInventory(components_inventory)
     sheets_inventory = SheetsInventory(sheet_settings)
     laser_cut_inventory = LaserCutInventory(paint_inventory, workspace_settings)
-    structural_steel_inventory = StructuralSteelInventory(structural_steel_settings, workspace_settings)
+    structural_steel_inventory = StructuralSteelInventory(
+        structural_steel_settings, workspace_settings
+    )
     job_manager = JobManager(
         sheet_settings,
         sheets_inventory,
@@ -2422,7 +2480,7 @@ def check_production_plan_for_jobs() -> None:
                 laser_cut_part.timer.start_timer()
 
             CustomPrint.print(
-                f"INFO - Job, '{job.name}' added to workspace from production plan and started timers.",
+                f"Job, '{job.name}' added to workspace from production plan and started timers.",
             )
 
     if jobs_added:
@@ -2430,7 +2488,7 @@ def check_production_plan_for_jobs() -> None:
         workspace.save()
         production_plan.save()
         CustomPrint.print(
-            "INFO - Workspace and production plan updated, signaling clients to update files.",
+            "Workspace and production plan updated, signaling clients to update files.",
         )
         signal_clients_for_changes(
             client_to_ignore=None,
@@ -2450,7 +2508,7 @@ def check_production_plan_for_jobs() -> None:
         )
     else:
         CustomPrint.print(
-            "INFO - No jobs were added to workspace from production plan.",
+            "No jobs were added to workspace from production plan.",
         )
 
 
@@ -2462,7 +2520,9 @@ def check_if_jobs_are_complete() -> None:
     paint_inventory = PaintInventory(components_inventory)
     sheets_inventory = SheetsInventory(sheet_settings)
     laser_cut_inventory = LaserCutInventory(paint_inventory, workspace_settings)
-    structural_steel_inventory = StructuralSteelInventory(structural_steel_settings, workspace_settings)
+    structural_steel_inventory = StructuralSteelInventory(
+        structural_steel_settings, workspace_settings
+    )
     job_manager = JobManager(
         sheet_settings,
         sheets_inventory,
@@ -2481,11 +2541,11 @@ def check_if_jobs_are_complete() -> None:
     for job in workspace.jobs:
         if job.is_job_finished():
             CustomPrint.print(
-                f"INFO - Job, '{job.name}' is finished and will be moved from workspace to workspace history.",
+                f"Job, '{job.name}' is finished and will be moved from workspace to workspace history.",
             )
             workspace_history.add_job(job)
             CustomPrint.print(
-                f"INFO - Added '{job.name}' to workspace history.",
+                f"Added '{job.name}' to workspace history.",
             )
             completed_jobs.append(job)
 
@@ -2493,12 +2553,12 @@ def check_if_jobs_are_complete() -> None:
         for job in completed_jobs:
             workspace.remove_job(job)
             CustomPrint.print(
-                f"INFO - Removed '{job.name}' from workspace.",
+                f"Removed '{job.name}' from workspace.",
             )
         workspace_history.save()
         workspace.save()
         CustomPrint.print(
-            "INFO - Workspace and workspace history updated, signaling clients to update files.",
+            "Workspace and workspace history updated, signaling clients to update files.",
         )
         signal_clients_for_changes(
             client_to_ignore=None,
@@ -2588,14 +2648,19 @@ def make_app():
             (r"/send_error_report", SendErrorReportHandler),
             (r"/send_email", SendEmailHandler),
             # Workspace Handlers
-            (r"/workspace_add_job", WorkspaceAddJobHandler),
-            (r"/workspace_delete_job/(.*)", WorkspaceDeleteJobHandler),
-            (r"/workspace_get_all_jobs", WorkspaceGetAllJobsHandler),
-            (r"/workspace_get_job/(.*)", WorkspaceGetJobHandler),
-            (r"/workspace_get_entry/(.*)", WorkspaceGetEntryHandler),
-            (r"/workspace_update_entry/(.*)", WorkspaceUpdateEntryHandler),
+            (r"/workspace/add_job", WorkspaceAddJobHandler),
+            (r"/workspace/delete_job/(.*)", WorkspaceDeleteJobHandler),
+            (r"/workspace/get_all_jobs", WorkspaceGetAllJobsHandler),
+            (r"/workspace/get_job/(.*)", WorkspaceGetJobHandler),
+            (r"/workspace/get_entry/(.*)", WorkspaceGetEntryHandler),
+            (r"/workspace/get_all_recut_parts", WorkspaceGetAllRecutPartsHandler),
+            (
+                r"/workspace/get_recut_parts_from_job/(.*)",
+                WorkspaceGetRecutPartsFromJobHandler,
+            ),
+            (r"/workspace/update_entry/(.*)", WorkspaceUpdateEntryHandler),
             # Job handlers
-            (r"/get_jobs", GetJobsHandler),
+            (r"/get_job_directories", GetJobsHandler),
             (r"/upload_job", UploadJobHandler),
             (r"/download_job/(.*)", DownloadJobHandler),
             (r"/load_job/(.*)", LoadJobHandler),
@@ -2660,5 +2725,5 @@ if __name__ == "__main__":
     # executor = concurrent.futures.ThreadPoolExecutor(max_workers=10)
     # app.executor = executor
     app.listen(int(os.getenv("PORT")))
-    CustomPrint.print("INFO - Invigo server started")
+    CustomPrint.print("Invigo server started")
     tornado.ioloop.IOLoop.current().start()

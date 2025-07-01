@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta http-equiv="X-UA-Compatible" content="ie=edge">
+        <meta name="google" content="notranslate">
+        <title>{{inventory_type}} - {{category}}</title>
+        <meta property="og:title" content="{{inventory_type}} - {{category}}" />
+        <meta property="og:description" content="Set Invigo Sheets in Inventory Information." />
+        <link rel="icon" href="/static/icon.png">
+    </head>
+
+    <body class="dark" onload="document.body.classList.add('loaded')">
+        <header class="fixed primary" style="height: 60px;">
+            <nav>
+                <button class="circle transparent" onclick="window.location.href = '/inventory'">
+                    <i>arrow_back</i>
+                </button>
+                <h5 class="max">{{inventory_type}} - {{category}}</h5>
+            </nav>
+        </header>
+        <main stlye="padding-top: 60px;">
+            <div class="scroll" style="height: 100vh;">
+                <table class="sortable stripes center-align">
+                    <thead class="fixed">
+                        <tr>
+                            {% for header in headers %}
+                            <th class="min">{{ header.replace('_', ' ').capitalize() }}</th>
+                            {% endfor %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in data %}
+                        <tr>
+                            {% for idx, value in item.items() %}
+                            {% if loop.first %}
+                            <td class="min">
+                                <a class="link" href="/way_back_machine?inventory={{ inventory_type.lower().replace(' ', '_') }}&item={{ value }}">{{ value }}</a>
+                            </td>
+                            {% else %}
+                            <td>{{ value }}</td>
+                            {% endif %}
+                            {% endfor %}
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </main>
+    </body>
+</html>

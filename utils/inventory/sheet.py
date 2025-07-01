@@ -1,5 +1,5 @@
 import copy
-from typing import TYPE_CHECKING, Union
+from typing import TYPE_CHECKING
 
 from utils.inventory.category import Category
 from utils.inventory.inventory_item import InventoryItem
@@ -13,6 +13,7 @@ class Sheet(InventoryItem):
     def __init__(self, data: dict, sheets_inventory):
         super().__init__()
         self.sheets_inventory: SheetsInventory = sheets_inventory
+        self.id: int = -1
         self.quantity: int = 0
         self.length: float = 0.0
         self.width: float = 0.0
@@ -49,34 +50,38 @@ class Sheet(InventoryItem):
     def get_categories(self) -> list[str]:
         return [category.name for category in self.categories]
 
-    def load_data(self, data: dict[str, Union[str, int, float, bool]]):
-        self.quantity: int = data.get("quantity", 0)
-        self.latest_change_quantity: str = data.get("latest_change_quantity", "")
-        self.length: str = data.get("length", 120.0)
-        self.width: str = data.get("width", 60.0)
-        self.thickness: str = data.get("thickness", "")
-        self.material: str = data.get("material", "")
-        self.red_quantity_limit: int = data.get("red_quantity_limit", 4)
-        self.yellow_quantity_limit: int = data.get("yellow_quantity_limit", 10)
+    def load_data(self, data: dict):
+        self.id = data.get("id", -1)
+        self.quantity = data.get("quantity", 0)
+        self.latest_change_quantity = data.get("latest_change_quantity", "")
+        self.length = data.get("length", 120.0)
+        self.width = data.get("width", 60.0)
+        self.thickness = data.get("thickness", "")
+        self.material = data.get("material", "")
+        self.red_quantity_limit = data.get("red_quantity_limit", 4)
+        self.yellow_quantity_limit = data.get("yellow_quantity_limit", 10)
 
         self.orders.clear()
         for order_data in data.get("orders", []):
             order = Order(order_data)
             self.add_order(order)
 
-        self.has_sent_warning: bool = data.get("has_sent_warning", False)
-        self.notes: str = data.get("notes", "")
+        self.has_sent_warning = data.get("has_sent_warning", False)
+        self.notes = data.get("notes", "")
         self.categories.clear()
         try:
             categories = data.get("categories", [])
             for category in self.sheets_inventory.get_categories():
                 if category.name in categories:
                     self.categories.append(category)
-        except AttributeError:  # Because these sheets come from utils.threads.load_nests.py
+        except (
+            AttributeError
+        ):  # Because these sheets come from utils.threads.load_nests.py
             self.categories = []
 
-    def to_dict(self) -> dict[str, dict]:
+    def to_dict(self) -> dict:
         return {
+            "id": self.id,
             "name": self.get_name(),
             "thickness": self.thickness,
             "material": self.material,

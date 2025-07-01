@@ -1,3 +1,4 @@
+import logging
 from datetime import datetime
 
 from utils.custom_print import CustomPrint
@@ -14,20 +15,25 @@ def generate_sheet_report(clients) -> None:
     if datetime.now().strftime("%A") != "Monday":
         return
     sheets_low_in_quantity: int = 0
-    message_to_send: str = (
-        '<div class="tg-wrap"><table style="font-family: sans-serif; table-layout: fixed; width: 633px; border-collapse: collapse; text-align: center; vertical-align: middle; background-color: #222; color: #EAE9FC;"><colgroup><col style="width: 200px"><col style="width: 270px"><col style="width: 146px"><col style="width: 340px"></colgroup><thead><tr><th>Sheet Name</th><th>Order Status</th><th>Current Quantity</th><th>Description</th></tr></thead><tbody>'
-    )
+    message_to_send: str = '<div class="tg-wrap"><table style="font-family: sans-serif; table-layout: fixed; width: 633px; border-collapse: collapse; text-align: center; vertical-align: middle; background-color: #222; color: #EAE9FC;"><colgroup><col style="width: 200px"><col style="width: 270px"><col style="width: 146px"><col style="width: 340px"></colgroup><thead><tr><th>Sheet Name</th><th>Order Status</th><th>Current Quantity</th><th>Description</th></tr></thead><tbody>'
 
     for sheet in sheets_in_inventory.sheets:
         sheet_categories = [category.name for category in sheet.categories]
         if "Cutoff" in sheet_categories:
             continue
-        if sheet.quantity <= sheet.red_quantity_limit or sheet.quantity <= sheet.yellow_quantity_limit:
+        if (
+            sheet.quantity <= sheet.red_quantity_limit
+            or sheet.quantity <= sheet.yellow_quantity_limit
+        ):
             sheets_low_in_quantity += 1
             notes = sheet.notes
             if not notes:
                 notes: str = "No notes provided"
-            stylesheet = "border-bottom: 1px solid #222; color: #EAE9FC; background-color: #3F1E25;" if sheet.quantity <= sheet.red_quantity_limit else "border-bottom: 1px solid #222; color: #EAE9FC; background-color: #413C28;"
+            stylesheet = (
+                "border-bottom: 1px solid #222; color: #EAE9FC; background-color: #3F1E25;"
+                if sheet.quantity <= sheet.red_quantity_limit
+                else "border-bottom: 1px solid #222; color: #EAE9FC; background-color: #413C28;"
+            )
             order_status = ""
             if sheet.orders:
                 stylesheet = "border-bottom: 1px solid #222; color: #EAE9FC; background-color: #24793c;"
@@ -37,7 +43,7 @@ def generate_sheet_report(clients) -> None:
                 order_status = "No order is pending"
             message_to_send += f'<tr style="border-bottom: 1px solid; {stylesheet}"><td>{sheet.get_name()}</td><td style="{"font-weight: bold;" if sheet.orders else ""}">{order_status}</td><td>{sheet.quantity}</td><td>{notes}</td></tr>'
     message_to_send += '</tbody></table></div><br><p style="font-family: sans-serif;">Please remember to update the <b style="color: #3bba6d">"Order Pending"</b> status in the <b>"Sheet in Inventory"</b> tab after issuing a purchase order.<br>Wishing you a productive week ahead!</p>'
-    CustomPrint.print("INFO - Sheet report generated", connected_clients=connected_clients)
+    logging.info("Sheet report generated")
     if sheets_low_in_quantity == 0:
         send(
             "Invigo - Weekly Report: Sheets in Inventory",

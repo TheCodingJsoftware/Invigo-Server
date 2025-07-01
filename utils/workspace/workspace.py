@@ -4,6 +4,7 @@ from typing import Union
 
 import msgspec
 
+from config.environments import Environment
 from utils.inventory.component import Component
 from utils.inventory.laser_cut_part import LaserCutPart
 from utils.workspace.assembly import Assembly
@@ -25,7 +26,7 @@ class Workspace:
         self.jobs: list[Job] = []
 
         self.filename = filename
-        self.FOLDER_LOCATION = f"{os.getcwd()}/data"
+        self.FOLDER_LOCATION = f"{Environment.DATA_PATH}/data"
 
         self.workspace_settings = workspace_settings
         self.job_manager = job_manager

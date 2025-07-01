@@ -8,6 +8,7 @@ __pycache__/
 
 # Distribution / packaging
 .Python
+public/
 build/
 develop-eggs/
 dist/
@@ -165,8 +166,6 @@ cython_debug/
 data/
 credentials.json
 settings.json
-package-lock.json
-package.json
 users.json
 images
 logs
@@ -184,3 +183,4 @@ trusted_users.txt
 workorders
 jscharting
 node_modules
+users.json.lock

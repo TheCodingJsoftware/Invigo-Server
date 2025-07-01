@@ -1,14 +1,14 @@
 import json
+import logging
 from datetime import datetime
 
 import tornado.websocket
+from dotenv import load_dotenv
 
-from utils.custom_print import CustomPrint
 from utils.inventory.order import Order
 from utils.inventory.sheet import Sheet
 from utils.inventory.sheets_inventory import SheetsInventory
 from utils.sheet_settings import SheetSettings
-from dotenv import load_dotenv
 
 load_dotenv()
 
@@ -43,11 +43,15 @@ def add_sheet(
         },
         sheets_inventory,
     )
-    new_sheet.latest_change_quantity = f"Item added at {datetime.now().strftime('%B %d %A %Y %I:%M:%S %p')} via server"
+    new_sheet.latest_change_quantity = (
+        f"Item added at {datetime.now().strftime('%B %d %A %Y %I:%M:%S %p')} via server"
+    )
     sheets_inventory.add_sheet(new_sheet)
     sheets_inventory.save()
-    CustomPrint.print(f'INFO - Added "{sheet_name}" to Cutoff')
-    signal_clients_for_changes(_connected_clients, changed_files=["sheets_inventory.json"])
+    logging.info(f'Added "{sheet_name}" to Cutoff')
+    signal_clients_for_changes(
+        _connected_clients, changed_files=["sheets_inventory.json"]
+    )
 
 
 def remove_cutoff_sheet(sheet_name: str, _connected_clients):
@@ -55,10 +59,12 @@ def remove_cutoff_sheet(sheet_name: str, _connected_clients):
     if sheet_to_delete := sheets_inventory.get_sheet_by_name(sheet_name):
         sheets_inventory.remove_sheet(sheet_to_delete)
     sheets_inventory.save()
-    CustomPrint.print(
-        f'INFO - Removed "{sheet_name}" from Cutoff',
+    logging.info(
+        f'Removed "{sheet_name}" from Cutoff',
     )
-    signal_clients_for_changes(_connected_clients, changed_files=["sheets_inventory.json"])
+    signal_clients_for_changes(
+        _connected_clients, changed_files=["sheets_inventory.json"]
+    )
 
 
 def get_sheet_pending_data(sheet_name: str) -> list[Order]:
@@ -75,7 +81,9 @@ def get_sheet_quantity(sheet_name: str) -> float:
     return 0.0
 
 
-def set_sheet_quantity(sheet_name: str, new_quantity: float, other_order: Order, clients) -> None:
+def set_sheet_quantity(
+    sheet_name: str, new_quantity: float, other_order: Order, clients
+) -> None:
     sheets_inventory.load_data()
     if sheet := sheets_inventory.get_sheet_by_name(sheet_name):
         sheet_order_used = None
@@ -90,9 +98,9 @@ def set_sheet_quantity(sheet_name: str, new_quantity: float, other_order: Order,
             sheet_order_used.quantity = remaining_order_quantity
             if remaining_order_quantity <= 0:
                 sheet.remove_order(sheet_order_used)
-            sheet.latest_change_quantity = f'Set to {new_quantity} with Add Incoming Order Quantity ({quantity_to_add}) with QR code at {datetime.now().strftime("%B %d %A %Y %I:%M:%S %p")}'
+            sheet.latest_change_quantity = f"Set to {new_quantity} with Add Incoming Order Quantity ({quantity_to_add}) with QR code at {datetime.now().strftime('%B %d %A %Y %I:%M:%S %p')}"
         else:
-            sheet.latest_change_quantity = f'Set to {new_quantity} with QR code at {datetime.now().strftime("%B %d %A %Y %I:%M:%S %p")}'
+            sheet.latest_change_quantity = f"Set to {new_quantity} with QR code at {datetime.now().strftime('%B %d %A %Y %I:%M:%S %p')}"
         sheet.quantity = new_quantity
         if new_quantity >= sheet.red_quantity_limit:
             sheet.has_sent_warning = False
@@ -105,14 +113,16 @@ def sheet_exists(sheet_name: str) -> bool:
     return bool(_ := sheets_inventory.get_sheet_by_name(sheet_name))
 
 
-def signal_clients_for_changes(connected_clients: set[tornado.websocket.WebSocketHandler], changed_files: list[str]) -> None:
-    CustomPrint.print(
-        f"INFO - Signaling {len(connected_clients)} clients",
+def signal_clients_for_changes(
+    connected_clients: set[tornado.websocket.WebSocketHandler], changed_files: list[str]
+) -> None:
+    logging.info(
+        f"Signaling {len(connected_clients)} clients",
     )
     for client in connected_clients:
         if client.ws_connection and client.ws_connection.stream.socket:
             message = json.dumps({"action": "download", "files": changed_files})
             client.write_message(message)
-            CustomPrint.print(
-                f"INFO - Signaling {client.request.remote_ip} to download {changed_files}",
+            logging.info(
+                f"Signaling {client.request.remote_ip} to download {changed_files}",
             )

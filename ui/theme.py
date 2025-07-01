@@ -2,7 +2,6 @@ import contextlib
 import os
 import re
 
-
 UI_PATH = f"{os.getcwd()}/ui/"
 STYLE_PATH = os.path.join(UI_PATH, "style", "style.qss")
 THEME_PATH = os.path.join(UI_PATH, "themes", "dark_theme.css")

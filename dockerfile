@@ -12,7 +12,18 @@ WORKDIR /app
 
 ENV PYTHONPATH="/app"
 ENV PORT=5057
-ENV DATA_PATH="/web/Invigo-server"
+ENV DATA_PATH="/app/data"
+ENV POSTGRES_USER="admin"
+ENV POSTGRES_PASSWORD=""
+ENV POSTGRES_DB="invigo-test"
+ENV POSTGRES_HOST="172.17.0.1"
+ENV POSTGRES_PORT=5434
+ENV POSTGRES_MIN_CONNECTIONS=5
+ENV POSTGRES_MAX_CONNECTIONS=20
+ENV POSTGRES_TIMEOUT=60
+ENV POSTGRES_COMMAND_TIMEOUT=60
+ENV POSTGRES_MAX_INACTIVE_CONNECTION_LIFETIME=60
+ENV WORKSPACE_BACKGROUND_CACHE_WARM_UP_INTERVAL=60
 
 # Copy only the dependency files to leverage Docker caching
 COPY requirements.txt package.json package-lock.json* ./
@@ -30,13 +41,13 @@ COPY . .
 RUN npm run build
 
 # Create required directories (if not already created by your build or setup)
-RUN mkdir -p saved_quotes saved_jobs previous_quotes logs data backups
+RUN mkdir -p logs data backups
 
 # Define volumes for persistent storage
-VOLUME ["/app/saved_quotes", "/app/saved_jobs", "/app/previous_quotes", "/app/logs", "/app/data", "/app/backups"]
+VOLUME ["/app/data"]
 
 # Expose port 5057 (or whichever port your app uses)
 EXPOSE 5057
 
 # Set the default command to run your server
-CMD ["python", "server.py"]
+CMD ["python", "main.py"]

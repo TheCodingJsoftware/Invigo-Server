@@ -17,7 +17,9 @@ class POTemplate:
         self.order_number: int = self.get_order_number()
 
     def generate(self):
-        self.output_path: str = f"{self.cwd}/PO's/{self.vendor}/PO {self.order_number+1}.xlsx"
+        self.output_path: str = (
+            f"{self.cwd}/PO's/{self.vendor}/PO {self.order_number+1}.xlsx"
+        )
         shutil.copyfile(self.po_template, self.output_path)
         self.set_order_number()
         self.set_date()
@@ -35,18 +37,32 @@ class POTemplate:
                     continue
                 if "Vendor" in str(col.value):
                     vendor_col = column_number + 1  # They dont start at 0
-        return " ".join((str(worksheet.cell(row=row + 2, column=vendor_col).value).replace("\n", " ").replace("None", "").replace("  ", " ")) for row in range(4)).strip()
+        return " ".join(
+            (
+                str(worksheet.cell(row=row + 2, column=vendor_col).value)
+                .replace("\n", " ")
+                .replace("None", "")
+                .replace("  ", " ")
+            )
+            for row in range(4)
+        ).strip()
 
     def get_order_number(self) -> int:
         order_number: int = None
         workbook = load_workbook(filename=self.po_template)
         worksheet = workbook.active
-        order_number = int(worksheet.cell(row=self.order_number_cell[0], column=self.order_number_cell[1]).value)  # Merged: F4:G4
+        order_number = int(
+            worksheet.cell(
+                row=self.order_number_cell[0], column=self.order_number_cell[1]
+            ).value
+        )  # Merged: F4:G4
         # We only want to update the master templates PO number if it
         # was loaded from the templates directory, otherwise this is a new
         # file being added
         if "PO's" in self.po_template:
-            worksheet.cell(row=self.order_number_cell[0], column=self.order_number_cell[1]).value = order_number + 1
+            worksheet.cell(
+                row=self.order_number_cell[0], column=self.order_number_cell[1]
+            ).value = order_number + 1
             workbook.save(self.po_template)
             workbook.close()
         return order_number
@@ -57,14 +73,18 @@ class POTemplate:
     def set_order_number(self):
         workbook = load_workbook(filename=self.output_path)
         worksheet = workbook.active
-        worksheet.cell(row=self.order_number_cell[0], column=self.order_number_cell[1]).value = self.order_number + 1
+        worksheet.cell(
+            row=self.order_number_cell[0], column=self.order_number_cell[1]
+        ).value = self.order_number + 1
         workbook.save(self.output_path)
         workbook.close()
 
     def set_date(self):
         workbook = load_workbook(filename=self.output_path)
         worksheet = workbook.active
-        worksheet.cell(row=self.date_cell[0], column=self.date_cell[1]).value = self.date
+        worksheet.cell(
+            row=self.date_cell[0], column=self.date_cell[1]
+        ).value = self.date
         workbook.save(self.output_path)
         workbook.close()
 
@@ -77,11 +97,15 @@ class POTemplate:
                 continue
             if "Authorized by" in str(cell.value):
                 signature_row = cell.row - 1
-        worksheet.cell(row=signature_row, column=5).value = self.signature  # E:{signature_row}
+        worksheet.cell(
+            row=signature_row, column=5
+        ).value = self.signature  # E:{signature_row}
         workbook.save(self.output_path)
         workbook.close()
 
 
 if __name__ == "__main__":
-    p = POTemplate(r"F:\Code\Python-Projects\Inventory Manager\Piney MFG\Cloverdale Paint\Clover Dale Paints PO#.xlsx")
+    p = POTemplate(
+        r"F:\Code\Python-Projects\Inventory Manager\Piney MFG\Cloverdale Paint\Clover Dale Paints PO#.xlsx"
+    )
     print(p.get_vendor())

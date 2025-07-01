@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta http-equiv="X-UA-Compatible" content="ie=edge">
+        <meta name="google" content="notranslate">
+        <link rel="icon" href="/static/icon.png">
+        <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=yes" />
+        <title>Job Printouts</title>
+    </head>
+
+    <body class="dark" onload="document.body.classList.add('loaded')">
+        <header class="fixed primary">
+            <nav>
+                <button class="circle transparent" onclick="goToMainUrl()">
+                    <i>arrow_back</i>
+                </button>
+                <h5 class="max">Job Printouts</h5>
+            </nav>
+        </header>
+        <main class="responsive">
+            <div class="grid">
+                {% for job in all_jobs %}
+                <article class="s12 m6 l6 round border" style="border-color: {{job.job_data.color}};">
+                    <nav class="row top-align">
+                        <h5 class="max">{{ job.job_data.name }}</h5>
+                        <button style="background-color: {{job.job_data.color}};" onclick="openPrintout('{{ job.job_data.id }}')">
+                            <i>open_in_new</i>
+                            <span>Open</span>
+                        </button>
+                    </nav>
+                    <nav class="row wrap no-space">
+                        <button class="chip tiny-margin">
+                            <i>tag</i>
+                            <span>
+                                {{ job.job_data.order_number }}
+                            </span>
+                            <div class="tooltip bottom">
+                                <span>Order Number</span>
+                            </div>
+                        </button>
+                        <button class="chip tiny-margin">
+                            <i>shoppingmode</i>
+                            <span>
+                                {{ job.job_data.PO_number }}
+                            </span>
+                            <div class="tooltip bottom">
+                                <span>Purchase Order Number</span>
+                            </div>
+                        </button>
+                        <button class="chip tiny-margin">
+                            <i>approval</i>
+                            <span>
+                                {{ status_lookup[job.job_data.type]  }}
+                            </span>
+                        </button>
+                        <button class="chip tiny-margin">
+                            <i>today</i>
+                            <span>
+                                {{ job.job_data.starting_date }}
+                            </span>
+                            <div class="tooltip bottom">
+                                <span>Start Date</span>
+                            </div>
+                        </button>
+                        <button class="chip tiny-margin">
+                            <i>forward_to_inbox</i>
+                            <span>
+                                {{ job.job_data.ship_to }}
+                            </span>
+                            <div class="tooltip bottom">
+                                <span>Ship To</span>
+                            </div>
+                        </button>
+                    </nav>
+                </article>
+                {% endfor %}
+            </div>
+        </main>
+    </body>
+
+</html>

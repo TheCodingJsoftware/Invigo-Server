@@ -2,7 +2,7 @@ import math
 from typing import Union
 
 from utils.inventory.category import Category
-from utils.inventory.structural_profile import StructuralProfile, ProfilesTypes
+from utils.inventory.structural_profile import ProfilesTypes, StructuralProfile
 
 
 class RoundTube(StructuralProfile):
@@ -18,7 +18,7 @@ class RoundTube(StructuralProfile):
         return f"{self.material} {self.PROFILE_TYPE.value} {self.outside_diameter:,.3f} x {self.inside_diameter:,.3f}"
 
     def tooltip(self) -> str:
-        return f'Length: {self.length:,.3f} in\nOutside Diameter: {self.outside_diameter:,.3f} in\nInside Diameter: {self.inside_diameter:,.3f} in\nWall Thickness: {self.wall_thickness:,.3f} in'
+        return f"Length: {self.length:,.3f} in\nOutside Diameter: {self.outside_diameter:,.3f} in\nInside Diameter: {self.inside_diameter:,.3f} in\nWall Thickness: {self.wall_thickness:,.3f} in"
 
     def get_cross_section_area(self) -> float:
         return (math.pi / 4) * (
@@ -32,7 +32,9 @@ class RoundTube(StructuralProfile):
         return self.get_volume() * self.get_density()
 
     def get_cost(self) -> float:
-        return self.get_weight() * self.structural_steel_settings.get_price_per_pound(self.material)
+        return self.get_weight() * self.structural_steel_settings.get_price_per_pound(
+            self.material
+        )
 
     def load_data(self, data: dict[str, Union[float, str]]):
         super().load_data(data)

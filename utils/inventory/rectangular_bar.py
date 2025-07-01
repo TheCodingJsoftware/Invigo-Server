@@ -14,10 +14,10 @@ class RectangularBar(StructuralProfile):
         self.load_data(data)
 
     def get_name(self) -> str:
-        return f'{self.material} {self.PROFILE_TYPE.value} {self.width:,.3f} x {self.height:,.3f} x {self.wall_thickness:,.3f}'
+        return f"{self.material} {self.PROFILE_TYPE.value} {self.width:,.3f} x {self.height:,.3f} x {self.wall_thickness:,.3f}"
 
     def tooltip(self) -> str:
-        return f'Length: {self.length:,.3f} in\nWidth: {self.width:,.3f} in\nHeight: {self.height:,.3f} in\nWall Thickness: {self.wall_thickness:,.3f} in'
+        return f"Length: {self.length:,.3f} in\nWidth: {self.width:,.3f} in\nHeight: {self.height:,.3f} in\nWall Thickness: {self.wall_thickness:,.3f} in"
 
     def get_volume(self) -> float:
         return self.width * self.length * self.height
@@ -26,7 +26,9 @@ class RectangularBar(StructuralProfile):
         return self.get_volume() * self.get_density()
 
     def get_cost(self) -> float:
-        return self.get_weight() * self.structural_steel_settings.get_price_per_pound(self.material)
+        return self.get_weight() * self.structural_steel_settings.get_price_per_pound(
+            self.material
+        )
 
     def load_data(self, data: dict[str, Union[float, str]]):
         super().load_data(data)

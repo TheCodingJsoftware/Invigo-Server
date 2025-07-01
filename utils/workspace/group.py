@@ -8,7 +8,9 @@ if TYPE_CHECKING:
 
 
 class Group:
-    def __init__(self, name: str, data: dict[str, dict[str, Union[str, dict[str, object]]]], job) -> None:
+    def __init__(
+        self, name: str, data: dict[str, dict[str, Union[str, dict[str, object]]]], job
+    ) -> None:
         self.name = name
         self.color: str = "#3daee9"  # default
 
@@ -27,7 +29,11 @@ class Group:
 
     def get_assembly(self, assembly_name: str) -> Assembly:
         return next(
-            (assembly for assembly in self.assemblies if assembly.name == assembly_name),
+            (
+                assembly
+                for assembly in self.assemblies
+                if assembly.name == assembly_name
+            ),
             None,
         )
 
@@ -61,5 +67,7 @@ class Group:
     def to_dict(self) -> dict:
         return {
             "group_data": {"color": self.color},
-            "assemblies": {assembly.name: assembly.to_dict(set()) for assembly in self.assemblies},
+            "assemblies": {
+                assembly.name: assembly.to_dict(set()) for assembly in self.assemblies
+            },
         }

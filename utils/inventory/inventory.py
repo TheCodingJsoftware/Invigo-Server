@@ -1,5 +1,6 @@
 import os
 
+from config.environments import Environment
 from utils.inventory.categories import Categories
 from utils.inventory.category import Category
 
@@ -8,7 +9,7 @@ class Inventory:
     def __init__(self, filename: str):
         self.categories: Categories = Categories()
         self.filename: str = filename.replace(".json", "")
-        self.FOLDER_LOCATION: str = os.path.join(os.getenv("DATA_PATH"), "data")
+        self.FOLDER_LOCATION: str = os.path.join(Environment.DATA_PATH, "data")
         self.__create_file()
 
     def __create_file(self):
@@ -16,7 +17,9 @@ class Inventory:
             self._reset_file()
 
     def _reset_file(self):
-        with open(f"{self.FOLDER_LOCATION}/{self.filename}.json", "w", encoding="utf-8") as file:
+        with open(
+            f"{self.FOLDER_LOCATION}/{self.filename}.json", "w", encoding="utf-8"
+        ) as file:
             file.write("{}")
 
     def get_categories(self) -> list[Category]:

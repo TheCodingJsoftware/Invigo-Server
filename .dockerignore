@@ -1,11 +1,70 @@
-.venv
-.vscode
-.git
-__pycache__
-.mypy_cache
-data
-saved_quotes
-saved_jobs
-previous_quotes
-logs
-backups
+# Virtual environments
+.venv/
+env/
+venv/
+
+# IDE/editor config
+.vscode/
+.idea/
+*.code-workspace
+node_modules/
+
+# Git
+.git/
+.gitignore
+.gitattributes
+
+# Python cache and type checking
+__pycache__/
+*.py[cod]
+.mypy_cache/
+.pytest_cache/
+.coverage
+.tox/
+
+# Build artifacts
+build/
+dist/
+*.egg-info/
+*.eggs/
+
+# Logs and temp files
+*.log
+logs/
+backups/
+*.bak
+*.tmp
+*.swp
+
+# App-specific data and output
+data/
+workorders/
+saved_quotes/
+saved_jobs/
+previous_quotes/
+images/
+
+# Docker-related
+Dockerfile.*
+docker-compose*.yml
+
+# OS-generated files
+.DS_Store
+Thumbs.db
+
+# Secrets or credentials (only if applicable)
+*.env
+.env.*
+secrets/
+*.pem
+*.key
+*.crt
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# Misc
+*.tar
+*.tar.gz
+*.zip
+*.7z
