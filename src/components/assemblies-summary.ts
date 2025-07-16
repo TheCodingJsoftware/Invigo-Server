@@ -42,6 +42,10 @@ export class AssembliesSummary implements BaseComponent {
             <div class="content-wrapper" style="height: auto;">
                 <div class="small-padding">
                     <label class="checkbox hide-on-print">
+                        <input type="checkbox" id="show-assemblyPicture" checked>
+                        <span>Picture</span>
+                    </label>
+                    <label class="checkbox hide-on-print">
                         <input type="checkbox" id="show-assemblyProcess" checked>
                         <span>Assembly Process</span>
                     </label>
@@ -59,71 +63,86 @@ export class AssembliesSummary implements BaseComponent {
         return this.element;
     }
 
-    private toggleAssemblyProcessVisibility(checkbox: HTMLInputElement) {
-        if (!this.element) return;
-
+    private toggleAssemblyProcessVisibility(save: boolean = true) {
+        const toggleAssemblyProcessCheckbox = this.element.querySelector("#show-assemblyProcess") as HTMLInputElement;
         const processDivs = this.element.querySelectorAll("#assembly-process-div") as NodeListOf<HTMLElement>;
 
         processDivs.forEach(div => {
-            div.classList.toggle("hidden", !checkbox.checked);
+            div.classList.toggle("hidden", !toggleAssemblyProcessCheckbox.checked);
         });
-        localStorage.setItem("show-assemblyProcess", checkbox.checked.toString());
+
+        if (save) {
+            localStorage.setItem("show-assemblyProcess", toggleAssemblyProcessCheckbox.checked.toString());
+        }
+    }
+
+    private toggleAssemblyPictureVisibility(save: boolean = true) {
+        const toggleAssemblyPictureCheckbox = this.element.querySelector("#show-assemblyPicture") as HTMLInputElement;
+        const pictureDivs = this.element.querySelectorAll("#assembly-picture-div") as NodeListOf<HTMLElement>;
+
+        pictureDivs.forEach(div => {
+            div.classList.toggle("hidden", !toggleAssemblyPictureCheckbox.checked);
+        });
+
+        if (save) {
+            localStorage.setItem("show-assemblyPicture", toggleAssemblyPictureCheckbox.checked.toString());
+        }
     }
 
     private generateAssemblyGrid(): string {
-        let assemblyGrid = "";
-        for (const assembly of this.allAssemblies) {
-            assemblyGrid += `
-                <div class="s6 page-break-inside">
-                    <article class="assembly no-padding border round">
-                        <img class="responsive top-round assembly-image" src="http://invi.go/image/${assembly.assembly_data.assembly_image}" class="responsive">
-                        <div class="padding">
-                            <nav class="row wrap">
-                                <div class="bold large-text max">${assembly.assembly_data.name}</div>
-                                <h6>× ${assembly.assembly_data.quantity}</h6>
-                            </nav>
-                            <div id="assembly-process-div">${assembly.generateProcessTagString()}</div>
-                        </div>
-                    </article>
-                </div>
-            `;
-        }
-        return assemblyGrid.trim();
+        return this.allAssemblies
+            .map(assembly => `
+            <div class="s6 page-break-inside">
+                <article class="assembly no-padding border round">
+                    <img
+                        class="responsive top-round assembly-image assembly-picture-div"
+                        src="http://invi.go/image/${assembly.assembly_data.assembly_image}">
+                    <div class="padding">
+                        <nav class="row wrap">
+                            <div class="bold large-text max">${assembly.assembly_data.name}</div>
+                            <h6>× ${assembly.assembly_data.quantity}</h6>
+                        </nav>
+                        <div class="assembly-process-div">${assembly.generateProcessTagString()}</div>
+                    </div>
+                </article>
+            </div>
+        `.trim())
+            .join('\n');
     }
 
     private generateAssemblyList(): string {
-        let assemblyList = `
-            <table class="border">
-                <thead>
-                    <tr>
-                        <th>Assembly</th>
-                        <th class="center-align">Quantity</th>
-                    </tr>
-                </thead>
-                <tbody>
-        `;
+        const rows = this.allAssemblies
+            .map(assembly => `
+            <tr>
+                <td>
+                    <nav class="row tiny-padding">
+                        <img
+                            class="extra square small-round border assembly-picture-div assembly-image-list"
+                            src="http://invi.go/image/${assembly.assembly_data.assembly_image}">
+                        <div class="max">
+                            <h6>${assembly.assembly_data.name}</h6>
+                            <div class="assembly-process-div">${assembly.generateProcessTagString()}</div>
+                        </div>
+                    </nav>
+                </td>
+                <td class="center-align min"><h5>× ${assembly.assembly_data.quantity}</h5></td>
+            </tr>
+        `.trim())
+            .join('\n');
 
-        for (const assembly of this.allAssemblies) {
-            assemblyList += `
+        return `
+        <table class="border no-space">
+            <thead>
                 <tr>
-                    <td>
-                        <nav class="row tiny-padding">
-                            <img class="extra square small-round border" src="http://invi.go/image/${assembly.assembly_data.assembly_image}" class="assembly-image-list round border">
-                            <div class="max">
-                                <h6>${assembly.assembly_data.name}</h6>
-                                <div id="assembly-process-div">${assembly.generateProcessTagString()}</div>
-                            </div>
-                        </nav>
-                    </td>
-                    <td class="center-align min"><h5>× ${assembly.assembly_data.quantity}</h5></td>
+                    <th>Assembly</th>
+                    <th class="center-align">Quantity</th>
                 </tr>
-            `;
-        }
-        assemblyList += `
-                </tbody>
-            </table>
-        `;
-        return assemblyList;
+            </thead>
+            <tbody>
+                ${rows}
+            </tbody>
+        </table>
+    `.trim();
     }
 
     private getAllAssemblies(assemblies: Assembly[]): Assembly[] {
@@ -141,20 +160,25 @@ export class AssembliesSummary implements BaseComponent {
         const container = document.querySelector('#assemblies-summary-layout') as HTMLDivElement;
         container.appendChild(this.build());
 
-        const checkbox = this.element.querySelector("#show-assemblyProcess") as HTMLInputElement;
-        checkbox.addEventListener("change", () => {
-            this.toggleAssemblyProcessVisibility(checkbox);
+        const toggleAssemblyProcessCheckbox = this.element.querySelector("#show-assemblyProcess") as HTMLInputElement;
+        const storedStateAssemblyProcess = localStorage.getItem("show-assemblyProcess") ?? "true";
+        toggleAssemblyProcessCheckbox.checked = storedStateAssemblyProcess === "true";
+
+        this.toggleAssemblyProcessVisibility(false);
+
+        toggleAssemblyProcessCheckbox.addEventListener("change", () => {
+            this.toggleAssemblyProcessVisibility();
         });
 
-        const storedState = localStorage.getItem("show-assemblyProcess") || "true";
+        const toggleAssemblyPictureCheckbox = this.element.querySelector("#show-assemblyPicture") as HTMLInputElement;
+        const storedStateAssemblyPicture = localStorage.getItem("show-assemblyPicture") ?? "true";
+        toggleAssemblyPictureCheckbox.checked = storedStateAssemblyPicture === "true";
 
-        if (storedState === 'true') {
-            checkbox.checked = true;
-        }else{
-            checkbox.checked = false;
-        }
+        this.toggleAssemblyPictureVisibility(false);
 
-        this.toggleAssemblyProcessVisibility(checkbox);
+        toggleAssemblyPictureCheckbox.addEventListener("change", () => {
+            this.toggleAssemblyPictureVisibility();
+        });
 
         const gridCompactButton = this.element.querySelector('#grid-compact-button') as HTMLButtonElement;
         const gridModuleButton = this.element.querySelector('#grid-module-button') as HTMLButtonElement;

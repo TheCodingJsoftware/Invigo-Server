@@ -19,12 +19,8 @@ class SheetsInventoryDB(BaseWithDBPool):
         self.cache_manager = InventoryCacheManager(expiry_seconds=1)
         self.sheets_history_db = ItemHistoryDB("sheet")
         load_dotenv()
-        self.cache_manager.schedule_refresh(
-            "all_sheets", self.get_all_sheets_no_cache, 60
-        )
-        self.cache_manager.schedule_refresh(
-            "all_categories", self.get_categories_no_cache, 60
-        )
+        self.cache_manager.schedule_refresh("all_sheets", self.get_all_sheets_no_cache, 60)
+        self.cache_manager.schedule_refresh("all_categories", self.get_categories_no_cache, 60)
 
     async def connect(self):
         if self.db_pool is None or self.db_pool._closed:
@@ -77,9 +73,7 @@ class SheetsInventoryDB(BaseWithDBPool):
         async with self.db_pool.acquire() as conn:
             rows = await conn.fetch(query)
 
-        all_categories = sorted(
-            {cat for row in rows if row["categories"] for cat in row["categories"]}
-        )
+        all_categories = sorted({cat for row in rows if row["categories"] for cat in row["categories"]})
         self.cache_manager.set(key, all_categories)
         return all_categories
 
@@ -89,9 +83,7 @@ class SheetsInventoryDB(BaseWithDBPool):
         async with self.db_pool.acquire() as conn:
             rows = await conn.fetch(query)
 
-        all_categories = sorted(
-            {cat for row in rows if row["categories"] for cat in row["categories"]}
-        )
+        all_categories = sorted({cat for row in rows if row["categories"] for cat in row["categories"]})
         return all_categories
 
     @ensure_connection
@@ -118,11 +110,7 @@ class SheetsInventoryDB(BaseWithDBPool):
         if cached := self.cache_manager.get(key):
             return cached
 
-        query = (
-            f"SELECT * FROM {self.TABLE_NAME} WHERE id = $1"
-            if isinstance(sheet_id, int)
-            else f"SELECT * FROM {self.TABLE_NAME} WHERE name = $1"
-        )
+        query = f"SELECT * FROM {self.TABLE_NAME} WHERE id = $1" if isinstance(sheet_id, int) else f"SELECT * FROM {self.TABLE_NAME} WHERE name = $1"
         async with self.db_pool.acquire() as conn:
             row = await conn.fetchrow(query, sheet_id)
 
@@ -211,25 +199,13 @@ class SheetsInventoryDB(BaseWithDBPool):
         async with self.db_pool.acquire() as conn:
             async with conn.transaction():
                 # Fetch current row
-                current_row = await conn.fetchrow(
-                    f"SELECT * FROM {self.TABLE_NAME} WHERE id = $1", sheet_id
-                )
+                current_row = await conn.fetchrow(f"SELECT * FROM {self.TABLE_NAME} WHERE id = $1", sheet_id)
                 current_json = json.loads(current_row["data"])
                 new_json = new_data.copy()
 
                 if current_json != new_json:
-                    task = asyncio.create_task(
-                        self.sheets_history_db.insert_history_item(
-                            sheet_id, new_data, modified_by
-                        )
-                    )
-                    task.add_done_callback(
-                        lambda t: logging.error(
-                            "Unhandled task error", exc_info=t.exception()
-                        )
-                        if t.exception()
-                        else None
-                    )
+                    task = asyncio.create_task(self.sheets_history_db.insert_history_item(sheet_id, new_data, modified_by))
+                    task.add_done_callback(lambda t: logging.error("Unhandled task error", exc_info=t.exception()) if t.exception() else None)
             # Update the main row
             await conn.fetchval(
                 f"""
@@ -255,11 +231,7 @@ class SheetsInventoryDB(BaseWithDBPool):
 
     @ensure_connection
     async def delete_sheet(self, sheet_id: int | str) -> bool:
-        query = (
-            f"DELETE FROM {self.TABLE_NAME} WHERE id = $1 RETURNING id"
-            if isinstance(sheet_id, int)
-            else f"DELETE FROM {self.TABLE_NAME} WHERE name = $1 RETURNING id"
-        )
+        query = f"DELETE FROM {self.TABLE_NAME} WHERE id = $1 RETURNING id" if isinstance(sheet_id, int) else f"DELETE FROM {self.TABLE_NAME} WHERE name = $1 RETURNING id"
         async with self.db_pool.acquire() as conn:
             deleted_id = await conn.fetchval(query, sheet_id)
 

@@ -19,9 +19,7 @@ class CoatingsInventoryDB(BaseWithDBPool):
         self.cache_manager = InventoryCacheManager(expiry_seconds=1)
         self.coatings_history_db = ItemHistoryDB("coating")
         load_dotenv()
-        self.cache_manager.schedule_refresh(
-            "all_coatings", self.get_all_coatings_no_cache, 60
-        )
+        self.cache_manager.schedule_refresh("all_coatings", self.get_all_coatings_no_cache, 60)
 
     async def connect(self):
         if self.db_pool is None or self.db_pool._closed:
@@ -83,11 +81,7 @@ class CoatingsInventoryDB(BaseWithDBPool):
         if cached := self.cache_manager.get(key):
             return cached
 
-        query = (
-            f"SELECT * FROM {self.TABLE_NAME} WHERE id = $1"
-            if isinstance(coating_id, int)
-            else f"SELECT * FROM {self.TABLE_NAME} WHERE part_number = $1"
-        )
+        query = f"SELECT * FROM {self.TABLE_NAME} WHERE id = $1" if isinstance(coating_id, int) else f"SELECT * FROM {self.TABLE_NAME} WHERE part_number = $1"
         async with self.db_pool.acquire() as conn:
             row = await conn.fetchrow(query, coating_id)
 
@@ -174,9 +168,7 @@ class CoatingsInventoryDB(BaseWithDBPool):
             )
 
     @ensure_connection
-    async def save_coating(
-        self, coating_id: int | str, new_data: dict, modified_by: str = "system"
-    ):
+    async def save_coating(self, coating_id: int | str, new_data: dict, modified_by: str = "system"):
         if isinstance(coating_id, str):
             coating_id = await self.get_coating_id(coating_id)
             new_data["id"] = coating_id
@@ -185,26 +177,14 @@ class CoatingsInventoryDB(BaseWithDBPool):
 
         async with self.db_pool.acquire() as conn:
             async with conn.transaction():
-                current_row = await conn.fetchrow(
-                    f"SELECT * FROM {self.TABLE_NAME} WHERE id = $1", coating_id
-                )
+                current_row = await conn.fetchrow(f"SELECT * FROM {self.TABLE_NAME} WHERE id = $1", coating_id)
 
                 if current_row is None:
                     coating_does_not_exist = True
                 else:
                     # Record history in background
-                    task = asyncio.create_task(
-                        self.coatings_history_db.insert_history_item(
-                            coating_id, new_data, modified_by
-                        )
-                    )
-                    task.add_done_callback(
-                        lambda t: logging.error(
-                            "Unhandled task error", exc_info=t.exception()
-                        )
-                        if t.exception()
-                        else None
-                    )
+                    task = asyncio.create_task(self.coatings_history_db.insert_history_item(coating_id, new_data, modified_by))
+                    task.add_done_callback(lambda t: logging.error("Unhandled task error", exc_info=t.exception()) if t.exception() else None)
 
                     await conn.execute(
                         f"""
@@ -224,9 +204,7 @@ class CoatingsInventoryDB(BaseWithDBPool):
                     )
 
         if coating_does_not_exist:
-            logging.info(
-                f"[SaveCoating] Coating ID {coating_id} not found. Creating new coating."
-            )
+            logging.info(f"[SaveCoating] Coating ID {coating_id} not found. Creating new coating.")
             new_id = await self.add_coating(new_data)
             return new_id
 
@@ -243,11 +221,7 @@ class CoatingsInventoryDB(BaseWithDBPool):
 
     @ensure_connection
     async def delete_coating(self, coating_id: int | str) -> bool:
-        query = (
-            f"DELETE FROM {self.TABLE_NAME} WHERE id = $1 RETURNING id"
-            if isinstance(coating_id, int)
-            else f"DELETE FROM {self.TABLE_NAME} WHERE part_number = $1 RETURNING id"
-        )
+        query = f"DELETE FROM {self.TABLE_NAME} WHERE id = $1 RETURNING id" if isinstance(coating_id, int) else f"DELETE FROM {self.TABLE_NAME} WHERE part_number = $1 RETURNING id"
         async with self.db_pool.acquire() as conn:
             deleted_id = await conn.fetchval(query, coating_id)
 

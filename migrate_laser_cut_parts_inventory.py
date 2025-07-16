@@ -18,16 +18,12 @@ async def migrate_laser_cut_parts_inventory_from_json_file(file_path: str):
             print("No laser_cut_parts found in the data.")
             return
 
-        print(
-            f"Found {len(laser_cut_parts)} laser_cut_parts. Inserting into database..."
-        )
+        print(f"Found {len(laser_cut_parts)} laser_cut_parts. Inserting into database...")
 
         for idx, laser_cut_part in enumerate(laser_cut_parts, start=1):
             laser_cut_part["id"] = idx
             laser_cut_part_id = await db.add_laser_cut_part(laser_cut_part)
-            print(
-                f"[{idx}] Inserted laser_cut_part ID: {laser_cut_part_id} - Name: {laser_cut_part['name']}"
-            )
+            print(f"[{idx}] Inserted laser_cut_part ID: {laser_cut_part_id} - Name: {laser_cut_part['name']}")
 
     except Exception as e:
         print(f"Error during migration: {e}")
@@ -36,8 +32,4 @@ async def migrate_laser_cut_parts_inventory_from_json_file(file_path: str):
 
 
 if __name__ == "__main__":
-    asyncio.run(
-        migrate_laser_cut_parts_inventory_from_json_file(
-            "data/laser_cut_inventory.json"
-        )
-    )
+    asyncio.run(migrate_laser_cut_parts_inventory_from_json_file("data/laser_cut_inventory.json"))

@@ -43,15 +43,11 @@ def add_sheet(
         },
         sheets_inventory,
     )
-    new_sheet.latest_change_quantity = (
-        f"Item added at {datetime.now().strftime('%B %d %A %Y %I:%M:%S %p')} via server"
-    )
+    new_sheet.latest_change_quantity = f"Item added at {datetime.now().strftime('%B %d %A %Y %I:%M:%S %p')} via server"
     sheets_inventory.add_sheet(new_sheet)
     sheets_inventory.save()
     logging.info(f'Added "{sheet_name}" to Cutoff')
-    signal_clients_for_changes(
-        _connected_clients, changed_files=["sheets_inventory.json"]
-    )
+    signal_clients_for_changes(_connected_clients, changed_files=["sheets_inventory.json"])
 
 
 def remove_cutoff_sheet(sheet_name: str, _connected_clients):
@@ -62,9 +58,7 @@ def remove_cutoff_sheet(sheet_name: str, _connected_clients):
     logging.info(
         f'Removed "{sheet_name}" from Cutoff',
     )
-    signal_clients_for_changes(
-        _connected_clients, changed_files=["sheets_inventory.json"]
-    )
+    signal_clients_for_changes(_connected_clients, changed_files=["sheets_inventory.json"])
 
 
 def get_sheet_pending_data(sheet_name: str) -> list[Order]:
@@ -81,9 +75,7 @@ def get_sheet_quantity(sheet_name: str) -> float:
     return 0.0
 
 
-def set_sheet_quantity(
-    sheet_name: str, new_quantity: float, other_order: Order, clients
-) -> None:
+def set_sheet_quantity(sheet_name: str, new_quantity: float, other_order: Order, clients) -> None:
     sheets_inventory.load_data()
     if sheet := sheets_inventory.get_sheet_by_name(sheet_name):
         sheet_order_used = None
@@ -98,7 +90,9 @@ def set_sheet_quantity(
             sheet_order_used.quantity = remaining_order_quantity
             if remaining_order_quantity <= 0:
                 sheet.remove_order(sheet_order_used)
-            sheet.latest_change_quantity = f"Set to {new_quantity} with Add Incoming Order Quantity ({quantity_to_add}) with QR code at {datetime.now().strftime('%B %d %A %Y %I:%M:%S %p')}"
+            sheet.latest_change_quantity = (
+                f"Set to {new_quantity} with Add Incoming Order Quantity ({quantity_to_add}) with QR code at {datetime.now().strftime('%B %d %A %Y %I:%M:%S %p')}"
+            )
         else:
             sheet.latest_change_quantity = f"Set to {new_quantity} with QR code at {datetime.now().strftime('%B %d %A %Y %I:%M:%S %p')}"
         sheet.quantity = new_quantity
@@ -113,9 +107,7 @@ def sheet_exists(sheet_name: str) -> bool:
     return bool(_ := sheets_inventory.get_sheet_by_name(sheet_name))
 
 
-def signal_clients_for_changes(
-    connected_clients: set[tornado.websocket.WebSocketHandler], changed_files: list[str]
-) -> None:
+def signal_clients_for_changes(connected_clients: set[tornado.websocket.WebSocketHandler], changed_files: list[str]) -> None:
     logging.info(
         f"Signaling {len(connected_clients)} clients",
     )

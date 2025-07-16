@@ -77,7 +77,7 @@ class AssemblyLaserCutPartsComponent {
     }
 }
 
-export class AssemblyLaserCutPartsTable  {
+export class AssemblyLaserCutPartsTable {
     jobId: number;
     assembly: Assembly;
     laserCutParts: LaserCutPart[];
@@ -92,7 +92,7 @@ export class AssemblyLaserCutPartsTable  {
     generatePartsTable(): HTMLElement {
         const template = document.createElement("template");
         template.innerHTML = `
-        <table class="border">
+        <table class="border tiny-space">
             <thead>
                 ${this.generatePartsTableHeader()}
             </thead>
@@ -145,14 +145,14 @@ export class AssemblyLaserCutPartsTable  {
                         <span class="wrap no-line small-width">${laserCutPart.name}</span>
                     </div>
                 </td>
-                <td class="min center-align" data-column="assembly-laser-cut-part-material">${material}</td>
+                <td class="center-align" data-column="assembly-laser-cut-part-material">${material}</td>
                 <td class="center-align" data-column="assembly-laser-cut-part-process">${process}</td>
                 <td class="left-align" data-column="assembly-laser-cut-part-notes">${notes}</td>
-                <td class="min center-align" data-column="assembly-laser-cut-part-shelfNumber">${shelfNumber}</td>
-                <td class="min center-align" data-column="assembly-laser-cut-part-unitQuantity">${unitQuantity}</td>
-                <td class="min center-align" data-column="assembly-laser-cut-part-quantity">${quantity}</td>
-                <td class="min center-align" data-column="assembly-laser-cut-part-unitPrice">${this.formatPrice(unitPrice)}</td>
-                <td class="min center-align" data-column="assembly-laser-cut-part-price">${this.formatPrice(price)}</td>
+                <td class="center-align" data-column="assembly-laser-cut-part-shelfNumber">${shelfNumber}</td>
+                <td class="center-align" data-column="assembly-laser-cut-part-unitQuantity">${unitQuantity}</td>
+                <td class="center-align" data-column="assembly-laser-cut-part-quantity">${quantity}</td>
+                <td class="center-align" data-column="assembly-laser-cut-part-unitPrice">${this.formatPrice(unitPrice)}</td>
+                <td class="center-align" data-column="assembly-laser-cut-part-price">${this.formatPrice(price)}</td>
             </tr>
             `;
         }
@@ -174,7 +174,7 @@ export class AssemblyLaserCutPartsTable  {
                 <th class="center-align" data-column="assembly-laser-cut-part-unitQuantity"></th>
                 <th class="center-align" data-column="assembly-laser-cut-part-quantity"></th>
                 <th class="center-align" data-column="assembly-laser-cut-part-unitPrice"></th>
-                <th class="min center-align" data-column="assembly-laser-cut-part-price">${this.formatPrice(totalPrice)}</th>
+                <th class="center-align" data-column="assembly-laser-cut-part-price">${this.formatPrice(totalPrice)}</th>
             </tr>`;
         return partsTableFooter.trim();
     }
@@ -254,7 +254,7 @@ class AssemblyComponentsComponent {
     }
 }
 
-export class AssemblyComponentsTable  {
+export class AssemblyComponentsTable {
     jobId: number;
     assembly: Assembly;
     components: Component[];
@@ -269,7 +269,7 @@ export class AssemblyComponentsTable  {
     generatePartsTable(): HTMLElement {
         const template = document.createElement("template");
         template.innerHTML = `
-        <table class="border">
+        <table class="border tiny-space">
             <thead>
                 ${this.generatePartsTableHeader()}
             </thead>
@@ -319,13 +319,13 @@ export class AssemblyComponentsTable  {
                         <span class="wrap no-line">${component.part_name}</span>
                     </div>
                 </td>
-                <td class="min center-align" data-column="assembly-component-partNumber">${component.part_number}</td>
+                <td class="center-align" data-column="assembly-component-partNumber">${component.part_number}</td>
                 <td class="left-align" data-column="assembly-component-notes">${notes}</td>
-                <td class="min center-align" data-column="assembly-component-shelfNumber">${shelfNumber}</td>
-                <td class="min center-align" data-column="assembly-component-unitQuantity">${unitQuantity}</td>
-                <td class="min center-align" data-column="assembly-component-quantity">${quantity}</td>
-                <td class="min center-align" data-column="assembly-component-unitPrice">${this.formatPrice(unitPrice)}</td>
-                <td class="min center-align" data-column="assembly-component-price">${this.formatPrice(price)}</td>
+                <td class="center-align" data-column="assembly-component-shelfNumber">${shelfNumber}</td>
+                <td class="center-align" data-column="assembly-component-unitQuantity">${unitQuantity}</td>
+                <td class="center-align" data-column="assembly-component-quantity">${quantity}</td>
+                <td class="center-align" data-column="assembly-component-unitPrice">${this.formatPrice(unitPrice)}</td>
+                <td class="center-align" data-column="assembly-component-price">${this.formatPrice(price)}</td>
             </tr>
             `;
         }
@@ -346,7 +346,7 @@ export class AssemblyComponentsTable  {
                 <th class="center-align" data-column="assembly-component-unitQuantity"></th>
                 <th class="center-align" data-column="assembly-component-quantity"></th>
                 <th class="center-align" data-column="assembly-component-unitPrice"></th>
-                <th class="min center-align" data-column="assembly-component-price">${this.formatPrice(totalPrice)}</th>
+                <th class="center-align" data-column="assembly-component-price">${this.formatPrice(totalPrice)}</th>
             </tr>`;
         return partsTableFooter.trim();
     }
@@ -356,7 +356,7 @@ export class AssemblyComponentsTable  {
     }
 }
 
-export class AssembliesPartsList implements BaseComponent{
+export class AssembliesPartsList implements BaseComponent {
     assembly: Assembly;
     jobId: number;
     element!: HTMLElement;

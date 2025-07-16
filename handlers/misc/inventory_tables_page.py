@@ -5,9 +5,7 @@ class InventoryTablesHandler(BaseHandler):
     async def get(self, inventory_type: str, category: str):
         data = []
         if inventory_type == "components_inventory":
-            all_components = (
-                await self.components_inventory_db.get_components_by_category(category)
-            )
+            all_components = await self.components_inventory_db.get_components_by_category(category)
             data = [
                 {
                     "part_name": component["part_name"],
@@ -19,11 +17,7 @@ class InventoryTablesHandler(BaseHandler):
                 for component in all_components
             ]
         elif inventory_type == "laser_cut_parts_inventory":
-            all_laser_cut_parts = (
-                await self.laser_cut_parts_inventory_db.get_laser_cut_parts_by_category(
-                    category
-                )
-            )
+            all_laser_cut_parts = await self.laser_cut_parts_inventory_db.get_laser_cut_parts_by_category(category)
             data = [
                 {
                     "part_name": laser_cut_part["name"],
@@ -38,9 +32,7 @@ class InventoryTablesHandler(BaseHandler):
                 for laser_cut_part in all_laser_cut_parts
             ]
         elif inventory_type == "coatings_inventory":
-            all_paints = await self.coatings_inventory_db.get_paints_by_category(
-                category
-            )
+            all_paints = await self.coatings_inventory_db.get_paints_by_category(category)
             data = [
                 {
                     "name": paint["name"],

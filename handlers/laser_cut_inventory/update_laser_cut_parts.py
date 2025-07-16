@@ -16,13 +16,8 @@ class UpdateLaserCutPartsHandler(BaseHandler):
             for laser_cut_part_data in data:
                 laser_cut_part_id = laser_cut_part_data.get("id", -1)
                 laser_cut_part_ids.append(laser_cut_part_id)
-                await self.laser_cut_parts_inventory_db.update_laser_cut_part(
-                    laser_cut_part_id, laser_cut_part_data, modified_by=client_name
-                )
-            changes_urls = [
-                f"laser_cut_parts_inventory/get_laser_cut_part/{laser_cut_part_id}"
-                for laser_cut_part_id in laser_cut_part_ids
-            ]
+                await self.laser_cut_parts_inventory_db.update_laser_cut_part(laser_cut_part_id, laser_cut_part_data, modified_by=client_name)
+            changes_urls = [f"laser_cut_parts_inventory/get_laser_cut_part/{laser_cut_part_id}" for laser_cut_part_id in laser_cut_part_ids]
             self.signal_clients_for_changes(
                 client_name,
                 changes_urls,

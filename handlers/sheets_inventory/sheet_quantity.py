@@ -34,15 +34,9 @@ class SheetQuantityHandler(BaseHandler):
             self.sheets_inventory,
         )
 
-        template = (
-            self.get_template("sheet_template.html")
-            if self.request.remote_ip in trusted_users
-            else self.get_template("sheet_template_read_only.html")
-        )
+        template = self.get_template("sheet_template.html") if self.request.remote_ip in trusted_users else self.get_template("sheet_template_read_only.html")
 
-        rendered_template = template.render(
-            sheet_name=sheet_name, quantity=sheet.quantity, pending_data=sheet.orders
-        )
+        rendered_template = template.render(sheet_name=sheet_name, quantity=sheet.quantity, pending_data=sheet.orders)
 
         self.set_status(200)
         self.set_header("Content-Type", "text/html")
@@ -85,7 +79,9 @@ class SheetQuantityHandler(BaseHandler):
             sheet_order_used.quantity = remaining_order_quantity
             if remaining_order_quantity <= 0:
                 sheet.remove_order(sheet_order_used)
-            sheet.latest_change_quantity = f"Set to {new_quantity} with Add Incoming Order Quantity ({quantity_to_add}) with QR code at {datetime.now().strftime('%B %d %A %Y %I:%M:%S %p')}"
+            sheet.latest_change_quantity = (
+                f"Set to {new_quantity} with Add Incoming Order Quantity ({quantity_to_add}) with QR code at {datetime.now().strftime('%B %d %A %Y %I:%M:%S %p')}"
+            )
         else:
             sheet.latest_change_quantity = f"Set to {new_quantity} with QR code at {datetime.now().strftime('%B %d %A %Y %I:%M:%S %p')}"
 
@@ -94,9 +90,7 @@ class SheetQuantityHandler(BaseHandler):
         if new_quantity >= sheet.red_quantity_limit:
             sheet.has_sent_warning = False
 
-        await self.sheets_inventory_db.update_sheet(
-            sheet.id, sheet.to_dict(), modified_by="system"
-        )
+        await self.sheets_inventory_db.update_sheet(sheet.id, sheet.to_dict(), modified_by="system")
 
         self.sheets_inventory_db.cache_manager.invalidate(f"sheet_{sheet_name}")
 

@@ -30,12 +30,8 @@ class WorkspaceAddJobHandler(BaseHandler):
             self.workspace_settings = WorkspaceSettings()
             self.paint_inventory = PaintInventory(self.components_inventory)
             self.sheets_inventory = SheetsInventory(self.sheet_settings)
-            self.laser_cut_inventory = LaserCutInventory(
-                self.paint_inventory, self.workspace_settings
-            )
-            self.structural_steel_inventory = StructuralSteelInventory(
-                self.structrual_steel_settings, self.workspace_settings
-            )
+            self.laser_cut_inventory = LaserCutInventory(self.paint_inventory, self.workspace_settings)
+            self.structural_steel_inventory = StructuralSteelInventory(self.structrual_steel_settings, self.workspace_settings)
             self.job_manager = JobManager(
                 self.sheet_settings,
                 self.sheets_inventory,
@@ -46,9 +42,7 @@ class WorkspaceAddJobHandler(BaseHandler):
                 self.structural_steel_inventory,
                 None,
             )
-            IOLoop.current().spawn_callback(
-                self._add_job_background, data, self.job_manager
-            )
+            IOLoop.current().spawn_callback(self._add_job_background, data, self.job_manager)
 
             self.set_header("Content-Type", "application/json")
             self.write({"status": "processing", "message": "Job queued."})

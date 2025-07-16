@@ -36,6 +36,37 @@ class ItemHistoryDB(BaseWithDBPool):
                 self.db_pool = None
 
     @ensure_connection
+    async def get_item_history(self, item_id: int):
+        """
+        Retrieve full history records for a specific item ID, ordered by version ascending.
+        Returns a list of dicts representing each version's data.
+        """
+        async with self.db_pool.acquire() as conn:
+            rows = await conn.fetch(
+                f"""
+                SELECT version, data, modified_by, created_at, diff_from, diff_to
+                FROM {self.item_name}s_inventory_history
+                WHERE {self.item_name}_id = $1
+                ORDER BY version ASC
+                """,
+                item_id,
+            )
+
+        history = []
+        for row in rows:
+            record = {
+                "version": row["version"],
+                "data": json.loads(row["data"]),
+                "modified_by": row["modified_by"],
+                "created_at": row["created_at"].isoformat() if row["created_at"] else None,
+                "diff_from": json.loads(row["diff_from"]),
+                "diff_to": json.loads(row["diff_to"]),
+            }
+            history.append(record)
+
+        return history
+
+    @ensure_connection
     async def _create_table_if_not_exists(self):
         table_query = f"""
         CREATE TABLE IF NOT EXISTS {self.item_name}s_inventory_history (
@@ -119,23 +150,17 @@ class ItemHistoryDB(BaseWithDBPool):
 
                 return
             except asyncpg.UniqueViolationError:
-                logging.info(
-                    f"[History Insert] Version {version} conflict, retrying..."
-                )
+                logging.info(f"[History Insert] Version {version} conflict, retrying...")
                 if attempt < max_retries:
                     await asyncio.sleep(attempt)
                 else:
-                    logging.info(
-                        f"[History Insert] Gave up after {max_retries} attempts."
-                    )
+                    logging.info(f"[History Insert] Gave up after {max_retries} attempts.")
             except Exception as e:
                 logging.info(f"[History Insert Error] Attempt {attempt}: {e}")
                 if attempt < max_retries:
                     await asyncio.sleep(attempt)
                 else:
-                    logging.info(
-                        f"[History Insert] FAILED after {max_retries} attempts."
-                    )
+                    logging.info(f"[History Insert] FAILED after {max_retries} attempts.")
 
     @ensure_connection
     async def get_item_history_diff(self, item_id: int):
@@ -161,9 +186,7 @@ class ItemHistoryDB(BaseWithDBPool):
             all_keys = set(prev) | set(current)
             for key in all_keys:
                 sub_path = f"{path}.{key}" if path else key
-                changes.update(
-                    self.compute_diff(prev.get(key), current.get(key), sub_path)
-                )
+                changes.update(self.compute_diff(prev.get(key), current.get(key), sub_path))
 
         elif isinstance(prev, list) and isinstance(current, list):
             if prev != current:

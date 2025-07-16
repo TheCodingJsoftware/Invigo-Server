@@ -35,9 +35,7 @@ class ProductionPlannerFileUploadHandler(BaseHandler):
             logging.info(
                 f'Web {self.request.remote_ip} uploaded "{filename}"',
             )
-            self.signal_clients_for_changes(
-                self.request.remote_ip, [filename], client_type="web"
-            )
+            self.signal_clients_for_changes(self.request.remote_ip, [filename], client_type="web")
         else:
             self.write("No file received.")
             logging.info(

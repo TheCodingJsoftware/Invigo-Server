@@ -1,7 +1,5 @@
 import os
 
-from tornado.web import StaticFileHandler
-
 from handlers.auth.client_name import GetClientNameHandler
 from handlers.auth.connect import ConnectHandler
 from handlers.auth.is_client_trusted import IsClientTrustedHandler
@@ -20,21 +18,22 @@ from handlers.components_inventory.update_component import UpdateComponentHandle
 from handlers.components_inventory.update_components import UpdateComponentsHandler
 from handlers.emails.send_email import SendEmailHandler
 from handlers.emails.send_error_report import SendErrorReportHandler
-from handlers.job_directories.delete_job_directory import DeleteJobDirectoryHandler
-from handlers.job_directories.get_job_directories_info import (
-    GetJobDirectoriesInfoHandler,
+from handlers.history.get_component_orders_history import (
+    GetComponentOrdersHistoryHandler,
 )
-from handlers.job_directories.get_job_directory import DownloadJobDirectoryHandler
-from handlers.job_directories.job_printouts import JobDirectoryPrintoutsHandler
-from handlers.job_directories.job_upload import UploadJobDirectoryHandler
-from handlers.job_directories.load_job_directory_html_page import (
-    LoadJobDirectoryHandler,
+from handlers.history.get_component_price_history import GetComponentPriceHistoryHandler
+from handlers.history.get_component_quantity_history import (
+    GetComponentQuantityHistoryHandler,
 )
-from handlers.job_directories.update_job_settings import UpdateJobSettingsHandler
+from handlers.history.get_laser_cut_part_quantity_history import (
+    GetLaserCutPartQuantityHistoryHandler,
+)
+from handlers.history.get_sheet_orders_history import GetSheetOrdersHistoryHandler
+from handlers.history.get_sheet_quantity_histroy import GetSheetQuantityHistoryHandler
 from handlers.jobs.delete_job import DeleteJobHandler
 from handlers.jobs.get_all_jobs import GetAllJobsHandler
 from handlers.jobs.get_job import GetJobHandler
-from handlers.jobs.load_job_printout import LoadJobPrintoutHandler
+from handlers.jobs.job_printouts import JobsPageHandler
 from handlers.jobs.save_job import SaveJobHandler
 from handlers.jobs.update_job_setting import UpdateJobSettingHandler
 from handlers.laser_cut_inventory.add_laser_cut_part import AddLaserCutPartHandler
@@ -68,6 +67,11 @@ from handlers.order_number.get_order_number import GetOrderNumberHandler
 from handlers.order_number.set_order_number import SetOrderNumberHandler
 from handlers.page import PageHandler
 from handlers.production_planner.file_uploader import ProductionPlannerFileUploadHandler
+from handlers.purchase_orders.delete_purchase_order import DeletePurchaseOrderHandler
+from handlers.purchase_orders.get_all_purchase_orders import GetAllPurchaseOrdersHandler
+from handlers.purchase_orders.get_purchase_order import GetPurchaseOrderHandler
+from handlers.purchase_orders.purchase_order_printouts import PurchaseOrdersPageHandler
+from handlers.purchase_orders.save_purchase_order import SavePurchaseOrderHandler
 from handlers.sheets_inventory.add_cut_off_sheet import AddCutoffSheetHandler
 from handlers.sheets_inventory.add_sheet import AddSheetHandler
 from handlers.sheets_inventory.delete_cut_off_sheet import DeleteCutoffSheetHandler
@@ -78,12 +82,20 @@ from handlers.sheets_inventory.get_sheet import GetSheetHandler
 from handlers.sheets_inventory.sheet_quantity import SheetQuantityHandler
 from handlers.sheets_inventory.update_sheet import UpdateSheetHandler
 from handlers.sheets_inventory.update_sheets import UpdateSheetsHandler
+from handlers.shipping_addresses.delete_shipping_address import DeleteShippingAddressHandler
+from handlers.shipping_addresses.get_all_shipping_addresses import GetAllShippingAddressesHandler
+from handlers.shipping_addresses.get_shipping_address import GetShippingAddressHandler
+from handlers.shipping_addresses.save_shipping_address import SaveShippingAddressHandler
 from handlers.static.custom import CustomStaticFileHandler
 from handlers.static.data_file_receiver import FileReceiveHandler
 from handlers.static.data_file_uploader import FileUploadHandler
 from handlers.static.image import ImageHandler
 from handlers.static.workspace_file_receiver import WorkspaceFileReceiverHandler
 from handlers.static.workspace_file_uploader import WorkspaceFileUploader
+from handlers.vendors.delete_vendor import DeleteVendorHandler
+from handlers.vendors.get_all_vendors import GetAllVendorsHandler
+from handlers.vendors.get_vendor import GetVendorHandler
+from handlers.vendors.save_vendor import SaveVendorHandler
 from handlers.wayback_machine.fetch_data import FetchDataHandler
 from handlers.wayback_machine.get_data import WayBackMachineDataHandler
 from handlers.websocket.software import WebSocketSoftwareHandler
@@ -143,6 +155,14 @@ page_routes = [
     ),
     route(r"/logs", LogsHandler),
     route(r"/server_log", ServerLogsHandler),
+    route(r"/jobs", JobsPageHandler),
+    route(r"/jobs/view", PageHandler, template_name="job_printout.html"),
+    route(r"/purchase_orders", PurchaseOrdersPageHandler),
+    route(
+        r"/purchase_orders/view",
+        PageHandler,
+        template_name="purchase_order_printout.html",
+    ),
 ]
 
 api_routes = [
@@ -205,6 +225,8 @@ api_routes = [
     route(r"/sheets_inventory/update_sheets", UpdateSheetsHandler),
     route(r"/sheets_inventory/get_all", GetAllSheetsHandler),
     route(r"/sheets_inventory/get_categories", GetSheetsCategoriesHandler),
+    route(r"/get_order_history/sheet/(.*)", GetSheetOrdersHistoryHandler),
+    route(r"/get_quantity_history/sheet/(.*)", GetSheetQuantityHistoryHandler),
     # Components Invnetory Routes
     route(r"/components_inventory/add_component", AddComponentHandler),
     route(r"/components_inventory/delete_component/(.*)", DeleteComponentHandler),
@@ -213,6 +235,9 @@ api_routes = [
     route(r"/components_inventory/update_components", UpdateComponentsHandler),
     route(r"/components_inventory/get_all", GetAllComponentsHandler),
     route(r"/components_inventory/get_categories", GetComponentsCategoriesHandler),
+    route(r"/get_order_history/component/(.*)", GetComponentOrdersHistoryHandler),
+    route(r"/get_quantity_history/component/(.*)", GetComponentQuantityHistoryHandler),
+    route(r"/get_price_history/component/(.*)", GetComponentPriceHistoryHandler),
     # Laser Cut Parts Invnetory Routes
     route(r"/laser_cut_parts_inventory/add_laser_cut_part", AddLaserCutPartHandler),
     route(r"/laser_cut_parts_inventory/add_laser_cut_parts", AddLaserCutPartsHandler),
@@ -224,28 +249,24 @@ api_routes = [
         r"/laser_cut_parts_inventory/delete_laser_cut_parts",
         DeleteLaserCutPartsHandler,
     ),
-    route(
-        r"/laser_cut_parts_inventory/get_laser_cut_part/(.*)", GetLaserCutPartHandler
-    ),
+    route(r"/laser_cut_parts_inventory/get_laser_cut_part/(.*)", GetLaserCutPartHandler),
     route(
         r"/laser_cut_parts_inventory/update_laser_cut_part/(.*)",
         UpdateLaserCutPartHandler,
     ),
-    route(
-        r"/laser_cut_parts_inventory/update_laser_cut_parts", UpdateLaserCutPartsHandler
-    ),
+    route(r"/laser_cut_parts_inventory/update_laser_cut_parts", UpdateLaserCutPartsHandler),
     route(r"/laser_cut_parts_inventory/get_all", GetAllLaserCutPartsHandler),
+    route(r"/laser_cut_parts_inventory/get_categories", GetLaserCutPartsCategoriesHandler),
     route(
-        r"/laser_cut_parts_inventory/get_categories", GetLaserCutPartsCategoriesHandler
+        r"/get_quantity_history/laser_cut_part/(.*)",
+        GetLaserCutPartQuantityHistoryHandler,
     ),
     # Job Routes
-    route(r"/jobs/save_job", SaveJobHandler),
+    route(r"/jobs/save", SaveJobHandler),
     route(r"/jobs/update_job_setting/(.*)", UpdateJobSettingHandler),
+    route(r"/jobs/delete/(.*)", DeleteJobHandler),
     route(r"/jobs/get_all", GetAllJobsHandler),
     route(r"/jobs/get_job/(.*)", GetJobHandler),
-    route(r"/jobs/delete_job/(.*)", DeleteJobHandler),
-    route(r"/jobs/view", LoadJobPrintoutHandler),
-    route(r"/jobs", JobDirectoryPrintoutsHandler),  # This is just a page
     # Paint Inventory Routes
     route(r"/coatings_inventory/add_coating", AddCoatingHandler),
     route(r"/coatings_inventory/delete_coating/(.*)", DeleteCoatingHandler),
@@ -262,6 +283,21 @@ api_routes = [
     # route(
     #     r"/workorders/printouts", WorkorderDirectoryPrintoutsHandler
     # ),  # This is just a page
+    # Purchase Orders
+    route(r"/purchase_orders/get_all", GetAllPurchaseOrdersHandler),
+    route(r"/purchase_orders/save", SavePurchaseOrderHandler),
+    route(r"/purchase_orders/delete/(.*)", DeletePurchaseOrderHandler),
+    route(r"/purchase_orders/get_purchase_order/(.*)", GetPurchaseOrderHandler),
+    # Vendors
+    route(r"/vendors/get_all", GetAllVendorsHandler),
+    route(r"/vendors/save", SaveVendorHandler),
+    route(r"/vendors/delete/(.*)", DeleteVendorHandler),
+    route(r"/vendors/get_vendor/(.*)", GetVendorHandler),
+    # Shipping Addresses
+    route(r"/shipping_addresses/get_all", GetAllShippingAddressesHandler),
+    route(r"/shipping_addresses/save", SaveShippingAddressHandler),
+    route(r"/shipping_addresses/get_shipping_address/(.*)", GetShippingAddressHandler),
+    route(r"/shipping_addresses/delete/(.*)", DeleteShippingAddressHandler),
     # ! Workorder routes OLD DEPRECATED
     route(r"/upload_workorder", UploadWorkorderHandler),
     route(r"/workorder/(.*)", WorkorderHandler),

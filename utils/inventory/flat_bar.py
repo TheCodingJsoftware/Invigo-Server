@@ -25,9 +25,7 @@ class FlatBar(StructuralProfile):
         return self.get_volume() * self.get_density()
 
     def get_cost(self) -> float:
-        return self.get_weight() * self.structural_steel_settings.get_price_per_pound(
-            self.material
-        )
+        return self.get_weight() * self.structural_steel_settings.get_price_per_pound(self.material)
 
     def load_data(self, data: dict[str, Union[float, str]]):
         super().load_data(data)

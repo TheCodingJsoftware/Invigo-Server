@@ -21,19 +21,13 @@ class AngleBar(StructuralProfile):
         return f"Length: {self.length:,.3f} in\nLeg A: {self.leg_a:,.3f} in\nLeg B: {self.leg_b:,.3f} in\nWall Thickness: {self.wall_thickness:,.3f} in"
 
     def get_volume(self) -> float:
-        return (
-            (self.leg_a * self.wall_thickness)
-            + (self.leg_b * self.wall_thickness)
-            - math.pow(self.wall_thickness, 2) * self.length
-        )
+        return (self.leg_a * self.wall_thickness) + (self.leg_b * self.wall_thickness) - math.pow(self.wall_thickness, 2) * self.length
 
     def get_weight(self) -> float:
         return self.get_volume() * self.get_density()
 
     def get_cost(self) -> float:
-        return self.get_weight() * self.structural_steel_settings.get_price_per_pound(
-            self.material
-        )
+        return self.get_weight() * self.structural_steel_settings.get_price_per_pound(self.material)
 
     def load_data(self, data: dict[str, Union[float, str]]):
         super().load_data(data)

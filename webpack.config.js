@@ -118,24 +118,21 @@ module.exports = {
             },
         ],
     },
-
     optimization: {
+        chunkIds: 'deterministic',
         splitChunks: {
+            name: false,
             chunks: 'all',
             cacheGroups: {
                 vendors: {
                     test: /[\\/]node_modules[\\/]/,
-                    name(module, chunks, cacheGroupKey) {
-                        const allChunksNames = chunks.map(item => item.name).join('~');
-                        return `${cacheGroupKey}~${allChunksNames}`;
-                    },
+                    name: 'vendors',
                     enforce: true,
                     reuseExistingChunk: true,
                 },
             },
         },
     },
-
     plugins: [
         new PurgeCSSPlugin({
             paths: globAll.sync([

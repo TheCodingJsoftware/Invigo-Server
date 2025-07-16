@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta http-equiv="X-UA-Compatible" content="ie=edge">
+        <meta name="google" content="notranslate">
+        <link rel="icon" href="/static/icon.png">
+        <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=yes" />
+        <title>Purchase Order Printouts</title>
+    </head>
+
+    <body class="dark" onload="document.body.classList.add('loaded')">
+        <header class="fixed primary">
+            <nav>
+                <button class="circle transparent" onclick="window.location.href='/';">
+                    <i>arrow_back</i>
+                </button>
+                <h5 class="max">Purchase Order Printouts</h5>
+            </nav>
+        </header>
+        <main class="responsive">
+            <div class="grid">
+                {% for purchase_order in all_purchase_orders %}
+                <article class="s12 m6 l6 round border">
+                    <nav class="row top-align">
+                        <h5 class="max">{{ purchase_order.purchase_order_data.meta_data.vendor.name }} #{{ purchase_order.purchase_order_data.meta_data.purchase_order_number }}</h5>
+                        <button onclick="window.location.href='/purchase_orders/view?id={{ purchase_order.purchase_order_data.id }}';">
+                            <i>open_in_new</i>
+                            <span>Open</span>
+                        </button>
+                    </nav>
+                    <nav class="row wrap no-space">
+                        <button class="chip tiny-margin">
+                            <span>
+                                {{ status_lookup[purchase_order.purchase_order_data.meta_data.status] }}
+                            </span>
+                        </button>
+                        <button class="chip tiny-margin">
+                            <i>tag</i>
+                            <span>
+                                {{ purchase_order.purchase_order_data.meta_data.purchase_order_number }}
+                            </span>
+                            <div class="tooltip bottom">
+                                <span>Purchase Order Number</span>
+                            </div>
+                        </button>
+                        <button class="chip tiny-margin" onclick="window.location.href='mailto:{{ purchase_order.purchase_order_data.meta_data.vendor.email }}';">
+                            <i>email</i>
+                            <span>
+                                {{ purchase_order.purchase_order_data.meta_data.vendor.email }}
+                            </span>
+                        </button>
+                        <button class="chip tiny-margin">
+                            <i>pin_drop</i>
+                            <span>
+                                {{ purchase_order.purchase_order_data.meta_data.vendor.address }}
+                            </span>
+                        </button>
+                        <button class="chip tiny-margin">
+                            <i>phone</i>
+                            <span>
+                                {{ purchase_order.purchase_order_data.meta_data.vendor.phone }}
+                            </span>
+                        </button>
+                        <button class="chip tiny-margin" onclick="window.open('{{ purchase_order.purchase_order_data.meta_data.vendor.website }}');">
+                            <i>globe</i>
+                            <span>
+                                {{ purchase_order.purchase_order_data.meta_data.vendor.website }}
+                            </span>
+                        </button>
+                        <button class="chip tiny-margin">
+                            <i>today</i>
+                            <span>
+                                {{ purchase_order.purchase_order_data.meta_data.order_date }}
+                            </span>
+                            <div class="tooltip bottom">
+                                <span>Order Date</span>
+                            </div>
+                        </button>
+                        <button class="chip tiny-margin">
+                            <i>forward_to_inbox</i>
+                            <span>
+                                {{ shipping_method_lookup[purchase_order.purchase_order_data.meta_data.shipping_method] }}
+                            </span>
+                            <div class="tooltip bottom">
+                                <span>Shipping Method</span>
+                            </div>
+                        </button>
+                        <button class="chip tiny-margin">
+                            <i>map</i>
+                            <span>
+                                Ship To
+                            </span>
+                            <div class="tooltip max bottom">
+                                <span>{{ purchase_order.purchase_order_data.meta_data.ship_to }}</span>
+                            </div>
+                        </button>
+                    </nav>
+                    <div>Components in this order: {{ purchase_order.purchase_order_data.components|length }}</div>
+                    <div>Sheets in this order: {{ purchase_order.purchase_order_data.sheets|length }}</div>
+                    <div class="field textarea label border round">
+                        <textarea readonly>{{ purchase_order.purchase_order_data.meta_data.notes }}{{ purchase_order.purchase_order_data.meta_data.vendor.notes }}</textarea>
+                        <label>Notes</label>
+                    </div>
+                </article>
+                {% endfor %}
+            </div>
+        </main>
+    </body>
+
+</html>

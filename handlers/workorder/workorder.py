@@ -8,9 +8,7 @@ from handlers.base import BaseHandler
 
 class WorkorderHandler(BaseHandler):
     def get(self, folder_name):
-        data_file_path = os.path.join(
-            Environment.DATA_PATH, "workorders", folder_name, "data.json"
-        )
+        data_file_path = os.path.join(Environment.DATA_PATH, "workorders", folder_name, "data.json")
 
         if os.path.exists(data_file_path):
             with open(data_file_path, "rb") as file:
@@ -21,9 +19,7 @@ class WorkorderHandler(BaseHandler):
             )
 
             self.set_header("Content-Type", "text/html")
-            self.render_template(
-                "workorder.html", workorder_id=folder_name, workorder_data=data
-            )
+            self.render_template("workorder.html", workorder_id=folder_name, workorder_data=data)
         else:
             self.set_status(404)
             self.write("404: HTML file not found.")

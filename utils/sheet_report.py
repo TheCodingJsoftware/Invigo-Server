@@ -21,10 +21,7 @@ def generate_sheet_report(clients) -> None:
         sheet_categories = [category.name for category in sheet.categories]
         if "Cutoff" in sheet_categories:
             continue
-        if (
-            sheet.quantity <= sheet.red_quantity_limit
-            or sheet.quantity <= sheet.yellow_quantity_limit
-        ):
+        if sheet.quantity <= sheet.red_quantity_limit or sheet.quantity <= sheet.yellow_quantity_limit:
             sheets_low_in_quantity += 1
             notes = sheet.notes
             if not notes:

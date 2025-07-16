@@ -46,12 +46,8 @@ class CoverPage:
         self.server_directory = f"http://{get_server_ip_address()}:{get_server_port()}"
 
     def generate(self) -> str:
-        formatted_date_shipped = datetime.strptime(
-            self.date_shipped, "%Y-%m-%d %I:%M %p"
-        ).strftime("%Y-%m-%dT%H:%M")
-        formatted_date_expected = datetime.strptime(
-            self.date_expected, "%Y-%m-%d %I:%M %p"
-        ).strftime("%Y-%m-%dT%H:%M")
+        formatted_date_shipped = datetime.strptime(self.date_shipped, "%Y-%m-%d %I:%M %p").strftime("%Y-%m-%dT%H:%M")
+        formatted_date_expected = datetime.strptime(self.date_expected, "%Y-%m-%d %I:%M %p").strftime("%Y-%m-%dT%H:%M")
 
         return f"""<div id="cover-page">
                 <div class="grid">
@@ -132,12 +128,8 @@ class NestsTable:
                 html += f'<th data-column="{i}"><label class="checkbox"><input type="checkbox" class="column-toggle" data-column="{i}" checked><span></span></label>{header}</th>'
             html += "</tr></thead><tbody>"
             for nest in self.nests:
-                single_hours, single_minutes, single_seconds = self.get_formatted_time(
-                    nest.sheet_cut_time
-                )
-                nest_hours, nest_minutes, nest_seconds = self.get_formatted_time(
-                    nest.get_machining_time()
-                )
+                single_hours, single_minutes, single_seconds = self.get_formatted_time(nest.sheet_cut_time)
+                nest_hours, nest_minutes, nest_seconds = self.get_formatted_time(nest.get_machining_time())
                 self.grand_total_cut_time += nest.get_machining_time()
                 html += f"""<tr>
                 <td class="small-text" data-label="{self.headers[0]}" data-column="0">{nest.name}</td>
@@ -147,9 +139,7 @@ class NestsTable:
                 <td class="small-text" data-label="{self.headers[4]}" data-column="4">{single_hours:02d}h {single_minutes:02d}m {single_seconds:02d}s</td>
                 <td class="small-text" data-label="{self.headers[5]}" data-column="5">{nest_hours:02d}h {nest_minutes:02d}m {nest_seconds:02d}s</td>
                 </tr>"""
-            grand_total_hours, grand_total_minutes, grand_total_seconds = (
-                self.get_formatted_time(self.grand_total_cut_time)
-            )
+            grand_total_hours, grand_total_minutes, grand_total_seconds = self.get_formatted_time(self.grand_total_cut_time)
             html += f"""<tr>
             <td class="small-text" data-label="" data-column="0"></td>
             <td class="small-text" data-label="" data-column="1"></td>
@@ -222,12 +212,8 @@ class SheetImages:
             html += "Nothing here"
         else:
             for i, nest in enumerate(self.nests):
-                single_hours, single_minutes, single_seconds = (
-                    self.get_hours_minutes_seconds(nest.sheet_cut_time)
-                )
-                nest_hours, nest_minutes, nest_seconds = self.get_hours_minutes_seconds(
-                    nest.get_machining_time()
-                )
+                single_hours, single_minutes, single_seconds = self.get_hours_minutes_seconds(nest.sheet_cut_time)
+                nest_hours, nest_minutes, nest_seconds = self.get_hours_minutes_seconds(nest.get_machining_time())
                 if nest.sheet_count == 1:
                     cut_time = f'<div class="small-text">Cut Time: {nest_hours:02d}h {nest_minutes:02d}m {nest_seconds:02d}s</div>'
                 else:
@@ -250,11 +236,11 @@ class SheetImages:
                 <div class="s6" id="nest-container">
                     <article class="nest no-padding border">
                         <img src="{self.server_directory}/image/{nest.image_path}" class="responsive nest_image">
-                        <div class="{'right-align' if i % 2 == 0 else 'left-align'}">
+                        <div class="{"right-align" if i % 2 == 0 else "left-align"}">
                             <button class="nested-parts transparent small small-round">
                                 <i>format_list_bulleted</i>
                                 <span>Parts</span>
-                                <div class="tooltip {'right' if i % 2 == 0 else 'left'}">
+                                <div class="tooltip {"right" if i % 2 == 0 else "left"}">
                                     {parts_list}
                                 </div>
                             </button>
@@ -299,9 +285,7 @@ class NestedLaserCutParts:
         return filename.replace(" ", "_")
 
     def generate_laser_cut_part_table(self, nest: Nest) -> str:
-        html = (
-            '<table class="no-space border dynamic-table responsiveTable"><thead><tr>'
-        )
+        html = '<table class="no-space border dynamic-table responsiveTable"><thead><tr>'
         for i, header in enumerate(self.headers):
             html += f'<th class="small-text" data-column="{i}"><label class="checkbox"><input type="checkbox" class="column-toggle" data-column="{i}" data-name="{header.lower().replace(" ", "-")}" checked><span></span></label>{header}</th>'
         html += "</tr>"
@@ -333,9 +317,7 @@ class NestedLaserCutParts:
             html += '<article class="border nest-summary">Nothing here</article>'
         else:
             for i, nest in enumerate(self.nests):
-                html += (
-                    '<article class="border nest-summary"><div class="center-align">'
-                )
+                html += '<article class="border nest-summary"><div class="center-align">'
                 html += f'<h6 class="center-align">{nest.get_name()}</h6><br>'
                 html += f'<img src="{self.server_directory}/image/{nest.image_path}" class="responsive nest_image"></div>'
                 html += self.generate_laser_cut_part_table(nest)
@@ -347,9 +329,7 @@ class NestedLaserCutParts:
 
 
 class LaserCutPartsTable:
-    def __init__(
-        self, job: Job, assembly_quantity: int, laser_cut_parts: list[LaserCutPart]
-    ):
+    def __init__(self, job: Job, assembly_quantity: int, laser_cut_parts: list[LaserCutPart]):
         self.job = job
         self.assembly_quantity = assembly_quantity
         self.laser_cut_parts = laser_cut_parts
@@ -403,11 +383,7 @@ class LaserCutPartsTable:
     def get_total_cost(self) -> float:
         total = 0.0
         for laser_cut_part in self.laser_cut_parts:
-            total += (
-                self.job.price_calculator.get_laser_cut_part_cost(laser_cut_part)
-                * laser_cut_part.quantity
-                * self.assembly_quantity
-            )
+            total += self.job.price_calculator.get_laser_cut_part_cost(laser_cut_part) * laser_cut_part.quantity * self.assembly_quantity
         return total
 
     def get_paint(self, laser_cut_part: LaserCutPart) -> str:
@@ -418,11 +394,7 @@ class LaserCutPartsTable:
             html += f'<div class="no-margin s12"><div class="tiny-margin" style="height: 20px; width: 20px; display: inline-flex; background-color: {laser_cut_part.paint_item.color}; border-radius: 5px;"></div><span class="tiny-margin">{laser_cut_part.paint_item.name}</span></div>'
         if laser_cut_part.uses_powder and laser_cut_part.powder_item:
             html += f'<div class="no-margin s12"><div class="tiny-margin" style="height: 20px; width: 20px; display: inline-flex; background-color: {laser_cut_part.powder_item.color}; border-radius: 5px;"></div><span class="tiny-margin">{laser_cut_part.powder_item.name}</span></div>'
-        if not (
-            laser_cut_part.uses_primer
-            or laser_cut_part.uses_paint
-            or laser_cut_part.uses_powder
-        ):
+        if not (laser_cut_part.uses_primer or laser_cut_part.uses_paint or laser_cut_part.uses_powder):
             html = ""
         else:
             html += "</div>"
@@ -436,9 +408,7 @@ class LaserCutPartsTable:
         html += "</thead>"
         html += "<tbody>"
         for laser_cut_part in self.laser_cut_parts:
-            unit_price = self.job.price_calculator.get_laser_cut_part_cost(
-                laser_cut_part
-            )
+            unit_price = self.job.price_calculator.get_laser_cut_part_cost(laser_cut_part)
             html += f"""<tr>
             <td class="min" data-label="{self.headers[0]}" data-column="0" data-name="part">
                 <button class="extra transparent small-round" onclick="ui('#LCP-{self.format_filename(laser_cut_part.name)}');">
@@ -523,11 +493,7 @@ class ComponentsTable:
     def get_total_cost(self) -> float:
         total = 0.0
         for component in self.components:
-            total += (
-                self.job.price_calculator.get_component_cost(component)
-                * component.quantity
-                * self.assembly_quantity
-            )
+            total += self.job.price_calculator.get_component_cost(component) * component.quantity * self.assembly_quantity
         return total
 
     def generate(self):
@@ -646,11 +612,7 @@ class AssemblyDiv:
 
     def get_assembly_data_html(self) -> str:
         html = '<div class="assembly_data">'
-        image_html = (
-            f'<img class="assembly-image" src="{self.server_directory}/image/{self.assembly.assembly_image}">'
-            if self.assembly.assembly_image
-            else ""
-        )
+        image_html = f'<img class="assembly-image" src="{self.server_directory}/image/{self.assembly.assembly_image}">' if self.assembly.assembly_image else ""
         html += image_html
         html += '<div class="padding">'
         html += f"<h5>{self.assembly.name}</h5>"
@@ -663,9 +625,7 @@ class AssemblyDiv:
 
     def generate(self) -> str:
         html = '<details class="assembly_details" open>'
-        html += (
-            f"<summary>{self.assembly.name} × {int(self.assembly.quantity)}</summary>"
-        )
+        html += f"<summary>{self.assembly.name} × {int(self.assembly.quantity)}</summary>"
         html += '<div class="assembly">'
         html += self.get_assembly_data_html()
 
@@ -673,9 +633,7 @@ class AssemblyDiv:
             html += '<details class="laser_cut_parts_detail" open>'
             html += "<summary>Laser Cut Parts</summary>"
             html += '<div class="detail_contents laser_cut_part_contents">'
-            laser_cut_table = LaserCutPartsTable(
-                self.job, self.assembly.quantity, self.assembly.laser_cut_parts
-            )
+            laser_cut_table = LaserCutPartsTable(self.job, self.assembly.quantity, self.assembly.laser_cut_parts)
             html += laser_cut_table.generate()
             html += "</div>"
             html += "</details>"
@@ -684,9 +642,7 @@ class AssemblyDiv:
             html += '<details class="components_detail" open>'
             html += "<summary>Components</summary>"
             html += '<div class="detail_contents components_contents">'
-            component_table = ComponentsTable(
-                self.job, self.assembly.quantity, self.assembly.components
-            )
+            component_table = ComponentsTable(self.job, self.assembly.quantity, self.assembly.components)
             html += component_table.generate()
             html += "</div>"
             html += "</details>"
@@ -716,11 +672,7 @@ class AssemblyDiv:
             html += f'<div class="row no-margin"><div style="height: 20px; width: 20px; background-color: {self.assembly.paint_item.color}; border-radius: 5px;"></div>{self.assembly.paint_item.name}</div>'
         if self.assembly.uses_powder and self.assembly.powder_item:
             html += f'<div class="row no-margin"><div style="height: 20px; width: 20px; background-color: {self.assembly.powder_item.color}; border-radius: 5px;"></div>{self.assembly.powder_item.name}</div>'
-        if not (
-            self.assembly.uses_primer
-            or self.assembly.uses_paint
-            or self.assembly.uses_powder
-        ):
+        if not (self.assembly.uses_primer or self.assembly.uses_paint or self.assembly.uses_powder):
             html = ""
         else:
             html += "</div>"
@@ -755,15 +707,15 @@ class PrintoutHeader:
                 </div>
             </nav>
             <nav class="tabbed primary-container">
-                <a {'class="active primary"' if self.printout_type == "QUOTE" else ''} data-target="quote">
+                <a {'class="active primary"' if self.printout_type == "QUOTE" else ""} data-target="quote">
                     <i>request_quote</i>
                     <span>Quote</span>
                 </a>
-                <a {'class="active primary"' if self.printout_type == "WORKORDER" else ''} data-target="workorder">
+                <a {'class="active primary"' if self.printout_type == "WORKORDER" else ""} data-target="workorder">
                     <i>construction</i>
                     <span>Workorder</span>
                 </a>
-                <a {'class="active primary"' if self.printout_type == "PACKINGSLIP" else ''} data-target="packingslip">
+                <a {'class="active primary"' if self.printout_type == "PACKINGSLIP" else ""} data-target="packingslip">
                     <i>receipt_long</i>
                     <span>Packing Slip</span>
                 </a>
@@ -784,9 +736,7 @@ class WorkspaceJobPrintout:
 
     def generate(self) -> str:
         header_html = PrintoutHeader(self.job.name, self.printout_type).html
-        head_html = Head(
-            f"{self.printout_type.title()} - {self.job.name}", self.job.ship_to
-        ).html
+        head_html = Head(f"{self.printout_type.title()} - {self.job.name}", self.job.ship_to).html
         html = f"""<!DOCTYPE html>
                 <html>{head_html}
         <body class="{self.printout_type.lower()}">
@@ -906,9 +856,7 @@ class WorkspaceJobPrintout:
         html += "</div>"
 
         grouped_laser_cut_parts = self.job.get_grouped_laser_cut_parts()
-        grouped_laser_cut_parts_table = LaserCutPartsTable(
-            self.job, 1, grouped_laser_cut_parts
-        )
+        grouped_laser_cut_parts_table = LaserCutPartsTable(self.job, 1, grouped_laser_cut_parts)
 
         grouped_components = self.job.get_grouped_components()
         grouped_components_table = ComponentsTable(self.job, 1, grouped_components)
@@ -967,9 +915,7 @@ class WorkorderPrintout:
 
     def generate(self) -> str:
         header_html = PrintoutHeader("Nested Parts", self.printout_type).html
-        head_html = Head(
-            f"{self.printout_type.title()} - Nest Printout", "Workspace Nest Printout"
-        ).html
+        head_html = Head(f"{self.printout_type.title()} - Nest Printout", "Workspace Nest Printout").html
         html = f"""<!DOCTYPE html>
                 <html>{head_html}
         <body class="{self.printout_type.lower()}">

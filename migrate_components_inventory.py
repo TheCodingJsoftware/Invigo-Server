@@ -24,9 +24,7 @@ async def migrate_components_inventory_from_json_file(file_path: str):
             component["id"] = idx
             component["name"] = component["part_number"]
             component_id = await db.add_component(component)
-            print(
-                f"[{idx}] Inserted component ID: {component_id} - Name: {component['name']}"
-            )
+            print(f"[{idx}] Inserted component ID: {component_id} - Name: {component['name']}")
 
     except Exception as e:
         print(f"Error during migration: {e}")
@@ -35,6 +33,4 @@ async def migrate_components_inventory_from_json_file(file_path: str):
 
 
 if __name__ == "__main__":
-    asyncio.run(
-        migrate_components_inventory_from_json_file("data/components_inventory.json")
-    )
+    asyncio.run(migrate_components_inventory_from_json_file("data/components_inventory.json"))

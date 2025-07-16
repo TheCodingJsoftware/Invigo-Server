@@ -2,7 +2,7 @@ import { BaseComponent } from "@interfaces/base-component";
 import { Nest } from "@models/nest";
 import QRCode from 'qrcode';
 
-export class NestedSheets implements BaseComponent{
+export class NestedSheets implements BaseComponent {
     nests: Nest[];
     jobId: number;
     element!: HTMLElement;
@@ -40,7 +40,7 @@ export class NestedSheets implements BaseComponent{
                 </div>
                 <div class="grid" id="nested-sheets-grid-view">${this.generateNestedSheetsGridView()}</div>
                 <div id="nested-sheets-list-view">
-                    <table class="border">
+                    <table class="border tiny-space">
                         <thead>
                             ${this.generateTableHeader()}
                         </thead>

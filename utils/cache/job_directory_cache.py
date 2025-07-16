@@ -15,11 +15,7 @@ class JobDirectoryCache:
         self.executor = ThreadPoolExecutor(max_workers=4)
 
     def _is_cache_valid(self):
-        return (
-            self._cache is not None
-            and self._cache_timestamp is not None
-            and datetime.now() - self._cache_timestamp < self.cache_expiry
-        )
+        return self._cache is not None and self._cache_timestamp is not None and datetime.now() - self._cache_timestamp < self.cache_expiry
 
     def invalidate_cache(self):
         self._cache = None
@@ -42,9 +38,7 @@ class JobDirectoryCache:
                                 job_data = msgspec.json.decode(f.read())
 
                             modified_timestamp = os.path.getmtime(job_data_path)
-                            formatted_modified_date = datetime.fromtimestamp(
-                                modified_timestamp
-                            ).strftime("%Y-%m-%d %I:%M:%S %p")
+                            formatted_modified_date = datetime.fromtimestamp(modified_timestamp).strftime("%Y-%m-%d %I:%M:%S %p")
 
                             dir_info = {
                                 "dir": root.replace("\\", "/"),
@@ -52,16 +46,10 @@ class JobDirectoryCache:
                                 "modified_date": modified_timestamp,
                                 "formated_modified_date": formatted_modified_date,
                                 "type": job_data["job_data"].get("type", 0),
-                                "order_number": job_data["job_data"].get(
-                                    "order_number", 0
-                                ),
+                                "order_number": job_data["job_data"].get("order_number", 0),
                                 "ship_to": job_data["job_data"].get("ship_to", ""),
-                                "date_shipped": job_data["job_data"].get(
-                                    "starting_date", ""
-                                ),
-                                "date_expected": job_data["job_data"].get(
-                                    "ending_date", ""
-                                ),
+                                "date_shipped": job_data["job_data"].get("starting_date", ""),
+                                "date_expected": job_data["job_data"].get("ending_date", ""),
                                 "color": job_data["job_data"].get("color", ""),
                             }
                             relative_path = dir_path.replace(f"{base_directory}/", "")

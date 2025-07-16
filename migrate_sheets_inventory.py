@@ -2,6 +2,9 @@ import asyncio
 import json
 
 from utils.database.sheets_inventory_db import SheetsInventoryDB
+from utils.sheet_settings import SheetSettings
+
+sheet_settings = SheetSettings()
 
 
 async def migrate_sheets_inventory_from_json_file(file_path: str):
@@ -22,9 +25,14 @@ async def migrate_sheets_inventory_from_json_file(file_path: str):
 
         for idx, sheet in enumerate(sheets, start=1):
             sheet["id"] = idx
+            sheet_price = sheet_settings.get_sheet_cost(sheet["material"], sheet["thickness"], sheet["length"], sheet["width"])
+            sheet["price"] = sheet_price
+            price_per_pound = sheet_settings.get_price_per_pound(sheet["material"])
+            sheet["price_per_pound"] = price_per_pound
+            pounds_per_square_foot = sheet_settings.get_pounds_per_square_foot(sheet["material"], sheet["thickness"])
+            sheet["pounds_per_square_foot"] = pounds_per_square_foot
             sheet_id = await db.add_sheet(sheet)
             print(f"[{idx}] Inserted sheet ID: {sheet_id} - Name: {sheet['name']}")
-
     except Exception as e:
         print(f"Error during migration: {e}")
     finally:

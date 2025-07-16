@@ -15,13 +15,8 @@ class UpdateComponentsHandler(BaseHandler):
             for component_data in data:
                 component_id = component_data.get("id", -1)
                 component_ids.append(component_id)
-                await self.components_inventory_db.update_component(
-                    component_id, component_data, modified_by=client_name
-                )
-            changes_urls = [
-                f"/components_inventory/get_component/{component_id}"
-                for component_id in component_ids
-            ]
+                await self.components_inventory_db.update_component(component_id, component_data, modified_by=client_name)
+            changes_urls = [f"/components_inventory/get_component/{component_id}" for component_id in component_ids]
             self.signal_clients_for_changes(
                 client_name,
                 changes_urls,

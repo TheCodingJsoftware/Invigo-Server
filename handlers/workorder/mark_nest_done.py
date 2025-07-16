@@ -12,8 +12,7 @@ from utils.inventory.paint_inventory import PaintInventory
 from utils.inventory.sheets_inventory import SheetsInventory
 from utils.inventory.structural_steel_inventory import StructuralSteelInventory
 from utils.sheet_settings.sheet_settings import SheetSettings
-from utils.structural_steel_settings.structural_steel_settings import \
-    StructuralSteelSettings
+from utils.structural_steel_settings.structural_steel_settings import StructuralSteelSettings
 from utils.workspace.job_manager import JobManager
 from utils.workspace.workorder import Workorder
 from utils.workspace.workspace import Workspace
@@ -34,12 +33,8 @@ class MarkNestDoneHandler(BaseHandler):
                 self.workspace_settings = WorkspaceSettings()
                 self.paint_inventory = PaintInventory(self.components_inventory)
                 self.sheets_inventory = SheetsInventory(self.sheet_settings)
-                self.laser_cut_inventory = LaserCutInventory(
-                    self.paint_inventory, self.workspace_settings
-                )
-                self.structural_steel_inventory = StructuralSteelInventory(
-                    self.structrual_steel_settings, self.workspace_settings
-                )
+                self.laser_cut_inventory = LaserCutInventory(self.paint_inventory, self.workspace_settings)
+                self.structural_steel_inventory = StructuralSteelInventory(self.structrual_steel_settings, self.workspace_settings)
                 self.job_manager = JobManager(
                     self.sheet_settings,
                     self.sheets_inventory,
@@ -52,22 +47,16 @@ class MarkNestDoneHandler(BaseHandler):
                 )
                 self.workspace = Workspace(self.workspace_settings, self.job_manager)
 
-                self.nest = Nest(
-                    self.nest_data, self.sheet_settings, self.laser_cut_inventory
-                )
+                self.nest = Nest(self.nest_data, self.sheet_settings, self.laser_cut_inventory)
 
                 await self.update_laser_cut_parts_process(self.nest, self.workspace)
 
-                workorder_data_path = os.path.join(
-                    Environment.DATA_PATH, "workorders", workorder_id, "data.json"
-                )
+                workorder_data_path = os.path.join(Environment.DATA_PATH, "workorders", workorder_id, "data.json")
 
                 with open(workorder_data_path, "rb") as f:
                     workorder_data: list[dict] = msgspec.json.decode(f.read())
 
-                self.workorder = Workorder(
-                    workorder_data, self.sheet_settings, self.laser_cut_inventory
-                )
+                self.workorder = Workorder(workorder_data, self.sheet_settings, self.laser_cut_inventory)
                 new_nests: list[Nest] = []
 
                 for nest in self.workorder.nests:

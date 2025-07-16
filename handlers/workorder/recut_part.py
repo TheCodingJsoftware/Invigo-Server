@@ -36,12 +36,8 @@ class RecutPartHandler(BaseHandler):
                 self.workspace_settings = WorkspaceSettings()
                 self.paint_inventory = PaintInventory(self.components_inventory)
                 self.sheets_inventory = SheetsInventory(self.sheet_settings)
-                self.laser_cut_inventory = LaserCutInventory(
-                    self.paint_inventory, self.workspace_settings
-                )
-                self.structural_steel_inventory = StructuralSteelInventory(
-                    self.structrual_steel_settings, self.workspace_settings
-                )
+                self.laser_cut_inventory = LaserCutInventory(self.paint_inventory, self.workspace_settings)
+                self.structural_steel_inventory = StructuralSteelInventory(self.structrual_steel_settings, self.workspace_settings)
                 self.job_manager = JobManager(
                     self.sheet_settings,
                     self.sheets_inventory,
@@ -54,9 +50,7 @@ class RecutPartHandler(BaseHandler):
                 )
                 self.workspace = Workspace(self.workspace_settings, self.job_manager)
 
-                self.laser_cut_part_to_recut = LaserCutPart(
-                    self.recut_data["laser_cut_part"], self.laser_cut_inventory
-                )
+                self.laser_cut_part_to_recut = LaserCutPart(self.recut_data["laser_cut_part"], self.laser_cut_inventory)
                 self.laser_cut_part_to_recut.recut = True
 
                 self.recut_nest = Nest(
@@ -67,13 +61,8 @@ class RecutPartHandler(BaseHandler):
 
                 self.recut_quantity = int(self.recut_data["quantity"])
 
-                for workspace_part_group in self.workspace.get_grouped_laser_cut_parts(
-                    self.workspace.get_all_laser_cut_parts_with_similar_tag("picking")
-                ):
-                    if (
-                        workspace_part_group.base_part.name
-                        == self.laser_cut_part_to_recut.name
-                    ):
+                for workspace_part_group in self.workspace.get_grouped_laser_cut_parts(self.workspace.get_all_laser_cut_parts_with_similar_tag("picking")):
+                    if workspace_part_group.base_part.name == self.laser_cut_part_to_recut.name:
                         workspace_part_group.mark_as_recut(self.recut_quantity)
                         self.laser_cut_inventory.add_or_update_laser_cut_part(
                             self.laser_cut_part_to_recut,
@@ -81,28 +70,19 @@ class RecutPartHandler(BaseHandler):
                         )
                         break
 
-                workorder_data_path = os.path.join(
-                    Environment.DATA_PATH, "workorders", workorder_id, "data.json"
-                )
+                workorder_data_path = os.path.join(Environment.DATA_PATH, "workorders", workorder_id, "data.json")
 
                 with open(workorder_data_path, "rb") as f:
-                    workorder_data: list[dict[str, object]] = msgspec.json.decode(
-                        f.read()
-                    )
+                    workorder_data: list[dict[str, object]] = msgspec.json.decode(f.read())
 
-                self.workorder = Workorder(
-                    workorder_data, self.sheet_settings, self.laser_cut_inventory
-                )
+                self.workorder = Workorder(workorder_data, self.sheet_settings, self.laser_cut_inventory)
 
                 found_recut_part: bool = False
 
                 for workorder_nest in self.workorder.nests:
                     if workorder_nest.get_name() == self.recut_nest.get_name():
                         for nested_laser_cut_part in workorder_nest.laser_cut_parts:
-                            if (
-                                nested_laser_cut_part.name
-                                == self.laser_cut_part_to_recut.name
-                            ):
+                            if nested_laser_cut_part.name == self.laser_cut_part_to_recut.name:
                                 found_recut_part = True
                                 nested_laser_cut_part.recut_count += self.recut_quantity
                                 nested_laser_cut_part.recut = True

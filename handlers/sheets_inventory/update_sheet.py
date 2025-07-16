@@ -10,9 +10,7 @@ class UpdateSheetHandler(BaseHandler):
             client_name = self.get_client_name_from_header()
 
             data = msgspec.json.decode(self.request.body)
-            await self.sheets_inventory_db.update_sheet(
-                sheet_id, data, modified_by=client_name
-            )
+            await self.sheets_inventory_db.update_sheet(sheet_id, data, modified_by=client_name)
             self.signal_clients_for_changes(
                 client_name,
                 [f"sheets_inventory/get_sheet/{sheet_id}"],

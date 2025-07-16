@@ -9,18 +9,10 @@ from handlers.base import BaseHandler
 class WayBackMachineDataHandler(BaseHandler):
     def get(self):
         try:
-            components_inventory_path = os.path.join(
-                Environment.DATA_PATH, "data", "components_inventory.json"
-            )
-            laser_cut_inventory_path = os.path.join(
-                Environment.DATA_PATH, "data", "laser_cut_inventory.json"
-            )
-            sheets_inventory_path = os.path.join(
-                Environment.DATA_PATH, "data", "sheets_inventory.json"
-            )
-            structural_steel_inventory_path = os.path.join(
-                Environment.DATA_PATH, "data", "structural_steel_inventory.json"
-            )
+            components_inventory_path = os.path.join(Environment.DATA_PATH, "data", "components_inventory.json")
+            laser_cut_inventory_path = os.path.join(Environment.DATA_PATH, "data", "laser_cut_inventory.json")
+            sheets_inventory_path = os.path.join(Environment.DATA_PATH, "data", "sheets_inventory.json")
+            structural_steel_inventory_path = os.path.join(Environment.DATA_PATH, "data", "structural_steel_inventory.json")
             data: dict[str, list[str]] = {}
             with open(components_inventory_path, "rb") as f:
                 data["components_inventory"] = []
@@ -28,9 +20,7 @@ class WayBackMachineDataHandler(BaseHandler):
                     data["components_inventory"].append(component_data["part_name"])
             with open(laser_cut_inventory_path, "rb") as f:
                 data["laser_cut_inventory"] = []
-                for laser_cut_part_data in msgspec.json.decode(f.read())[
-                    "laser_cut_parts"
-                ]:
+                for laser_cut_part_data in msgspec.json.decode(f.read())["laser_cut_parts"]:
                     data["laser_cut_inventory"].append(laser_cut_part_data["name"])
             with open(sheets_inventory_path, "rb") as f:
                 data["sheets_inventory"] = []

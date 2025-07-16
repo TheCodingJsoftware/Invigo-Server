@@ -13,8 +13,7 @@ from utils.inventory.rectangular_tube import RectangularTube
 from utils.inventory.round_bar import RoundBar
 from utils.inventory.round_tube import RoundTube
 from utils.inventory.structural_profile import ProfilesTypes, StructuralProfile
-from utils.structural_steel_settings.structural_steel_settings import \
-    StructuralSteelSettings
+from utils.structural_steel_settings.structural_steel_settings import StructuralSteelSettings
 from utils.workspace.workspace_settings import WorkspaceSettings
 
 
@@ -38,9 +37,7 @@ class StructuralSteelInventory(Inventory):
         self.pipes: list[Pipe] = []
         self.load_data()
 
-    def duplicate_category(
-        self, category_to_duplicate: Category, new_category_name: str
-    ) -> Category:
+    def duplicate_category(self, category_to_duplicate: Category, new_category_name: str) -> Category:
         new_category = Category(new_category_name)
         super().add_category(new_category)
         for sheet in self.get_items_by_category(category_to_duplicate):
@@ -55,34 +52,14 @@ class StructuralSteelInventory(Inventory):
 
     def get_items_by_profile_type(
         self,
-        items: list[
-            RoundBar
-            | RectangularBar
-            | AngleBar
-            | RectangularTube
-            | RoundTube
-            | DOMRoundTube
-            | Pipe
-            | FlatBar
-        ],
+        items: list[RoundBar | RectangularBar | AngleBar | RectangularTube | RoundTube | DOMRoundTube | Pipe | FlatBar],
     ) -> list[ProfilesTypes]:
         profile_types: set[ProfilesTypes] = set()
         for item in items:
             profile_types.add(item.PROFILE_TYPE)
         return list(profile_types)
 
-    def get_items_by_category(
-        self, category: str | Category
-    ) -> list[
-        RoundBar
-        | RectangularBar
-        | AngleBar
-        | RectangularTube
-        | RoundTube
-        | DOMRoundTube
-        | Pipe
-        | FlatBar
-    ]:
+    def get_items_by_category(self, category: str | Category) -> list[RoundBar | RectangularBar | AngleBar | RectangularTube | RoundTube | DOMRoundTube | Pipe | FlatBar]:
         if isinstance(category, str):
             category = self.get_category(category)
         return [item for item in self.get_all_items() if category in item.categories]
@@ -101,9 +78,7 @@ class StructuralSteelInventory(Inventory):
         with open(f"{self.FOLDER_LOCATION}/{self.filename}.json", "wb") as file:
             file.write(msgspec.json.encode(self.to_dict()))
 
-    def add_angle_bar(
-        self, item_data: dict[str, Union[str, int, float, bool]] | AngleBar
-    ) -> AngleBar:
+    def add_angle_bar(self, item_data: dict[str, Union[str, int, float, bool]] | AngleBar) -> AngleBar:
         if isinstance(item_data, AngleBar):
             item = item_data
         else:
@@ -114,9 +89,7 @@ class StructuralSteelInventory(Inventory):
     def remove_angle_bar(self, item: AngleBar):
         self.angle_bars.remove(item)
 
-    def add_flat_bar(
-        self, item_data: dict[str, Union[str, int, float, bool]] | FlatBar
-    ) -> FlatBar:
+    def add_flat_bar(self, item_data: dict[str, Union[str, int, float, bool]] | FlatBar) -> FlatBar:
         if isinstance(item_data, FlatBar):
             item = item_data
         else:
@@ -127,9 +100,7 @@ class StructuralSteelInventory(Inventory):
     def remove_flat_bar(self, item: FlatBar):
         self.flat_bars.remove(item)
 
-    def add_rectangular_bar(
-        self, item_data: dict[str, Union[str, int, float, bool]] | RectangularBar
-    ) -> RectangularBar:
+    def add_rectangular_bar(self, item_data: dict[str, Union[str, int, float, bool]] | RectangularBar) -> RectangularBar:
         if isinstance(item_data, RectangularBar):
             item = item_data
         else:
@@ -140,9 +111,7 @@ class StructuralSteelInventory(Inventory):
     def remove_rectangular_bar(self, item: RectangularBar):
         self.rectangular_bars.remove(item)
 
-    def add_rectangular_tube(
-        self, item_data: dict[str, Union[str, int, float, bool]] | RectangularTube
-    ) -> RectangularTube:
+    def add_rectangular_tube(self, item_data: dict[str, Union[str, int, float, bool]] | RectangularTube) -> RectangularTube:
         if isinstance(item_data, RectangularTube):
             item = item_data
         else:
@@ -153,9 +122,7 @@ class StructuralSteelInventory(Inventory):
     def remove_rectangular_tube(self, item: RectangularTube):
         self.rectangular_tubes.remove(item)
 
-    def add_round_bar(
-        self, item_data: dict[str, Union[str, int, float, bool]] | RoundBar
-    ) -> RoundBar:
+    def add_round_bar(self, item_data: dict[str, Union[str, int, float, bool]] | RoundBar) -> RoundBar:
         if isinstance(item_data, RoundBar):
             item = item_data
         else:
@@ -166,9 +133,7 @@ class StructuralSteelInventory(Inventory):
     def remove_round_bar(self, item: RoundBar):
         self.round_bars.remove(item)
 
-    def add_round_tube(
-        self, item_data: dict[str, Union[str, int, float, bool]] | RoundTube
-    ) -> RoundTube:
+    def add_round_tube(self, item_data: dict[str, Union[str, int, float, bool]] | RoundTube) -> RoundTube:
         if isinstance(item_data, RoundTube):
             item = item_data
         else:
@@ -179,9 +144,7 @@ class StructuralSteelInventory(Inventory):
     def remove_round_tube(self, item: RoundTube):
         self.round_tubes.remove(item)
 
-    def add_DOM_round_tube(
-        self, item_data: dict[str, Union[str, int, float, bool]] | DOMRoundTube
-    ) -> DOMRoundTube:
+    def add_DOM_round_tube(self, item_data: dict[str, Union[str, int, float, bool]] | DOMRoundTube) -> DOMRoundTube:
         if isinstance(item_data, DOMRoundTube):
             item = item_data
         else:
@@ -192,9 +155,7 @@ class StructuralSteelInventory(Inventory):
     def remove_DOM_round_tube(self, item: DOMRoundTube):
         self.DOM_round_tubes.remove(item)
 
-    def add_pipe(
-        self, item_data: dict[str, Union[str, int, float, bool]] | Pipe
-    ) -> Pipe:
+    def add_pipe(self, item_data: dict[str, Union[str, int, float, bool]] | Pipe) -> Pipe:
         if isinstance(item_data, Pipe):
             item = item_data
         else:
@@ -207,14 +168,7 @@ class StructuralSteelInventory(Inventory):
 
     def remove_item(
         self,
-        item: RoundBar
-        | RectangularBar
-        | AngleBar
-        | RectangularTube
-        | RoundTube
-        | DOMRoundTube
-        | Pipe
-        | FlatBar,
+        item: RoundBar | RectangularBar | AngleBar | RectangularTube | RoundTube | DOMRoundTube | Pipe | FlatBar,
     ):
         if isinstance(item, RoundBar):
             self.remove_round_bar(item)
@@ -235,32 +189,12 @@ class StructuralSteelInventory(Inventory):
 
     def get_all_items(
         self,
-    ) -> list[
-        RoundBar
-        | RectangularBar
-        | AngleBar
-        | RectangularTube
-        | RoundTube
-        | DOMRoundTube
-        | Pipe
-        | FlatBar
-    ]:
-        return (
-            self.angle_bars
-            + self.flat_bars
-            + self.rectangular_bars
-            + self.rectangular_tubes
-            + self.round_bars
-            + self.round_tubes
-            + self.DOM_round_tubes
-            + self.pipes
-        )
+    ) -> list[RoundBar | RectangularBar | AngleBar | RectangularTube | RoundTube | DOMRoundTube | Pipe | FlatBar]:
+        return self.angle_bars + self.flat_bars + self.rectangular_bars + self.rectangular_tubes + self.round_bars + self.round_tubes + self.DOM_round_tubes + self.pipes
 
     def load_data(self):
         try:
-            with open(
-                f"{self.FOLDER_LOCATION}/{self.filename}.json", "r", encoding="utf-8"
-            ) as file:
+            with open(f"{self.FOLDER_LOCATION}/{self.filename}.json", "r", encoding="utf-8") as file:
                 data: dict[str, dict[str, object]] = msgspec.json.decode(file.read())
             self.categories.from_dict(data["categories"])
             self.angle_bars.clear()

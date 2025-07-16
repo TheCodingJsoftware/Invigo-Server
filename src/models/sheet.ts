@@ -8,11 +8,14 @@ export class Sheet {
     material!: string;
     width!: number;
     length!: number;
+    pounds_per_square_foot!: number;
     has_sent_warning!: boolean;
     notes!: string;
     orders!: Order[];
     categories!: string[];
     quantity!: number;
+    price!: number;
+    price_per_pound!: number;
     latest_change_quantity!: string;
     red_quantity_limit!: number;
     yellow_quantity_limit!: number;
@@ -20,6 +23,10 @@ export class Sheet {
     constructor(data: SheetData) {
         Object.assign(this, data);
         this.orders = data.orders.map(o => new Order(o));
+    }
+
+    getPOItemName(): string {
+        return `${this.thickness} ${this.material} width: ${this.width}in length: ${this.length}in`;
     }
 
     getArea(): number {

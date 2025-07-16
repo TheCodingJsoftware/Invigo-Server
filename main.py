@@ -1,7 +1,7 @@
 import asyncio
 import os
-import platform
 import shutil
+import sys
 import threading
 import time
 import zipfile
@@ -21,9 +21,9 @@ from routes import route_map
 from utils.sheet_report import generate_sheet_report
 
 setup_logging()
-tornado.log.enable_pretty_logging()
+# tornado.log.enable_pretty_logging()
 
-if platform.system() == "Windows":
+if sys.platform == "win32":
     asyncio.set_event_loop_policy(asyncio.WindowsProactorEventLoopPolicy())
 
 
@@ -223,9 +223,7 @@ def schedule_daily_task_at(hour, minute, task):
     delay = (next_run - now).total_seconds()
 
     IOLoop.current().call_later(delay, task)
-    IOLoop.current().call_later(
-        delay + 86400, lambda: schedule_daily_task_at(hour, minute, task)
-    )  # Reschedule for the next day
+    IOLoop.current().call_later(delay + 86400, lambda: schedule_daily_task_at(hour, minute, task))  # Reschedule for the next day
 
 
 def copy_server_log_file():
@@ -243,9 +241,7 @@ def make_app():
 
 if __name__ == "__main__":
     # Does not need to be thread safe
-    schedule.every().monday.at("04:00").do(
-        partial(generate_sheet_report, variables.software_connected_clients)
-    )
+    schedule.every().monday.at("04:00").do(partial(generate_sheet_report, variables.software_connected_clients))
     schedule.every().hour.do(hourly_backup_inventory_files)
     schedule.every().day.at("04:00").do(copy_server_log_file)
     schedule.every().day.at("04:00").do(daily_backup_inventory_files)
@@ -253,18 +249,14 @@ if __name__ == "__main__":
 
     # For thread safety
     schedule_daily_task_at(4, 0, check_production_plan_for_jobs)
-    periodic_callback = PeriodicCallback(
-        check_if_jobs_are_complete, 60000
-    )  # 60000 ms = 1 minute
+    periodic_callback = PeriodicCallback(check_if_jobs_are_complete, 60000)  # 60000 ms = 1 minute
     periodic_callback.start()
 
     thread = threading.Thread(target=schedule_thread)
     thread.start()
 
     app = tornado.httpserver.HTTPServer(make_app())
-    IOLoop.current().add_callback(
-        BaseHandler.workspace_db.start_background_cache_worker
-    )
+    IOLoop.current().add_callback(BaseHandler.workspace_db.start_background_cache_worker)
 
     # executor = concurrent.futures.ThreadPoolExecutor(max_workers=10)
     # app.executor = executor

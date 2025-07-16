@@ -12,11 +12,7 @@ class UpsertQuantitiesHandler(BaseHandler):
             response_data = {}
             data = msgspec.json.decode(self.request.body)
             for part_data in data:
-                laser_cut_part_id = (
-                    await self.laser_cut_parts_inventory_db.upsert_quantities(
-                        part_data, operation=operation, modified_by=client_name
-                    )
-                )
+                laser_cut_part_id = await self.laser_cut_parts_inventory_db.upsert_quantities(part_data, operation=operation, modified_by=client_name)
                 response_data[part_data["name"]] = laser_cut_part_id
             self.signal_clients_for_changes(
                 None,

@@ -9,9 +9,7 @@ from handlers.base import BaseHandler
 class UploadWorkorderHandler(BaseHandler):
     def post(self):
         try:
-            folder = os.path.join(
-                Environment.DATA_PATH, "workorders", self.get_argument("folder")
-            )
+            folder = os.path.join(Environment.DATA_PATH, "workorders", self.get_argument("folder"))
 
             workorder_data_json = self.request.files["workorder_data"][0]["body"]
             workorder_data = msgspec.json.decode(workorder_data_json)

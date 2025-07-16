@@ -32,7 +32,11 @@
         <header>
             <nav class="row top-margin">
                 <img class="logo" src="http://invi.go/images/logo.png">
-                <h4 class="show-on-print absolute center center-align" id="job-print-title">Job Printout</h4>
+                <h4 class="show-on-print left-align max" id="job-print-title">Job Printout</h4>
+                <button class="show-on-print primary extra" id="job-printout-type">
+                    <i></i>
+                    <span></span>
+                </button>
             </nav>
         </header>
         <nav class="left max hide-on-print">
@@ -201,7 +205,7 @@
             <div class="small-width small-height absolute center middle" id="loading-indicator">
                 <div class="shape loading-indicator max rotate"></div>
             </div>
-            <nav class="tabbed primary-container large-width center bottom-margin" id="job-type-tabs">
+            <nav class="tabbed primary-container large-width center bottom-margin hide-on-print" id="job-type-tabs">
                 <a data-target="quote">
                     <i>request_quote</i>
                     <span>Quote</span>

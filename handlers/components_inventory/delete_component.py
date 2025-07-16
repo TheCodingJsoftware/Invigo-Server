@@ -7,9 +7,7 @@ class DeleteComponentHandler(BaseHandler):
     async def get(self, component_id):
         try:
             component_id = int(component_id)
-            entry_data = await self.components_inventory_db.delete_component(
-                component_id
-            )
+            entry_data = await self.components_inventory_db.delete_component(component_id)
 
             self.set_header("Content-Type", "application/json")
             self.write(msgspec.json.encode(entry_data))

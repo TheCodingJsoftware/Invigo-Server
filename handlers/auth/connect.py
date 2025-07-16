@@ -18,9 +18,7 @@ class ConnectHandler(BaseHandler):
         logging.info(f"{client_name} with version {latest_version} connected")
 
         file_path = os.path.join(Environment.DATA_PATH, "users.json")
-        lock = FileLock(
-            f"{file_path}.lock", timeout=10
-        )  # Set a timeout for acquiring the lock
+        lock = FileLock(f"{file_path}.lock", timeout=10)  # Set a timeout for acquiring the lock
         try:
             with lock:
                 if os.path.exists(file_path):
@@ -39,24 +37,18 @@ class ConnectHandler(BaseHandler):
                         "ip": client_ip,
                         "trusted": False,
                         "latest_version": latest_version,
-                        "latest_connection": datetime.now().strftime(
-                            "%Y-%m-%d %H:%M:%S"
-                        ),
+                        "latest_connection": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                     },
                 )
                 data[client_name].update({"ip": client_ip})
                 data[client_name].update({"latest_version": latest_version})
-                data[client_name].update(
-                    {"latest_connection": datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
-                )
+                data[client_name].update({"latest_connection": datetime.now().strftime("%Y-%m-%d %H:%M:%S")})
 
                 with open(file_path, "wb") as file:
                     file.write(msgspec.json.encode(data))
 
             # Send a success response back to the client
-            self.write(
-                {"status": "success", "message": "Client data updated successfully."}
-            )
+            self.write({"status": "success", "message": "Client data updated successfully."})
 
         except FileNotFoundError:
             self.set_status(404)

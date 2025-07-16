@@ -12,9 +12,7 @@ class UpdateJobSettingHandler(BaseHandler):
                 value = int(value)
             client_name = self.get_client_name_from_header()
 
-            await self.jobs_db.update_job_setting(
-                job_id, key, value, modified_by=client_name
-            )
+            await self.jobs_db.update_job_setting(job_id, key, value, modified_by=client_name)
 
             self.signal_clients_for_changes(
                 None,

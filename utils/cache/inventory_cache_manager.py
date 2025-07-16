@@ -24,9 +24,7 @@ class InventoryCacheManager:
         self.cache[key] = (value, datetime.now())
 
     def invalidate(self, key_startswith):
-        self.cache = {
-            k: v for k, v in self.cache.items() if not k.startswith(key_startswith)
-        }
+        self.cache = {k: v for k, v in self.cache.items() if not k.startswith(key_startswith)}
 
     def schedule_refresh(self, key: str, func: Callable, interval: int | None = None):
         self._refresh_tasks[key] = (func, interval or self.expiry_seconds)

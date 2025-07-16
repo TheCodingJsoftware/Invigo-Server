@@ -21,9 +21,7 @@ class RoundTube(StructuralProfile):
         return f"Length: {self.length:,.3f} in\nOutside Diameter: {self.outside_diameter:,.3f} in\nInside Diameter: {self.inside_diameter:,.3f} in\nWall Thickness: {self.wall_thickness:,.3f} in"
 
     def get_cross_section_area(self) -> float:
-        return (math.pi / 4) * (
-            math.pow(self.outside_diameter, 2) - math.pow(self.inside_diameter, 2)
-        )
+        return (math.pi / 4) * (math.pow(self.outside_diameter, 2) - math.pow(self.inside_diameter, 2))
 
     def get_volume(self) -> float:
         return self.get_cross_section_area() * self.length
@@ -32,9 +30,7 @@ class RoundTube(StructuralProfile):
         return self.get_volume() * self.get_density()
 
     def get_cost(self) -> float:
-        return self.get_weight() * self.structural_steel_settings.get_price_per_pound(
-            self.material
-        )
+        return self.get_weight() * self.structural_steel_settings.get_price_per_pound(self.material)
 
     def load_data(self, data: dict[str, Union[float, str]]):
         super().load_data(data)

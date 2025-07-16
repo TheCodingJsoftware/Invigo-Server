@@ -11,32 +11,52 @@ body:not(.loaded) {
 }
 
 @keyframes flash-border {
-  0%   { border-color: transparent; background-color: var(--surface-container-low);}
-  25%  { border-color: var(--primary); background-color: var(--surface-variant); }
-  50% { border-color: transparent;  background-color: var(--surface-container-low);}
-  75% { border-color: var(--primary); background-color: var(--surface-variant); }
-  100% { border-color: var(--outline-variant); background-color: var(--surface-container-low);}
+    0% {
+        border-color: transparent;
+        background-color: var(--surface-container-low);
+    }
+
+    25% {
+        border-color: var(--primary);
+        background-color: var(--surface-variant);
+    }
+
+    50% {
+        border-color: transparent;
+        background-color: var(--surface-container-low);
+    }
+
+    75% {
+        border-color: var(--primary);
+        background-color: var(--surface-variant);
+    }
+
+    100% {
+        border-color: var(--outline-variant);
+        background-color: var(--surface-container-low);
+    }
 }
 
 .flash-border {
-  animation: flash-border 1s ease-in-out;
+    animation: flash-border 1s ease-in-out;
 }
 
-.assembly-image{
+.assembly-image {
     height: 100% !important;
     width: auto;
 }
 
-.assembly-image-list{
+.assembly-image-list {
     /* width: 128px !important;
     height: auto !important; */
 }
+
 .nest-image {
     height: 100% !important;
     width: auto;
 }
 
-.nest-image-list{
+.nest-image-list {
     width: auto !important;
     height: 150px !important;
 }
@@ -61,7 +81,7 @@ body:not(.loaded) {
     background: var(--surface-variant);
     border: 1px solid var(--primary) !important;
     transition: background-color var(--speed3) ease-in-out,
-                border-color var(--speed1) ease;
+        border-color var(--speed1) ease;
 }
 
 /* .item[data-swapy-dragging] {
@@ -72,7 +92,8 @@ body:not(.loaded) {
 }
 
 [data-swapy-item] article.hidden {
-    margin: 0; /* or omit if default */
+    margin: 0;
+    /* or omit if default */
 }
 
 .rotate-0 {
@@ -119,8 +140,30 @@ body:not(.loaded) {
     display: none;
 }
 
+div.textarea.extra {
+    min-block-size: 250px !important;
+}
+
 @media print {
-    .snackbar{
+
+    body,
+    article,
+    div,
+    header,
+    footer,
+    nav,
+    p,
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6 {
+        background: white !important;
+        color: black !important;
+    }
+
+    .snackbar {
         display: none !important;
     }
 
@@ -163,14 +206,17 @@ body:not(.loaded) {
         min-height: 0px !important;
         margin: 0px !important;
     }
-    [data-swapy-slot] > article.hidden {
+
+    [data-swapy-slot]>article.hidden {
         background-color: red;
     }
-    div#nested-sheets-parts-container > article{
+
+    div#nested-sheets-parts-container>article {
         border-color: transparent !important;
         padding: 0px !important;
     }
-    div#parts-layout-container > article{
+
+    div#parts-layout-container>article {
         border-color: transparent !important;
         padding: 0px !important;
     }

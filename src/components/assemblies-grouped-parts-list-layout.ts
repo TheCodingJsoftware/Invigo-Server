@@ -86,7 +86,7 @@ class GroupedLaserCutPartsTable {
 
     generatePartsTable(): string {
         const table = `
-        <table class="border">
+        <table class="border tiny-space">
             <thead>
                 ${this.generatePartsTableHeader()}
             </thead>
@@ -133,13 +133,13 @@ class GroupedLaserCutPartsTable {
                         <span class="wrap no-line small-width">${laserCutPart.name}</span>
                     </div>
                 </td>
-                <td class="min center-align" data-column="assembly-laser-cut-part-material">${material}</td>
+                <td class="center-align" data-column="assembly-laser-cut-part-material">${material}</td>
                 <td class="center-align" data-column="assembly-laser-cut-part-process">${process}</td>
                 <td class="center-align" data-column="assembly-laser-cut-part-notes">${notes}</td>
-                <td class="min center-align" data-column="assembly-laser-cut-part-shelfNumber">${shelfNumber}</td>
-                <td class="min center-align" data-column="assembly-laser-cut-part-quantity">${this.formatQuantity(quantity)}</td>
-                <td class="min center-align" data-column="assembly-laser-cut-part-unitPrice">${this.formatPrice(unitPrice)}</td>
-                <td class="min center-align" data-column="assembly-laser-cut-part-price">${this.formatPrice(price)}</td>
+                <td class="center-align" data-column="assembly-laser-cut-part-shelfNumber">${shelfNumber}</td>
+                <td class="center-align" data-column="assembly-laser-cut-part-quantity">${this.formatQuantity(quantity)}</td>
+                <td class="center-align" data-column="assembly-laser-cut-part-unitPrice">${this.formatPrice(unitPrice)}</td>
+                <td class="center-align" data-column="assembly-laser-cut-part-price">${this.formatPrice(price)}</td>
             </tr>
             `;
         }
@@ -160,9 +160,9 @@ class GroupedLaserCutPartsTable {
                 <th class="center-align" data-column="assembly-laser-cut-part-process"></th>
                 <th class="center-align" data-column="assembly-laser-cut-part-notes"></th>
                 <th class="center-align" data-column="assembly-laser-cut-part-shelfNumber"></th>
-                <th class="min center-align" data-column="assembly-laser-cut-part-quantity">${this.formatQuantity(totalQuantity)}</th>
+                <th class="center-align" data-column="assembly-laser-cut-part-quantity">${this.formatQuantity(totalQuantity)}</th>
                 <th class="center-align" data-column="assembly-laser-cut-part-unitPrice"></th>
-                <th class="min center-align" data-column="assembly-laser-cut-part-price">${this.formatPrice(totalPrice)}</th>
+                <th class="center-align" data-column="assembly-laser-cut-part-price">${this.formatPrice(totalPrice)}</th>
             </tr>`;
         return partsTableFooter.trim();
     }
@@ -257,8 +257,8 @@ class GroupedComponentsTable {
     }
 
     generatePartsTable(): string {
-        const table =  `
-        <table class="border">
+        const table = `
+        <table class="border tiny-space">
             <thead>
                 ${this.generatePartsTableHeader()}
             </thead>
@@ -295,18 +295,18 @@ class GroupedComponentsTable {
             const price = unitPrice * quantity;
             partsTable += `
             <tr>
-                <td class="min" data-column="assembly-component-partName">
+                <td data-column="assembly-component-partName">
                     <div class="row">
                         <img class="square extra small-round" src="http://invi.go/images/${component.getImagePath()}">
                         <span class="wrap no-line">${component.name}</span>
                     </div>
                 </td>
-                <td class="min center-align" data-column="assembly-component-partNumber">${component.getPartNumber()}</td>
+                <td class="center-align" data-column="assembly-component-partNumber">${component.getPartNumber()}</td>
                 <td class="left-align" data-column="assembly-component-notes">${notes}</td>
-                <td class="min center-align" data-column="assembly-component-shelfNumber">${shelfNumber}</td>
-                <td class="min center-align" data-column="assembly-component-quantity">${this.formatQuantity(quantity)}</td>
-                <td class="min center-align" data-column="assembly-component-unitPrice">${this.formatPrice(unitPrice)}</td>
-                <td class="min center-align" data-column="assembly-component-price">${this.formatPrice(price)}</td>
+                <td class="center-align" data-column="assembly-component-shelfNumber">${shelfNumber}</td>
+                <td class="center-align" data-column="assembly-component-quantity">${this.formatQuantity(quantity)}</td>
+                <td class="center-align" data-column="assembly-component-unitPrice">${this.formatPrice(unitPrice)}</td>
+                <td class="center-align" data-column="assembly-component-price">${this.formatPrice(price)}</td>
             </tr>
             `;
         }
@@ -326,9 +326,9 @@ class GroupedComponentsTable {
                 <th class="center-align" data-column="assembly-component-partNumber"></th>
                 <th class="center-align" data-column="assembly-component-notes"></th>
                 <th class="center-align" data-column="assembly-component-shelfNumber"></th>
-                <th class="min center-align" data-column="assembly-component-quantity">${this.formatQuantity(totalQuantity)}</th>
+                <th class="center-align" data-column="assembly-component-quantity">${this.formatQuantity(totalQuantity)}</th>
                 <th class="center-align" data-column="assembly-component-unitPrice"></th>
-                <th class="min center-align" data-column="assembly-component-price">${this.formatPrice(totalPrice)}</th>
+                <th class="center-align" data-column="assembly-component-price">${this.formatPrice(totalPrice)}</th>
             </tr>`;
         return partsTableFooter.trim();
     }
@@ -342,7 +342,7 @@ class GroupedComponentsTable {
     }
 }
 
-export class AssembliesGroupedPartsList implements BaseComponent{
+export class AssembliesGroupedPartsList implements BaseComponent {
     job: Job;
     jobId: number;
     element!: HTMLElement;

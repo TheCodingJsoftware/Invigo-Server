@@ -6,7 +6,7 @@ import msgspec
 from config.environments import Environment
 
 
-class Settings:
+class Environment:
     def __init__(self):
         self.data = {}
         self.file_name: str = "settings"
@@ -17,16 +17,12 @@ class Settings:
 
     def __create_file(self):
         if not os.path.exists(f"{self.FOLDER_LOCATION}/{self.file_name}.json"):
-            with open(
-                f"{self.FOLDER_LOCATION}/{self.file_name}.json", "w", encoding="utf-8"
-            ) as json_file:
+            with open(f"{self.FOLDER_LOCATION}/{self.file_name}.json", "w", encoding="utf-8") as json_file:
                 json_file.write("{}")
 
     def load_data(self):
         try:
-            with open(
-                f"{self.FOLDER_LOCATION}/{self.file_name}.json", "rb"
-            ) as json_file:
+            with open(f"{self.FOLDER_LOCATION}/{self.file_name}.json", "rb") as json_file:
                 self.data = msgspec.json.decode(json_file.read())
         except msgspec.DecodeError as error:
             print(f"{self.file_name}.JsonFile.load_data: {error}")
@@ -36,9 +32,7 @@ class Settings:
         with open(f"{self.FOLDER_LOCATION}/{self.file_name}.json", "wb") as json_file:
             json_file.write(msgspec.json.encode(self.data))
 
-    def get_value(
-        self, setting_name: str
-    ) -> None | dict[str, dict[str, int]] | int | bool | str | float:
+    def get_value(self, setting_name: str) -> None | dict[str, dict[str, int]] | int | bool | str | float:
         try:
             return self.data[setting_name]
         except KeyError:
@@ -61,9 +55,7 @@ class Settings:
         self.data.setdefault("sort_alphabatical", False)
         self.data.setdefault("server_ip", "invi.go")
         self.data.setdefault("server_port", 80)
-        self.data.setdefault(
-            "geometry", {"x": 200, "y": 200, "width": 1200, "height": 600}
-        )
+        self.data.setdefault("geometry", {"x": 200, "y": 200, "width": 1200, "height": 600})
         self.data.setdefault("last_opened", str(datetime.now()))
         self.data.setdefault("last_category_tab", 0)
         self.data.setdefault("last_toolbox_tab", 0)
@@ -104,8 +96,6 @@ class Settings:
                 "Workspace": [],
             },
         )
-        self.data.setdefault(
-            "price_history_file_name", str(datetime.now().strftime("%B %d %A %Y"))
-        )
+        self.data.setdefault("price_history_file_name", str(datetime.now().strftime("%B %d %A %Y")))
         self.data.setdefault("days_until_new_price_history_assessment", 90)
         self.save_data()

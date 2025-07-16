@@ -10,9 +10,7 @@ class UpdateLaserCutPartHandler(BaseHandler):
             client_name = self.get_client_name_from_header()
 
             data = msgspec.json.decode(self.request.body)
-            await self.laser_cut_parts_inventory_db.update_laser_cut_part(
-                laser_cut_part_id, data, modified_by=client_name
-            )
+            await self.laser_cut_parts_inventory_db.update_laser_cut_part(laser_cut_part_id, data, modified_by=client_name)
             self.signal_clients_for_changes(
                 client_name,
                 [f"laser_cut_parts_inventory/get_laser_cut_part/{laser_cut_part_id}"],

@@ -6,9 +6,7 @@ from handlers.base import BaseHandler
 
 class LoadWorkorderPrintoutHandler(BaseHandler):
     def get(self, folder_name):
-        html_file_path = os.path.join(
-            Environment.DATA_PATH, "workorders", folder_name, "page.html"
-        )
+        html_file_path = os.path.join(Environment.DATA_PATH, "workorders", folder_name, "page.html")
 
         if os.path.exists(html_file_path):
             with open(html_file_path, "r", encoding="utf-8") as file:

@@ -71,9 +71,7 @@ class WorkspaceDB(BaseWithDBPool):
                     await self._warm_cache()
                 except Exception as e:
                     logging.info(f"[CacheWorker] Error warming cache: {e}")
-                await asyncio.sleep(
-                    Environment.WORKSPACE_BACKGROUND_CACHE_WARM_UP_INTERVAL
-                )
+                await asyncio.sleep(Environment.WORKSPACE_BACKGROUND_CACHE_WARM_UP_INTERVAL)
 
         # Only run once
         if self._background_task is None:
@@ -152,18 +150,14 @@ class WorkspaceDB(BaseWithDBPool):
         self.cache[key] = (value, datetime.now())
 
     def _invalidate_cache(self, key_startswith):
-        self.cache = {
-            k: v for k, v in self.cache.items() if not k.startswith(key_startswith)
-        }
+        self.cache = {k: v for k, v in self.cache.items() if not k.startswith(key_startswith)}
 
     @ensure_connection
     async def invalidate_entry_cache(self, entry_id: int):
         self._invalidate_cache(f"entry_{entry_id}")
 
         async with self.db_pool.acquire() as conn:
-            row = await conn.fetchrow(
-                "SELECT id, parent_id, name FROM workspace WHERE id = $1", entry_id
-            )
+            row = await conn.fetchrow("SELECT id, parent_id, name FROM workspace WHERE id = $1", entry_id)
             if row:
                 job_id = await self._find_root_job(conn, entry_id)
                 name = row.get("name")
@@ -287,9 +281,7 @@ class WorkspaceDB(BaseWithDBPool):
         for row in child_rows:
             child_data = dict(row)
             child_data["data"] = json.loads(child_data["data"])
-            child_data["children"] = await self.get_children(
-                conn, child_data["id"], visited_ids
-            )
+            child_data["children"] = await self.get_children(conn, child_data["id"], visited_ids)
             children.append(child_data)
 
         return children
@@ -456,9 +448,7 @@ class WorkspaceDB(BaseWithDBPool):
         self._invalidate_cache("all_jobs")
 
     @ensure_connection
-    async def bulk_update_entries(
-        self, updates: list[tuple[int, str]]
-    ) -> tuple[list[int], dict[int, set[str]]]:
+    async def bulk_update_entries(self, updates: list[tuple[int, str]]) -> tuple[list[int], dict[int, set[str]]]:
         if not updates:
             return [], {}
 
@@ -488,9 +478,7 @@ class WorkspaceDB(BaseWithDBPool):
         """
 
         async with self.db_pool.acquire() as conn:
-            update_rows = await conn.fetch(
-                update_query, list(entry_ids), list(json_data), names
-            )
+            update_rows = await conn.fetch(update_query, list(entry_ids), list(json_data), names)
             update_names = list({row["name"] for row in update_rows})
             updated_ids = list({row["id"] for row in update_rows})
 
@@ -514,9 +502,7 @@ class WorkspaceDB(BaseWithDBPool):
 
         return updated_ids, job_name_map
 
-    async def _bulk_insert_entries(
-        self, conn, entries: list[tuple[int | None, str, str, str]]
-    ) -> list[int]:
+    async def _bulk_insert_entries(self, conn, entries: list[tuple[int | None, str, str, str]]) -> list[int]:
         if not entries:
             return []  # ✅ Avoid unpacking error if no entries
 
@@ -528,18 +514,12 @@ class WorkspaceDB(BaseWithDBPool):
         """
 
         try:
-            parent_ids, types, names, datas = zip(
-                *entries
-            )  # ❗ This fails if list is empty or malformed
+            parent_ids, types, names, datas = zip(*entries)  # ❗ This fails if list is empty or malformed
         except ValueError as e:
-            logging.error(
-                f"[bulk_insert_entries] Entry unpacking failed: {e} | Entries: {entries}"
-            )
+            logging.error(f"[bulk_insert_entries] Entry unpacking failed: {e} | Entries: {entries}")
             raise
 
-        return await conn.fetch(
-            query, list(parent_ids), list(types), list(names), list(datas)
-        )
+        return await conn.fetch(query, list(parent_ids), list(types), list(names), list(datas))
 
     async def _insert_entry(
         self,
@@ -587,29 +567,21 @@ class WorkspaceDB(BaseWithDBPool):
         nest_data = json.dumps(nest.to_dict()["nest_data"])
         await self._insert_entry(conn, parent_id, "nest", nest_data)
 
-    async def _insert_assemblies_bulk(
-        self, conn, assemblies: list[Assembly], parent_id: int
-    ):
+    async def _insert_assemblies_bulk(self, conn, assemblies: list[Assembly], parent_id: int):
         all_entries: list[tuple[int, str, str, str]] = []
 
         def collect_entries(assembly: Assembly, parent: int):
             # Insert the assembly itself
             adata = assembly.to_dict()["assembly_data"]
-            all_entries.append(
-                (parent, "assembly", adata.get("name", ""), json.dumps(adata))
-            )
+            all_entries.append((parent, "assembly", adata.get("name", ""), json.dumps(adata)))
 
             for part in assembly.laser_cut_parts:
                 pdata = part.to_dict()
-                all_entries.append(
-                    (None, "laser_cut_part", pdata.get("name", ""), json.dumps(pdata))
-                )
+                all_entries.append((None, "laser_cut_part", pdata.get("name", ""), json.dumps(pdata)))
 
             for comp in assembly.components:
                 cdata = comp.to_dict()
-                all_entries.append(
-                    (None, "component", cdata.get("name", ""), json.dumps(cdata))
-                )
+                all_entries.append((None, "component", cdata.get("name", ""), json.dumps(cdata)))
 
             for steel in assembly.structural_steel_items:
                 sdata = steel.to_dict()
@@ -623,18 +595,14 @@ class WorkspaceDB(BaseWithDBPool):
                 )
 
             for sub in assembly.get_sub_assemblies():
-                collect_entries(
-                    sub, None
-                )  # We'll assign correct parent in future if needed
+                collect_entries(sub, None)  # We'll assign correct parent in future if needed
 
         for asm in assemblies:
             collect_entries(asm, parent_id)
 
         await self._bulk_insert_entries(conn, all_entries)
 
-    async def _insert_assembly_recursive_bulk(
-        self, conn, assembly: Assembly, parent_id: int
-    ):
+    async def _insert_assembly_recursive_bulk(self, conn, assembly: Assembly, parent_id: int):
         entries: list[tuple[int, str, str, str]] = []
 
         # Prepare the main assembly
@@ -666,21 +634,15 @@ class WorkspaceDB(BaseWithDBPool):
 
             for part in current_assembly.laser_cut_parts:
                 d = part.to_dict()
-                temp_children.append(
-                    (None, "laser_cut_part", d.get("name", ""), json.dumps(d))
-                )
+                temp_children.append((None, "laser_cut_part", d.get("name", ""), json.dumps(d)))
 
             for component in current_assembly.components:
                 d = component.to_dict()
-                temp_children.append(
-                    (None, "component", d.get("name", ""), json.dumps(d))
-                )
+                temp_children.append((None, "component", d.get("name", ""), json.dumps(d)))
 
             for steel in current_assembly.structural_steel_items:
                 d = steel.to_dict()
-                temp_children.append(
-                    (None, "structural_steel_part", d.get("name", ""), json.dumps(d))
-                )
+                temp_children.append((None, "structural_steel_part", d.get("name", ""), json.dumps(d)))
 
             for sub in current_assembly.get_sub_assemblies():
                 queue.append((sub, None))  # Recurse
@@ -689,13 +651,9 @@ class WorkspaceDB(BaseWithDBPool):
         all_entries = entries + [(parent_id, t, n, d) for _, t, n, d in temp_children]
         await self._bulk_insert_entries(conn, all_entries)
 
-    async def _insert_assembly_recursive(
-        self, conn, assembly: Assembly, parent_id: int
-    ):
+    async def _insert_assembly_recursive(self, conn, assembly: Assembly, parent_id: int):
         assembly_data = json.dumps(assembly.to_dict()["assembly_data"])
-        assembly_id = await self._insert_entry(
-            conn, parent_id, "assembly", assembly_data
-        )
+        assembly_id = await self._insert_entry(conn, parent_id, "assembly", assembly_data)
 
         for part in assembly.laser_cut_parts:
             part_data = json.dumps(part.to_dict())
@@ -707,9 +665,7 @@ class WorkspaceDB(BaseWithDBPool):
 
         for structural_steel_part in assembly.structural_steel_items:
             structural_steel_part_data = json.dumps(structural_steel_part.to_dict())
-            await self._insert_entry(
-                conn, assembly_id, "structural_steel_part", structural_steel_part_data
-            )
+            await self._insert_entry(conn, assembly_id, "structural_steel_part", structural_steel_part_data)
 
         for sub_assembly in assembly.get_sub_assemblies():
             await self._insert_assembly_recursive(conn, sub_assembly, assembly_id)

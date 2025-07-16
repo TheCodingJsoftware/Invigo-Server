@@ -29,12 +29,8 @@ class AddJobToProductionPlannerHandler(BaseHandler):
             self.workspace_settings = WorkspaceSettings()
             self.paint_inventory = PaintInventory(self.components_inventory)
             self.sheets_inventory = SheetsInventory(self.sheet_settings)
-            self.laser_cut_inventory = LaserCutInventory(
-                self.paint_inventory, self.workspace_settings
-            )
-            self.structural_steel_inventory = StructuralSteelInventory(
-                self.structrual_steel_settings, self.workspace_settings
-            )
+            self.laser_cut_inventory = LaserCutInventory(self.paint_inventory, self.workspace_settings)
+            self.structural_steel_inventory = StructuralSteelInventory(self.structrual_steel_settings, self.workspace_settings)
             self.job_manager = JobManager(
                 self.sheet_settings,
                 self.sheets_inventory,
@@ -46,9 +42,7 @@ class AddJobToProductionPlannerHandler(BaseHandler):
                 None,
             )
             self.workspace = Workspace(self.workspace_settings, self.job_manager)
-            self.production_plan = ProductionPlan(
-                self.workspace_settings, self.job_manager
-            )
+            self.production_plan = ProductionPlan(self.workspace_settings, self.job_manager)
 
             job_path = job_path.replace("\\", "/")
             json_file_path = os.path.join(Environment.DATA_PATH, job_path, "data.json")
@@ -58,13 +52,9 @@ class AddJobToProductionPlannerHandler(BaseHandler):
                 self.production_plan.add_job(job)
                 self.production_plan.save()
 
-            self.signal_clients_for_changes(
-                None, [f"{self.production_plan.filename}.json"], "web"
-            )
+            self.signal_clients_for_changes(None, [f"{self.production_plan.filename}.json"], "web")
 
-            self.write(
-                {"status": "success", "message": f"Job added successfully: {job.name}"}
-            )
+            self.write({"status": "success", "message": f"Job added successfully: {job.name}"})
             self.set_status(200)
         except Exception as e:
             self.write({"status": "error", "message": str(e)})

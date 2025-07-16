@@ -25,7 +25,7 @@ class WorkspaceItemGroup:
 
     def to_string(self, item_name: str) -> str:
         return "\n" + "\n".join(
-            f'{i+1}. {item.parent_assembly.get_master_assembly().get_assembly_data(key="display_name")}: {item.name} Qty: {item.parts_per}'
+            f"{i + 1}. {item.parent_assembly.get_master_assembly().get_assembly_data(key='display_name')}: {item.name} Qty: {item.parts_per}"
             for i, item in enumerate(self.data.get(item_name, []))
         )
 

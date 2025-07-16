@@ -46,9 +46,7 @@ def create_virtual_environment():
 
 
 def install_python_requirements():
-    subprocess.check_call(
-        [os.path.join("venv", "Scripts", "pip"), "install", "-r", "requirements.txt"]
-    )
+    subprocess.check_call([os.path.join("venv", "Scripts", "pip"), "install", "-r", "requirements.txt"])
 
 
 def build_webpack():
@@ -67,9 +65,7 @@ def setup_email_credentials():
             json.dump({"username": "", "password": ""}, f)
         print("Created credentials.json. Please set your email credentials.")
     else:
-        print(
-            "credentials.json already exists. Please ensure your email credentials are set."
-        )
+        print("credentials.json already exists. Please ensure your email credentials are set.")
 
 
 def main():
@@ -115,9 +111,7 @@ def main():
 
     print("Setting up virtual environment and installing Python requirements...")
     activate_script = create_virtual_environment()
-    subprocess.check_call(
-        [activate_script, "&&", "pip", "install", "-r", "requirements.txt"], shell=True
-    )
+    subprocess.check_call([activate_script, "&&", "pip", "install", "-r", "requirements.txt"], shell=True)
 
     print("Building with webpack...")
     build_webpack()
@@ -128,12 +122,8 @@ def main():
     print("1. Configure your email credentials in 'credentials.json'.")
     print("2. Ensure that 'run.bat' has the correct paths configured.")
     print("3. To autostart, create a shortcut of 'run.bat' and place it in:")
-    print(
-        "   C:\\Users\\Invigo\\AppData\\Roaming\\Microsoft\\Windows\\Start Menu\\Programs\\Startup"
-    )
-    print(
-        "4. For active development, you can run 'npx webpack --watch --config webpack.config.js'."
-    )
+    print("   C:\\Users\\Invigo\\AppData\\Roaming\\Microsoft\\Windows\\Start Menu\\Programs\\Startup")
+    print("4. For active development, you can run 'npx webpack --watch --config webpack.config.js'.")
 
 
 if __name__ == "__main__":

@@ -20,7 +20,6 @@ import { Job } from "@models/job";
 import { loadAnimationStyleSheet, toggleTheme, loadTheme, invertImages } from "@utils/theme"
 import { Effect } from "effect"
 import { createSwapy } from 'swapy'
-import "@components/expandable-component";
 import { CHECKBOX_CONFIG } from "@config/checkbox-config";
 import flatpickr from "flatpickr";
 require("flatpickr/dist/themes/dark.css");
@@ -67,7 +66,7 @@ class JobPrintout {
                 this.setupCheckboxes();
                 this.handleBrokenImages();
                 this.registerAllExpandableArticles();
-                this.registerAllLaserCutPartsTableCheckboxes();
+                this.registerAllTableCheckboxes();
                 this.initSwapy();
 
                 const dateShipped_fp = flatpickr("#date-shipped", {
@@ -88,8 +87,10 @@ class JobPrintout {
                 document.getElementById("job-title")!.textContent = this.job.job_data.name;
                 document.getElementById("job-print-title")!.textContent = this.job.job_data.name;
 
+                this.changeCheckboxes(this.getJobType());
+
                 this.toggleLoadingIndicator(false);
-            })
+            }),
         );
     }
 
@@ -108,7 +109,9 @@ class JobPrintout {
     }
 
     updateSwapy(): void {
-        if (!this.swapy) return;
+        if (!this.swapy) {
+            return;
+        }
         this.swapy.update();
     }
 
@@ -138,13 +141,19 @@ class JobPrintout {
 
         Object.entries(sections).forEach(([key, section]) => {
             const viewButton = document.getElementById(`view-${key}`) as HTMLButtonElement;
-            if (!viewButton) return;
+            if (!viewButton) {
+                return;
+            }
 
             const checkbox = document.getElementById(`show-${key}`) as HTMLInputElement;
-            if (!checkbox) return;
+            if (!checkbox) {
+                return;
+            }
 
             const saved = localStorage.getItem(`show-${key}`);
-            if (saved !== null) checkbox.checked = saved === "true";
+            if (saved !== null) {
+                checkbox.checked = saved === "true";
+            }
 
             checkbox.checked ? section.show() : section.hide();
 
@@ -154,28 +163,28 @@ class JobPrintout {
             });
 
             viewButton.addEventListener("click", () => {
-                    section.element.scrollIntoView({
-                        behavior: 'smooth',
-                        inline: 'nearest',
-                        block: 'nearest'
-                     });
+                section.element.scrollIntoView({
+                    behavior: 'smooth',
+                    inline: 'nearest',
+                    block: 'nearest'
+                });
 
-                    // Setup observer to detect when the element is in view
-                    const observer = new IntersectionObserver((entries) => {
-                        entries.forEach(entry => {
-                            if (entry.isIntersecting) {
-                                section.element.classList.add('flash-border');
+                // Setup observer to detect when the element is in view
+                const observer = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            section.element.classList.add('flash-border');
 
-                                setTimeout(() => {
-                                    section.element.classList.remove('flash-border');
-                                }, 1000);
+                            setTimeout(() => {
+                                section.element.classList.remove('flash-border');
+                            }, 1000);
 
-                                observer.disconnect();
-                            }
-                        });
-                    }, { threshold: 0.5 });
+                            observer.disconnect();
+                        }
+                    });
+                }, { threshold: 0.5 });
 
-                    observer.observe(section.element);
+                observer.observe(section.element);
             });
         });
     }
@@ -214,23 +223,31 @@ class JobPrintout {
             const columnIndexMap: Record<string, number> = {};
             headerCells.forEach((th, index) => {
                 const col = th.dataset.column;
-                if (col) columnIndexMap[col] = index;
+                if (col) {
+                    columnIndexMap[col] = index;
+                }
             });
 
             const index = columnIndexMap[column];
-            if (index === undefined) return;
+            if (index === undefined) {
+                return;
+            }
 
             const th = headerCells[index];
             const cells = table.querySelectorAll("tbody tr, tfoot tr") as NodeListOf<HTMLTableRowElement>;
-            if (th) th.classList.toggle("hidden", !visible);
+            if (th) {
+                th.classList.toggle("hidden", !visible);
+            }
             cells.forEach(row => {
                 const cell = row.children[index];
-                if (cell) cell.classList.toggle("hidden", !visible);
+                if (cell) {
+                    cell.classList.toggle("hidden", !visible);
+                }
             });
         });
     }
 
-    registerAllLaserCutPartsTableCheckboxes() {
+    registerAllTableCheckboxes() {
         const tables = document.querySelectorAll("table");
 
         tables.forEach(table => {
@@ -238,19 +255,25 @@ class JobPrintout {
             const checkboxes = document.querySelectorAll('input[type="checkbox"]') as NodeListOf<HTMLInputElement>;
             const headerCells = table.querySelectorAll('thead th') as NodeListOf<HTMLElement>;
 
-            if (checkboxes.length === 0 || headerCells.length === 0) return;
+            if (checkboxes.length === 0 || headerCells.length === 0) {
+                return;
+            }
 
             // Build column index map for this table
             const columnIndexMap: Record<string, number> = {};
             headerCells.forEach((th, index) => {
                 const col = th.dataset.column;
-                if (col) columnIndexMap[col] = index;
+                if (col) {
+                    columnIndexMap[col] = index;
+                }
             });
 
             checkboxes.forEach(checkbox => {
                 const column = checkbox.id.replace("show-", "");
                 const index = columnIndexMap[column];
-                if (index === undefined) return;
+                if (index === undefined) {
+                    return;
+                }
 
                 const key = `show-column-${column}`;
                 const storedState = localStorage.getItem(key);
@@ -259,10 +282,14 @@ class JobPrintout {
                 const toggleColumnVisibility = (visible: boolean) => {
                     const th = headerCells[index];
                     const cells = table.querySelectorAll('tbody tr, tfoot tr') as NodeListOf<HTMLTableRowElement>;
-                    if (th) th.classList.toggle('hidden', !visible);
+                    if (th) {
+                        th.classList.toggle('hidden', !visible);
+                    }
                     cells.forEach(row => {
                         const cell = row.children[index];
-                        if (cell) cell.classList.toggle('hidden', !visible);
+                        if (cell) {
+                            cell.classList.toggle('hidden', !visible);
+                        }
                     });
                 };
 
@@ -431,6 +458,8 @@ class JobPrintout {
                 this.jobTypeChanged();
             });
         });
+
+        this.changeJobPrintoutType(this.getJobType());
     }
 
     private loadJobTypeFromStorage() {
@@ -438,7 +467,7 @@ class JobPrintout {
         if (jobType) {
             ui("theme", JOB_COLORS[jobType]);
             this.setActiveTab(jobType);
-        }else{
+        } else {
             ui("theme", this.job.job_data.color);
         }
     }
@@ -457,7 +486,9 @@ class JobPrintout {
 
     private changeCheckboxes(jobType: JobType) {
         const config = CHECKBOX_CONFIG[jobType.toLowerCase() as keyof typeof CHECKBOX_CONFIG];
-        if (!config) return;
+        if (!config) {
+            return;
+        }
 
         const checkboxes = document.querySelectorAll('input[type="checkbox"]') as NodeListOf<HTMLInputElement>;
 
@@ -487,7 +518,9 @@ class JobPrintout {
 
             headerCells.forEach((th, index) => {
                 const col = th.dataset.column;
-                if (col) columnIndexMap[col] = index;
+                if (col) {
+                    columnIndexMap[col] = index;
+                }
             });
 
             const checkboxes = document.querySelectorAll('input[type="checkbox"]') as NodeListOf<HTMLInputElement>;
@@ -495,16 +528,22 @@ class JobPrintout {
             checkboxes.forEach(checkbox => {
                 const column = checkbox.id.replace("show-", "");
                 const index = columnIndexMap[column];
-                if (index === undefined) return;
+                if (index === undefined) {
+                    return;
+                }
 
                 const visible = checkbox.checked;
                 const th = headerCells[index];
                 const cells = table.querySelectorAll('tbody tr, tfoot tr') as NodeListOf<HTMLTableRowElement>;
 
-                if (th) th.classList.toggle('hidden', !visible);
+                if (th) {
+                    th.classList.toggle('hidden', !visible);
+                }
                 cells.forEach(row => {
                     const cell = row.children[index];
-                    if (cell) cell.classList.toggle('hidden', !visible);
+                    if (cell) {
+                        cell.classList.toggle('hidden', !visible);
+                    }
                 });
             });
         });
@@ -514,10 +553,24 @@ class JobPrintout {
         const jobType = this.getJobType();
         localStorage.setItem(`job-type-id-${this.jobID}`, jobType);
         ui("theme", JOB_COLORS[jobType]);
-        console.log(jobType);
         this.changeCheckboxes(jobType);
+        this.changeJobPrintoutType(jobType);
     }
 
+    private changeJobPrintoutType(jobType: JobType) {
+        const jobPrintoutType = document.getElementById('job-printout-type') as HTMLButtonElement;
+        if (jobType === JobType.Quote) {
+            jobPrintoutType.querySelector('i')!.innerText = 'request_quote';
+            jobPrintoutType.querySelector('span')!.textContent = 'Quote';
+        } else if (jobType === JobType.WorkOrder) {
+            jobPrintoutType.querySelector('i')!.innerText = 'construction'
+            jobPrintoutType.querySelector('span')!.textContent = 'Workorder';
+        }
+        else if (jobType === JobType.PackingSlip) {
+            jobPrintoutType.querySelector('i')!.innerText = 'receipt_long'
+            jobPrintoutType.querySelector('span')!.textContent = 'Packing Slip';
+        }
+    }
     private toggleSlotBorders(enable: boolean) {
         const slots = document.querySelectorAll('.slot') as NodeListOf<HTMLElement>;
         slots.forEach(slot => {
@@ -587,7 +640,9 @@ class SwapyGrid {
 function getJobIDFromUrl(): number {
     const url = new URL(window.location.href);
     const jobId = url.searchParams.get('id');
-    if (!jobId) return -1;
+    if (!jobId) {
+        return -1;
+    }
     return parseInt(jobId, 10);
 }
 

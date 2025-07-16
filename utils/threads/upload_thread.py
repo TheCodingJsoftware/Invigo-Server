@@ -41,9 +41,7 @@ class UploadThread(QThread):
                     success = False
                     for attempt in range(self.max_retries):
                         try:
-                            response = self.session.post(
-                                self.upload_url, files=file, timeout=10
-                            )
+                            response = self.session.post(self.upload_url, files=file, timeout=10)
                             if response.status_code == 200:
                                 successful_uploads.append(file_to_upload)
                                 success = True

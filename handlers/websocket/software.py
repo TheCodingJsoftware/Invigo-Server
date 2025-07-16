@@ -13,9 +13,7 @@ class WebSocketSoftwareHandler(WebSocketHandler):
             return
 
         variables.software_connected_clients.add(self)
-        logging.info(
-            f"Software WebSocket connected: {self.client_name} (IP: {self.request.remote_ip})"
-        )
+        logging.info(f"Software WebSocket connected: {self.client_name} (IP: {self.request.remote_ip})")
 
     def on_close(self):
         if self in variables.software_connected_clients:

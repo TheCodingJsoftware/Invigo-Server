@@ -15,7 +15,7 @@ class SaveJobHandler(BaseHandler):
 
             self.signal_clients_for_changes(
                 client_name,
-                [f"/jobs/get_job/{job_id}"],
+                [f"/jobs/{job_id}"],
             )
             self.set_header("Content-Type", "application/json")
             self.write({"status": "success", "message": "Entry updated successfully."})

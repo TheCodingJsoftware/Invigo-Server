@@ -20,12 +20,8 @@ class LaserCutPartsInventoryDB(BaseWithDBPool):
         self.cache_manager = InventoryCacheManager(expiry_seconds=1)
         self.laser_cut_parts_history_db = ItemHistoryDB("laser_cut_part")
         load_dotenv()
-        self.cache_manager.schedule_refresh(
-            "all_laser_cut_parts", self.get_all_laser_cut_parts_no_cache, 60
-        )
-        self.cache_manager.schedule_refresh(
-            "all_categories", self.get_categories_no_cache, 60
-        )
+        self.cache_manager.schedule_refresh("all_laser_cut_parts", self.get_all_laser_cut_parts_no_cache, 60)
+        self.cache_manager.schedule_refresh("all_categories", self.get_categories_no_cache, 60)
 
     async def connect(self):
         if self.db_pool is None or self.db_pool._closed:
@@ -77,9 +73,7 @@ class LaserCutPartsInventoryDB(BaseWithDBPool):
         async with self.db_pool.acquire() as conn:
             rows = await conn.fetch(query)
 
-        all_categories = sorted(
-            {cat for row in rows if row["categories"] for cat in row["categories"]}
-        )
+        all_categories = sorted({cat for row in rows if row["categories"] for cat in row["categories"]})
         self.cache_manager.set(key, all_categories)
         return all_categories
 
@@ -89,9 +83,7 @@ class LaserCutPartsInventoryDB(BaseWithDBPool):
         async with self.db_pool.acquire() as conn:
             rows = await conn.fetch(query)
 
-        all_categories = sorted(
-            {cat for row in rows if row["categories"] for cat in row["categories"]}
-        )
+        all_categories = sorted({cat for row in rows if row["categories"] for cat in row["categories"]})
         return all_categories
 
     @ensure_connection
@@ -118,11 +110,7 @@ class LaserCutPartsInventoryDB(BaseWithDBPool):
         if cached := self.cache_manager.get(key):
             return cached
 
-        query = (
-            f"SELECT * FROM {self.TABLE_NAME} WHERE id = $1"
-            if isinstance(laser_cut_part_id, int)
-            else f"SELECT * FROM {self.TABLE_NAME} WHERE part_number = $1"
-        )
+        query = f"SELECT * FROM {self.TABLE_NAME} WHERE id = $1" if isinstance(laser_cut_part_id, int) else f"SELECT * FROM {self.TABLE_NAME} WHERE part_number = $1"
         async with self.db_pool.acquire() as conn:
             row = await conn.fetchrow(query, laser_cut_part_id)
 
@@ -212,9 +200,7 @@ class LaserCutPartsInventoryDB(BaseWithDBPool):
         return row["id"] if row else -1
 
     @ensure_connection
-    async def update_laser_cut_part(
-        self, laser_cut_part_id: int, new_data: dict, modified_by: str = "system"
-    ):
+    async def update_laser_cut_part(self, laser_cut_part_id: int, new_data: dict, modified_by: str = "system"):
         if laser_cut_part_id < 0:
             laser_cut_part_id = await self.get_laser_cut_part_id(new_data["name"])
             new_data["id"] = laser_cut_part_id
@@ -230,18 +216,8 @@ class LaserCutPartsInventoryDB(BaseWithDBPool):
                 new_json = new_data.copy()
 
                 if current_json != new_json:
-                    task = asyncio.create_task(
-                        self.laser_cut_parts_history_db.insert_history_item(
-                            laser_cut_part_id, new_data, modified_by
-                        )
-                    )
-                    task.add_done_callback(
-                        lambda t: logging.error(
-                            "Unhandled task error", exc_info=t.exception()
-                        )
-                        if t.exception()
-                        else None
-                    )
+                    task = asyncio.create_task(self.laser_cut_parts_history_db.insert_history_item(laser_cut_part_id, new_data, modified_by))
+                    task.add_done_callback(lambda t: logging.error("Unhandled task error", exc_info=t.exception()) if t.exception() else None)
 
                 # Update the main row
                 await conn.execute(

@@ -1,4 +1,5 @@
 import '@static/css/style.css';
+import '@static/css/theme.css';
 
 export function triggerThemeTransition(duration = 500) {
     const html = document.documentElement;

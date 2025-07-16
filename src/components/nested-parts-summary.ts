@@ -61,7 +61,7 @@ export class NestedPartsSummary implements BaseComponent {
                         <span>Price</span>
                     </label>
                 </div>
-                <table class="border">
+                <table class="border tiny-space">
                     <thead>
                         <tr>
                             <th data-column="nest-part-partName">Part Name</th>
@@ -154,13 +154,13 @@ export class NestedPartsSummary implements BaseComponent {
                         <span class="wrap no-line small-width">${group.name}</span>
                     </div>
                 </td>
-                <td class="min center-align" data-column="nest-part-material">${material}</td>
+                <td class="center-align" data-column="nest-part-material">${material}</td>
                 <td class="center-align" data-column="nest-part-process">${process}</td>
                 <td class="left-align" data-column="nest-part-notes">${notes}</td>
-                <td class="min center-align" data-column="nest-part-shelfNumber">${shelfNumber}</td>
-                <td class="min center-align" data-column="nest-part-quantity">${quantity}</td>
-                <td class="min center-align" data-column="nest-part-unitPrice">${this.formatPrice(unitPrice)}</td>
-                <td class="min center-align" data-column="nest-part-price">${this.formatPrice(price)}</td>
+                <td class="center-align" data-column="nest-part-shelfNumber">${shelfNumber}</td>
+                <td class="center-align" data-column="nest-part-quantity">${quantity}</td>
+                <td class="center-align" data-column="nest-part-unitPrice">${this.formatPrice(unitPrice)}</td>
+                <td class="center-align" data-column="nest-part-price">${this.formatPrice(price)}</td>
             </tr>
             `;
         }
@@ -171,7 +171,7 @@ export class NestedPartsSummary implements BaseComponent {
         let partsTableFooter = "";
         let totalQuantity = 0;
         let totalPrice = 0;
-        for (const nest of this.nests){
+        for (const nest of this.nests) {
             for (const laserCutPart of nest.laser_cut_parts) {
                 const unitQuantity = laserCutPart.quantity;
                 const quantity = unitQuantity * nest.sheet_count;
@@ -187,9 +187,9 @@ export class NestedPartsSummary implements BaseComponent {
             <th class="center-align" data-column="nest-part-process"></th>
             <th class="center-align" data-column="nest-part-notes"></th>
             <th class="center-align" data-column="nest-part-shelfNumber"></th>
-            <th class="min center-align" data-column="nest-part-quantity">${totalQuantity}</th>
+            <th class="center-align" data-column="nest-part-quantity">${totalQuantity}</th>
             <th class="center-align" data-column="nest-part-unitPrice"></th>
-            <th class="min center-align" data-column="nest-part-price">${this.formatPrice(totalPrice)}</th>
+            <th class="center-align" data-column="nest-part-price">${this.formatPrice(totalPrice)}</th>
         </tr>`;
         return partsTableFooter.trim();
     }

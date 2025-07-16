@@ -11,9 +11,7 @@ class DownloadJobDirectoryHandler(BaseHandler):
 
         if os.path.exists(json_file_path):
             self.set_header("Content-Type", "application/octet-stream")
-            self.set_header(
-                "Content-Disposition", f'attachment; filename="{folder_name}_job.json"'
-            )
+            self.set_header("Content-Disposition", f'attachment; filename="{folder_name}_job.json"')
             with open(json_file_path, "rb") as file:
                 data = file.read()
 

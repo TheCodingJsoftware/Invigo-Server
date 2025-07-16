@@ -41,9 +41,7 @@ async def migrate_coatings_inventory_from_json_file(file_path: str):
             primer_data["average_coverage"] = primer_data.get("average_coverage", 300)
             primer_data["gravity"] = primer_data.get("gravity", 2.0)
             coating_id = await coatings_db.add_coating(primer_data)
-            print(
-                f"[{idx}] Inserted primer ID: {coating_id} - Name: {primer_data['name']}"
-            )
+            print(f"[{idx}] Inserted primer ID: {coating_id} - Name: {primer_data['name']}")
             idx += 1
 
         for paint_data in paints:
@@ -56,9 +54,7 @@ async def migrate_coatings_inventory_from_json_file(file_path: str):
             paint_data["average_coverage"] = paint_data.get("average_coverage", 300)
             paint_data["gravity"] = paint_data.get("gravity", 2.0)
             coating_id = await coatings_db.add_coating(paint_data)
-            print(
-                f"[{idx}] Inserted paint ID: {coating_id} - Name: {paint_data['name']}"
-            )
+            print(f"[{idx}] Inserted paint ID: {coating_id} - Name: {paint_data['name']}")
             idx += 1
 
         for powder_data in powders:
@@ -71,9 +67,7 @@ async def migrate_coatings_inventory_from_json_file(file_path: str):
             powder_data["average_coverage"] = powder_data.get("average_coverage", 300)
             powder_data["gravity"] = powder_data.get("gravity", 2.0)
             coating_id = await coatings_db.add_coating(powder_data)
-            print(
-                f"[{idx}] Inserted powder ID: {coating_id} - Name: {powder_data['name']}"
-            )
+            print(f"[{idx}] Inserted powder ID: {coating_id} - Name: {powder_data['name']}")
             idx += 1
 
     except Exception as e:

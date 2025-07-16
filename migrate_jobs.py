@@ -28,9 +28,7 @@ async def migrate_jobs_from_job_directories(folder: str):
             job_data["job_data"]["id"] = idx
             try:
                 job_id = await db.add_job(job_data)
-                print(
-                    f"[{idx}] Inserted job ID: {job_id} - Name: {job_data['job_data']['name']}"
-                )
+                print(f"[{idx}] Inserted job ID: {job_id} - Name: {job_data['job_data']['name']}")
 
             except Exception as e:
                 print(f"Error during migration: {e} with job data: {job_data}")

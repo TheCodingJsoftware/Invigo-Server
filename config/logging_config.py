@@ -14,9 +14,7 @@ def setup_logging():
     )
 
     def excepthook(exc_type, exc_value, exc_traceback):
-        logging.error(
-            "Unhandled exception", exc_info=(exc_type, exc_value, exc_traceback)
-        )
+        logging.error("Unhandled exception", exc_info=(exc_type, exc_value, exc_traceback))
         sys.__excepthook__(exc_type, exc_value, exc_traceback)
 
     sys.excepthook = excepthook

@@ -68,9 +68,7 @@ class WorkordersDB(BaseWithDBPool):
         self.cache[key] = (value, datetime.now())
 
     def _invalidate_cache(self, key_startswith):
-        self.cache = {
-            k: v for k, v in self.cache.items() if not k.startswith(key_startswith)
-        }
+        self.cache = {k: v for k, v in self.cache.items() if not k.startswith(key_startswith)}
 
     def start_background_cache_worker(self):
         async def background_job():
@@ -79,9 +77,7 @@ class WorkordersDB(BaseWithDBPool):
                     await self._warm_cache()
                 except Exception as e:
                     logging.warning(f"[CacheWorker] Error warming cache: {e}")
-                await asyncio.sleep(
-                    Environment.WORKSPACE_BACKGROUND_CACHE_WARM_UP_INTERVAL
-                )
+                await asyncio.sleep(Environment.WORKSPACE_BACKGROUND_CACHE_WARM_UP_INTERVAL)
 
         if self._background_task is None:
             self._background_task = asyncio.create_task(background_job())
@@ -159,9 +155,7 @@ class WorkordersDB(BaseWithDBPool):
         return job
 
     @ensure_connection
-    async def save_workorder(
-        self, workorder_id: int | str, new_data: dict, modified_by: str = "system"
-    ):
+    async def save_workorder(self, workorder_id: int | str, new_data: dict, modified_by: str = "system"):
         if isinstance(workorder_id, str):
             workorder_id = await self.get_workorder_id_by_name(workorder_id)
 
@@ -169,26 +163,14 @@ class WorkordersDB(BaseWithDBPool):
 
         async with self.db_pool.acquire() as conn:
             async with conn.transaction():
-                current_row = await conn.fetchrow(
-                    f"SELECT * FROM {self.TABLE_NAME} WHERE id = $1", workorder_id
-                )
+                current_row = await conn.fetchrow(f"SELECT * FROM {self.TABLE_NAME} WHERE id = $1", workorder_id)
 
                 if current_row is None:
                     job_does_not_exist = True
                 else:
                     # Record history in background
-                    task = asyncio.create_task(
-                        self.jobs_history_db.insert_history_job(
-                            workorder_id, new_data, modified_by
-                        )
-                    )
-                    task.add_done_callback(
-                        lambda t: logging.error(
-                            "Unhandled task error", exc_info=t.exception()
-                        )
-                        if t.exception()
-                        else None
-                    )
+                    task = asyncio.create_task(self.jobs_history_db.insert_history_job(workorder_id, new_data, modified_by))
+                    task.add_done_callback(lambda t: logging.error("Unhandled task error", exc_info=t.exception()) if t.exception() else None)
 
                     # Proceed with update
                     await conn.execute(
@@ -202,9 +184,7 @@ class WorkordersDB(BaseWithDBPool):
                     )
 
         if job_does_not_exist:
-            logging.info(
-                f"[SaveJob] Job ID {workorder_id} not found. Creating new job."
-            )
+            logging.info(f"[SaveJob] Job ID {workorder_id} not found. Creating new job.")
             new_id = await self.add_workorder(new_data)
             # Optional: write to history right after creation
             # await self.jobs_history_db.insert_history_job(new_id, new_data, modified_by)

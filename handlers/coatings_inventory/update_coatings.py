@@ -12,9 +12,7 @@ class UpdateCoatingsHandler(BaseHandler):
 
             for coating_data in data:
                 coating_id = coating_data.get("id")
-                await self.coatings_inventory_db.save_coating(
-                    coating_id, coating_data, modified_by=client_name
-                )
+                await self.coatings_inventory_db.save_coating(coating_id, coating_data, modified_by=client_name)
             self.signal_clients_for_changes(
                 client_name,
                 ["/coatings_inventory/get_all"],

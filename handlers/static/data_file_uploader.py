@@ -38,17 +38,13 @@ class FileUploadHandler(BaseHandler):
                             [filename],
                             client_type="software",
                         )
-                        self.signal_clients_for_changes(
-                            None, [filename], client_type="web"
-                        )
+                        self.signal_clients_for_changes(None, [filename], client_type="web")
                 except Timeout:
                     logging.info(
                         f'{self.request.remote_ip} Could not acquire lock for "{filename}".',
                     )
                     self.set_status(503)
-                    self.write(
-                        f"Could not acquire lock for {filename}. Try again later."
-                    )
+                    self.write(f"Could not acquire lock for {filename}. Try again later.")
             elif filename.lower().endswith((".jpeg", ".jpg", ".png")):
                 filename = os.path.basename(filename)
                 with open(f"images/{filename}", "wb") as file:

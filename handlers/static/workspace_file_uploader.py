@@ -12,9 +12,7 @@ class WorkspaceFileUploader(BaseHandler):
             file_data = file_info[0]["body"]
             file_name: str = os.path.basename(file_info[0]["filename"])
             file_ext = os.path.splitext(file_name)[1].upper().replace(".", "")
-            file_path = os.path.join(
-                Environment.DATA_PATH, "data", "workspace", file_ext
-            )
+            file_path = os.path.join(Environment.DATA_PATH, "data", "workspace", file_ext)
             Path(file_path).mkdir(parents=True, exist_ok=True)
             with open(os.path.join(file_path, file_name), "wb") as file:
                 file.write(file_data)

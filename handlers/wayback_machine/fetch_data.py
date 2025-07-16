@@ -36,9 +36,7 @@ class FetchDataHandler(BaseHandler):
                                         if item_name == component_data["part_name"]:
                                             item = component_data
                                 elif inventory_type == "laser_cut_inventory":
-                                    for laser_cut_part_data in inventory[
-                                        "laser_cut_parts"
-                                    ]:
+                                    for laser_cut_part_data in inventory["laser_cut_parts"]:
                                         if item_name == laser_cut_part_data["name"]:
                                             item = laser_cut_part_data
                                 elif inventory_type == "sheets_inventory":
@@ -47,14 +45,9 @@ class FetchDataHandler(BaseHandler):
                                             if item_name == sheet_data["name"]:
                                                 item = sheet_data
                                         except KeyError:  # Have to generate name
-                                            if (
-                                                item_name
-                                                == f"{sheet_data['thickness']} {sheet_data['material']} {sheet_data['length']:.3f}x{sheet_data['width']:.3f}"
-                                            ):
+                                            if item_name == f"{sheet_data['thickness']} {sheet_data['material']} {sheet_data['length']:.3f}x{sheet_data['width']:.3f}":
                                                 item = sheet_data
-                            except (
-                                KeyError
-                            ):  # The part might not exist yet in older backups
+                            except KeyError:  # The part might not exist yet in older backups
                                 continue
                             try:
                                 if item:

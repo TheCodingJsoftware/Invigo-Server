@@ -79,7 +79,7 @@ export class NestedParts implements BaseComponent {
 
     generatePartsTable(): string {
         let partsTable = "";
-        for (const nest of this.nests){
+        for (const nest of this.nests) {
             partsTable += `
                 <article class="round border">
                     <nav>
@@ -90,18 +90,18 @@ export class NestedParts implements BaseComponent {
                     </nav>
                     <div class="content-wrapper" style="height: auto;">
                         <img class="responsive round" src="http://invi.go/images/${nest.image_path}" class="responsive">
-                        <table class="border">
+                        <table class="border tiny-space">
                             <thead>
                                 <tr>
                                     <th data-column="nest-part-partName">Part Name / Number</th>
-                                    <th class="min center-align" data-column="nest-part-material">Material</th>
+                                    <th class="center-align" data-column="nest-part-material">Material</th>
                                     <th class="center-align" data-column="nest-part-process">Process</th>
                                     <th class="center-align" data-column="nest-part-notes">Notes</th>
-                                    <th class="min center-align" data-column="nest-part-shelfNumber">Shelf #</th>
-                                    <th class="min center-align" data-column="nest-part-nestQuantity">Nest Qty</th>
-                                    <th class="min center-align" data-column="nest-part-quantity">Qty</th>
-                                    <th class="min center-align" data-column="nest-part-unitPrice">Unit Price</th>
-                                    <th class="min center-align" data-column="nest-part-price">Price</th>
+                                    <th class="center-align" data-column="nest-part-shelfNumber">Shelf #</th>
+                                    <th class="center-align" data-column="nest-part-nestQuantity">Nest Qty</th>
+                                    <th class="center-align" data-column="nest-part-quantity">Qty</th>
+                                    <th class="center-align" data-column="nest-part-unitPrice">Unit Price</th>
+                                    <th class="center-align" data-column="nest-part-price">Price</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -141,14 +141,14 @@ export class NestedParts implements BaseComponent {
                         </div>
                     </div>
                 </td>
-                <td class="min center-align" data-column="nest-part-material">${material}</td>
+                <td class="center-align" data-column="nest-part-material">${material}</td>
                 <td class="center-align" data-column="nest-part-process">${process}</td>
                 <td class="left-align" data-column="nest-part-notes">${notes}</td>
-                <td class="min center-align" data-column="nest-part-shelfNumber">${shelfNumber}</td>
-                <td class="min center-align" data-column="nest-part-nestQuantity">${unitQuantity}</td>
-                <td class="min center-align" data-column="nest-part-quantity">${quantity}</td>
-                <td class="min center-align" data-column="nest-part-unitPrice">${this.formatPrice(unitPrice)}</td>
-                <td class="min center-align" data-column="nest-part-price">${this.formatPrice(price)}</td>
+                <td class="center-align" data-column="nest-part-shelfNumber">${shelfNumber}</td>
+                <td class="center-align" data-column="nest-part-nestQuantity">${unitQuantity}</td>
+                <td class="center-align" data-column="nest-part-quantity">${quantity}</td>
+                <td class="center-align" data-column="nest-part-unitPrice">${this.formatPrice(unitPrice)}</td>
+                <td class="center-align" data-column="nest-part-price">${this.formatPrice(price)}</td>
             </tr>
             `;
         }
@@ -176,9 +176,9 @@ export class NestedParts implements BaseComponent {
             <th class="center-align" data-column="nest-part-notes"></th>
             <th class="center-align" data-column="nest-part-shelfNumber"></th>
             <th class="center-align" data-column="nest-part-nestQuantity"></th>
-            <th class="min center-align" data-column="nest-part-quantity">${totalQuantity}</th>
+            <th class="center-align" data-column="nest-part-quantity">${totalQuantity}</th>
             <th class="center-align" data-column="nest-part-unitPrice"></th>
-            <th class="min center-align" data-column="nest-part-price">${this.formatPrice(totalPrice)}</th>
+            <th class="center-align" data-column="nest-part-price">${this.formatPrice(totalPrice)}</th>
         </tr>`;
         return partsTableFooter.trim();
     }

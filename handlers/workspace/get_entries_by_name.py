@@ -13,9 +13,7 @@ class WorkspaceGetEntriesByNamesHandler(BaseHandler):
 
             entries = await self.workspace_db.get_cached_entries_by_name(job_id, name)
 
-            logging.info(
-                f"{self.request.remote_ip} requested {len(entries)} entries for name='{name}' under job={job_id}"
-            )
+            logging.info(f"{self.request.remote_ip} requested {len(entries)} entries for name='{name}' under job={job_id}")
 
             self.set_header("Content-Type", "application/json")
             self.write(msgspec.json.encode(entries))

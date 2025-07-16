@@ -49,7 +49,7 @@ export class NestedSheetsSummary implements BaseComponent {
                         <span>Nest Cut Time</span>
                     </label>
                 </div>
-                <table class="border">
+                <table class="border tiny-space">
                     <thead>
                         <tr>
                             <th data-column="nest-sheet-nestName">Nest Name</th>

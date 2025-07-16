@@ -12,9 +12,7 @@ SMTP_PORT = 587
 
 
 def send(subject: str, body: str, recipients: list[str]):
-    with open(
-        f"{Environment.DATA_PATH}/credentials.json", "r", encoding="utf-8"
-    ) as credentialsFile:
+    with open(f"{Environment.DATA_PATH}/credentials.json", "r", encoding="utf-8") as credentialsFile:
         credentials = json.load(credentialsFile)
 
     USERNAME: str = credentials["username"]
@@ -40,9 +38,7 @@ def send(subject: str, body: str, recipients: list[str]):
 def send_error_log(body: str):
     if "User: Jared" in body:
         return
-    with open(
-        f"{Environment.DATA_PATH}/credentials.json", "r", encoding="utf-8"
-    ) as credentialsFile:
+    with open(f"{Environment.DATA_PATH}/credentials.json", "r", encoding="utf-8") as credentialsFile:
         credentials = json.load(credentialsFile)
     USERNAME: str = credentials["username"]
     PASSWORD = credentials["password"]

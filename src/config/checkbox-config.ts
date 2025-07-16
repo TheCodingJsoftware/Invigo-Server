@@ -8,6 +8,7 @@ export const CHECKBOX_CONFIG: Record<string, Record<string, boolean>> = {
         "material": true,
         "thickness": true,
         "notes": false,
+        "component-notes": false,
         "price": true,
         "unitPrice": true,
         "shelfNumber": false,
@@ -18,7 +19,7 @@ export const CHECKBOX_CONFIG: Record<string, Record<string, boolean>> = {
         "nestCutTime": true,
         "nestName": true,
         "show-total-cost": true,
-        "show-assembly-process": true,
+        "show-assemblyPicture": false,
     },
     "workorder": {
         "picture": true,
@@ -28,7 +29,8 @@ export const CHECKBOX_CONFIG: Record<string, Record<string, boolean>> = {
         "unitQuantity": false,
         "material": true,
         "thickness": true,
-        "notes": true,
+        "notes": false,
+        "component-notes": true,
         "price": false,
         "unitPrice": false,
         "shelfNumber": false,
@@ -39,7 +41,7 @@ export const CHECKBOX_CONFIG: Record<string, Record<string, boolean>> = {
         "nestCutTime": true,
         "nestName": true,
         "show-total-cost": false,
-        "show-assembly-process": true,
+        "show-assemblyPicture": true,
     },
     "packingslip": {
         "picture": true,
@@ -50,6 +52,7 @@ export const CHECKBOX_CONFIG: Record<string, Record<string, boolean>> = {
         "material": true,
         "thickness": true,
         "notes": false,
+        "component-notes": false,
         "price": false,
         "unitPrice": false,
         "shelfNumber": false,
@@ -60,6 +63,6 @@ export const CHECKBOX_CONFIG: Record<string, Record<string, boolean>> = {
         "nestCutTime": true,
         "nestName": true,
         "show-total-cost": false,
-        "show-assembly-process": false,
+        "show-assemblyPicture": false,
     }
 };

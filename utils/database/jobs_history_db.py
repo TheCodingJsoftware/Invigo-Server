@@ -40,7 +40,7 @@ class JobsHistroyDB(BaseWithDBPool):
         table_query = """
         CREATE TABLE IF NOT EXISTS jobs_history (
             id SERIAL PRIMARY KEY,
-            job_id INT NOT NULL REFERENCES jobs(id) ON DELETE SET NULL,
+            job_id INT REFERENCES jobs(id) ON DELETE SET NULL,
             version INT NOT NULL,
             name TEXT,
             job_data JSONB,
@@ -70,9 +70,7 @@ class JobsHistroyDB(BaseWithDBPool):
                     await conn.execute(index_lookup_query)
 
     @ensure_connection
-    async def insert_history_job(
-        self, job_id: int | str, new_data: dict, modified_by: str = "system"
-    ):
+    async def insert_history_job(self, job_id: int | str, new_data: dict, modified_by: str = "system"):
         max_retries = 3
         for attempt in range(1, max_retries + 1):
             try:
@@ -136,9 +134,7 @@ class JobsHistroyDB(BaseWithDBPool):
                         )
                 return
             except asyncpg.UniqueViolationError:
-                logging.warning(
-                    f"[History Insert] Version conflict at version {version}, retrying..."
-                )
+                logging.warning(f"[History Insert] Version conflict at version {version}, retrying...")
                 await asyncio.sleep(attempt)
             except Exception as e:
                 logging.error(f"[History Insert Error] Attempt {attempt}: {e}")
@@ -176,9 +172,7 @@ class JobsHistroyDB(BaseWithDBPool):
             all_keys = set(prev) | set(current)
             for key in all_keys:
                 sub_path = f"{path}.{key}" if path else key
-                changes.update(
-                    self.compute_diff(prev.get(key), current.get(key), sub_path)
-                )
+                changes.update(self.compute_diff(prev.get(key), current.get(key), sub_path))
 
         elif isinstance(prev, list) and isinstance(current, list):
             if prev != current:
