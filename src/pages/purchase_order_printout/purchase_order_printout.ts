@@ -249,12 +249,11 @@ class PurchaseOrderPrintout {
             purchaseOrderDetails: new PurchaseOrderDetails(this.purchaseOrderId, this.purchaseOrder),
             items: new ItemsTable(this.purchaseOrder),
         };
+        sections['totalCost'] = this.totalCostComponent = new PurchaseOrderTotalCost(this.purchaseOrder);
 
         await Promise.all(
             Object.values(sections).map(section => section.render())
         );
-        this.totalCostComponent = new PurchaseOrderTotalCost(this.purchaseOrder);
-        await this.totalCostComponent.render();
 
         Object.entries(sections).forEach(([key, section]) => {
             const checkbox = document.getElementById(`show-${key}`) as HTMLInputElement;

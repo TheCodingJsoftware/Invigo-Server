@@ -29,6 +29,7 @@ from handlers.history.get_laser_cut_part_quantity_history import (
     GetLaserCutPartQuantityHistoryHandler,
 )
 from handlers.history.get_sheet_orders_history import GetSheetOrdersHistoryHandler
+from handlers.history.get_sheet_price_history import GetSheetPriceHistoryHandler
 from handlers.history.get_sheet_quantity_histroy import GetSheetQuantityHistoryHandler
 from handlers.jobs.delete_job import DeleteJobHandler
 from handlers.jobs.get_all_jobs import GetAllJobsHandler
@@ -238,6 +239,7 @@ api_routes = [
     route(r"/get_order_history/component/(.*)", GetComponentOrdersHistoryHandler),
     route(r"/get_quantity_history/component/(.*)", GetComponentQuantityHistoryHandler),
     route(r"/get_price_history/component/(.*)", GetComponentPriceHistoryHandler),
+    route(r"/get_price_history/sheet/(.*)", GetSheetPriceHistoryHandler),
     # Laser Cut Parts Invnetory Routes
     route(r"/laser_cut_parts_inventory/add_laser_cut_part", AddLaserCutPartHandler),
     route(r"/laser_cut_parts_inventory/add_laser_cut_parts", AddLaserCutPartsHandler),

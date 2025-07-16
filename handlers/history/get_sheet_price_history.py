@@ -5,11 +5,11 @@ from typing import Any, Dict, List
 from handlers.base import BaseHandler
 
 
-class GetComponentPriceHistoryHandler(BaseHandler):
+class GetSheetPriceHistoryHandler(BaseHandler):
     async def get(self, item_id):
         try:
             # Await the async function
-            orders = await self.components_inventory_db.components_history_db.get_item_history(item_id=int(item_id))
+            orders = await self.sheets_inventory_db.sheets_history_db.get_item_history(item_id=int(item_id))
             history_entries = self.analyze_price_diffs(orders)
             history_entries.sort(key=lambda x: x.get("version", 0), reverse=True)
             self.write({"success": True, "history_entries": history_entries})
@@ -54,8 +54,8 @@ class GetComponentPriceHistoryHandler(BaseHandler):
             version = entry.get("version", 0)
             modified_by = entry.get("modified_by", "")
 
-            from_price = diff_from.get("price")
-            to_price = diff_to.get("price")
+            from_price = diff_from.get("price_per_pound")
+            to_price = diff_to.get("price_per_pound")
 
             if from_price is not None and to_price is not None and from_price != to_price:
                 # Determine event type

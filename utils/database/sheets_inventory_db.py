@@ -162,7 +162,7 @@ class SheetsInventoryDB(BaseWithDBPool):
         return sheets
 
     @ensure_connection
-    async def add_sheet(self, data: dict):
+    async def add_sheet(self, data: dict) -> int:
         query = f"""
         INSERT INTO {self.TABLE_NAME} (
             name, thickness, material, width, length,
@@ -171,7 +171,7 @@ class SheetsInventoryDB(BaseWithDBPool):
         RETURNING id;
         """
         async with self.db_pool.acquire() as conn:
-            return await conn.fetchval(
+            row = await conn.fetchval(
                 query,
                 data.get("name"),
                 data.get("thickness"),
@@ -182,6 +182,7 @@ class SheetsInventoryDB(BaseWithDBPool):
                 data.get("quantity", 0),
                 json.dumps(data),
             )
+        return row["id"]
 
     @ensure_connection
     async def get_sheet_id(self, sheet_name: str) -> int:

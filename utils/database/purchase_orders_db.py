@@ -218,7 +218,7 @@ class PurchaseOrdersDB(BaseWithDBPool):
         return purchase_order_id
 
     @ensure_connection
-    async def add_purchase_order(self, purchase_order: dict):
+    async def add_purchase_order(self, purchase_order: dict) -> int:
         meta_data = purchase_order.get("meta_data", {})
         vendor = meta_data.get("vendor", {})
         vendor_name = vendor.get("name", "")

@@ -66,7 +66,7 @@ class GetSheetOrdersHistoryHandler(BaseHandler):
             elif from_orders and not to_orders:
                 event_type = "order_removed"
                 details = {"removed_orders": from_orders}
-            elif from_orders and to_orders and from_orders != to_orders:
+            elif from_orders and from_orders != to_orders:
                 event_type = "order_modified"
                 details = {"from": from_orders, "to": to_orders}
 

@@ -156,7 +156,7 @@ class ComponentsInventoryDB(BaseWithDBPool):
         return components
 
     @ensure_connection
-    async def add_component(self, data: dict):
+    async def add_component(self, data: dict) -> int:
         query = f"""
         INSERT INTO {self.TABLE_NAME} (
             part_name, part_number,
@@ -165,7 +165,7 @@ class ComponentsInventoryDB(BaseWithDBPool):
         RETURNING id;
         """
         async with self.db_pool.acquire() as conn:
-            return await conn.fetchval(
+            row = await conn.fetchval(
                 query,
                 data.get("part_name"),
                 data.get("part_number"),
@@ -173,6 +173,7 @@ class ComponentsInventoryDB(BaseWithDBPool):
                 data.get("quantity", 0),
                 json.dumps(data),
             )
+        return row["id"]
 
     @ensure_connection
     async def get_component_id(self, component_name: str) -> int:
