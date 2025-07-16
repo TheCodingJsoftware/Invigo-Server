@@ -43,6 +43,11 @@ saved_quotes/
 saved_jobs/
 previous_quotes/
 images/
+.dist/
+public/
+logs/
+jscharing/
+
 
 # Docker-related
 Dockerfile.*
