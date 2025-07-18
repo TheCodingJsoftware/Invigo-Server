@@ -14,11 +14,12 @@ from utils.decorators.connection import BaseWithDBPool, ensure_connection
 
 class LaserCutPartsInventoryDB(BaseWithDBPool):
     TABLE_NAME = "laser_cut_parts_inventory"
+    ITEM_NAME = "laser_cut_part"
 
     def __init__(self):
         self.db_pool = None
         self.cache_manager = InventoryCacheManager(expiry_seconds=1)
-        self.laser_cut_parts_history_db = ItemHistoryDB("laser_cut_part")
+        self.laser_cut_parts_history_db = ItemHistoryDB(self.ITEM_NAME)
         load_dotenv()
         self.cache_manager.schedule_refresh("all_laser_cut_parts", self.get_all_laser_cut_parts_no_cache, 60)
         self.cache_manager.schedule_refresh("all_categories", self.get_categories_no_cache, 60)

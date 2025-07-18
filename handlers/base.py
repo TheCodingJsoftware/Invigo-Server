@@ -51,7 +51,7 @@ class BaseHandler(RequestHandler):
     coatings_inventory_db = CoatingsInventoryDB()
     components_inventory_db = ComponentsInventoryDB()
     laser_cut_parts_inventory_db = LaserCutPartsInventoryDB()
-    recut_laser_cut_parts_inventory_db = RecutLaserCutPartsInventoryDB()
+    recut_laser_cut_parts_inventory_db: RecutLaserCutPartsInventoryDB
     sheets_inventory_db = SheetsInventoryDB()
     job_directory_cache = JobDirectoryCache()
     purchase_orders_db = PurchaseOrdersDB()
