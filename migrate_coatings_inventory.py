@@ -3,7 +3,6 @@ import json
 
 from utils.database.coatings_inventory_db import CoatingsInventoryDB
 from utils.database.components_inventory_db import ComponentsInventoryDB
-from utils.inventory.coating_item import CoatingItem
 
 
 async def migrate_coatings_inventory_from_json_file(file_path: str):

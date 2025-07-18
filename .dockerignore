@@ -46,7 +46,7 @@ images/
 .dist/
 public/
 logs/
-jscharing/
+jscharting/
 
 
 # Docker-related
