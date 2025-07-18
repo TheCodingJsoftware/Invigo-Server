@@ -2,7 +2,30 @@ import asyncio
 import json
 import os
 
+import laser_cut_part_convert_old_to_new
 from utils.database.jobs_db import JobsDB
+
+
+def migrate_laser_cut_parts_in_assemblies(assembly_data: dict):
+    if "laser_cut_parts" in assembly_data:
+        converted_parts = []
+        for part_data in assembly_data["laser_cut_parts"]:
+            new_part = laser_cut_part_convert_old_to_new.convert(part_data)
+            converted_parts.append(new_part)
+        assembly_data["laser_cut_parts"] = converted_parts
+
+    if "sub_assemblies" in assembly_data:
+        for sub in assembly_data["sub_assemblies"]:
+            migrate_laser_cut_parts_in_assemblies(sub)
+
+
+def migrate_laser_cut_parts_in_nests(nest_data: dict):
+    if "laser_cut_parts" in nest_data:
+        converted_parts = []
+        for part_data in nest_data["laser_cut_parts"]:
+            new_part = laser_cut_part_convert_old_to_new.convert(part_data)
+            converted_parts.append(new_part)
+        nest_data["laser_cut_parts"] = converted_parts
 
 
 async def migrate_jobs_from_job_directories(folder: str):
@@ -26,6 +49,12 @@ async def migrate_jobs_from_job_directories(folder: str):
             job_data = json.load(f)
 
             job_data["job_data"]["id"] = idx
+            for assembly in job_data.get("assemblies", []):
+                migrate_laser_cut_parts_in_assemblies(assembly)
+
+            for nest in job_data.get("nests", []):
+                migrate_laser_cut_parts_in_nests(nest)
+
             try:
                 job_id = await db.add_job(job_data)
                 print(f"[{idx}] Inserted job ID: {job_id} - Name: {job_data['job_data']['name']}")

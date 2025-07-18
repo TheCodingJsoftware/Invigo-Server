@@ -1,5 +1,5 @@
-import { TagAttributesData } from "./tag-attribute";
-import { TagStatusData } from "./tag-status";
+import { TagAttributesData } from "@interfaces/tag-attribute";
+import { TagStatusData } from "@interfaces/tag-status";
 
 export interface TagData {
   attribute: TagAttributesData;

@@ -52,9 +52,14 @@ class LaserCutPartsInventoryDB(BaseWithDBPool):
             id SERIAL PRIMARY KEY,
             part_name TEXT NOT NULL,
             categories TEXT[],
-            quantity FLOAT DEFAULT 0,
-            recut BOOLEAN DEFAULT FALSE,
-            recoat BOOLEAN DEFAULT FALSE,
+            category_quantities JSONB,
+            inventory_data JSONB,
+            meta_data JSONB,
+            prices JSONB,
+            paint_data JSONB,
+            primer_data JSONB,
+            powder_data JSONB,
+            workspace_data JSONB,
             data JSONB NOT NULL,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -84,8 +89,7 @@ class LaserCutPartsInventoryDB(BaseWithDBPool):
         async with self.db_pool.acquire() as conn:
             rows = await conn.fetch(query)
 
-        all_categories = sorted({cat for row in rows if row["categories"] for cat in row["categories"]})
-        return all_categories
+        return sorted({cat for row in rows if row["categories"] for cat in row["categories"]})
 
     @ensure_connection
     async def get_recut_laser_cut_parts(self) -> list[dict]:
@@ -178,8 +182,12 @@ class LaserCutPartsInventoryDB(BaseWithDBPool):
     async def add_laser_cut_part(self, data: dict):
         query = f"""
         INSERT INTO {self.TABLE_NAME} (
-            part_name, categories, quantity, recut, recoat, data
-        ) VALUES ($1, $2, $3, $4, $5, $6)
+            part_name, categories, category_quantities, inventory_data, meta_data,
+            prices, paint_data, primer_data, powder_data, workspace_data, data
+        ) VALUES (
+            $1, $2, $3, $4, $5,
+            $6, $7, $8, $9, $10, $11
+        )
         RETURNING id;
         """
         async with self.db_pool.acquire() as conn:
@@ -187,9 +195,14 @@ class LaserCutPartsInventoryDB(BaseWithDBPool):
                 query,
                 data.get("name"),
                 data.get("categories", []),
-                data.get("quantity", 0),
-                data.get("recut"),
-                data.get("recoat"),
+                json.dumps(data.get("category_quantities", {})),
+                json.dumps(data.get("inventory_data", {})),
+                json.dumps(data.get("meta_data", {})),
+                json.dumps(data.get("prices", {})),
+                json.dumps(data.get("paint_data", {})),
+                json.dumps(data.get("primer_data", {})),
+                json.dumps(data.get("powder_data", {})),
+                json.dumps(data.get("workspace_data", {})),
                 json.dumps(data),
             )
 
@@ -224,16 +237,32 @@ class LaserCutPartsInventoryDB(BaseWithDBPool):
                 await conn.execute(
                     f"""
                     UPDATE {self.TABLE_NAME} SET
-                        part_name = $2, categories = $3, quantity = $4, recut = $5, recoat = $6, data = $7,
+                        part_name = $2,
+                        categories = $3,
+                        category_quantities = $4,
+                        inventory_data = $5,
+                        meta_data = $6,
+                        prices = $7,
+                        paint_data = $8,
+                        primer_data = $9,
+                        powder_data = $10,
+                        workspace_data = $11,
+                        data = $12,
                         updated_at = CURRENT_TIMESTAMP
                     WHERE id = $1
                     """,
                     laser_cut_part_id,
                     new_data.get("name"),
                     new_data.get("categories", []),
-                    new_data.get("quantity", 0),
-                    new_data.get("recut"),
-                    new_data.get("recoat"),
+                    json.dumps(new_data.get("category_quantities", {})),
+                    json.dumps(new_data.get("inventory_data", {})),
+                    json.dumps(new_data.get("meta_data", {})),
+                    json.dumps(new_data.get("prices", {})),
+                    json.dumps(new_data.get("paint_data", {})),
+                    json.dumps(new_data.get("primer_data", {})),
+                    json.dumps(new_data.get("powder_data", {})),
+                    json.dumps(new_data.get("workspace_data", {})),
+                    json.dumps(new_data),
                     json.dumps(new_data),
                 )
 

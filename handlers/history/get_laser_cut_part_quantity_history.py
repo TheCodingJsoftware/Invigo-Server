@@ -54,8 +54,8 @@ class GetLaserCutPartQuantityHistoryHandler(BaseHandler):
             version = entry.get("version", 0)
             modified_by = entry.get("modified_by", "")
 
-            from_quantity = diff_from.get("quantity")
-            to_quantity = diff_to.get("quantity")
+            from_quantity = diff_from.get("inventory_data.quantity")
+            to_quantity = diff_to.get("inventory_data.quantity")
 
             if from_quantity is not None and to_quantity is not None and from_quantity != to_quantity:
                 # Determine event type

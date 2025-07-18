@@ -1,6 +1,7 @@
 import asyncio
 import json
 
+import laser_cut_part_convert_old_to_new
 from utils.database.laser_cut_parts_inventory_db import LaserCutPartsInventoryDB
 
 
@@ -21,9 +22,10 @@ async def migrate_laser_cut_parts_inventory_from_json_file(file_path: str):
         print(f"Found {len(laser_cut_parts)} laser_cut_parts. Inserting into database...")
 
         for idx, laser_cut_part in enumerate(laser_cut_parts, start=1):
+            new_laser_cut_part = laser_cut_part_convert_old_to_new.convert(laser_cut_part)
             laser_cut_part["id"] = idx
-            laser_cut_part_id = await db.add_laser_cut_part(laser_cut_part)
-            print(f"[{idx}] Inserted laser_cut_part ID: {laser_cut_part_id} - Name: {laser_cut_part['name']}")
+            laser_cut_part_id = await db.add_laser_cut_part(new_laser_cut_part)
+            print(f"[{idx}] Inserted laser_cut_part ID: {laser_cut_part_id} - Name: {new_laser_cut_part['name']}")
 
     except Exception as e:
         print(f"Error during migration: {e}")

@@ -1,6 +1,6 @@
 import { MetaData, POItemDict, PurchaseOrderData } from "@interfaces/purchase-order";
-import { Component } from "./component";
-import { Sheet } from "./sheet";
+import { Component } from "@models/component";
+import { Sheet } from "@models/sheet";
 import { Effect } from "effect"
 
 export class PurchaseOrder {

@@ -1,11 +1,11 @@
 import { Vendor } from "@models/vendor";
-import { VendorDict } from "./vendor";
-import { ContactInfoDict } from "./contact-info";
-import { BusinessInfoDict } from "./business-info";
+import { VendorDict } from "@interfaces/vendor";
+import { ContactInfoDict } from "@interfaces/contact-info";
+import { BusinessInfoDict } from "@interfaces/business-info";
 import { ContactInfo } from "@models/contact-info";
 import { BusinessInfo } from "@models/business-info";
 import { ShippingAddress } from "@models/shipping_address";
-import { ShippingAddressDict } from "./shipping-address";
+import { ShippingAddressDict } from "@interfaces/shipping-address";
 
 export interface MetaDataDict {
     purchase_order_number: number;

@@ -1,5 +1,5 @@
-import { AssemblyData } from "./assembly";
-import { NestData } from "./nest";
+import { AssemblyData } from "@interfaces/assembly";
+import { NestData } from "@interfaces/nest";
 
 export interface JobData {
     job_data: JobMetaData;
@@ -51,4 +51,4 @@ enum JobColorClass {
     ARCHIVE = "archive"
 }
 
-export {};
+export { };

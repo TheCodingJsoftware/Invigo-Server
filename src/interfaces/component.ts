@@ -1,4 +1,4 @@
-import type { OrderData } from "./order";
+import type { OrderData } from "@interfaces/order";
 
 export interface ComponentData {
   id: number;

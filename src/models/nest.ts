@@ -1,5 +1,5 @@
 import { NestData } from "@interfaces/nest";
-import { LaserCutPart } from "@models/laser-cut-part"; // use the class, not the interface
+import { LaserCutPart } from "@models/laser-cut-part";
 import { Sheet } from "@models/sheet";
 import { naturalCompare } from "@utils/natural-sort";
 

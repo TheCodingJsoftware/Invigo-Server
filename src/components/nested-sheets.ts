@@ -64,7 +64,7 @@ export class NestedSheets implements BaseComponent {
         const sheetCount = nest.sheet_count;
         const cuttingTime = nest.sheet_cut_time;
         const nestCutTime = nest.sheet_cut_time * nest.sheet_count;
-        const totalParts = nest.laser_cut_parts.reduce((total, part) => total + part.quantity * nest.sheet_count, 0);
+        const totalParts = nest.laser_cut_parts.reduce((total, part) => total + part.inventory_data.quantity * nest.sheet_count, 0);
         return `
         <div class="s6">
             <article class="nest no-padding border round">
@@ -96,7 +96,7 @@ export class NestedSheets implements BaseComponent {
         const sheetCount = nest.sheet_count;
         const cuttingTime = nest.sheet_cut_time;
         const nestCutTime = nest.sheet_cut_time * nest.sheet_count;
-        const totalParts = nest.laser_cut_parts.reduce((total, part) => total + part.quantity * nest.sheet_count, 0);
+        const totalParts = nest.laser_cut_parts.reduce((total, part) => total + part.inventory_data.quantity * nest.sheet_count, 0);
         return `
         <div class="s12">
             <article class="nest no-padding border round">
@@ -120,7 +120,7 @@ export class NestedSheets implements BaseComponent {
         let nestedSheets = ``;
         for (const nest of this.nests) {
             const sheetCount = nest.sheet_count;
-            const totalParts = nest.laser_cut_parts.reduce((total, part) => total + part.quantity * nest.sheet_count, 0);
+            const totalParts = nest.laser_cut_parts.reduce((total, part) => total + part.inventory_data.quantity * nest.sheet_count, 0);
             const cuttingTime = nest.sheet_cut_time;
             const nestCutTime = nest.sheet_cut_time * nest.sheet_count;
             const safeId = nest.getSafeIdName();

@@ -1,7 +1,7 @@
-import { ComponentData } from "./component";
-import { FlowtagData } from "./flowtag";
-import { LaserCutPartData } from "./laser-cut-part";
-import { StructuralProfileData } from "./structural-profile";
+import { ComponentData } from "@interfaces/component";
+import { FlowtagData } from "@interfaces/flowtag";
+import { LaserCutPartData } from "@interfaces/laser-cut-part";
+import { StructuralProfileData } from "@interfaces/structural-profile";
 
 export interface AssemblyData {
   assembly_data: AssemblyMetaData;

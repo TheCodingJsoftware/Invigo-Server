@@ -129,19 +129,19 @@ export class AssemblyLaserCutPartsTable {
     generatePartsTableBody(): string {
         let partsTable = "";
         for (const laserCutPart of this.laserCutParts) {
-            const material = laserCutPart.gauge + "<br>" + laserCutPart.material;
-            const process = laserCutPart.flow_tag.tags.join(" ➜ ");
-            const notes = laserCutPart.notes;
-            const shelfNumber = laserCutPart.shelf_number;
-            const unitQuantity = laserCutPart.quantity;
+            const material = laserCutPart.meta_data.gauge + "<br>" + laserCutPart.meta_data.material;
+            const process = laserCutPart.workspace_data.flowtag.tags.join(" ➜ ");
+            const notes = laserCutPart.meta_data.notes;
+            const shelfNumber = laserCutPart.meta_data.shelf_number;
+            const unitQuantity = laserCutPart.inventory_data.quantity;
             const quantity = unitQuantity * this.assembly.assembly_data.quantity;
-            const unitPrice = laserCutPart.price;
+            const unitPrice = laserCutPart.prices.price;
             const price = unitPrice * quantity;
             partsTable += `
             <tr>
                 <td class="min" data-column="assembly-laser-cut-part-partName">
                     <div class="row">
-                        <img class="square extra small-round" src="http://invi.go/images/${laserCutPart.image_index}">
+                        <img class="square extra small-round" src="http://invi.go/images/${laserCutPart.meta_data.image_index}">
                         <span class="wrap no-line small-width">${laserCutPart.name}</span>
                     </div>
                 </td>
@@ -162,7 +162,7 @@ export class AssemblyLaserCutPartsTable {
     generatePartsTableFooter(): string {
         let totalPrice = 0;
         for (const laserCutPart of this.laserCutParts) {
-            totalPrice += laserCutPart.price * laserCutPart.quantity * this.assembly.assembly_data.quantity;
+            totalPrice += laserCutPart.prices.price * laserCutPart.inventory_data.quantity * this.assembly.assembly_data.quantity;
         }
         let partsTableFooter = `
             <tr>

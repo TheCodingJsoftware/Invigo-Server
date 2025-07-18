@@ -1,9 +1,9 @@
 import { LaserCutPartGroupData } from "@interfaces/laser-cut-part-group";
 import { naturalCompare } from "@utils/natural-sort";
 
-import { LaserCutPart } from "./laser-cut-part";
+import { LaserCutPart } from "@models/laser-cut-part";
 
-export class LaserCutPartGroup  {
+export class LaserCutPartGroup {
     name: string;
     base_part: LaserCutPart;
     laser_cut_parts: LaserCutPart[];
@@ -22,7 +22,7 @@ export class LaserCutPartGroup  {
     }
 
     getTotalQuantity(): number {
-        return this.laser_cut_parts.reduce((total, part) => total + part.quantity, 0);
+        return this.laser_cut_parts.reduce((total, part) => total + part.inventory_data.quantity, 0);
     }
 
     getTotalPrice(): number {
@@ -30,34 +30,34 @@ export class LaserCutPartGroup  {
     }
 
     getQuantity(): number {
-        return this.base_part.quantity;
+        return this.base_part.inventory_data.quantity;
     }
 
     getPrice(): number {
-        return this.base_part.price;
+        return this.base_part.prices.price;
     }
 
     getProcess(): string {
-        return this.base_part.flow_tag.tags.join(" ➜ ");
+        return this.base_part.workspace_data.flowtag.tags.join(" ➜ ");
     }
 
     getGauge(): string {
-        return this.base_part.gauge;
+        return this.base_part.meta_data.gauge;
     }
 
     getMaterial(): string {
-        return this.base_part.gauge + "<br>" + this.base_part.material;
+        return this.base_part.meta_data.gauge + "<br>" + this.base_part.meta_data.material;
     }
 
     getNotes(): string {
-        return this.base_part.notes;
+        return this.base_part.meta_data.notes;
     }
 
     getShelfNumber(): string {
-        return this.base_part.shelf_number;
+        return this.base_part.meta_data.shelf_number;
     }
 
     getImagePath(): string {
-        return this.base_part.image_index;
+        return this.base_part.meta_data.image_index;
     }
 }

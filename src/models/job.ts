@@ -3,10 +3,10 @@ import { Assembly } from "@models/assembly";
 import { Nest } from "@models/nest";
 import { naturalCompare } from "@utils/natural-sort";
 
-import { Component } from "./component";
-import { ComponentGroup } from "./component-group";
-import { LaserCutPart } from "./laser-cut-part";
-import { LaserCutPartGroup } from "./laser-cut-part-group";
+import { Component } from "@models/component";
+import { ComponentGroup } from "@models/component-group";
+import { LaserCutPart } from "@models/laser-cut-part";
+import { LaserCutPartGroup } from "@models/laser-cut-part-group";
 
 export class JobMeta {
     id!: number;
@@ -83,7 +83,7 @@ export class Job {
         let total = 0;
         for (const assembly of this.getAllAssemblies()) {
             for (const laserCutPart of assembly.laser_cut_parts) {
-                total += laserCutPart.price * laserCutPart.quantity * assembly.assembly_data.quantity;
+                total += laserCutPart.prices.price * laserCutPart.inventory_data.quantity * assembly.assembly_data.quantity;
             }
         }
         return total;
@@ -93,13 +93,13 @@ export class Job {
         let total = 0;
         for (const assembly of this.getAllAssemblies()) {
             for (const laserCutPart of assembly.laser_cut_parts) {
-                total += laserCutPart.weight * laserCutPart.quantity * assembly.assembly_data.quantity;
+                total += laserCutPart.meta_data.weight * laserCutPart.inventory_data.quantity * assembly.assembly_data.quantity;
             }
         }
         return total;
     }
 
-    getAllNestedLaserCutParts(): LaserCutPart[]{
+    getAllNestedLaserCutParts(): LaserCutPart[] {
         let allParts: LaserCutPart[] = [];
         for (const nest of this.nests) {
             allParts = allParts.concat(nest.laser_cut_parts);
@@ -107,7 +107,7 @@ export class Job {
         return allParts;
     }
 
-    getAllAssemblyLaserCutParts(): LaserCutPart[]{
+    getAllAssemblyLaserCutParts(): LaserCutPart[] {
         let allParts: LaserCutPart[] = [];
         for (const assembly of this.assemblies) {
             allParts = allParts.concat(assembly.getAllLaserCutParts());
@@ -115,7 +115,7 @@ export class Job {
         return allParts;
     }
 
-    getAllAssemblyComponents(): Component[]{
+    getAllAssemblyComponents(): Component[] {
         let allParts: Component[] = [];
         for (const assembly of this.assemblies) {
             allParts = allParts.concat(assembly.getAllComponents());
@@ -123,13 +123,13 @@ export class Job {
         return allParts;
     }
 
-    getAllGroupedAssemblyLaserCutParts(): LaserCutPartGroup[]{
+    getAllGroupedAssemblyLaserCutParts(): LaserCutPartGroup[] {
         let groupedLaserCutParts: LaserCutPartGroup[] = [];
         let allParts: LaserCutPart[] = [];
         for (const assembly of this.getAllAssemblies()) {
             for (const laserCutPart of assembly.laser_cut_parts) {
                 const part = new LaserCutPart(laserCutPart.toJSON());
-                part.quantity *= assembly.assembly_data.quantity;
+                part.inventory_data.quantity *= assembly.assembly_data.quantity;
                 allParts.push(part);
             }
         }
@@ -149,7 +149,7 @@ export class Job {
         return groupedLaserCutParts;
     }
 
-    getAllGroupedAssemblyComponents(): ComponentGroup[]{
+    getAllGroupedAssemblyComponents(): ComponentGroup[] {
         let groupedComponenets: ComponentGroup[] = [];
         let allComponents: Component[] = [];
         for (const assembly of this.getAllAssemblies()) {

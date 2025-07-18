@@ -118,23 +118,23 @@ export class NestedParts implements BaseComponent {
     generatePartsTableBody(nest: Nest): string {
         let nestSummaryTable = "";
         const sortedParts = [...nest.laser_cut_parts].sort((a, b) => {
-            return Number(a.part_number) - Number(b.part_number);
+            return Number(a.meta_data.part_number) - Number(b.meta_data.part_number);
         });
         for (const laserCutPart of sortedParts) {
-            const partNumber = laserCutPart.part_number;
-            const material = laserCutPart.gauge + "<br>" + laserCutPart.material;
-            const process = laserCutPart.flow_tag.tags.join(" ➜ ");
-            const notes = laserCutPart.notes;
-            const shelfNumber = laserCutPart.shelf_number;
-            const unitQuantity = laserCutPart.quantity;
+            const partNumber = laserCutPart.meta_data.part_number;
+            const material = laserCutPart.meta_data.gauge + "<br>" + laserCutPart.meta_data.material;
+            const process = laserCutPart.workspace_data.flowtag.tags.join(" ➜ ");
+            const notes = laserCutPart.meta_data.notes;
+            const shelfNumber = laserCutPart.meta_data.shelf_number;
+            const unitQuantity = laserCutPart.inventory_data.quantity;
             const quantity = unitQuantity * nest.sheet_count;
-            const unitPrice = laserCutPart.price;
+            const unitPrice = laserCutPart.prices.price;
             const price = unitPrice * unitQuantity;
             nestSummaryTable += `
             <tr>
                 <td class="min" data-column="nest-part-partName">
                     <div class="row">
-                        <img class="square extra small-round" src="http://invi.go/images/${laserCutPart.image_index}">
+                        <img class="square extra small-round" src="http://invi.go/images/${laserCutPart.meta_data.image_index}">
                         <div class="vertical">
                             <span class="wrap no-line small-width">${laserCutPart.name}</span>
                             <span><i>tag</i> ${partNumber}</span>
@@ -161,9 +161,9 @@ export class NestedParts implements BaseComponent {
         let totalUnitQuantity = 0;
         let totalPrice = 0;
         for (const laserCutPart of nest.laser_cut_parts) {
-            const unitQuantity = laserCutPart.quantity;
+            const unitQuantity = laserCutPart.inventory_data.quantity;
             const quantity = unitQuantity * nest.sheet_count;
-            const price = laserCutPart.price * unitQuantity;
+            const price = laserCutPart.prices.price * unitQuantity;
             totalQuantity += quantity;
             totalUnitQuantity += unitQuantity;
             totalPrice += price;

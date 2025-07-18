@@ -1,5 +1,5 @@
-import type { FlowtagData } from "./flowtag"; // Define this if needed
-import type { OrderData } from "./order"; // Assuming you already have this
+import type { FlowtagData } from "@interfaces/flowtag";
+import type { OrderData } from "@interfaces/order";
 
 export interface StructuralProfileData {
     name: string;

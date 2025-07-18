@@ -1,7 +1,7 @@
-/* eslint-disable import/order */
 import "beercss"
 import "@static/css/printout.css"
 import "material-dynamic-colors";
+import { AssembliesParts } from "@components/assemblies-parts";
 import { AssembliesSummary } from "@components/assemblies-summary";
 import { JobDetails } from "@components/job-details";
 import { NestedParts } from "@components/nested-parts";
@@ -10,9 +10,9 @@ import { NestedSheets } from "@components/nested-sheets";
 import { NestedSheetsSummary } from "@components/nested-sheets-summary";
 import { NetWeight } from "@components/net-weight";
 import { PageBreak } from "@components/page-break";
-import { AssembliesParts } from "@components/assemblies-parts";
 import { QRCodeComponent } from "@components/qr-code-component";
 import { TotalCost } from "@components/total-cost";
+import { CHECKBOX_CONFIG } from "@config/checkbox-config";
 import { JOB_COLORS, JobType } from "@config/job-printout-config";
 import { BaseComponent } from "@interfaces/base-component";
 import { JobData } from "@interfaces/job";
@@ -20,7 +20,6 @@ import { Job } from "@models/job";
 import { loadAnimationStyleSheet, toggleTheme, loadTheme, invertImages } from "@utils/theme"
 import { Effect } from "effect"
 import { createSwapy } from 'swapy'
-import { CHECKBOX_CONFIG } from "@config/checkbox-config";
 import flatpickr from "flatpickr";
 require("flatpickr/dist/themes/dark.css");
 import { Instance as FlatpickrInstance } from "flatpickr/dist/types/instance";
