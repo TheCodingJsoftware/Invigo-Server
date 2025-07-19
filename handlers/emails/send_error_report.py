@@ -12,6 +12,12 @@ class SendErrorReportHandler(BaseHandler):
         error_log = self.get_argument("error_log")
         client_name = self.get_client_name_from_header()
         if error_log is not None:
+            self.save_and_send_error_log(client_name, error_log)
+        else:
+            self.set_status(400)
+
+    def save_and_send_error_log(self, client_name, error_log):
+        try:
             log_file_name = f"{client_name} - Error Log - {datetime.now().strftime('%B %d %A %Y %I_%M_%S %p')}.log"
             error_log_url = f"http://invi.go/logs#{quote(log_file_name, safe='')}"
             html_error_log_url = f'<a href="{error_log_url}">Error Log</a>'
@@ -28,5 +34,6 @@ class SendErrorReportHandler(BaseHandler):
             )
             self.set_status(200)
             self.write({"status": "success", "message": "Email sent successfully."})
-        else:
-            self.set_status(400)
+        except Exception:
+            self.set_status(500)
+            self.write_error(500)
