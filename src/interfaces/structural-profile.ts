@@ -6,7 +6,7 @@ export interface StructuralProfileData {
     part_number: string;
     notes: string;
     material: string;
-    flow_tag: FlowtagData;
+    flowtag: FlowtagData;
     orders: OrderData[];
     red_quantity_limit: number;
     yellow_quantity_limit: number;

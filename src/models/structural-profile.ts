@@ -9,7 +9,7 @@ export class StructuralProfile {
     part_number!: string;
     notes!: string;
     material!: string;
-    flow_tag!: FlowtagData;
+    flowtag!: FlowtagData;
     orders!: OrderData[];
     red_quantity_limit!: number;
     yellow_quantity_limit!: number;
@@ -23,7 +23,7 @@ export class StructuralProfile {
 
     constructor(data: StructuralProfileData) {
         Object.assign(this, data);
-        this.flow_tag = new Flowtag(data.flow_tag);
+        this.flowtag = new Flowtag(data.flowtag);
         this.orders = data.orders.map(o => new Order(o));
     }
 
