@@ -3,45 +3,57 @@ import { FlowtagData } from "@interfaces/flowtag";
 import { LaserCutPartData } from "@interfaces/laser-cut-part";
 import { StructuralProfileData } from "@interfaces/structural-profile";
 
-export interface AssemblyData {
-  assembly_data: AssemblyMetaData;
-  laser_cut_parts: LaserCutPartData[];
-  components: ComponentData[];
-  structural_steel_components: StructuralProfileData[];
-  sub_assemblies: AssemblyData[];
+
+export interface PricesData {
+    cost_for_paint: number;
+    cost_for_primer: number;
+    cost_for_powder_coating: number;
 }
 
-export interface AssemblyMetaData {
-  id: number;
-  name: string;
-  color: string;
-  starting_date: string;
-  expected_time_to_complete: number;
-  ending_date: string;
-  assembly_image?: string;
-  quantity: number;
-  not_part_of_process: boolean;
+export interface MetaData {
+    assembly_image: string;
+    not_part_of_process: boolean;
+    quantity: number;
+    color: string;
+}
 
-  uses_primer: boolean;
-  primer_name?: string;
-  primer_overspray: number;
-  cost_for_primer: number;
+export interface WorkspaceData {
+    starting_date: string;
+    ending_date: string;
+    expected_time_to_complete: number;
+    assembly_files: string[];
+    flow_tag: FlowtagData;
+    flow_tag_data: Record<string, { expected_time_to_complete: number }>;
+}
 
-  uses_paint: boolean;
-  paint_name?: string;
-  paint_overspray: number;
-  cost_for_paint: number;
+export interface PrimerData {
+    uses_primer: boolean;
+    primer_name?: string;
+    primer_overspray: number;
+}
 
-  uses_powder_coating: boolean;
-  powder_name?: string;
-  powder_transfer_efficiency: number;
-  cost_for_powder_coating: number;
+export interface PaintData {
+    uses_paint: boolean;
+    paint_name?: string;
+    paint_overspray: number;
+}
 
-  assembly_files: string[];
+export interface PowderData {
+    uses_powder_coating: boolean;
+    powder_name?: string;
+    powder_transfer_efficiency: number;
+}
 
-  flow_tag: FlowtagData;
-  current_flow_tag_index: number;
-  current_flow_tag_status_index: number;
-  timer: Record<string, unknown>;
-  flow_tag_data: Record<string, { expected_time_to_complete: number }>;
+export interface AssemblyData {
+    id: number;
+    name: string;
+    meta_data: MetaData;
+    prices: PricesData;
+    workspace_data: WorkspaceData;
+    primer_data: PrimerData;
+    paint_data: PaintData;
+    powder_data: PowderData;
+    laser_cut_parts: LaserCutPartData[];
+    components: ComponentData[];
+    sub_assemblies: AssemblyData[];
 }

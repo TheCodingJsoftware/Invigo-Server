@@ -56,7 +56,7 @@ export class Job {
 
         this.assemblies = data.assemblies
             .map(a => new Assembly(a))
-            .sort((a, b) => naturalCompare(a.assembly_data.name, b.assembly_data.name));
+            .sort((a, b) => naturalCompare(a.name, b.name));
 
         console.log(this);
     }
@@ -73,7 +73,7 @@ export class Job {
         let total = 0;
         for (const assembly of this.getAllAssemblies()) {
             for (const component of assembly.components) {
-                total += component.price * component.quantity * assembly.assembly_data.quantity;
+                total += component.price * component.quantity * assembly.meta_data.quantity;
             }
         }
         return total;
@@ -83,7 +83,7 @@ export class Job {
         let total = 0;
         for (const assembly of this.getAllAssemblies()) {
             for (const laserCutPart of assembly.laser_cut_parts) {
-                total += laserCutPart.prices.price * laserCutPart.inventory_data.quantity * assembly.assembly_data.quantity;
+                total += laserCutPart.prices.price * laserCutPart.inventory_data.quantity * assembly.meta_data.quantity;
             }
         }
         return total;
@@ -93,7 +93,7 @@ export class Job {
         let total = 0;
         for (const assembly of this.getAllAssemblies()) {
             for (const laserCutPart of assembly.laser_cut_parts) {
-                total += laserCutPart.meta_data.weight * laserCutPart.inventory_data.quantity * assembly.assembly_data.quantity;
+                total += laserCutPart.meta_data.weight * laserCutPart.inventory_data.quantity * assembly.meta_data.quantity;
             }
         }
         return total;
@@ -129,7 +129,7 @@ export class Job {
         for (const assembly of this.getAllAssemblies()) {
             for (const laserCutPart of assembly.laser_cut_parts) {
                 const part = new LaserCutPart(laserCutPart.toJSON());
-                part.inventory_data.quantity *= assembly.assembly_data.quantity;
+                part.inventory_data.quantity *= assembly.meta_data.quantity;
                 allParts.push(part);
             }
         }
@@ -155,7 +155,7 @@ export class Job {
         for (const assembly of this.getAllAssemblies()) {
             for (const component of assembly.components) {
                 const componenet = new Component(component.toJSON());
-                componenet.quantity *= assembly.assembly_data.quantity;
+                componenet.quantity *= assembly.meta_data.quantity;
                 allComponents.push(componenet);
             }
         }

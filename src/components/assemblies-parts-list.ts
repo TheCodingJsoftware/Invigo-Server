@@ -134,7 +134,7 @@ export class AssemblyLaserCutPartsTable {
             const notes = laserCutPart.meta_data.notes;
             const shelfNumber = laserCutPart.meta_data.shelf_number;
             const unitQuantity = laserCutPart.inventory_data.quantity;
-            const quantity = unitQuantity * this.assembly.assembly_data.quantity;
+            const quantity = unitQuantity * this.assembly.meta_data.quantity;
             const unitPrice = laserCutPart.prices.price;
             const price = unitPrice * quantity;
             partsTable += `
@@ -162,7 +162,7 @@ export class AssemblyLaserCutPartsTable {
     generatePartsTableFooter(): string {
         let totalPrice = 0;
         for (const laserCutPart of this.laserCutParts) {
-            totalPrice += laserCutPart.prices.price * laserCutPart.inventory_data.quantity * this.assembly.assembly_data.quantity;
+            totalPrice += laserCutPart.prices.price * laserCutPart.inventory_data.quantity * this.assembly.meta_data.quantity;
         }
         let partsTableFooter = `
             <tr>
@@ -308,7 +308,7 @@ export class AssemblyComponentsTable {
             const notes = component.notes;
             const shelfNumber = component.shelf_number;
             const unitQuantity = component.quantity;
-            const quantity = unitQuantity * this.assembly.assembly_data.quantity;
+            const quantity = unitQuantity * this.assembly.meta_data.quantity;
             const unitPrice = component.price;
             const price = unitPrice * quantity;
             partsTable += `
@@ -335,7 +335,7 @@ export class AssemblyComponentsTable {
     generatePartsTableFooter(): string {
         let totalPrice = 0;
         for (const component of this.components) {
-            totalPrice += component.price * component.quantity * this.assembly.assembly_data.quantity;
+            totalPrice += component.price * component.quantity * this.assembly.meta_data.quantity;
         }
         let partsTableFooter = `
             <tr>
@@ -375,12 +375,12 @@ export class AssembliesPartsList implements BaseComponent {
         template.innerHTML = `
         <article class="round border page-break-inside">
             <nav class="row tiny-padding top-align">
-                <img src="http://invi.go/image/${this.assembly.assembly_data.assembly_image}" class="round border" style="height: 150px; width: auto;">
+                <img src="http://invi.go/image/${this.assembly.meta_data.assembly_image}" class="round border" style="height: 150px; width: auto;">
                 <div class="max">
-                    <h6>${this.assembly.assembly_data.name}</h6>
-                    <div>Assembly quantity: ${this.assembly.assembly_data.quantity}</div>
+                    <h6>${this.assembly.name}</h6>
+                    <div>Assembly quantity: ${this.assembly.meta_data.quantity}</div>
                     <div>Process: ${this.assembly.generateProcessTagString()}</div>
-                    <div>Paint: ${this.assembly.assembly_data.paint_name}</div>
+                    <div>Paint: ${this.assembly.paint_data.paint_name}</div>
                 </div>
                 <button class="circle transparent hide-on-print" id="toggle-button">
                     <i class="rotate-180">expand_more</i>

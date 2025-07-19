@@ -2,6 +2,7 @@ import asyncio
 import json
 import os
 
+import assembly_convert_old_to_new
 import laser_cut_part_convert_old_to_new
 from utils.database.jobs_db import JobsDB
 
@@ -49,8 +50,12 @@ async def migrate_jobs_from_job_directories(folder: str):
             job_data = json.load(f)
 
             job_data["job_data"]["id"] = idx
+            converted_assemblies = []
             for assembly in job_data.get("assemblies", []):
-                migrate_laser_cut_parts_in_assemblies(assembly)
+                converted = assembly_convert_old_to_new.convert(assembly)
+                migrate_laser_cut_parts_in_assemblies(converted)
+                converted_assemblies.append(converted)
+            job_data["assemblies"] = converted_assemblies
 
             for nest in job_data.get("nests", []):
                 migrate_laser_cut_parts_in_nests(nest)

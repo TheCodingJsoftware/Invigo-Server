@@ -149,7 +149,7 @@ class AssemblyComponentsComponent {
     }
 }
 
-export class NestedAssembliesPartsLayout implements BaseComponent{
+export class NestedAssembliesPartsLayout implements BaseComponent {
     assembly: Assembly;
     jobId: number;
     element!: HTMLElement;
@@ -170,12 +170,12 @@ export class NestedAssembliesPartsLayout implements BaseComponent{
         template.innerHTML = `
         <article class="round border">
             <nav class="row tiny-padding top-align">
-                <img src="http://invi.go/image/${this.assembly.assembly_data.assembly_image}" class="round border" style="height: 150px; width: auto;">
+                <img src="http://invi.go/image/${this.assembly.meta_data.assembly_image}" class="round border" style="height: 150px; width: auto;">
                 <div class="max">
-                    <h6>${this.assembly.assembly_data.name}</h6>
-                    <div>Assembly quantity: ${this.assembly.assembly_data.quantity}</div>
+                    <h6>${this.assembly.name}</h6>
+                    <div>Assembly quantity: ${this.assembly.meta_data.quantity}</div>
                     <div>Process: ${this.assembly.generateProcessTagString()}</div>
-                    <div>Paint: ${this.assembly.assembly_data.paint_name}</div>
+                    <div>Paint: ${this.assembly.paint_data.paint_name}</div>
                 </div>
                 <button class="circle transparent hide-on-print" id="toggle-button">
                     <i class="rotate-180">expand_more</i>

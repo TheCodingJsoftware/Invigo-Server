@@ -96,11 +96,11 @@ export class AssembliesSummary implements BaseComponent {
                 <article class="assembly no-padding border round">
                     <img
                         class="responsive top-round assembly-image assembly-picture-div"
-                        src="http://invi.go/image/${assembly.assembly_data.assembly_image}">
+                        src="http://invi.go/image/${assembly.meta_data.assembly_image}">
                     <div class="padding">
                         <nav class="row wrap">
-                            <div class="bold large-text max">${assembly.assembly_data.name}</div>
-                            <h6>× ${assembly.assembly_data.quantity}</h6>
+                            <div class="bold large-text max">${assembly.name}</div>
+                            <h6>× ${assembly.meta_data.quantity}</h6>
                         </nav>
                         <div class="assembly-process-div">${assembly.generateProcessTagString()}</div>
                     </div>
@@ -118,14 +118,14 @@ export class AssembliesSummary implements BaseComponent {
                     <nav class="row tiny-padding">
                         <img
                             class="extra square small-round border assembly-picture-div assembly-image-list"
-                            src="http://invi.go/image/${assembly.assembly_data.assembly_image}">
+                            src="http://invi.go/image/${assembly.meta_data.assembly_image}">
                         <div class="max">
-                            <h6>${assembly.assembly_data.name}</h6>
+                            <h6>${assembly.name}</h6>
                             <div class="assembly-process-div">${assembly.generateProcessTagString()}</div>
                         </div>
                     </nav>
                 </td>
-                <td class="center-align min"><h5>× ${assembly.assembly_data.quantity}</h5></td>
+                <td class="center-align min"><h5>× ${assembly.meta_data.quantity}</h5></td>
             </tr>
         `.trim())
             .join('\n');
