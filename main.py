@@ -255,10 +255,10 @@ if __name__ == "__main__":
     thread = threading.Thread(target=schedule_thread)
     thread.start()
 
-    app = tornado.httpserver.HTTPServer(make_app())
+    app = tornado.httpserver.HTTPServer(make_app(), xheaders=True)
     IOLoop.current().add_callback(BaseHandler.workspace_db.start_background_cache_worker)
 
     # executor = concurrent.futures.ThreadPoolExecutor(max_workers=10)
     # app.executor = executor
-    app.listen(int(Environment.PORT))
+    app.listen(int(Environment.PORT), address="0.0.0.0")
     tornado.ioloop.IOLoop.current().start()
