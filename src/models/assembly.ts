@@ -1,6 +1,5 @@
 import { AssemblyData, MetaData, PaintData, PowderData, PricesData, PrimerData, WorkspaceData } from "@interfaces/assembly";
 import { Component } from "@models/component";
-import { Flowtag } from "@models/flowtag";
 import { LaserCutPart } from "@models/laser-cut-part";
 import { naturalCompare } from "@utils/natural-sort";
 
@@ -72,7 +71,7 @@ export class Assembly {
     }
 
     generateProcessTagString(): string {
-        return this.workspace_data.flow_tag.tags.join(" ➜ ");
+        return this.workspace_data.flowtag.tags.join(" ➜ ");
     }
 
     getSafeIdName(): string {

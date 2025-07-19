@@ -22,7 +22,7 @@ export interface WorkspaceData {
     ending_date: string;
     expected_time_to_complete: number;
     assembly_files: string[];
-    flow_tag: FlowtagData;
+    flowtag: FlowtagData;
     flow_tag_data: Record<string, { expected_time_to_complete: number }>;
 }
 

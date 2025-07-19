@@ -1,5 +1,6 @@
 import asyncio
 import json
+import traceback
 
 from utils.database.sheets_inventory_db import SheetsInventoryDB
 from utils.sheet_settings import SheetSettings
@@ -35,6 +36,7 @@ async def migrate_sheets_inventory_from_json_file(file_path: str):
             print(f"[{idx}] Inserted sheet ID: {sheet_id} - Name: {sheet['name']}")
     except Exception as e:
         print(f"Error during migration: {e}")
+        traceback.print_exc()
     finally:
         await db.close()
 

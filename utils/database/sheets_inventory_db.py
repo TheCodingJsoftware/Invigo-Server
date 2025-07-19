@@ -182,7 +182,7 @@ class SheetsInventoryDB(BaseWithDBPool):
                 data.get("quantity", 0),
                 json.dumps(data),
             )
-        return row["id"]
+        return row
 
     @ensure_connection
     async def get_sheet_id(self, sheet_name: str) -> int:
