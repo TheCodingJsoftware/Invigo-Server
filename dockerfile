@@ -32,7 +32,7 @@ COPY requirements.txt package.json package-lock.json* ./
 RUN pip install --upgrade pip && pip install -r requirements.txt
 
 # Install Node.js dependencies
-RUN npm install --legacy-peer-deps
+RUN npm install
 
 # Now copy the rest of your application source code (including webpack config, etc.)
 COPY . .
