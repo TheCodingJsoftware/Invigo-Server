@@ -65,7 +65,7 @@ export class AssembliesSummary implements BaseComponent {
 
     private toggleAssemblyProcessVisibility(save: boolean = true) {
         const toggleAssemblyProcessCheckbox = this.element.querySelector("#show-assemblyProcess") as HTMLInputElement;
-        const processDivs = this.element.querySelectorAll("#assembly-process-div") as NodeListOf<HTMLElement>;
+        const processDivs = this.element.querySelectorAll(".assembly-process-div") as NodeListOf<HTMLElement>;
 
         processDivs.forEach(div => {
             div.classList.toggle("hidden", !toggleAssemblyProcessCheckbox.checked);
@@ -78,7 +78,7 @@ export class AssembliesSummary implements BaseComponent {
 
     private toggleAssemblyPictureVisibility(save: boolean = true) {
         const toggleAssemblyPictureCheckbox = this.element.querySelector("#show-assemblyPicture") as HTMLInputElement;
-        const pictureDivs = this.element.querySelectorAll("#assembly-picture-div") as NodeListOf<HTMLElement>;
+        const pictureDivs = this.element.querySelectorAll(".assembly-picture-div") as NodeListOf<HTMLElement>;
 
         pictureDivs.forEach(div => {
             div.classList.toggle("hidden", !toggleAssemblyPictureCheckbox.checked);
