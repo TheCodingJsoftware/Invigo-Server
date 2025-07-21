@@ -11,14 +11,14 @@ class SaveJobHandler(BaseHandler):
             job_id = job_data.get("job_data", {}).get("id", -1)
             client_name = self.get_client_name_from_header()
 
-            await self.jobs_db.save_job(job_id, job_data, modified_by=client_name)
+            new_job_id = await self.jobs_db.save_job(job_id, job_data, modified_by=client_name)
 
             self.signal_clients_for_changes(
                 client_name,
-                [f"/jobs/{job_id}"],
+                ["/jobs/get_all"],
             )
             self.set_header("Content-Type", "application/json")
-            self.write({"status": "success", "message": "Entry updated successfully."})
+            self.write({"status": "success", "message": "Entry updated successfully.", "id": new_job_id})
         except Exception as e:
             self.set_status(400)
             self.write({"error": str(e)})

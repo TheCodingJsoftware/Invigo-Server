@@ -256,7 +256,7 @@ if __name__ == "__main__":
     thread.start()
 
     app = tornado.httpserver.HTTPServer(make_app(), xheaders=True)
-    IOLoop.current().add_callback(BaseHandler.workspace_db.start_background_cache_worker)
+    # IOLoop.current().add_callback(BaseHandler.workspace_db.start_background_cache_worker)
 
     # executor = concurrent.futures.ThreadPoolExecutor(max_workers=10)
     # app.executor = executor

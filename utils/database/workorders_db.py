@@ -7,7 +7,7 @@ import asyncpg
 import msgspec
 
 from config.environments import Environment
-from utils.database.jobs_history_db import JobsHistroyDB
+from utils.database.workorders_history_db import WorkordersHistroyDB
 from utils.decorators.connection import BaseWithDBPool, ensure_connection
 
 
@@ -17,7 +17,7 @@ class WorkordersDB(BaseWithDBPool):
     def __init__(self):
         self.db_pool = None
         self.cache = {}
-        self.jobs_history_db = JobsHistroyDB()
+        self.workorders_history_db = WorkordersHistroyDB()
         self.cache_expiry = timedelta(seconds=60)
         self._stop_background = False
         self._background_task = None
@@ -71,7 +71,7 @@ class WorkordersDB(BaseWithDBPool):
         self.cache = {k: v for k, v in self.cache.items() if not k.startswith(key_startswith)}
 
     def start_background_cache_worker(self):
-        async def background_job():
+        async def background_workorder():
             while not self._stop_background:
                 try:
                     await self._warm_cache()
@@ -80,7 +80,7 @@ class WorkordersDB(BaseWithDBPool):
                 await asyncio.sleep(Environment.WORKSPACE_BACKGROUND_CACHE_WARM_UP_INTERVAL)
 
         if self._background_task is None:
-            self._background_task = asyncio.create_task(background_job())
+            self._background_task = asyncio.create_task(background_workorder())
 
     def stop_background_cache_worker(self):
         self._stop_background = True
@@ -90,12 +90,12 @@ class WorkordersDB(BaseWithDBPool):
             workorder_ids = list(self._cache_refresh_queue)
             self._cache_refresh_queue.clear()
         else:
-            workorder_ids = [job["id"] for job in await self.get_all_workorders()]
+            workorder_ids = [workorder["id"] for workorder in await self.get_all_workorders()]
 
         for workorder_id in workorder_ids:
-            job = await self.get_job_by_id(workorder_id, include_data=True)
-            if job:
-                self._set_cache(f"workorder_{workorder_id}_full", job)
+            workorder = await self.get_workorder_by_id(workorder_id, include_data=True)
+            if workorder:
+                self._set_cache(f"workorder_{workorder_id}_full", workorder)
 
     @ensure_connection
     async def get_all_workorders(self, include_data: bool = False):
@@ -109,26 +109,26 @@ class WorkordersDB(BaseWithDBPool):
         async with self.db_pool.acquire() as conn:
             rows = await conn.fetch(query)
 
-        jobs = []
+        workorders = []
         for row in rows:
-            job = dict(row)
-            jobs.append(job)
+            workorder = dict(row)
+            workorders.append(workorder)
 
-        self._set_cache(cache_key, jobs)
-        return jobs
+        self._set_cache(cache_key, workorders)
+        return workorders
 
     @ensure_connection
-    async def get_workorder_id_by_name(self, job_name: str) -> int | None:
+    async def get_workorder_id_by_name(self, workorder_name: str) -> int | None:
         query = f"""
         SELECT id FROM {self.TABLE_NAME}
         WHERE name = $1
         """
         async with self.db_pool.acquire() as conn:
-            row = await conn.fetchrow(query, job_name)
+            row = await conn.fetchrow(query, workorder_name)
         return row["id"] if row else None
 
     @ensure_connection
-    async def get_job_by_id(self, workorder_id: int | str):
+    async def get_workorder_by_id(self, workorder_id: int | str):
         if isinstance(workorder_id, str):
             workorder_id = await self.get_workorder_id_by_name(workorder_id)
             if workorder_id is None:
@@ -150,26 +150,26 @@ class WorkordersDB(BaseWithDBPool):
         if not row:
             return None
 
-        job = dict(row)
-        self._set_cache(cache_key, job)
-        return job
+        workorder = dict(row)
+        self._set_cache(cache_key, workorder)
+        return workorder
 
     @ensure_connection
     async def save_workorder(self, workorder_id: int | str, new_data: dict, modified_by: str = "system"):
         if isinstance(workorder_id, str):
             workorder_id = await self.get_workorder_id_by_name(workorder_id)
 
-        job_does_not_exist = False
+        workorder_does_not_exist = False
 
         async with self.db_pool.acquire() as conn:
             async with conn.transaction():
                 current_row = await conn.fetchrow(f"SELECT * FROM {self.TABLE_NAME} WHERE id = $1", workorder_id)
 
                 if current_row is None:
-                    job_does_not_exist = True
+                    workorder_does_not_exist = True
                 else:
                     # Record history in background
-                    task = asyncio.create_task(self.jobs_history_db.insert_history_job(workorder_id, new_data, modified_by))
+                    task = asyncio.create_task(self.workorders_history_db.insert_history_workorder(workorder_id, new_data, modified_by))
                     task.add_done_callback(lambda t: logging.error("Unhandled task error", exc_info=t.exception()) if t.exception() else None)
 
                     # Proceed with update
@@ -183,11 +183,11 @@ class WorkordersDB(BaseWithDBPool):
                         json.dumps(new_data),
                     )
 
-        if job_does_not_exist:
-            logging.info(f"[SaveJob] Job ID {workorder_id} not found. Creating new job.")
+        if workorder_does_not_exist:
+            logging.info(f"[Saveworkorder] workorder ID {workorder_id} not found. Creating new workorder.")
             new_id = await self.add_workorder(new_data)
             # Optional: write to history right after creation
-            # await self.jobs_history_db.insert_history_job(new_id, new_data, modified_by)
+            # await self.workorders_history_db.insert_history_workorder(new_id, new_data, modified_by)
             return new_id
 
         self._invalidate_cache(f"workorder_{workorder_id}")

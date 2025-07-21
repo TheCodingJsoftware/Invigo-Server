@@ -1,5 +1,7 @@
 import os
 
+from matplotlib.dviread import Page
+
 from handlers.auth.client_name import GetClientNameHandler
 from handlers.auth.connect import ConnectHandler
 from handlers.auth.is_client_trusted import IsClientTrustedHandler
@@ -101,12 +103,11 @@ from handlers.wayback_machine.fetch_data import FetchDataHandler
 from handlers.wayback_machine.get_data import WayBackMachineDataHandler
 from handlers.websocket.software import WebSocketSoftwareHandler
 from handlers.websocket.website import WebSocketWebsiteHandler
-from handlers.workorder.load_workorder_printout import LoadWorkorderPrintoutHandler
-from handlers.workorder.mark_nest_done import MarkNestDoneHandler
-from handlers.workorder.mark_workorder_done import MarkWorkorderDoneHandler
-from handlers.workorder.recut_part import RecutPartHandler
-from handlers.workorder.upload_workorder import UploadWorkorderHandler
-from handlers.workorder.workorder import WorkorderHandler
+from handlers.workorder.delete_workorder import DeleteWorkorderHandler
+from handlers.workorder.get_all_workorders import GetAllWorkordersHandler
+from handlers.workorder.get_workorder import GetWorkorderHandler
+from handlers.workorder.save_workorder import SaveWorkorderHandler
+from handlers.workorder.workorder_printouts import WorkordersPageHandler
 from handlers.workspace.add_job import WorkspaceAddJobHandler
 from handlers.workspace.bulk_update_entries import WorkspaceBulkUpdateEntriesHandler
 from handlers.workspace.delete_job import WorkspaceDeleteJobHandler
@@ -119,6 +120,7 @@ from handlers.workspace.get_recut_parts_from_job import (
     WorkspaceGetRecutPartsFromJobHandler,
 )
 from handlers.workspace.update_entry import WorkspaceUpdateEntryHandler
+from handlers.workspace.workspace import WorkspaceHandler
 from routes.route import route
 
 page_routes = [
@@ -158,6 +160,8 @@ page_routes = [
     route(r"/server_log", ServerLogsHandler),
     route(r"/jobs", JobsPageHandler),
     route(r"/jobs/view", PageHandler, template_name="job_printout.html"),
+    route(r"/workorders", WorkordersPageHandler),
+    route(r"/workorders/view", PageHandler, template_name="workorder_printout.html"),
     route(r"/purchase_orders", PurchaseOrdersPageHandler),
     route(
         r"/purchase_orders/view",
@@ -197,6 +201,8 @@ api_routes = [
     route(r"/send_error_report", SendErrorReportHandler),
     route(r"/send_email", SendEmailHandler),
     # Workspace Routes
+    route(r"/workspace", WorkspaceHandler),
+    # OLD Workspace Routes
     route(r"/workspace/get_file/(.*)", WorkspaceFileReceiverHandler),
     route(r"/workspace/add_job", WorkspaceAddJobHandler),
     route(r"/workspace/delete_job/(.*)", WorkspaceDeleteJobHandler),
@@ -228,6 +234,7 @@ api_routes = [
     route(r"/sheets_inventory/get_categories", GetSheetsCategoriesHandler),
     route(r"/get_order_history/sheet/(.*)", GetSheetOrdersHistoryHandler),
     route(r"/get_quantity_history/sheet/(.*)", GetSheetQuantityHistoryHandler),
+    route(r"/get_price_history/sheet/(.*)", GetSheetPriceHistoryHandler),
     # Components Invnetory Routes
     route(r"/components_inventory/add_component", AddComponentHandler),
     route(r"/components_inventory/delete_component/(.*)", DeleteComponentHandler),
@@ -239,7 +246,6 @@ api_routes = [
     route(r"/get_order_history/component/(.*)", GetComponentOrdersHistoryHandler),
     route(r"/get_quantity_history/component/(.*)", GetComponentQuantityHistoryHandler),
     route(r"/get_price_history/component/(.*)", GetComponentPriceHistoryHandler),
-    route(r"/get_price_history/sheet/(.*)", GetSheetPriceHistoryHandler),
     # Laser Cut Parts Invnetory Routes
     route(r"/laser_cut_parts_inventory/add_laser_cut_part", AddLaserCutPartHandler),
     route(r"/laser_cut_parts_inventory/add_laser_cut_parts", AddLaserCutPartsHandler),
@@ -269,25 +275,21 @@ api_routes = [
     route(r"/jobs/delete/(.*)", DeleteJobHandler),
     route(r"/jobs/get_all", GetAllJobsHandler),
     route(r"/jobs/get_job/(.*)", GetJobHandler),
-    # Paint Inventory Routes
+    # Coating (Paint) Inventory Routes
     route(r"/coatings_inventory/add_coating", AddCoatingHandler),
     route(r"/coatings_inventory/delete_coating/(.*)", DeleteCoatingHandler),
     route(r"/coatings_inventory/get_coating/(.*)", GetCoatingHandler),
     route(r"/coatings_inventory/update_coatings", UpdateCoatingsHandler),
     route(r"/coatings_inventory/get_all", GetAllCoatingsHandler),
     route(r"/coatings_inventory/get_categories", GetCoatingsCategoriesHandler),
-    # TODO: Workder Routes
-    # route(r"/workorders/save_workorder", SaveWorkorderHandler),
-    # route(r"/workorders/get_all", GetAllWorkordersHandler),
-    # route(r"/workorders/get_workorder/(.*)", GetWorkorderHandler),
-    # route(r"/workorders/delete_workorder/(.*)", DeleteWorkorderHandler),
-    # route(r"/workorders/printout/(.*)", LoadWorkorderPrintoutHandler),
-    # route(
-    #     r"/workorders/printouts", WorkorderDirectoryPrintoutsHandler
-    # ),  # This is just a page
+    # Workder Routes
+    route(r"/workorders/save_workorder", SaveWorkorderHandler),
+    route(r"/workorders/get_all", GetAllWorkordersHandler),
+    route(r"/workorders/get_workorder/(.*)", GetWorkorderHandler),
+    route(r"/workorders/delete_workorder/(.*)", DeleteWorkorderHandler),
     # Purchase Orders
-    route(r"/purchase_orders/get_all", GetAllPurchaseOrdersHandler),
     route(r"/purchase_orders/save", SavePurchaseOrderHandler),
+    route(r"/purchase_orders/get_all", GetAllPurchaseOrdersHandler),
     route(r"/purchase_orders/delete/(.*)", DeletePurchaseOrderHandler),
     route(r"/purchase_orders/get_purchase_order/(.*)", GetPurchaseOrderHandler),
     # Vendors
@@ -300,13 +302,6 @@ api_routes = [
     route(r"/shipping_addresses/save", SaveShippingAddressHandler),
     route(r"/shipping_addresses/get_shipping_address/(.*)", GetShippingAddressHandler),
     route(r"/shipping_addresses/delete/(.*)", DeleteShippingAddressHandler),
-    # ! Workorder routes OLD DEPRECATED
-    route(r"/upload_workorder", UploadWorkorderHandler),
-    route(r"/workorder/(.*)", WorkorderHandler),
-    route(r"/workorder_printout/(.*)", LoadWorkorderPrintoutHandler),
-    route(r"/mark_workorder_done/(.*)", MarkWorkorderDoneHandler),
-    route(r"/mark_nest_done/(.*)", MarkNestDoneHandler),
-    route(r"/recut_part/(.*)", RecutPartHandler),
 ]
 
 static_routes = [
