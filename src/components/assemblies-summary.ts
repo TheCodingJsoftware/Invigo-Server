@@ -18,10 +18,10 @@ export class AssembliesSummary implements BaseComponent {
         const template = document.createElement("template");
         template.innerHTML = `
         <article class="round border">
-            <nav>
+           <nav class="hide-on-print">
                 <div class="handle" data-swapy-handle><i>drag_indicator</i></div>
                 <h4 class="max">Assemblies Summary</h4>
-                <nav class="group connected primary-container hide-on-print">
+                <nav class="group connected primary-container">
                     <button class="left-round" id="grid-compact-button">
                         <i>view_compact</i>
                     </button>
@@ -35,7 +35,7 @@ export class AssembliesSummary implements BaseComponent {
                         <i>view_list</i>
                     </button>
                 </nav>
-                <button class="circle transparent hide-on-print" id="toggle-button">
+                <button class="circle transparent" id="toggle-button">
                     <i class="rotate-180">expand_more</i>
                 </button>
             </nav>

@@ -25,10 +25,10 @@ export class AssembliesParts implements BaseComponent {
         const template = document.createElement("template");
         template.innerHTML = `
         <article class="round border page-break-inside">
-            <nav>
+            <nav class="hide-on-print">
                 <div class="handle" data-swapy-handle><i>drag_indicator</i></div>
                 <h4 class="max">Assemblies Parts</h4>
-                <nav class="group connected primary-container hide-on-print">
+                <nav class="group connected primary-container">
                     <button class="left-round" id="nested-layout-button">
                         <i>account_tree</i>
                         <span>Nested Layout</span>
@@ -42,7 +42,7 @@ export class AssembliesParts implements BaseComponent {
                         <span>Grouped Parts List</span>
                     </button>
                 </nav>
-                <button class="circle transparent hide-on-print" id="toggle-button">
+                <button class="circle transparent" id="toggle-button">
                     <i class="rotate-180">expand_more</i>
                 </button>
             </nav>
@@ -71,7 +71,7 @@ export class AssembliesParts implements BaseComponent {
 
     private generateNestedAssembliesPartsLayout(): string {
         let nestedAssembliesPartsLayoutHTML = "";
-        for (const assembly of this.job.assemblies){
+        for (const assembly of this.job.assemblies) {
             const nestedAssembliesPartsLayout = new NestedAssembliesPartsLayout(this.jobId, assembly);
             nestedAssembliesPartsLayoutHTML += nestedAssembliesPartsLayout.build().outerHTML;
             this.nestedAssemblyPartsLayout.push(nestedAssembliesPartsLayout);

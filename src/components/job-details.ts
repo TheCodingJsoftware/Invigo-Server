@@ -17,10 +17,10 @@ export class JobDetails implements BaseComponent {
         const template = document.createElement("template");
         template.innerHTML = `
         <article class="round border page-break-inside">
-            <nav>
+            <nav class="hide-on-print">
                 <div class="handle" data-swapy-handle><i>drag_indicator</i></div>
-                <h4 class="max hide-on-print">Job Details</h4>
-                <button class="circle transparent hide-on-print" id="toggle-button">
+                <h4 class="max">Job Details</h4>
+                <button class="circle transparent" id="toggle-button">
                     <i class="rotate-180">expand_more</i>
                 </button>
             </nav>

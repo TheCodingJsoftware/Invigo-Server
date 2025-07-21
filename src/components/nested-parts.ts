@@ -19,10 +19,10 @@ export class NestedParts implements BaseComponent {
         const template = document.createElement("template");
         template.innerHTML = `
         <article class="round border">
-            <nav>
+            <nav class="hide-on-print">
                 <div class="handle" data-swapy-handle><i>drag_indicator</i></div>
                 <h4 class="max">Nested Sheets Parts</h4>
-                <button class="circle transparent hide-on-print" id="toggle-button">
+                <button class="circle transparent" id="toggle-button">
                     <i class="rotate-180">expand_more</i>
                 </button>
             </nav>
