@@ -2,11 +2,14 @@ import { LaserCutPartGroupData } from "@interfaces/laser-cut-part-group";
 import { naturalCompare } from "@utils/natural-sort";
 
 import { LaserCutPart } from "@models/laser-cut-part";
+import { Nest } from "@models/nest";
 
 export class LaserCutPartGroup {
     name: string;
     base_part: LaserCutPart;
     laser_cut_parts: LaserCutPart[];
+
+    nest: Nest | null = null;
 
     constructor(data: LaserCutPartGroupData) {
         this.name = data.name;

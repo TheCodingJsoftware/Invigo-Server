@@ -139,11 +139,16 @@ export class NestedPartsSummary implements BaseComponent {
     generatePartsTableBody(): string {
         let nestSummaryTable = "";
         for (const group of this.getAllGroupedLaserCutParts()) {
+            const { nest } = group;
+            let nestMultiplier = 1;
+            if (nest) {
+                nestMultiplier = nest.sheet_count;
+            }
             const material = group.getMaterial();
             const process = group.getProcess();
             const notes = group.getNotes();
             const shelfNumber = group.getShelfNumber();
-            const quantity = group.getQuantity();
+            const quantity = group.getQuantity() * nestMultiplier;
             const unitPrice = group.getPrice();
             const price = group.getTotalPrice();
             nestSummaryTable += `
@@ -208,16 +213,21 @@ export class NestedPartsSummary implements BaseComponent {
 
     public getAllGroupedLaserCutParts(): LaserCutPartGroup[] {
         let LaserCutPartGroups: LaserCutPartGroup[] = [];
-        for (const part of this.getAllParts()) {
-            const group = LaserCutPartGroups.find(group => group.name === part.name);
-            if (group) {
-                group.laser_cut_parts.push(part);
-            } else {
-                LaserCutPartGroups.push(new LaserCutPartGroup({
-                    name: part.name,
-                    base_part: part,
-                    laser_cut_parts: [part]
-                }));
+        for (const nest of this.nests) {
+            for (const part of nest.laser_cut_parts) {
+                const group = LaserCutPartGroups.find(group => group.name === part.name);
+                if (group) {
+                    group.laser_cut_parts.push(part);
+                } else {
+                    const laserCutPartGroup = new LaserCutPartGroup(
+                        {
+                            name: part.name,
+                            base_part: part,
+                            laser_cut_parts: [part]
+                        });
+                    laserCutPartGroup.nest = nest;
+                    LaserCutPartGroups.push(laserCutPartGroup);
+                }
             }
         }
         return LaserCutPartGroups.sort((a, b) => naturalCompare(a.name, b.name));
