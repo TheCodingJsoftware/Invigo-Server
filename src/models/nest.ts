@@ -18,9 +18,12 @@ export class Nest {
     constructor(data: NestData) {
         Object.assign(this, data);
 
+        console.log("Creating Nest with data:", data);
+
         this.laser_cut_parts = data.laser_cut_parts
             .map(p => new LaserCutPart(p))
             .sort((a, b) => naturalCompare(a.name, b.name));
+
         this.sheet = new Sheet(data.sheet);
     }
 

@@ -69,7 +69,7 @@ class WorkordersHistroyDB(BaseWithDBPool):
                     await conn.execute(index_lookup_query)
 
     @ensure_connection
-    async def insert_history_job(self, workorder_id: int | str, new_data: dict, modified_by: str = "system"):
+    async def insert_history_workorder(self, workorder_id: int | str, new_data: dict, modified_by: str = "system"):
         max_retries = 3
         for attempt in range(1, max_retries + 1):
             try:

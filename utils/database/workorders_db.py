@@ -48,7 +48,7 @@ class WorkordersDB(BaseWithDBPool):
         query = f"""
         CREATE TABLE IF NOT EXISTS {self.TABLE_NAME} (
             id SERIAL PRIMARY KEY,
-            nests JSONB NOT NULL,
+            data JSONB NOT NULL,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
@@ -135,12 +135,11 @@ class WorkordersDB(BaseWithDBPool):
                 return None
 
         cache_key = f"workorder_{workorder_id}_full"
-        cached = self._get_cache(cache_key)
-        if cached:
+        if cached := self._get_cache(cache_key):
             return cached
 
         query = f"""
-        SELECT id, nests, created_at, updated_at
+        SELECT id, data, created_at, updated_at
         FROM {self.TABLE_NAME}
         WHERE id = $1
         """
@@ -150,12 +149,12 @@ class WorkordersDB(BaseWithDBPool):
         if not row:
             return None
 
-        workorder = dict(row)
+        workorder = msgspec.json.decode(row["data"])
         self._set_cache(cache_key, workorder)
         return workorder
 
     @ensure_connection
-    async def save_workorder(self, workorder_id: int | str, new_data: dict, modified_by: str = "system"):
+    async def save_workorder(self, workorder_id: int | str, new_data: dict, modified_by: str = "system") -> int:
         if isinstance(workorder_id, str):
             workorder_id = await self.get_workorder_id_by_name(workorder_id)
 
@@ -176,7 +175,7 @@ class WorkordersDB(BaseWithDBPool):
                     await conn.execute(
                         f"""
                         UPDATE {self.TABLE_NAME} SET
-                            nests = $2, updated_at = CURRENT_TIMESTAMP
+                            data = $2, updated_at = CURRENT_TIMESTAMP
                         WHERE id = $1
                         """,
                         workorder_id,
@@ -197,7 +196,7 @@ class WorkordersDB(BaseWithDBPool):
     @ensure_connection
     async def add_workorder(self, workorder_data: dict):
         query = f"""
-        INSERT INTO {self.TABLE_NAME} (nests)
+        INSERT INTO {self.TABLE_NAME} (data)
         VALUES ($1)
         RETURNING id;
         """

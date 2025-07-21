@@ -21,13 +21,13 @@ class InventoryTablesHandler(BaseHandler):
             data = [
                 {
                     "part_name": laser_cut_part["name"],
-                    "quantity": laser_cut_part["quantity"],
-                    "price": round(laser_cut_part["price"], 2),
-                    "part_dim": laser_cut_part["part_dim"],
-                    "thickness": laser_cut_part["gauge"],
-                    "material": laser_cut_part["material"],
-                    "weight": laser_cut_part["weight"],
-                    "surface_area": laser_cut_part["surface_area"],
+                    "quantity": laser_cut_part["inventory_data"]["quantity"],
+                    "price": round(laser_cut_part["prices"]["price"], 2),
+                    "part_dim": laser_cut_part["meta_data"]["part_dim"],
+                    "thickness": laser_cut_part["meta_data"]["gauge"],
+                    "material": laser_cut_part["meta_data"]["material"],
+                    "weight": laser_cut_part["meta_data"]["weight"],
+                    "surface_area": laser_cut_part["meta_data"]["surface_area"],
                 }
                 for laser_cut_part in all_laser_cut_parts
             ]

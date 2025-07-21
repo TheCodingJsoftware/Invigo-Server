@@ -283,10 +283,10 @@ api_routes = [
     route(r"/coatings_inventory/get_all", GetAllCoatingsHandler),
     route(r"/coatings_inventory/get_categories", GetCoatingsCategoriesHandler),
     # Workder Routes
-    route(r"/workorders/save_workorder", SaveWorkorderHandler),
+    route(r"/workorders/save", SaveWorkorderHandler),
     route(r"/workorders/get_all", GetAllWorkordersHandler),
-    route(r"/workorders/get_workorder/(.*)", GetWorkorderHandler),
-    route(r"/workorders/delete_workorder/(.*)", DeleteWorkorderHandler),
+    route(r"/workorders/get/(.*)", GetWorkorderHandler),
+    route(r"/workorders/delete/(.*)", DeleteWorkorderHandler),
     # Purchase Orders
     route(r"/purchase_orders/save", SavePurchaseOrderHandler),
     route(r"/purchase_orders/get_all", GetAllPurchaseOrdersHandler),
