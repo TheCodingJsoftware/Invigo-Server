@@ -58,7 +58,7 @@ body:not(.loaded) {
 
 .nest-image-list {
     width: auto !important;
-    height: 100px !important;
+    height: 150px !important;
 }
 
 .slot {

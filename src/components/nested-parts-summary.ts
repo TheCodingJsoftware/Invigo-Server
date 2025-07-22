@@ -64,7 +64,7 @@ export class NestedPartsSummary implements BaseComponent {
                 <table class="border tiny-space">
                     <thead>
                         <tr>
-                            <th data-column="nest-part-partName">Part Name</th>
+                            <th data-column="nest-part-partName">Part Name / Number</th>
                             <th class="center-align" data-column="nest-part-material">Material</th>
                             <th class="center-align" data-column="nest-part-process">Process</th>
                             <th class="center-align" data-column="nest-part-notes">Notes</th>
@@ -151,12 +151,16 @@ export class NestedPartsSummary implements BaseComponent {
             const quantity = group.getQuantity() * nestMultiplier;
             const unitPrice = group.getPrice();
             const price = group.getTotalPrice();
+            const partNumber = group.getPartNumber();
             nestSummaryTable += `
             <tr>
                 <td class="min" data-column="nest-part-partName">
                     <div class="row">
                         <img class="square extra small-round" src="http://invi.go/images/${group.getImagePath()}">
-                        <span class="wrap no-line small-width">${group.name}</span>
+                        <div class="vertical">
+                            <span class="wrap no-line small-width">${group.name}</span>
+                            <span><i>tag</i> ${partNumber}</span>
+                        </div>
                     </div>
                 </td>
                 <td class="center-align" data-column="nest-part-material">${material}</td>

@@ -32,6 +32,10 @@ export class LaserCutPartGroup {
         return this.getTotalQuantity() * this.getPrice();
     }
 
+    getPartNumber(): string {
+        return this.base_part.meta_data.part_number;
+    }
+
     getQuantity(): number {
         return this.base_part.inventory_data.quantity;
     }
