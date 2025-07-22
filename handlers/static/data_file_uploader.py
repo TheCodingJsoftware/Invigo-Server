@@ -47,7 +47,8 @@ class FileUploadHandler(BaseHandler):
                     self.write(f"Could not acquire lock for {filename}. Try again later.")
             elif filename.lower().endswith((".jpeg", ".jpg", ".png")):
                 filename = os.path.basename(filename)
-                with open(f"images/{filename}", "wb") as file:
+                file_path = os.path.join(Environment.DATA_PATH, "images", filename)
+                with open(file_path, "wb") as file:
                     file.write(file_data)
         else:
             self.write("No file received.")
