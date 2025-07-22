@@ -1,5 +1,7 @@
+import os
 from datetime import datetime
 
+from config.environments import Environment
 from handlers.base import BaseHandler
 from utils.inventory.order import Order
 from utils.inventory.sheet import Sheet
@@ -25,7 +27,7 @@ class SheetQuantityHandler(BaseHandler):
             return [line.strip() for line in file if line.strip()]
 
     async def load_page(self, sheet_name):
-        trusted_users = self.load_trusted_users("trusted_users.txt")
+        trusted_users = self.load_trusted_users(os.path.join(Environment.DATA_PATH, "trusted_users.txt"))
 
         sheet_data = await self.sheets_inventory_db.get_sheet(sheet_name)
 
