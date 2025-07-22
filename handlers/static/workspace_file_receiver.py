@@ -1,5 +1,6 @@
 import logging
 import os
+from urllib.parse import unquote
 
 from config.environments import Environment
 from handlers.base import BaseHandler
@@ -7,6 +8,7 @@ from handlers.base import BaseHandler
 
 class WorkspaceFileReceiverHandler(BaseHandler):
     def get(self, file_name: str):
+        file_name = unquote(file_name)
         file_name = os.path.basename(file_name)
         file_ext = os.path.splitext(file_name)[1].upper().replace(".", "")
         filepath = os.path.join(Environment.DATA_PATH, "data", "workspace", file_ext, file_name)
