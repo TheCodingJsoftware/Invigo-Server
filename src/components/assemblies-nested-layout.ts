@@ -19,9 +19,9 @@ class AssemblyLaserCutPartsComponent {
         const template = document.createElement("template");
         template.innerHTML = `
         <article class="round border">
-            <nav>
+            <nav class="hide-on-print">
                 <h4 class="max">Laser Cut Parts</h4>
-                <button class="circle transparent hide-on-print" id="toggle-button">
+                <button class="circle transparent" id="toggle-button">
                     <i class="rotate-180">expand_more</i>
                 </button>
             </nav>
@@ -93,9 +93,9 @@ class AssemblyComponentsComponent {
         const template = document.createElement("template");
         template.innerHTML = `
         <article class="round border">
-            <nav>
+            <nav class="hide-on-print">
                 <h4 class="max">Components</h4>
-                <button class="circle transparent hide-on-print" id="toggle-button">
+                <button class="circle transparent" id="toggle-button">
                     <i class="rotate-180">expand_more</i>
                 </button>
             </nav>

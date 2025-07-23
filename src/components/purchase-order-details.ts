@@ -25,24 +25,30 @@ export class PurchaseOrderDetails implements BaseComponent {
         const shippingMethod = this.titleCase(ShippingMethod[this.purchaseOrder.meta_data.shipping_method].toLowerCase());
         const template = document.createElement("template");
         const purchaseFrom = `
-            ${this.vendor.name}
-            ${this.vendor.address}
-
-            Contact Information:
-            ${this.vendor.phone}
-            ${this.vendor.email}
-            ${this.vendor.website}
+            ${this.vendor.name ? `${this.vendor.name}<br>` : ""}
+            ${this.vendor.address ? `${this.vendor.address.split("\n").join("<br>")}<br>` : ""}
+            ${(this.vendor.phone || this.vendor.email || this.vendor.website) ? `
+            <div id="vendorContactDetails"><br>
+                Contact Information:<br>
+                ${this.vendor.phone ? `${this.vendor.phone}<br>` : ""}
+                ${this.vendor.email ? `${this.vendor.email}<br>` : ""}
+                ${this.vendor.website || ""}
+            </div>` : ""}
         `.trim().replace(/  /g, "");
 
         const contactDetails = `
-            ${this.businessInfo.name}
-            ${this.purchaseOrder.meta_data.shipping_address.address}
-
-            Contact Information:
-            ${this.contactInfo.name}
-            ${this.contactInfo.email}
-            ${this.contactInfo.phone}
+            ${this.businessInfo.name ? `${this.businessInfo.name}<br>` : ""}
+            ${this.purchaseOrder.meta_data.shipping_address.address
+                ? `${this.purchaseOrder.meta_data.shipping_address.address.split("\n").join("<br>")}<br>` : ""}
+            ${(this.contactInfo.name || this.contactInfo.email || this.contactInfo.phone) ? `
+            <div id="contactDetails"><br>
+                Contact Information:<br>
+                ${this.contactInfo.name ? `${this.contactInfo.name}<br>` : ""}
+                ${this.contactInfo.email ? `${this.contactInfo.email}<br>` : ""}
+                ${this.contactInfo.phone || ""}
+            </div>` : ""}
         `.trim().replace(/  /g, "");
+
         template.innerHTML = `
         <article class="round border page-break-inside">
             <nav class="hide-on-print">
@@ -62,14 +68,14 @@ export class PurchaseOrderDetails implements BaseComponent {
             </nav>
             <div class="content-wrapper" style="height: auto;">
                 <div class="grid top-padding">
-                    <div class="s6 small-round field textarea label border extra">
-                        <textarea id="vendor">${purchaseFrom}</textarea>
-                        <label>Vendor</label>
-                    </div>
-                    <div class="s6 small-round field textarea label border extra">
-                        <textarea id="contact">${contactDetails}</textarea>
-                        <label>Ship To</label>
-                    </div>
+                    <fieldset class="s6 small-round">
+                        <legend>Vendor</legend>
+                        ${purchaseFrom}
+                    </fieldset>
+                    <fieldset class="s6 small-round">
+                        <legend>Ship To</legend>
+                        ${contactDetails}
+                    </fieldset>
                     <div class="s6 small small-round field label prefix border">
                         <i>${SHIPPING_METHOD_ICONS[this.purchaseOrder.meta_data.shipping_method]}</i>
                         <input type="text" id="shipping-method" value="${shippingMethod}">
@@ -77,7 +83,7 @@ export class PurchaseOrderDetails implements BaseComponent {
                     </div>
                     <div class="s6 small small-round field label prefix border">
                         <i>event</i>
-                        <input type="date" id="required-by-date">
+                        <input type="date" id="required-by-date" value="${this.purchaseOrder.meta_data.order_date}">
                         <label>Required By Date</label>
                     </div>
                 </div>

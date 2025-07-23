@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta http-equiv="X-UA-Compatible" content="ie=edge">
+        <meta name="google" content="notranslate">
+        <link rel="icon" href="/static/icon.png">
+        <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=yes" />
+        <title>Workorders</title>
+    </head>
+
+    <body class="dark" onload="document.body.classList.add('loaded')">
+        <header class="fixed primary">
+            <nav>
+                <button class="circle transparent" onclick="window.location.href='/';">
+                    <i>arrow_back</i>
+                </button>
+                <h5 class="max">Workorders</h5>
+            </nav>
+        </header>
+        <main class="responsive">
+            <div class="grid">
+                {% for workorder in all_workorders %}
+                <article class="s12 m6 l4 round border">
+                    <nav class="row top-align">
+                        <h5 class="max">#{{ workorder.id }}</h5>
+                        <button onclick="window.location.href='/workorders/view?id={{ workorder.id }}';">
+                            <i>open_in_new</i>
+                            <span>Open</span>
+                        </button>
+                    </nav>
+                    <nav class="row wrap no-space">
+                        {% for nest in workorder.nests %}
+                        <button class="chip tiny-margin">
+                            <span>
+                                {{ nest.name }}
+                            </span>
+                        </button>
+                        <button class="chip tiny-margin">
+                            <span>
+                                {{ nest.sheet.name }}
+                            </span>
+                        </button>
+                        <button class="chip tiny-margin">
+                            <i>tag</i>
+                            <span>
+                                Sheet Count: {{ nest.sheet_count }}
+                            </span>
+                        </button>
+                        {% endfor %}
+                    </nav>
+                </article>
+                {% endfor %}
+            </div>
+        </main>
+    </body>
+
+</html>

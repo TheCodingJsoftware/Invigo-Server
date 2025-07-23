@@ -1,13 +1,17 @@
 import asyncio
+import logging
 import os
 import shutil
+import signal
 import sys
 import threading
 import time
 import zipfile
 from datetime import datetime, timedelta
 from functools import partial
+from typing import Literal
 
+import msgspec
 import schedule
 import tornado
 import tornado.log
@@ -17,8 +21,68 @@ import config.variables as variables
 from config.environments import Environment
 from config.logging_config import setup_logging
 from handlers.base import BaseHandler
+from handlers.websocket.workspace import WebSocketWorkspaceHandler
 from routes import route_map
 from utils.sheet_report import generate_sheet_report
+
+workspace_db = BaseHandler.workspace_db
+
+TABLE_CHANNELS = [
+    "workspace_jobs",
+    "workspace_assemblies",
+    "workspace_grouped_assemblies",
+    "workspace_laser_cut_parts",
+    "workspace_grouped_laser_cut_parts",
+    "workspace_components",
+    "workspace_nests",
+]
+
+
+async def start_workspace_services():
+    await workspace_db.connect()
+    conn = await workspace_db.db_pool.acquire()
+    for channel in TABLE_CHANNELS:
+        await conn.add_listener(channel, workspace_notify_handler)
+
+
+async def workspace_notify_handler(conn, pid, channel, payload):
+    msg = msgspec.json.decode(payload)
+
+    # Dynamic mapping
+    table = channel
+    op: Literal["INSERT", "UPDATE", "DELETE"] = msg.get("type")
+    job_id = msg.get("job_id")
+    part_id = msg.get("id")
+    delta = msg.get("delta")
+
+    if table == "workspace_jobs":
+        if op == "INSERT":
+            job = await workspace_db.get_job_by_id(job_id)
+            WebSocketWorkspaceHandler.broadcast({"type": "job_created", "job": job})
+        elif op == "UPDATE":
+            job = await workspace_db.get_job_by_id(job_id)
+            WebSocketWorkspaceHandler.broadcast({"type": "job_updated", "job": job})
+        elif op == "DELETE":
+            WebSocketWorkspaceHandler.broadcast({"type": "job_deleted", "job_id": job_id})
+
+    # elif table in ["workspace_grouped_assemblies", "workspace_assemblies"]:
+    #     # You can resolve or fetch data if needed
+    #     WebSocketWorkspaceHandler.broadcast(
+    #         {
+    #             "type": f"assembly_{op.lower()}",
+    #             "job_id": job_id,
+    #             "data": msg.get("data"),  # optional
+    #         }
+    #     )
+
+    elif table in ["workspace_grouped_laser_cut_parts", "workspace_laser_cut_parts"]:
+        if op == "INSERT":
+            WebSocketWorkspaceHandler.broadcast({"type": "part_created", "part": msg.get("data")})
+        elif op == "UPDATE":
+            WebSocketWorkspaceHandler.broadcast({"type": "part_updated", "part_id": part_id, "delta": delta})
+        elif op == "DELETE":
+            WebSocketWorkspaceHandler.broadcast({"type": "part_deleted", "part_id": part_id})
+
 
 setup_logging()
 # tornado.log.enable_pretty_logging()
@@ -57,158 +121,6 @@ def zip_files(path_to_zip_file: str, files_to_backup: list[str]) -> None:
     file.close()
 
 
-def check_production_plan_for_jobs() -> None:  # TODO: Make compatible with WorkorderDB
-    return
-    # jobs_added = False
-    # components_inventory = ComponentsInventory()
-    # sheet_settings = SheetSettings()
-    # structural_steel_settings = StructuralSteelSettings()
-    # workspace_settings = WorkspaceSettings()
-    # paint_inventory = PaintInventory(components_inventory)
-    # sheets_inventory = SheetsInventory(sheet_settings)
-    # laser_cut_inventory = LaserCutInventory(paint_inventory, workspace_settings)
-    # structural_steel_inventory = StructuralSteelInventory(
-    #     structural_steel_settings, workspace_settings
-    # )
-    # job_manager = JobManager(
-    #     sheet_settings,
-    #     sheets_inventory,
-    #     workspace_settings,
-    #     components_inventory,
-    #     laser_cut_inventory,
-    #     paint_inventory,
-    #     structural_steel_inventory,
-    #     None,
-    # )
-    # workspace = Workspace(workspace_settings, job_manager)
-    # production_plan = ProductionPlan(workspace_settings, job_manager)
-
-    # today = datetime.today().date()
-
-    # for job in production_plan.jobs:
-    #     if job.moved_job_to_workspace:
-    #         continue
-
-    #     job_starting_date = datetime.strptime(
-    #         job.starting_date, "%Y-%m-%d %I:%M %p"
-    #     ).date()
-    #     job_ending_date = datetime.strptime(job.ending_date, "%Y-%m-%d %I:%M %p").date()
-
-    #     if job_starting_date <= today <= job_ending_date:
-    #         jobs_added = True
-    #         new_job = workspace.add_job(job)
-    #         job.moved_job_to_workspace = True
-    #         new_job.moved_job_to_workspace = True
-
-    #         for assembly in new_job.get_all_assemblies():
-    #             if (
-    #                 assembly.all_laser_cut_parts_complete()
-    #                 and not assembly.timer.has_started_timer()
-    #             ):
-    #                 assembly.timer.start_timer()
-    #         for laser_cut_part in new_job.get_all_laser_cut_parts():
-    #             laser_cut_part.timer.start_timer()
-
-    #         CustomPrint.print(
-    #             f"Job, '{job.name}' added to workspace from production plan and started timers.",
-    #         )
-
-    # if jobs_added:
-    #     laser_cut_inventory.save()
-    #     workspace.save()
-    #     production_plan.save()
-    #     CustomPrint.print(
-    #         "Workspace and production plan updated, signaling clients to update files.",
-    #     )
-    #     signal_clients_for_changes(
-    #         client_to_ignore=None,
-    #         changed_files=[
-    #             f"{workspace.filename}.json",
-    #             f"{production_plan.filename}.json",
-    #         ],
-    #         client_type="web",
-    #     )
-    #     signal_clients_for_changes(
-    #         client_to_ignore=None,
-    #         changed_files=[
-    #             f"{workspace.filename}.json",
-    #             f"{laser_cut_inventory.filename}.json",
-    #         ],
-    #         client_type="software",
-    #     )
-    # else:
-    #     CustomPrint.print(
-    #         "No jobs were added to workspace from production plan.",
-    #     )
-
-
-def check_if_jobs_are_complete() -> None:  # TODO: Make compatible with WorkorderDB
-    return
-    # components_inventory = ComponentsInventory()
-    # sheet_settings = SheetSettings()
-    # structural_steel_settings = StructuralSteelSettings()
-    # workspace_settings = WorkspaceSettings()
-    # paint_inventory = PaintInventory(components_inventory)
-    # sheets_inventory = SheetsInventory(sheet_settings)
-    # laser_cut_inventory = LaserCutInventory(paint_inventory, workspace_settings)
-    # structural_steel_inventory = StructuralSteelInventory(
-    #     structural_steel_settings, workspace_settings
-    # )
-    # job_manager = JobManager(
-    #     sheet_settings,
-    #     sheets_inventory,
-    #     workspace_settings,
-    #     components_inventory,
-    #     laser_cut_inventory,
-    #     paint_inventory,
-    #     structural_steel_inventory,
-    #     None,
-    # )
-    # workspace = Workspace(workspace_settings, job_manager)
-    # workspace_history = WorkspaceHistory(job_manager)
-
-    # completed_jobs: list[Job] = []
-
-    # for job in workspace.jobs:
-    #     if job.is_job_finished():
-    #         CustomPrint.print(
-    #             f"Job, '{job.name}' is finished and will be moved from workspace to workspace history.",
-    #         )
-    #         workspace_history.add_job(job)
-    #         CustomPrint.print(
-    #             f"Added '{job.name}' to workspace history.",
-    #         )
-    #         completed_jobs.append(job)
-
-    # if completed_jobs:
-    #     for job in completed_jobs:
-    #         workspace.remove_job(job)
-    #         CustomPrint.print(
-    #             f"Removed '{job.name}' from workspace.",
-    #         )
-    #     workspace_history.save()
-    #     workspace.save()
-    #     CustomPrint.print(
-    #         "Workspace and workspace history updated, signaling clients to update files.",
-    #     )
-    #     signal_clients_for_changes(
-    #         client_to_ignore=None,
-    #         changed_files=[
-    #             f"{workspace.filename}.json",
-    #             f"{workspace_history.filename}.json",
-    #         ],
-    #         client_type="web",
-    #     )
-    #     signal_clients_for_changes(
-    #         client_to_ignore=None,
-    #         changed_files=[
-    #             f"{workspace.filename}.json",
-    #             f"{laser_cut_inventory.filename}.json",
-    #         ],
-    #         client_type="software",
-    #     )
-
-
 def schedule_thread():
     while True:
         schedule.run_pending()
@@ -236,10 +148,18 @@ def copy_server_log_file():
 def make_app():
     return tornado.web.Application(
         route_map.routes,
+        cookie_secret=Environment.COOKIE_SECRET,
     )
 
 
+def shutdown():
+    print("Shutting down cleanly...")
+    IOLoop.current().stop()
+
+
 if __name__ == "__main__":
+    signal.signal(signal.SIGINT, lambda s, f: shutdown())
+    signal.signal(signal.SIGTERM, lambda s, f: shutdown())
     # Does not need to be thread safe
     schedule.every().monday.at("04:00").do(partial(generate_sheet_report, variables.software_connected_clients))
     schedule.every().hour.do(hourly_backup_inventory_files)
@@ -248,9 +168,11 @@ if __name__ == "__main__":
     schedule.every().week.do(weekly_backup_inventory_files)
 
     # For thread safety
-    schedule_daily_task_at(4, 0, check_production_plan_for_jobs)
-    periodic_callback = PeriodicCallback(check_if_jobs_are_complete, 60000)  # 60000 ms = 1 minute
-    periodic_callback.start()
+    # schedule_daily_task_at(4, 0, check_production_plan_for_jobs)
+    # periodic_callback = PeriodicCallback(check_if_jobs_are_complete, 60000)  # 60000 ms = 1 minute
+    # periodic_callback.start()
+
+    IOLoop.current().run_sync(start_workspace_services)
 
     thread = threading.Thread(target=schedule_thread)
     thread.start()

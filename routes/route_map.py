@@ -5,6 +5,10 @@ from matplotlib.dviread import Page
 from handlers.auth.client_name import GetClientNameHandler
 from handlers.auth.connect import ConnectHandler
 from handlers.auth.is_client_trusted import IsClientTrustedHandler
+from handlers.auth.login import LoginHandler
+from handlers.auth.logout import LogoutHandler
+from handlers.auth.protected import ProtectedHandler
+from handlers.auth.user import UserHandler
 from handlers.coatings_inventory.add_coating import AddCoatingHandler
 from handlers.coatings_inventory.delete_coating import DeleteCoatingHandler
 from handlers.coatings_inventory.get_all_coatings import GetAllCoatingsHandler
@@ -75,6 +79,7 @@ from handlers.purchase_orders.get_all_purchase_orders import GetAllPurchaseOrder
 from handlers.purchase_orders.get_purchase_order import GetPurchaseOrderHandler
 from handlers.purchase_orders.purchase_order_printouts import PurchaseOrdersPageHandler
 from handlers.purchase_orders.save_purchase_order import SavePurchaseOrderHandler
+from handlers.roles.roles import RoleAPIHandler
 from handlers.sheets_inventory.add_cut_off_sheet import AddCutoffSheetHandler
 from handlers.sheets_inventory.add_sheet import AddSheetHandler
 from handlers.sheets_inventory.delete_cut_off_sheet import DeleteCutoffSheetHandler
@@ -103,6 +108,7 @@ from handlers.wayback_machine.fetch_data import FetchDataHandler
 from handlers.wayback_machine.get_data import WayBackMachineDataHandler
 from handlers.websocket.software import WebSocketSoftwareHandler
 from handlers.websocket.website import WebSocketWebsiteHandler
+from handlers.websocket.workspace import WebSocketWorkspaceHandler
 from handlers.workorder.delete_workorder import DeleteWorkorderHandler
 from handlers.workorder.get_all_workorders import GetAllWorkordersHandler
 from handlers.workorder.get_workorder import GetWorkorderHandler
@@ -116,6 +122,7 @@ from handlers.workspace.get_all_recut_parts import WorkspaceGetAllRecutPartsHand
 from handlers.workspace.get_entries_by_name import WorkspaceGetEntriesByNamesHandler
 from handlers.workspace.get_entry import WorkspaceGetEntryHandler
 from handlers.workspace.get_job import WorkspaceGetJobHandler
+from handlers.workspace.get_parts_by_job import WorkspaceGetPartsByJobHandler
 from handlers.workspace.get_recut_parts_from_job import (
     WorkspaceGetRecutPartsFromJobHandler,
 )
@@ -168,6 +175,9 @@ page_routes = [
         PageHandler,
         template_name="purchase_order_printout.html",
     ),
+    route(r"/login", PageHandler, template_name="login.html"),
+    route(r"/register", PageHandler, template_name="register.html"),
+    route(r"/roles", PageHandler, template_name="roles.html"),
 ]
 
 api_routes = [
@@ -182,6 +192,7 @@ api_routes = [
     ),
     route(r"/ws", WebSocketSoftwareHandler),
     route(r"/ws/web", WebSocketWebsiteHandler),
+    route(r"/ws/workspace", WebSocketWorkspaceHandler),
     route(r"/fetch_log", LogContentHandler),
     route(r"/delete_log", LogDeleteHandler),
     route(r"/command", CommandHandler),
@@ -208,18 +219,19 @@ api_routes = [
     route(r"/workspace/delete_job/(.*)", WorkspaceDeleteJobHandler),
     route(r"/workspace/get_all_jobs", WorkspaceGetAllJobsHandler),
     route(r"/workspace/get_job/(.*)", WorkspaceGetJobHandler),
-    route(r"/workspace/get_entry/(.*)", WorkspaceGetEntryHandler),
-    route(r"/workspace/get_all_recut_parts", WorkspaceGetAllRecutPartsHandler),
-    route(
-        r"/workspace/get_recut_parts_from_job/(.*)",
-        WorkspaceGetRecutPartsFromJobHandler,
-    ),
-    route(
-        r"/workspace/get_entries_by_name/(.*)/(.*)",
-        WorkspaceGetEntriesByNamesHandler,
-    ),
-    route(r"/workspace/update_entry/(.*)", WorkspaceUpdateEntryHandler),
-    route(r"/workspace/bulk_update_entries", WorkspaceBulkUpdateEntriesHandler),
+    route(r"/workspace/get_parts_by_job/(.*)", WorkspaceGetPartsByJobHandler),
+    # route(r"/workspace/get_entry/(.*)", WorkspaceGetEntryHandler),
+    # route(r"/workspace/get_all_recut_parts", WorkspaceGetAllRecutPartsHandler),
+    # route(
+    # r"/workspace/get_recut_parts_from_job/(.*)",
+    # WorkspaceGetRecutPartsFromJobHandler,
+    # ),
+    # route(
+    #     r"/workspace/get_entries_by_name/(.*)/(.*)",
+    #     WorkspaceGetEntriesByNamesHandler,
+    # ),
+    # route(r"/workspace/update_entry/(.*)", WorkspaceUpdateEntryHandler),
+    # route(r"/workspace/bulk_update_entries", WorkspaceBulkUpdateEntriesHandler),
     # Sheets Invnetory Routes
     route(r"/sheet_qr_codes", QRCodePageHandler),
     route(r"/add_cutoff_sheet", AddCutoffSheetHandler),
@@ -302,6 +314,13 @@ api_routes = [
     route(r"/shipping_addresses/save", SaveShippingAddressHandler),
     route(r"/shipping_addresses/get_shipping_address/(.*)", GetShippingAddressHandler),
     route(r"/shipping_addresses/delete/(.*)", DeleteShippingAddressHandler),
+    # Users
+    route(r"/api/logout", LogoutHandler),
+    route(r"/api/login", LoginHandler),
+    route(r"/api/protected", ProtectedHandler),
+    route(r"/api/users", UserHandler),
+    route(r"/api/users/([0-9]+)", UserHandler),
+    route(r"/api/roles", RoleAPIHandler),
 ]
 
 static_routes = [

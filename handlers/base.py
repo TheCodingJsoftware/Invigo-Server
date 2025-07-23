@@ -23,14 +23,13 @@ from utils.database.purchase_orders_db import PurchaseOrdersDB
 from utils.database.recut_laser_cut_parts_inventory_db import (
     RecutLaserCutPartsInventoryDB,
 )
+from utils.database.roles_db import RolesDB
 from utils.database.sheets_inventory_db import SheetsInventoryDB
 from utils.database.shipping_address_db import ShippingAddressesDB
+from utils.database.users_db import UsersDB
 from utils.database.vendors_db import VendorsDB
 from utils.database.workorders_db import WorkordersDB
 from utils.database.workspace_db import WorkspaceDB
-from utils.inventory.nest import Nest
-from utils.workspace.workorder import Workorder
-from utils.workspace.workspace import Workspace
 
 
 def urlencode_path_segment(value: str) -> str:
@@ -57,6 +56,8 @@ class BaseHandler(RequestHandler):
     purchase_orders_db = PurchaseOrdersDB()
     vendors_db = VendorsDB()
     shipping_addresses_db = ShippingAddressesDB()
+    users_db = UsersDB()
+    roles_db = RolesDB()
 
     def write_error(self, status_code: int, **kwargs):
         if exc_info := kwargs.get("exc_info"):
@@ -152,19 +153,3 @@ class BaseHandler(RequestHandler):
                 # We're outside the IOLoop, so we need to run the message sending inside it
                 loop = asyncio.get_event_loop()
                 loop.call_soon_threadsafe(IOLoop.current().add_callback, send_message, client, message)
-
-    async def update_laser_cut_parts_process(  # TODO: Make compatible with WorkorderDB
-        self, nest_or_workorder: Workorder | Nest, workspace: Workspace
-    ):
-        if isinstance(nest_or_workorder, Workorder):
-            nests_to_update = nest_or_workorder.nests
-        elif isinstance(nest_or_workorder, Nest):
-            nests_to_update = [nest_or_workorder]
-
-        if workspace_part_groups := workspace.get_grouped_laser_cut_parts(workspace.get_all_laser_cut_parts_with_similar_tag("picking")):
-            for nest in nests_to_update:
-                for workspace_part_group in workspace_part_groups:
-                    for nested_laser_cut_part in nest.laser_cut_parts:
-                        if workspace_part_group.base_part.name == nested_laser_cut_part.name:
-                            workspace_part_group.move_to_next_process(nest.sheet_count * nested_laser_cut_part.quantity_in_nest)
-                            break

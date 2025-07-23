@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "@lit-labs/virtualizer": "^2.1.1",
     "beercss": "^3.11.33",
     "bootstrap": "^5.3.7",
     "chart.js": "^4.5.0",
@@ -10,6 +11,7 @@
     "effect": "^3.16.16",
     "flatpickr": "^4.6.13",
     "jquery": "^3.7.1",
+    "lit": "^3.3.1",
     "material-dynamic-colors": "^1.1.2",
     "qrcode": "^1.5.4",
     "swapy": "^1.0.5"

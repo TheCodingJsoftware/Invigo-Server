@@ -41,40 +41,56 @@
             </div>
         </header>
         <main class="responsive">
-            <div class="grid m l">
-                <button class="s6 m4 l3 left-align extra border" onclick="window.location.href='/inventory'">
+            <div class="grid">
+                <button class="s6 m4 l4 left-align extra border" onclick="window.location.href='/login'">
+                    <i>login</i>
+                    <span>Login</span>
+                </button>
+                <button class="s6 m4 l4 left-align extra border" onclick="window.location.href='/roles'">
+                    <i>person</i>
+                    <span>Roles</span>
+                </button>
+                <button class="s6 m4 l4 left-align extra border" onclick="window.location.href='/register'">
+                    <i>person_add</i>
+                    <span>Register</span>
+                </button>
+                <button class="s6 m4 l4 left-align extra border" onclick="window.location.href='/inventory'">
                     <i>inventory_2</i>
                     <span>Inventory</span>
                 </button>
-                <button class="s6 m4 l3 left-align extra border" onclick="window.location.href='/add_cutoff_sheet'">
+                <button class="s6 m4 l4 left-align extra border" onclick="window.location.href='/add_cutoff_sheet'">
                     <i>library_add</i>
                     <span>Add Cutoff Sheet</span>
                 </button>
-                <button class="s6 m4 l3 left-align extra border" onclick="window.location.href='/sheet_qr_codes'">
+                <button class="s6 m4 l4 left-align extra border" onclick="window.location.href='/sheet_qr_codes'">
                     <i>qr_code</i>
                     <span>Sheet QR Codes</span>
                 </button>
-                <button class="s6 m4 l3 left-align extra border" onclick="window.location.href='/production_planner'" disabled>
+                <button class="s6 m6 l6 left-align extra border" onclick="window.location.href='/production_planner'" disabled>
                     <i>edit_calendar</i>
                     <span>Production Planner</span>
                 </button>
-                <button class="s6 m4 l3 left-align extra border" onclick="window.location.href='/workspace_dashboard'" disabled>
+                <button class="s6 m6 l6 left-align extra border" onclick="window.location.href='/workspace'">
+                    <i>construction</i>
+                    <span>Workspace</span>
+                </button>
+                <button class="s6 m6 l6 left-align extra border" onclick="window.location.href='/workspace_dashboard'" disabled>
                     <i>browse_activity</i>
                     <span>Workspace Dashboard</span>
                 </button>
-                <button class="s6 m4 l3 left-align extra border" onclick="window.location.href='/workspace_archives_dashboard'" disabled>
+                <button class="s6 m6 l6 left-align extra border" onclick="window.location.href='/workspace_archives_dashboard'" disabled>
                     <i>work_history</i>
                     <span>Workspace Archives</span>
                 </button>
-                <button class="s6 m4 l3 left-align extra border" onclick="window.location.href='/jobs'">
+                <button class="s6 m4 l4 left-align extra border" onclick="window.location.href='/jobs'">
                     <i>home_storage</i>
                     <span>Job Printouts</span>
                 </button>
-                <button class="s6 m4 l3 left-align extra border" onclick="window.location.href='/purchase_orders'">
+                <button class="s6 m4 l4 left-align extra border" onclick="window.location.href='/purchase_orders'">
                     <i>receipt_long</i>
                     <span>Purchase Orders</span>
                 </button>
-                <button class="s6 m4 l3 left-align extra border" onclick="window.location.href='/workorders'" disabled>
+                <button class="s6 m4 l4 left-align extra border" onclick="window.location.href='/workorders'">
                     <i>checklist</i>
                     <span>Workorders</span>
                 </button>
@@ -94,155 +110,9 @@
                     <i>problem</i>
                     <span>Logs</span>
                 </button>
-                <button class="s6 m4 l3 left-align extra border" onclick="window.location.href='https://github.com/TheCodingJsoftware/Inventory-Manager'">
-                    <i>code</i>
-                    <span>Invigo</span>
-                </button>
-                <button class="s6 m4 l3 left-align extra border" onclick="window.location.href='https://github.com/TheCodingJsoftware/Invigo-Server'">
-                    <i>code</i>
-                    <span>Invigo-Server</span>
-                </button>
-                <button class="s6 m4 l3 left-align extra border" onclick="window.location.href='https://github.com/TheCodingJsoftware/Invigo-Web'">
-                    <i>code</i>
-                    <span>Invigo-Web</span>
-                </button>
-                <button class="s6 m4 l3 left-align extra border" onclick="window.location.href='http://10.0.0.10:5051/download'">
-                    <i>download</i>
-                    <span>Download</span>
-                </button>
             </div>
-            <article class="no-padding border round s">
-                <a class="row padding wave" href="/inventory">
-                    <i>inventory_2</i>
-                    <div class="max">
-                        <h6 class="small">Inventory</h6>
-                        <div>All inventories and their categories.</div>
-                    </div>
-                </a>
-                <div class="divider"></div>
-                <a class="row padding wave" href="/add_cutoff_sheet">
-                    <i>library_add</i>
-                    <div class="max">
-                        <h6 class="small">Add Cutoff Sheet</h6>
-                        <div>Add and view cutoff sheets.</div>
-                    </div>
-                </a>
-                <div class="divider"></div>
-                <a class="row padding wave" href="/sheet_qr_codes">
-                    <i>qr_code</i>
-                    <div class="max">
-                        <h6 class="small">Sheet QR Codes</h6>
-                        <div>All sheets in inventory with their respective QR codes in a ready-to-print layout.</div>
-                    </div>
-                </a>
-                <div class="divider"></div>
-                <a class="row padding wave" href="/production_planner">
-                    <i>edit_calendar</i>
-                    <div class="max">
-                        <h6 class="small">Production Planner</h6>
-                        <div>Plan and manage workspaces schedule.</div>
-                    </div>
-                </a>
-                <div class="divider"></div>
-                <a class="row padding wave" href="/workspace_dashboard">
-                    <i>browse_activity</i>
-                    <div class="max">
-                        <h6 class="small">Workspace Dashboard</h6>
-                        <div>Analytics for workspace.</div>
-                    </div>
-                </a>
-                <div class="divider"></div>
-                <a class="row padding wave" href="/workspace_archives_dashboard">
-                    <i>work_history</i>
-                    <div class="max">
-                        <h6 class="small">Workspace Archives</h6>
-                        <div>Analytics for workspace archives.</div>
-                    </div>
-                </a>
-                <div class="divider"></div>
-                <a class="row padding wave" href="/jobs/printouts">
-                    <i>home_storage</i>
-                    <div class="max">
-                        <h6 class="small">Job Printouts</h6>
-                        <div>View all saved jobs.</div>
-                    </div>
-                </a>
-                <div class="divider"></div>
-                <a class="row padding wave" href="/workorders">
-                    <i>checklist</i>
-                    <div class="max">
-                        <h6 class="small">Workorders</h6>
-                        <div>View all active workorders.</div>
-                    </div>
-                </a>
-                <div class="divider"></div>
-                <a class="row padding wave" href="/way_back_machine">
-                    <i>history</i>
-                    <div class="max">
-                        <h6 class="small">Way Back Machine</h6>
-                        <div>Track any inventory item's price and quantity from daily backups.</div>
-                    </div>
-                </a>
-                <div class="divider"></div>
-                <a class="row padding wave" href="https://github.com/TheCodingJsoftware/Invigo/wiki">
-                    <i>globe</i>
-                    <div class="max">
-                        <h6 class="small">Wiki</h6>
-                        <div>GitHub wiki page with frequently asked questions about how to use Invigo.</div>
-                    </div>
-                </a>
-                <div class="divider"></div>
-                <a class="row padding wave" href="/server_log">
-                    <i>article</i>
-                    <div class="max">
-                        <h6 class="small">Server Log</h6>
-                        <div>Live log for the Invigo-Server.</div>
-                    </div>
-                </a>
-                <div class="divider"></div>
-                <a class="row padding wave" href="/logs">
-                    <i>problem</i>
-                    <div class="max">
-                        <h6 class="small">Logs</h6>
-                        <div>All daily server logs and user error logs.</div>
-                    </div>
-                </a>
-                <div class="divider"></div>
-                <a class="row padding wave"
-                    href="https://github.com/TheCodingJsoftware/Inventory-Manager">
-                    <i>code</i>
-                    <div class="max">
-                        <h6 class="small">Invigo</h6>
-                        <div>View source code for Invigo.</div>
-                    </div>
-                </a>
-                <div class="divider"></div>
-                <a class="row padding wave"
-                    href="https://github.com/TheCodingJsoftware/Invigo-Server">
-                    <i>code</i>
-                    <div class="max">
-                        <h6 class="small">Invigo-Server</h6>
-                        <div>View source code for Invigo-Server (this).</div>
-                    </div>
-                </a>
-                <div class="divider"></div>
-                <a class="row padding wave" href="https://github.com/TheCodingJsoftware/Invigo-Web">
-                    <i>code</i>
-                    <div class="max">
-                        <h6 class="small">Invigo-Web</h6>
-                        <div>View source code for Invigo-Web.</div>
-                    </div>
-                </a>
-                <div class="divider"></div>
-                <a class="row padding wave" href="http://10.0.0.10:5051/download">
-                    <i>download</i>
-                    <div class="max">
-                        <h6 class="small">Download</h6>
-                        <div>Downloads Invigo.zip from Invigo-Web portal.</div>
-                    </div>
-                </a>
-            </article>
         </main>
+        <div id="welcome-message" class="snackbar success">Welcome to Invigo.</div>
     </body>
 
 </html>

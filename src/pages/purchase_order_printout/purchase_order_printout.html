@@ -12,7 +12,7 @@
     </head>
 
     <body class="dark" onload="document.body.classList.add('loaded')">
-        <span class="absolute top right show-on-print" id="today-date"></span>
+        <span class="absolute top right" id="today-date"></span>
         <header class="fixed transparent center-align hide-on-print">
             <div class="margin">
                 <nav class="toolbar primary elevate min">
@@ -34,19 +34,19 @@
                 <div class="max row">
                     <img class="logo" src="http://invi.go/images/logo.png">
                     <div>
-                        <p class="show-on-print wrap no-line bold no-margin" id="business-name"></p>
-                        <p class="show-on-print wrap no-line no-margin" id="business-address"></p>
+                        <p class="wrap no-line bold no-margin" id="business-name"></p>
+                        <p class="wrap no-line no-margin" id="business-address"></p>
                     </div>
                 </div>
-                <div class="show-on-print">
+                <div>
                     <table class="no-space">
                         <tbody>
                             <tr>
-                                <th class="min">Purchase Order Number:</th>
+                                <th class="min"><span id="purchase-order-type">Purchase Order</span> Number:</th>
                                 <td class="right-align" id="purchase-order-number"></td>
                             </tr>
                             <tr>
-                                <th class="min">Purchase Order Date:</th>
+                                <th class="min"><span id="purchase-order-type">Purchase Order</span> Date:</th>
                                 <td class="right-align" id="purchase-order-date"></td>
                             </tr>
                         </tbody>
@@ -74,6 +74,16 @@
                     </span>
                 </label>
                 <h6 class="max small">Contact Details</h6>
+            </nav>
+            <nav class="row">
+                <label class="switch icon">
+                    <input type="checkbox" id="show-vendorContactDetails" checked>
+                    <span>
+                        <i>visibility_off</i>
+                        <i>visibility</i>
+                    </span>
+                </label>
+                <h6 class="max small">Vendor Contact Details</h6>
             </nav>
             <nav class="row">
                 <label class="switch icon">

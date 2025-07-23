@@ -22,3 +22,4 @@ class Environment:
     PORT = int(os.getenv("PORT", 5057))
     DATA_PATH = os.getenv("DATA_PATH", "")
     WORKSPACE_BACKGROUND_CACHE_WARM_UP_INTERVAL = int(os.getenv("WORKSPACE_BACKGROUND_CACHE_WARM_UP_INTERVAL", 60))
+    COOKIE_SECRET = os.getenv("COOKIE_SECRET", "secret")

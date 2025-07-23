@@ -111,7 +111,8 @@ class WorkordersDB(BaseWithDBPool):
 
         workorders = []
         for row in rows:
-            workorder = dict(row)
+            workorder = msgspec.json.decode(row["data"])
+            workorder["id"] = row["id"]
             workorders.append(workorder)
 
         self._set_cache(cache_key, workorders)

@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta http-equiv="X-UA-Compatible" content="ie=edge">
+        <meta name="google" content="notranslate">
+        <link rel="icon" href="/static/icon.png">
+        <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=yes" />
+        <title>Login</title>
+    </head>
+
+    <body class="dark" onload="document.body.classList.add('loaded')">
+        <header class="fixed primary">
+            <nav>
+                <button class="circle transparent" onclick="window.location.href='/'">
+                    <i>arrow_back</i>
+                </button>
+                <h5 class="max">Login</h5>
+            </nav>
+        </header>
+        <main class="responsive">
+            <article class="border round">
+                <form id="login-form" class="grid large-space hidden">
+                    <div class="s12 field small-round label border">
+                        <input type="name" id="name" required />
+                        <label>Username</label>
+                    </div>
+                    <div class="s12 field small-round label border">
+                        <input type="password" id="password" required />
+                        <label>Password</label>
+                        <span id="login-error" class="error"></span>
+                    </div>
+                    <button class="s12" type="submit">
+                        <i>login</i>
+                        <span>Login</span>
+                    </button>
+                </form>
+                <div id="logout-container" class="hidden">
+                    <p id="user-info">You are already logged in.</p>
+                    <br>
+                    <button class="responsive">
+                        <i>logout</i>
+                        <span>Logout</span>
+                    </button>
+                </div>
+            </article>
+        </main>
+    </body>
+
+</html>

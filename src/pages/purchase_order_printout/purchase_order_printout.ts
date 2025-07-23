@@ -215,7 +215,12 @@ class PurchaseOrderPrintout {
                 document.getElementById("business-name")!.textContent = this.purchaseOrder.meta_data.business_info.name;
                 document.getElementById("business-address")!.innerHTML = this.purchaseOrder.meta_data.business_info.address.replace(/\n/g, "<br>");
                 document.getElementById("purchase-order-number")!.textContent = this.purchaseOrder.meta_data.purchase_order_number.toString();
-                document.getElementById("purchase-order-date")!.textContent = this.purchaseOrder.meta_data.order_date;
+                document.getElementById("purchase-order-date")!.textContent = new Date(Date.now()).toLocaleDateString("en-US", {
+                    year: "numeric",
+                    month: "long",
+                    day: "numeric"
+                });
+
 
                 this.toggleLoadingIndicator(false);
             }),
@@ -273,6 +278,39 @@ class PurchaseOrderPrintout {
                 checkbox.checked ? section.show() : section.hide();
             });
         });
+
+        const vendorContactDetailsCheckbox = document.getElementById('show-vendorContactDetails') as HTMLInputElement;
+        const vendorContactDetailsElement = document.getElementById('vendorContactDetails') as HTMLElement;
+        if (vendorContactDetailsElement) {
+            if (vendorContactDetailsCheckbox) {
+                const saved = localStorage.getItem('show-vendorContactDetails');
+                vendorContactDetailsCheckbox.checked = saved !== "false";
+                vendorContactDetailsCheckbox.addEventListener("change", () => {
+                    localStorage.setItem('show-vendorContactDetails', String(vendorContactDetailsCheckbox.checked));
+                    this.totalCostComponent.updateTotalPrice();
+                    if (vendorContactDetailsElement) {
+                        vendorContactDetailsElement.classList.toggle('hidden', !vendorContactDetailsCheckbox.checked);
+                    }
+                });
+            }
+            vendorContactDetailsElement.classList.toggle('hidden', !vendorContactDetailsCheckbox.checked);
+        }
+        const contactDetailsCheckbox = document.getElementById('show-contactDetails') as HTMLInputElement;
+        const contactDetailsElement = document.getElementById('contactDetails') as HTMLElement;
+        if (contactDetailsElement) {
+            if (contactDetailsCheckbox) {
+                const saved = localStorage.getItem('show-contactDetails');
+                contactDetailsCheckbox.checked = saved !== "false";
+                contactDetailsCheckbox.addEventListener("change", () => {
+                    localStorage.setItem('show-contactDetails', String(contactDetailsCheckbox.checked));
+                    this.totalCostComponent.updateTotalPrice();
+                    if (contactDetailsElement) {
+                        contactDetailsElement.classList.toggle('hidden', !contactDetailsCheckbox.checked);
+                    }
+                });
+            }
+            contactDetailsElement.classList.toggle('hidden', !contactDetailsCheckbox.checked);
+        }
 
         const gstNumberCheckbox = document.getElementById('show-GST') as HTMLInputElement;
         const gstNumberElement = document.getElementById('gst-number') as HTMLElement;
@@ -448,8 +486,15 @@ class PurchaseOrderPrintout {
     private purchaseOrderTypeChanged() {
         const purchaseOrderType = this.getPurchaseOrderType();
         ui("theme", PURCHASE_ORDER_COLORS[purchaseOrderType]);
-        this.toggleTablePriceColumns();
-        this.toggleCheckboxes();
+        document.querySelectorAll("#purchase-order-type").forEach(el => {
+            if (purchaseOrderType === PurchaseOrderStatus.PURCHASE_ORDER) {
+                el.innerHTML = "Purchase Order";
+            } else {
+                el.innerHTML = "Quote";
+            }
+        });
+        // this.toggleTablePriceColumns();
+        // this.toggleCheckboxes();
     }
 
     toggleCheckboxes() {

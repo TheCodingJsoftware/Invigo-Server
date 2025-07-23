@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <meta name="google" content="notranslate">
+    <link rel="icon" href="/static/icon.png">
+    <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=yes" />
+    <title>Manage Roles</title>
+</head>
+
+<body class="dark" onload="document.body.classList.add('loaded')">
+    <header class="fixed primary">
+        <nav>
+            <button class="circle transparent" onclick="window.location.href='/'">
+                <i>arrow_back</i>
+            </button>
+            <h5 class="max">Manage Roles</h5>
+        </nav>
+    </header>
+    <main class="responsive">
+        <div id="roles-list" class="bottom-margin"></div>
+        <button id="add-role">Add Role</button>
+    </main>
+    <div id="not-allowed" class="snackbar top error">You do not have permission to manage roles.</div>
+</body>
+
+</html>
