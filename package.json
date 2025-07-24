@@ -1,6 +1,7 @@
 {
   "dependencies": {
     "@lit-labs/virtualizer": "^2.1.1",
+    "@toast-ui/editor": "^3.2.2",
     "beercss": "^3.11.33",
     "bootstrap": "^5.3.7",
     "chart.js": "^4.5.0",

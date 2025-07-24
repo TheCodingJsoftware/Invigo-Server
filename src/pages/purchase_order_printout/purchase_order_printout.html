@@ -19,17 +19,6 @@
                         <i>home</i>
                     </button>
                     <h4 id="purchase-order-title">Purchase Order Printout</h4>
-                    <button id="copy-pdf" class="circle transparent">
-                        <i>content_copy</i>
-                        <div class="tooltip bottom">Copy printout to clipboard as PNG</div>
-                    </button>
-                    <button id="download-pdf" class="circle transparent">
-                        <i>download</i>
-                        <div class="tooltip bottom">Download printout as PDF</div>
-                    </button>
-                    <button id="print-button" class="circle transparent" onclick="window.print()">
-                        <i>print</i>
-                    </button>
                     <button id="theme-toggle" class="circle transparent">
                         <i>light_mode</i>
                     </button>
@@ -179,6 +168,30 @@
                     </div>
                 </div>
             </div>
+            <nav class="hide-on-print center-align tiny-space m l">
+                <nav class="toolbar medium-elevate primary-container">
+                    <a id="share-button">
+                        <i>share</i>
+                        <span>Share</span>
+                    </a>
+                    <a id="copy-pdf">
+                        <i>content_copy</i>
+                        <span>Copy</span>
+                    </a>
+                    <a id="download-pdf">
+                        <i>download</i>
+                        <span>Download</span>
+                    </a>
+                    <a id="print-button" onclick="window.print()">
+                        <i>print</i>
+                        <span>Print</span>
+                    </a>
+                </nav>
+                <button id="email-button" class="medium-elevate extra round circle primary">
+                    <i>mail</i>
+                </button>
+            </nav>
+            <div class="page-grid-overlay"></div>
         </main>
         <div id="purchase-order-error" class="snackbar error">Failed to load purchase order</div>
         <div id="purchase-order-loaded" class="snackbar green">Purchase order loaded successfully</div>
@@ -186,5 +199,8 @@
         <div id="copied-to-clipboard" class="snackbar green">Image copied to clipboard</div>
         <div id="pdf-generation-failed" class="snackbar error">PDF generation failed</div>
         <div id="image-generation-failed" class="snackbar error">Image generation failed</div>
+        <div id="sending-email" class="snackbar green">Sending email...</div>
+        <div id="email-sent" class="snackbar green">Email sent successfully</div>
+        <div id="email-send-failed" class="snackbar error">Email send failed</div>
     </body>
 </html>

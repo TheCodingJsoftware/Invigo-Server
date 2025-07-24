@@ -28,11 +28,11 @@ export class PurchaseOrderDetails implements BaseComponent {
             ${this.vendor.name ? `${this.vendor.name}<br>` : ""}
             ${this.vendor.address ? `${this.vendor.address.split("\n").join("<br>")}<br>` : ""}
             ${(this.vendor.phone || this.vendor.email || this.vendor.website) ? `
-            <div id="vendorContactDetails"><br>
-                Contact Information:<br>
-                ${this.vendor.phone ? `${this.vendor.phone}<br>` : ""}
-                ${this.vendor.email ? `${this.vendor.email}<br>` : ""}
-                ${this.vendor.website || ""}
+            <div id="vendorContactDetails"><hr>
+                <b>Contact Information:</b><br>
+                ${this.vendor.phone ? `<a class="link" href="tel:${this.vendor.phone}">${this.vendor.phone}</a><br>` : ""}
+                ${this.vendor.email ? `<a class="link" href="mailto:${this.vendor.email}">${this.vendor.email}</a><br>` : ""}
+                ${this.vendor.website ? `<a class="link" href="${this.vendor.website}">${this.vendor.website}</a>` : ""}
             </div>` : ""}
         `.trim().replace(/  /g, "");
 
@@ -41,11 +41,11 @@ export class PurchaseOrderDetails implements BaseComponent {
             ${this.purchaseOrder.meta_data.shipping_address.address
                 ? `${this.purchaseOrder.meta_data.shipping_address.address.split("\n").join("<br>")}<br>` : ""}
             ${(this.contactInfo.name || this.contactInfo.email || this.contactInfo.phone) ? `
-            <div id="contactDetails"><br>
-                Contact Information:<br>
-                ${this.contactInfo.name ? `${this.contactInfo.name}<br>` : ""}
-                ${this.contactInfo.email ? `${this.contactInfo.email}<br>` : ""}
-                ${this.contactInfo.phone || ""}
+            <div id="contactDetails"><hr>
+                <b>Contact Information:</b><br>
+                ${this.contactInfo.name ? `${this.contactInfo.name}` : ""}
+                ${this.contactInfo.email ? `(<a class="link" href="mailto:${this.contactInfo.email}">${this.contactInfo.email}</a>)<br>` : ""}
+                ${this.contactInfo.phone ? `<a class="link" href="tel:${this.contactInfo.phone}">${this.contactInfo.phone}</a><br>` : ""}
             </div>` : ""}
         `.trim().replace(/  /g, "");
 
@@ -55,12 +55,11 @@ export class PurchaseOrderDetails implements BaseComponent {
                 <div class="handle" data-swapy-handle><i>drag_indicator</i></div>
                 <h4 class="max">Purchase Order Details</h4>
                 <nav class="group connected primary-container hide-on-print">
-                    <button class="left-round" onclick="window.location.href='mailto:${this.vendor.email}'">
-                        <i>send</i>
-                    </button>
-                    <button class="right-round" onclick="window.open('${this.vendor.website}', '_blank')">
-                        <i>globe</i>
-                    </button>
+                    ${this.vendor.website ? `
+                <button class="circle" onclick="window.open('${this.vendor.website}', '_blank')">
+                    <i>globe</i>
+                    <div class="tooltip bottom">${this.vendor.website}</div>
+                </button>` : ``}
                 </nav>
                 <button class="circle transparent" id="toggle-button">
                     <i class="rotate-180">expand_more</i>

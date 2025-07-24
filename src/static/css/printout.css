@@ -10,6 +10,26 @@ body:not(.loaded) {
     cursor: move;
 }
 
+main {
+    width: 794px !important;
+    /* A4 width at 96 DPI */
+    max-width: 100%;
+}
+
+.page-grid-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    pointer-events: none;
+    z-index: 9999;
+    background-image: repeating-linear-gradient(to bottom,
+            transparent,
+            transparent 1119px,
+            rgba(255, 0, 0, 0.2) 1120px,
+            rgba(255, 0, 0, 0.2) 1123px);
+}
+
 @keyframes flash-border {
     0% {
         border-color: transparent;

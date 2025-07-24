@@ -20,7 +20,7 @@ class GeneratePNGHandler(BaseHandler):
         tmp_fd, tmp_path = tempfile.mkstemp(suffix=".png")
         os.close(tmp_fd)
 
-        script_path = os.path.join(os.path.dirname(__file__), "scripts", "generate-png.js")
+        script_path = os.path.join(os.getcwd(), "scripts", "generate-png.js")
 
         try:
             proc = await asyncio.create_subprocess_exec(

@@ -20,7 +20,7 @@ class GeneratePDFHandler(BaseHandler):
         tmp_fd, tmp_path = tempfile.mkstemp(suffix=".pdf")
         os.close(tmp_fd)
 
-        script_path = os.path.join(os.path.dirname(__file__), "scripts", "generate-pdf.js")
+        script_path = os.path.join(os.getcwd(), "scripts", "generate-pdf.js")
 
         try:
             proc = await asyncio.create_subprocess_exec(

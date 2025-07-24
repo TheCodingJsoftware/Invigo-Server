@@ -2,6 +2,9 @@ import json
 import logging
 import smtplib
 from email.mime import multipart, text
+from email.mime.application import MIMEApplication
+
+from cryptography.fernet import Fernet
 
 from config.environments import Environment
 
@@ -11,7 +14,7 @@ SMTP_HOST = "smtp-mail.outlook.com"
 SMTP_PORT = 587
 
 
-def send(subject: str, body: str, recipients: list[str]):
+def send(subject: str, body: str, recipients: list[str], attachment: bytes | None = None, attachment_filename: str = "attachment.pdf"):
     with open(f"{Environment.DATA_PATH}/credentials.json", "r", encoding="utf-8") as credentialsFile:
         credentials = json.load(credentialsFile)
 
@@ -19,12 +22,15 @@ def send(subject: str, body: str, recipients: list[str]):
     PASSWORD = credentials["password"]
 
     msg = multipart.MIMEMultipart()
-
     msg["From"] = USERNAME
     msg["To"] = ", ".join(recipients)
     msg["Subject"] = subject
-
     msg.attach(text.MIMEText(body, "html"))
+
+    if attachment:
+        part = MIMEApplication(attachment, Name=attachment_filename)
+        part["Content-Disposition"] = f'attachment; filename="{attachment_filename}"'
+        msg.attach(part)
 
     server = smtplib.SMTP(SMTP_HOST, SMTP_PORT)
     server.ehlo()
@@ -32,6 +38,47 @@ def send(subject: str, body: str, recipients: list[str]):
     server.ehlo()
     server.login(USERNAME, PASSWORD)
     server.sendmail(USERNAME, recipients, msg.as_string())
+    logging.info(f'Email sent to "{recipients}"')
+
+
+def send_purchase_order_email(
+    sender_email: str,
+    encrypted_password: str,
+    recipients: str,
+    subject: str,
+    body: str,
+    attachment: bytes | None = None,
+    attachment_filename: str = "attachment.pdf",
+    cc: str | None = None,
+):
+    try:
+        fernet = Fernet(Environment.CONTACT_ENCRYPTION_KEY)
+        password = fernet.decrypt(encrypted_password.encode()).decode()
+    except Exception as e:
+        logging.error(f"Decryption failed: {e}")
+        raise RuntimeError("Invalid encryption key or encrypted password.")
+
+    msg = multipart.MIMEMultipart()
+    msg["From"] = sender_email
+    msg["To"] = recipients
+    msg["Subject"] = subject
+
+    if cc:
+        msg["Cc"] = cc
+
+    msg.attach(text.MIMEText(body, "html"))
+
+    if attachment:
+        part = MIMEApplication(attachment, Name=attachment_filename)
+        part["Content-Disposition"] = f'attachment; filename="{attachment_filename}"'
+        msg.attach(part)
+
+    server = smtplib.SMTP(SMTP_HOST, SMTP_PORT)
+    server.ehlo()
+    server.starttls()
+    server.ehlo()
+    server.login(sender_email, password)
+    server.sendmail(sender_email, recipients, msg.as_string())
     logging.info(f'Email sent to "{recipients}"')
 
 

@@ -12,7 +12,16 @@ const puppeteer = require("puppeteer");
 
     const localStorageData = JSON.parse(Buffer.from(storageEncoded, "base64").toString());
 
-    const browser = await puppeteer.launch({ headless: "new" });
+    const browser = await puppeteer.launch({
+        headless: "new",
+        args: [
+            "--no-sandbox",
+            "--disable-dev-shm-usage",
+            "--disable-gpu",
+            "--single-process",
+            "--no-zygote",
+        ],
+    });
     const page = await browser.newPage();
 
     await page.goto("about:blank");
@@ -23,10 +32,12 @@ const puppeteer = require("puppeteer");
         }
     }, localStorageData);
 
-    await page.goto(url, { waitUntil: "networkidle0" });
+    await page.goto(url, { waitUntil: "networkidle0", timeout: 20000 });
 
     await page.evaluate(() => {
-        if (window.applyStoredSettings) window.applyStoredSettings();
+        if (window.applyStoredSettings) {
+            window.applyStoredSettings();
+        }
     });
 
     await page.emulateMediaType("print"); // for print-style layout

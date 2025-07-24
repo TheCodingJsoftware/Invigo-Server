@@ -13,6 +13,8 @@ import { PurchaseOrderDetails } from "@components/purchase-order-details";
 import { QRCodeComponent } from "@components/qr-code-component";
 import { PurchaseOrderTotalCost } from "@components/purchase-order-total-cost";
 import { createSwapy } from "swapy";
+import { EmailDialogComponent } from "@components/email-dialog";
+import { add } from "date-fns";
 
 class ItemsTable implements BaseComponent {
     private readonly components: Component[] = [];
@@ -548,7 +550,61 @@ function getPurchaseOrderIdFromUrl(): number {
     return parseInt(purchaseOrderId, 10);
 }
 
+const getLocalStorageObject = (): Record<string, string> => {
+    const obj: Record<string, string> = {};
+    for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key) {
+            obj[key] = localStorage.getItem(key)!;
+        }
+    }
+    return obj;
+};
+
+const generateBlob = async (endpoint: string): Promise<Blob | null> => {
+    const res = await fetch(endpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ localStorage: getLocalStorageObject() }),
+    });
+
+    if (!res.ok) {
+        return null;
+    }
+    return await res.blob();
+};
+
+const handleClipboardCopy = async (blob: Blob): Promise<boolean> => {
+    try {
+        await navigator.clipboard.write([
+            new ClipboardItem({ "image/png": blob }),
+        ]);
+        return true;
+    } catch (err) {
+        console.error("Clipboard copy failed:", err);
+        return false;
+    }
+};
+function addPageGuides(container: HTMLElement) {
+    const pageHeight = 1123; // A4 at 96dpi
+    const totalHeight = container.scrollHeight;
+    const numPages = Math.ceil(totalHeight / pageHeight);
+
+    for (let i = 1; i < numPages; i++) {
+        const guide = document.createElement("div");
+        guide.style.position = "absolute";
+        guide.style.top = `${i * pageHeight}px`;
+        guide.style.left = "0";
+        guide.style.width = "100%";
+        guide.style.height = "1px";
+        guide.style.backgroundColor = "rgba(255, 0, 0, 0.4)";
+        guide.style.pointerEvents = "none";
+        guide.classList.add("page-break-guide");
+        container.appendChild(guide);
+    }
+}
 document.addEventListener("DOMContentLoaded", () => {
+    addPageGuides(document.querySelector(".page-grid-overlay") as HTMLElement);
     loadTheme();
     loadAnimationStyleSheet();
 
@@ -571,42 +627,38 @@ document.addEventListener("DOMContentLoaded", () => {
         invertImages();
         toggleThemeIcon.innerText = ui("mode") === "dark" ? "light_mode" : "dark_mode";
     });
-    const getLocalStorageObject = (): Record<string, string> => {
-        const obj: Record<string, string> = {};
-        for (let i = 0; i < localStorage.length; i++) {
-            const key = localStorage.key(i);
-            if (key) obj[key] = localStorage.getItem(key)!;
-        }
-        return obj;
-    };
 
-    const generateBlob = async (endpoint: string): Promise<Blob | null> => {
-        const res = await fetch(endpoint, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ localStorage: getLocalStorageObject() }),
-        });
+    const shareButton = document.getElementById("share-button") as HTMLAnchorElement;
+    shareButton.addEventListener("click", async () => {
+        const url = window.location.href;
 
-        if (!res.ok) return null;
-        return await res.blob();
-    };
-
-    const handleClipboardCopy = async (blob: Blob): Promise<boolean> => {
         try {
-            await navigator.clipboard.write([
-                new ClipboardItem({ "image/png": blob }),
-            ]);
-            return true;
+            if (navigator.share) {
+                await navigator.share({
+                    title: document.title,
+                    text: document.title,
+                    url,
+                });
+            } else {
+                throw new Error("Web Share API not supported");
+            }
         } catch (err) {
-            console.error("Clipboard copy failed:", err);
-            return false;
+            try {
+                await navigator.clipboard.writeText(url);
+                ui("#link-copied", 2000); // Optional toast if you use a UI system
+            } catch (clipboardErr) {
+                console.error("Failed to copy link:", clipboardErr);
+                alert("Couldn't share or copy link.");
+            }
         }
-    };
+    });
 
     const copyBtn = document.getElementById("copy-pdf") as HTMLButtonElement;
     copyBtn.addEventListener("click", async () => {
         const blob = await generateBlob(`/api/generate-png?url=${encodeURIComponent(location.href)}`);
-        if (!blob) return ui("#image-generation-failed", 1000);
+        if (!blob) {
+            return ui("#image-generation-failed", 1000);
+        }
 
         const success = await handleClipboardCopy(blob);
         if (success) {
@@ -624,7 +676,9 @@ document.addEventListener("DOMContentLoaded", () => {
     const downloadBtn = document.getElementById("download-pdf") as HTMLButtonElement;
     downloadBtn.addEventListener("click", async () => {
         const blob = await generateBlob(`/api/generate-pdf?url=${encodeURIComponent(location.href)}`);
-        if (!blob) return ui("#pdf-generation-failed", 1000);
+        if (!blob) {
+            return ui("#pdf-generation-failed", 1000);
+        }
 
         const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
@@ -634,6 +688,17 @@ document.addEventListener("DOMContentLoaded", () => {
         URL.revokeObjectURL(url);
 
         ui("#pdf-loaded", 1000);
+    });
+
+    const emailButton = document.getElementById("email-button") as HTMLButtonElement;
+    emailButton.addEventListener("click", async () => {
+        const vendorEmail = purchaseOrderPrintout.purchaseOrder.meta_data.vendor.email;
+        if (!vendorEmail) {
+            alert("Vendor email is required");
+            return;
+        }
+
+        const emailDialog = new EmailDialogComponent(purchaseOrderPrintout.purchaseOrder);
     });
 });
 

@@ -1,5 +1,3 @@
-import { setTime } from "effect/TestClock";
-
 export class DialogComponent {
     private dialog: HTMLDialogElement;
 
@@ -30,14 +28,24 @@ export class DialogComponent {
 
         document.body.appendChild(this.dialog);
         ui(this.dialog);
+        document.addEventListener("keydown", this.handleEscape);
     }
-
+    private handleEscape = (e: KeyboardEvent) => {
+        if (e.key === "Escape") {
+            e.preventDefault();
+            this.close();
+        }
+    };
     public query<T extends Element>(selector: string): T | null {
         return this.dialog.querySelector(selector);
     }
 
     public close(): void {
-        this.dialog.close();
+        document.removeEventListener("keydown", this.handleEscape);
+        ui(this.dialog);
+        setTimeout(() => {
+            this.dialog.remove();
+        }, 1000);
     }
 
     public get element(): HTMLDialogElement {
