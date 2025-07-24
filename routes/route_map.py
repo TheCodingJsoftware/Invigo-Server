@@ -69,6 +69,8 @@ from handlers.logs.server_log import ServerLogsHandler
 from handlers.misc.commands import CommandHandler
 from handlers.misc.inventory_page import InventoryHandler
 from handlers.misc.inventory_tables_page import InventoryTablesHandler
+from handlers.misc.pdf import GeneratePDFHandler
+from handlers.misc.png import GeneratePNGHandler
 from handlers.misc.qr_code_page import QRCodePageHandler
 from handlers.order_number.get_order_number import GetOrderNumberHandler
 from handlers.order_number.set_order_number import SetOrderNumberHandler
@@ -321,6 +323,8 @@ api_routes = [
     route(r"/api/users", UserHandler),
     route(r"/api/users/([0-9]+)", UserHandler),
     route(r"/api/roles", RoleAPIHandler),
+    route(r"/api/generate-pdf", GeneratePDFHandler),
+    route(r"/api/generate-png", GeneratePNGHandler),
 ]
 
 static_routes = [

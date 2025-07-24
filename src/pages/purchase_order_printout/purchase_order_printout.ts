@@ -14,7 +14,6 @@ import { QRCodeComponent } from "@components/qr-code-component";
 import { PurchaseOrderTotalCost } from "@components/purchase-order-total-cost";
 import { createSwapy } from "swapy";
 
-
 class ItemsTable implements BaseComponent {
     private readonly components: Component[] = [];
     private readonly componentsOrderItems: POItemDict[] = [];
@@ -68,7 +67,7 @@ class ItemsTable implements BaseComponent {
                             <textarea>${this.purchaseOrder.meta_data.notes}</textarea>
                             <label>Notes</label>
                         </div>
-                        <nav class="no-space">
+                        <nav class="no-space vertical right-align">
                             <button class="chip small-round tiny-margin" id="gst-number">
                                 <span>GST Number: ${this.purchaseOrder.meta_data.business_info.gst_number}</span>
                             </button>
@@ -153,7 +152,6 @@ class ItemsTable implements BaseComponent {
     formatPercent(value: number): string {
         return `${(value * 100).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%`;
     }
-
 
     public hide(): void {
         this.element?.classList.add("hidden");
@@ -541,7 +539,7 @@ class PurchaseOrderPrintout {
     }
 }
 
-function getpurchaseOrderIdFromUrl(): number {
+function getPurchaseOrderIdFromUrl(): number {
     const url = new URL(window.location.href);
     const purchaseOrderId = url.searchParams.get('id');
     if (!purchaseOrderId) {
@@ -554,7 +552,7 @@ document.addEventListener("DOMContentLoaded", () => {
     loadTheme();
     loadAnimationStyleSheet();
 
-    const purchaseOrderId = getpurchaseOrderIdFromUrl();
+    const purchaseOrderId = getPurchaseOrderIdFromUrl();
     const purchaseOrderPrintout = new PurchaseOrderPrintout(purchaseOrderId);
 
     Effect.runPromise(purchaseOrderPrintout.initialize()).catch((err) => {
@@ -572,6 +570,70 @@ document.addEventListener("DOMContentLoaded", () => {
         toggleTheme();
         invertImages();
         toggleThemeIcon.innerText = ui("mode") === "dark" ? "light_mode" : "dark_mode";
+    });
+    const getLocalStorageObject = (): Record<string, string> => {
+        const obj: Record<string, string> = {};
+        for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            if (key) obj[key] = localStorage.getItem(key)!;
+        }
+        return obj;
+    };
+
+    const generateBlob = async (endpoint: string): Promise<Blob | null> => {
+        const res = await fetch(endpoint, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ localStorage: getLocalStorageObject() }),
+        });
+
+        if (!res.ok) return null;
+        return await res.blob();
+    };
+
+    const handleClipboardCopy = async (blob: Blob): Promise<boolean> => {
+        try {
+            await navigator.clipboard.write([
+                new ClipboardItem({ "image/png": blob }),
+            ]);
+            return true;
+        } catch (err) {
+            console.error("Clipboard copy failed:", err);
+            return false;
+        }
+    };
+
+    const copyBtn = document.getElementById("copy-pdf") as HTMLButtonElement;
+    copyBtn.addEventListener("click", async () => {
+        const blob = await generateBlob(`/api/generate-png?url=${encodeURIComponent(location.href)}`);
+        if (!blob) return ui("#image-generation-failed", 1000);
+
+        const success = await handleClipboardCopy(blob);
+        if (success) {
+            ui("#copied-to-clipboard", 2500);
+        } else {
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = "page.png";
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+    });
+
+    const downloadBtn = document.getElementById("download-pdf") as HTMLButtonElement;
+    downloadBtn.addEventListener("click", async () => {
+        const blob = await generateBlob(`/api/generate-pdf?url=${encodeURIComponent(location.href)}`);
+        if (!blob) return ui("#pdf-generation-failed", 1000);
+
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "page.pdf";
+        a.click();
+        URL.revokeObjectURL(url);
+
+        ui("#pdf-loaded", 1000);
     });
 });
 

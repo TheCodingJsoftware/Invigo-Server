@@ -10,7 +10,6 @@
         <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=yes" />
         <title></title>
     </head>
-
     <body class="dark" onload="document.body.classList.add('loaded')">
         <span class="absolute top right" id="today-date"></span>
         <header class="fixed transparent center-align hide-on-print">
@@ -20,6 +19,14 @@
                         <i>home</i>
                     </button>
                     <h4 id="purchase-order-title">Purchase Order Printout</h4>
+                    <button id="copy-pdf" class="circle transparent">
+                        <i>content_copy</i>
+                        <div class="tooltip bottom">Copy printout to clipboard as PNG</div>
+                    </button>
+                    <button id="download-pdf" class="circle transparent">
+                        <i>download</i>
+                        <div class="tooltip bottom">Download printout as PDF</div>
+                    </button>
                     <button id="print-button" class="circle transparent" onclick="window.print()">
                         <i>print</i>
                     </button>
@@ -28,30 +35,15 @@
                     </button>
                 </nav>
             </div>
-        </header>
-        <header>
-            <nav class="row top-margin">
-                <div class="max row">
-                    <img class="logo" src="http://invi.go/images/logo.png">
-                    <div>
-                        <p class="wrap no-line bold no-margin" id="business-name"></p>
-                        <p class="wrap no-line no-margin" id="business-address"></p>
-                    </div>
-                </div>
-                <div>
-                    <table class="no-space">
-                        <tbody>
-                            <tr>
-                                <th class="min"><span id="purchase-order-type">Purchase Order</span> Number:</th>
-                                <td class="right-align" id="purchase-order-number"></td>
-                            </tr>
-                            <tr>
-                                <th class="min"><span id="purchase-order-type">Purchase Order</span> Date:</th>
-                                <td class="right-align" id="purchase-order-date"></td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
+            <nav class="tabbed primary-container large-width center bottom-margin hide-on-print" id="purchase-order-type-tabs">
+                <a data-target="0">
+                    <i>receipt_long</i>
+                    <span>Purchase Order</span>
+                </a>
+                <a data-target="1">
+                    <i>request_quote</i>
+                    <span>Quote</span>
+                </a>
             </nav>
         </header>
         <nav class="left max hide-on-print">
@@ -147,19 +139,32 @@
             </nav>
         </nav>
         <main class="responsive">
+            <nav class="row top-margin">
+                <div class="max row">
+                    <img class="logo" src="http://invi.go/images/logo.png">
+                    <div>
+                        <p class="wrap no-line bold no-margin" id="business-name"></p>
+                        <p class="wrap no-line no-margin" id="business-address"></p>
+                    </div>
+                </div>
+                <div>
+                    <table class="no-space">
+                        <tbody>
+                            <tr>
+                                <th class="min"><span id="purchase-order-type">Purchase Order</span> Number:</th>
+                                <td class="right-align" id="purchase-order-number"></td>
+                            </tr>
+                            <tr>
+                                <th class="min"><span id="purchase-order-type">Purchase Order</span> Date:</th>
+                                <td class="right-align" id="purchase-order-date"></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </nav>
             <div class="small-width small-height absolute center middle" id="loading-indicator">
                 <div class="shape loading-indicator max rotate"></div>
             </div>
-            <nav class="tabbed primary-container large-width center bottom-margin hide-on-print" id="purchase-order-type-tabs">
-                <a data-target="0">
-                    <i>receipt_long</i>
-                    <span>Purchase Order</span>
-                </a>
-                <a data-target="1">
-                    <i>request_quote</i>
-                    <span>Quote</span>
-                </a>
-            </nav>
             <div id="purchase-order-container">
                 <div class="grid no-space">
                     <div class="s8 slot" data-swapy-span="8" data-swapy-slot="1"></div>
@@ -174,12 +179,12 @@
                     </div>
                 </div>
             </div>
-            <button class="fixed right bottom margin medium-elevate extra square round hide-on-print" id="print-button" onclick="window.print()">
-                <i>print</i>
-            </button>
-            <div class="hide-on-print" style="height: 100px; z-index: -1;"></div>
         </main>
         <div id="purchase-order-error" class="snackbar error">Failed to load purchase order</div>
         <div id="purchase-order-loaded" class="snackbar green">Purchase order loaded successfully</div>
+        <div id="pdf-loaded" class="snackbar green">PDF loaded successfully</div>
+        <div id="copied-to-clipboard" class="snackbar green">Image copied to clipboard</div>
+        <div id="pdf-generation-failed" class="snackbar error">PDF generation failed</div>
+        <div id="image-generation-failed" class="snackbar error">Image generation failed</div>
     </body>
 </html>

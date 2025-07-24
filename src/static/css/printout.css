@@ -141,7 +141,7 @@ body:not(.loaded) {
 }
 
 div.textarea.extra {
-    min-block-size: 250px !important;
+    min-block-size: 128px !important;
 }
 
 @media print {
