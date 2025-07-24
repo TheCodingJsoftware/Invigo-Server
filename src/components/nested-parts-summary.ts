@@ -148,7 +148,7 @@ export class NestedPartsSummary implements BaseComponent {
             const process = group.getProcess();
             const notes = group.getNotes();
             const shelfNumber = group.getShelfNumber();
-            const quantity = group.getQuantity() * nestMultiplier;
+            const quantity = group.getQuantity();
             const unitPrice = group.getPrice();
             const price = group.getTotalPrice();
             const partNumber = group.getPartNumber();
@@ -183,7 +183,7 @@ export class NestedPartsSummary implements BaseComponent {
         for (const nest of this.nests) {
             for (const laserCutPart of nest.laser_cut_parts) {
                 const unitQuantity = laserCutPart.inventory_data.quantity;
-                const quantity = unitQuantity * nest.sheet_count;
+                const quantity = unitQuantity;
                 const price = laserCutPart.prices.price * unitQuantity;
                 totalQuantity += quantity;
                 totalPrice += price;

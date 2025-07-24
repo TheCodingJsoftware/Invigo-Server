@@ -127,7 +127,7 @@ export class NestedParts implements BaseComponent {
             const notes = laserCutPart.meta_data.notes;
             const shelfNumber = laserCutPart.meta_data.shelf_number;
             const unitQuantity = laserCutPart.inventory_data.quantity;
-            const quantity = unitQuantity * nest.sheet_count;
+            const quantity = unitQuantity;
             const unitPrice = laserCutPart.prices.price;
             const price = unitPrice * unitQuantity;
             nestSummaryTable += `
@@ -162,7 +162,7 @@ export class NestedParts implements BaseComponent {
         let totalPrice = 0;
         for (const laserCutPart of nest.laser_cut_parts) {
             const unitQuantity = laserCutPart.inventory_data.quantity;
-            const quantity = unitQuantity * nest.sheet_count;
+            const quantity = unitQuantity;
             const price = laserCutPart.prices.price * unitQuantity;
             totalQuantity += quantity;
             totalUnitQuantity += unitQuantity;

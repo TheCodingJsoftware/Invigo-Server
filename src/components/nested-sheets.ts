@@ -15,7 +15,7 @@ export class NestedSheets implements BaseComponent {
     public build(): HTMLElement {
         const template = document.createElement("template");
         template.innerHTML = `
-        <article class="round border page-break-inside">
+        <article class="round border">
             <nav>
                 <div class="handle" data-swapy-handle><i>drag_indicator</i></div>
                 <h4 class="max">Nested Sheets</h4>
@@ -120,7 +120,6 @@ export class NestedSheets implements BaseComponent {
         let nestedSheets = ``;
         for (const nest of this.nests) {
             const sheetCount = nest.sheet_count;
-            const totalParts = nest.laser_cut_parts.reduce((total, part) => total + part.inventory_data.quantity * nest.sheet_count, 0);
             const cuttingTime = nest.sheet_cut_time;
             const nestCutTime = nest.sheet_cut_time * nest.sheet_count;
             const safeId = nest.getSafeIdName();
@@ -136,7 +135,6 @@ export class NestedSheets implements BaseComponent {
                             <div class="max">
                                 <h6>${nest.name}</h6>
                                 <div>${nest.sheet.name}</div>
-                                <div>Total Parts: ${totalParts}</div>
                                 <div>Sheet Cutting Time: ${this.formatDuration(cuttingTime)}</div>
                                 <div>Nest Cut Time: ${this.formatDuration(nestCutTime)}</div>
                             </div>

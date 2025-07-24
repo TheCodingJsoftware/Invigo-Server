@@ -12,7 +12,6 @@
     </head>
 
     <body class="dark" onload="document.body.classList.add('loaded')">
-        <span class="absolute top right show-on-print" id="today-date"></span>
         <header class="fixed transparent center-align hide-on-print">
             <div class="margin">
                 <nav class="toolbar primary elevate min">
@@ -20,6 +19,9 @@
                         <i>home</i>
                     </button>
                     <h4 id="job-title">Job Printout</h4>
+                    <button id="download-pdf" class="circle transparent">
+                        <i>download</i>
+                    </button>
                     <button id="print-button" class="circle transparent" onclick="window.print()">
                         <i>print</i>
                     </button>
@@ -29,6 +31,7 @@
                 </nav>
             </div>
         </header>
+        <span class="absolute top right tiny-padding" style="z-index: 999;" id="today-date"></span>
         <nav class="left max hide-on-print">
             <nav class="row">
                 <label class="switch icon">

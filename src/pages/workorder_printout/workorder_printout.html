@@ -12,7 +12,6 @@
     </head>
 
     <body class="dark" onload="document.body.classList.add('loaded')">
-        <span class="absolute top right show-on-print" id="today-date"></span>
         <header class="fixed transparent center-align hide-on-print">
             <div class="margin">
                 <nav class="toolbar primary elevate min">
@@ -29,16 +28,7 @@
                 </nav>
             </div>
         </header>
-        <header>
-            <nav class="row top-margin">
-                <img class="logo" src="http://invi.go/images/logo.png">
-                <h4 class="show-on-print left-align max" id="workorder-print-title">Workorder Printout</h4>
-                <button class="show-on-print primary extra" id="workorder-printout-type">
-                    <i>construction</i>
-                    <span>Workorder</span>
-                </button>
-            </nav>
-        </header>
+        <span class="absolute top right tiny-padding" style="z-index: 999;" id="today-date"></span>
         <nav class="left max hide-on-print">
             <nav class="row">
                 <label class="switch icon">
@@ -137,6 +127,16 @@
             </nav>
         </nav>
         <main class="responsive">
+            <header>
+                <nav class="row top-margin">
+                    <img class="logo" src="http://invi.go/images/logo.png">
+                    <h4 class="left-align max" id="workorder-print-title">Workorder Printout</h4>
+                    <button class="primary extra" id="workorder-printout-type">
+                        <i>construction</i>
+                        <span>Workorder</span>
+                    </button>
+                </nav>
+            </header>
             <div class="small-width small-height absolute center middle" id="loading-indicator">
                 <div class="shape loading-indicator max rotate"></div>
             </div>

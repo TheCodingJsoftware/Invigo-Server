@@ -645,6 +645,30 @@ function getJobIDFromUrl(): number {
     return parseInt(jobId, 10);
 }
 
+const getLocalStorageObject = (): Record<string, string> => {
+    const obj: Record<string, string> = {};
+    for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key) {
+            obj[key] = localStorage.getItem(key)!;
+        }
+    }
+    return obj;
+};
+
+const generateBlob = async (endpoint: string): Promise<Blob | null> => {
+    const res = await fetch(endpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ localStorage: getLocalStorageObject() }),
+    });
+
+    if (!res.ok) {
+        return null;
+    }
+    return await res.blob();
+};
+
 document.addEventListener("DOMContentLoaded", () => {
     loadTheme();
     loadAnimationStyleSheet();
@@ -671,6 +695,23 @@ document.addEventListener("DOMContentLoaded", () => {
         toggleTheme();
         invertImages();
         toggleThemeIcon.innerText = ui("mode") === "dark" ? "light_mode" : "dark_mode";
+    });
+
+    const downloadBtn = document.getElementById("download-pdf") as HTMLButtonElement;
+    downloadBtn.addEventListener("click", async () => {
+        const blob = await generateBlob(`/api/generate-pdf?url=${encodeURIComponent(location.href)}`);
+        if (!blob) {
+            return ui("#pdf-generation-failed", 1000);
+        }
+
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "page.pdf";
+        a.click();
+        URL.revokeObjectURL(url);
+
+        ui("#pdf-loaded", 1000);
     });
 
     const todayDate = document.getElementById('today-date') as HTMLSpanElement;
