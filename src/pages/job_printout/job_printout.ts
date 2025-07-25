@@ -137,6 +137,10 @@ class JobPrintout {
         await Promise.all(
             Object.values(sections).map(section => section.render())
         );
+        if (this.job.job_data.business_info) {
+            document.getElementById("business-name")!.textContent = this.job.job_data.business_info.name;
+            document.getElementById("business-address")!.innerHTML = this.job.job_data.business_info.address.replace(/\n/g, "<br>");
+        }
 
         Object.entries(sections).forEach(([key, section]) => {
             const viewButton = document.getElementById(`view-${key}`) as HTMLButtonElement;
@@ -558,16 +562,20 @@ class JobPrintout {
 
     private changeJobPrintoutType(jobType: JobType) {
         const jobPrintoutType = document.getElementById('job-printout-type') as HTMLButtonElement;
+        const businessInfo = document.getElementById('business-info') as HTMLElement;
         if (jobType === JobType.Quote) {
             jobPrintoutType.querySelector('i')!.innerText = 'request_quote';
             jobPrintoutType.querySelector('span')!.textContent = 'Quote';
+            businessInfo.classList.remove('hidden');
         } else if (jobType === JobType.WorkOrder) {
             jobPrintoutType.querySelector('i')!.innerText = 'construction'
             jobPrintoutType.querySelector('span')!.textContent = 'Workorder';
+            businessInfo.classList.add('hidden');
         }
         else if (jobType === JobType.PackingSlip) {
             jobPrintoutType.querySelector('i')!.innerText = 'receipt_long'
             jobPrintoutType.querySelector('span')!.textContent = 'Packing Slip';
+            businessInfo.classList.remove('hidden');
         }
     }
     private toggleSlotBorders(enable: boolean) {

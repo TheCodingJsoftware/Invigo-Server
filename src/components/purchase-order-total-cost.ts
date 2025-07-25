@@ -14,14 +14,15 @@ export class PurchaseOrderTotalCost implements BaseComponent {
     public build(): HTMLElement {
         const subtotal = this.purchaseOrder.getSheetsCost() + this.purchaseOrder.getComponentsCost();
 
-        const showGST = localStorage.getItem("show-GST") === "true";
-        const showPST = localStorage.getItem("show-PST") === "true";
+        const showGST = localStorage.getItem("show-gst-row") === "true";
+        const showPST = localStorage.getItem("show-pst-row") === "true";
 
         const gstRate = this.purchaseOrder.meta_data.business_info.gst_rate ?? 0.05; // Default 5% GST
         const pstRate = this.purchaseOrder.meta_data.business_info.pst_rate ?? 0.07; // Default 7% PST
 
         const gstAmount = subtotal * gstRate;
         const pstAmount = subtotal * pstRate;
+
         let totalWithTaxes = subtotal;
 
         if (showGST) {

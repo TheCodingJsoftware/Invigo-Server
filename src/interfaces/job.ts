@@ -1,5 +1,7 @@
 import { AssemblyData } from "@interfaces/assembly";
 import { NestData } from "@interfaces/nest";
+import { ContactInfoDict } from "./contact-info";
+import { BusinessInfoDict } from "./business-info";
 
 export interface JobData {
     job_data: JobMetaData;
@@ -20,6 +22,8 @@ export interface JobMetaData {
     price_settings: JobPriceSettings;
     flowtag_timeline: JobFlowtagTimelineData;
     moved_job_to_workspace: boolean;
+    contact_info: ContactInfoDict;
+    business_info: BusinessInfoDict
 }
 
 interface JobPriceSettings {

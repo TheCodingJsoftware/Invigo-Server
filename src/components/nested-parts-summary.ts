@@ -91,11 +91,6 @@ export class NestedPartsSummary implements BaseComponent {
         const content = template.content.cloneNode(true) as DocumentFragment;
         this.element = content.firstElementChild as HTMLElement;
         this.element.id = `nested-parts-${this.jobId}`;
-
-        // this.initializeCheckboxes();
-
-
-
         return this.element;
     }
 

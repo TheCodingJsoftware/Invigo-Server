@@ -7,6 +7,8 @@ import { Component } from "@models/component";
 import { ComponentGroup } from "@models/component-group";
 import { LaserCutPart } from "@models/laser-cut-part";
 import { LaserCutPartGroup } from "@models/laser-cut-part-group";
+import { ContactInfoDict } from "@interfaces/contact-info";
+import { BusinessInfoDict } from "@interfaces/business-info";
 
 export class JobMeta {
     id!: number;
@@ -21,6 +23,8 @@ export class JobMeta {
     price_settings!: Record<string, any>;
     flowtag_timeline!: Record<string, any>;
     moved_job_to_workspace!: boolean;
+    contact_info!: ContactInfoDict;
+    business_info!: BusinessInfoDict;
 
     constructor(data: JobMetaData) {
         Object.assign(this, data);
