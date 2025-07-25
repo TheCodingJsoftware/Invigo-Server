@@ -68,8 +68,8 @@ export class NestedPartsSummary implements BaseComponent {
                 <table class="border tiny-space">
                     <thead>
                         <tr>
-                            <th data-column="nest-part-partName">Part Name / Number</th>
-                            <th data-column="nest-name">Nest Name</th>
+                            <th data-column="nest-part-partName">Part Name</th>
+                            <th data-column="nest-name">Nest Name / Part Number</th>
                             <th class="center-align" data-column="nest-part-material">Material</th>
                             <th class="center-align" data-column="nest-part-process">Process</th>
                             <th class="center-align" data-column="nest-part-notes">Notes</th>
