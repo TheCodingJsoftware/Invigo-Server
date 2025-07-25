@@ -32,6 +32,10 @@ export class NestedPartsSummary implements BaseComponent {
                         <input type="checkbox" id="show-nest-part-partName" checked>
                         <span>Part Name</span>
                     </label>
+                    <label class="s12 m4 l3 checkbox" data-column="nest-name">
+                        <input type="checkbox" id="show-nest-name" checked>
+                        <span>Nest Name</span>
+                    </label>
                     <label class="s12 m4 l3 checkbox">
                         <input type="checkbox" id="show-nest-part-material" checked>
                         <span>Material</span>
@@ -65,6 +69,7 @@ export class NestedPartsSummary implements BaseComponent {
                     <thead>
                         <tr>
                             <th data-column="nest-part-partName">Part Name / Number</th>
+                            <th data-column="nest-name">Nest Name</th>
                             <th class="center-align" data-column="nest-part-material">Material</th>
                             <th class="center-align" data-column="nest-part-process">Process</th>
                             <th class="center-align" data-column="nest-part-notes">Notes</th>
@@ -94,48 +99,6 @@ export class NestedPartsSummary implements BaseComponent {
         return this.element;
     }
 
-    // private initializeCheckboxes() {
-    //     if (!this.element) return;
-
-    //     const checkboxes = this.element.querySelectorAll('input[type="checkbox"]') as NodeListOf<HTMLInputElement>;
-    //     const headerCells = this.element.querySelectorAll('thead th') as NodeListOf<HTMLElement>;
-
-    //     const columnIndexMap: Record<string, number> = {};
-    //     headerCells.forEach((th, index) => {
-    //         const col = th.dataset.column;
-    //         if (col) columnIndexMap[col] = index;
-    //     });
-
-    //     checkboxes.forEach(checkbox => {
-    //         const column = checkbox.id.replace("show-", ""); // e.g., "show-material" -> "material"
-    //         const index = columnIndexMap[column];
-    //         if (index === undefined) return;
-
-    //         const key = `show-nested-parts-column-${column}`;
-    //         const storedState = localStorage.getItem(key);
-    //         checkbox.checked = storedState !== 'false'; // default to true
-
-    //         const toggleColumnVisibility = (visible: boolean) => {
-    //             const th = headerCells[index];
-    //             const cells = this.element!.querySelectorAll(`tr`) as NodeListOf<HTMLTableRowElement>;
-    //             if (th) th.classList.toggle('hidden', !visible);
-    //             cells.forEach(row => {
-    //                 const cell = row.children[index];
-    //                 if (cell) cell.classList.toggle('hidden', !visible);
-    //             });
-    //         };
-
-    //         // Initial state
-    //         toggleColumnVisibility(checkbox.checked);
-
-    //         // On change
-    //         checkbox.addEventListener('change', () => {
-    //             localStorage.setItem(key, String(checkbox.checked));
-    //             toggleColumnVisibility(checkbox.checked);
-    //         });
-    //     });
-    // }
-
     generatePartsTableBody(): string {
         let nestSummaryTable = "";
         for (const group of this.getAllGroupedLaserCutParts()) {
@@ -144,6 +107,7 @@ export class NestedPartsSummary implements BaseComponent {
             if (nest) {
                 nestMultiplier = nest.sheet_count;
             }
+            const nestName = group.getNestName();
             const material = group.getMaterial();
             const process = group.getProcess();
             const notes = group.getNotes();
@@ -157,10 +121,13 @@ export class NestedPartsSummary implements BaseComponent {
                 <td class="min" data-column="nest-part-partName">
                     <div class="row">
                         <img class="square extra small-round" src="http://invi.go/images/${group.getImagePath()}">
-                        <div class="vertical">
-                            <span class="wrap no-line small-width">${group.name}</span>
-                            <span><i>tag</i> ${partNumber}</span>
-                        </div>
+                        <span class="wrap no-line small-width">${group.name}</span>
+                    </div>
+                </td>
+                <td class="min" data-column="nest-name">
+                <div class="vertical">
+                        ${nestName}
+                        <span class="right-align"><i>tag</i> ${partNumber}</span>
                     </div>
                 </td>
                 <td class="center-align" data-column="nest-part-material">${material}</td>

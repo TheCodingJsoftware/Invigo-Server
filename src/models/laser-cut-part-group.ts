@@ -20,6 +20,10 @@ export class LaserCutPartGroup {
             .sort((a, b) => naturalCompare(a.name, b.name));
     }
 
+    getNestName(): string {
+        return this.nest?.name.replace(".pdf", "") || "";
+    }
+
     applyNaturalSort() {
         this.laser_cut_parts.sort((a, b) => naturalCompare(a.name, b.name));
     }
