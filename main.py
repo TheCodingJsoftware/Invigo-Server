@@ -40,9 +40,10 @@ TABLE_CHANNELS = [
 
 async def start_workspace_services():
     await workspace_db.connect()
-    conn = await workspace_db.db_pool.acquire()
-    for channel in TABLE_CHANNELS:
-        await conn.add_listener(channel, workspace_notify_handler)
+    if workspace_db.db_pool:
+        conn = await workspace_db.db_pool.acquire()
+        for channel in TABLE_CHANNELS:
+            await conn.add_listener(channel, workspace_notify_handler)
 
 
 async def workspace_notify_handler(conn, pid, channel, payload):
@@ -77,7 +78,13 @@ async def workspace_notify_handler(conn, pid, channel, payload):
 
     elif table in ["workspace_grouped_laser_cut_parts", "workspace_laser_cut_parts"]:
         if op == "INSERT":
-            WebSocketWorkspaceHandler.broadcast({"type": "part_created", "part": msg.get("data")})
+            if part_id is not None:
+                part = await workspace_db.get_grouped_part_by_id(part_id)
+                WebSocketWorkspaceHandler.broadcast({"type": "part_created", "part": part})
+            else:
+                logging.warning(f"part_created missing id in payload: {msg}")
+
+            # WebSocketWorkspaceHandler.broadcast({"type": "part_created", "part": msg.get("data")})
         elif op == "UPDATE":
             WebSocketWorkspaceHandler.broadcast({"type": "part_updated", "part_id": part_id, "delta": delta})
         elif op == "DELETE":

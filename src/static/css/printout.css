@@ -165,6 +165,11 @@ div.textarea.extra {
 }
 
 @media print {
+    main {
+        width: auto !important;
+        /* A4 width at 96 DPI */
+        max-width: 100%;
+    }
 
     body,
     article,

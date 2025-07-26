@@ -34,6 +34,12 @@ class ShippingMethod(AutoNumber):
 class PurchaseOrdersPageHandler(BaseHandler):
     async def get(self):
         all_purchase_orders = await self.purchase_orders_db.get_all_purchase_orders(include_data=True)
+        all_purchase_orders = sorted(all_purchase_orders, key=lambda po: po["purchase_order_data"]["meta_data"]["purchase_order_number"], reverse=True)
+        all_vendors = await self.vendors_db.get_all_vendors()
         shipping_method_lookup = {method.value: method.name.replace("_", " ").title() for method in ShippingMethod}
-        status_lookup = {status.value: status.name.replace("_", " ").title() for status in PurchaseOrderStatus}
-        self.render_template("purchase_order_printouts.html", all_purchase_orders=all_purchase_orders, shipping_method_lookup=shipping_method_lookup, status_lookup=status_lookup)
+        self.render_template(
+            "purchase_order_printouts.html",
+            all_purchase_orders=all_purchase_orders,
+            all_vendors=all_vendors,
+            shipping_method_lookup=shipping_method_lookup,
+        )

@@ -21,8 +21,8 @@
             </nav>
         </header>
         <main class="responsive">
-            <nav class="top transparent">
-                <article class="border round">
+            <div class="grid">
+                <article class="s12 m12 l6 border round">
                     <table class="border tiny-space">
                         <thead>
                             <tr>
@@ -48,23 +48,23 @@
                         </tbody>
                     </table>
                 </article>
-            </nav>
-            <fieldset class="round">
-                <legend>Quick Search Filters</legend>
-                <nav class="wrap no-space">
-                    {% for search_term in search_terms %}
-                    <button class="chip tiny-margin" id="quick-search">
-                        <span>{{search_term}}</span>
-                    </button>
-                    {% endfor %}
-                </nav>
-            </fieldset>
+                <fieldset class="s12 m12 l6 round">
+                    <legend>Quick Search Filters</legend>
+                    <nav class="wrap no-space">
+                        {% for search_term in search_terms %}
+                        <button class="chip tiny-margin" id="quick-search">
+                            <span>{{search_term}}</span>
+                        </button>
+                        {% endfor %}
+                    </nav>
+                </fieldset>
+            </div>
             <div class="field label prefix border round">
                 <i>search</i>
                 <input type="text" id="search">
                 <label>Search</label>
             </div>
-            <article class="border round padding vertical no-wrap scroll" style="overflow-y: auto;">
+            <article class="border round padding vertical no-wrap scroll">
                 {% for log in log_content %}
                 <code class="log-line no-margin no-line no-wrap no-padding transparent">{{ log }}</code>
                 {% endfor %}
