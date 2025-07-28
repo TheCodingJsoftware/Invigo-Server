@@ -87,7 +87,7 @@ export class Job {
         let total = 0;
         for (const assembly of this.getAllAssemblies()) {
             for (const laserCutPart of assembly.laser_cut_parts) {
-                total += laserCutPart.prices.price * laserCutPart.inventory_data.quantity * assembly.meta_data.quantity;
+                total += laserCutPart.prices.price * laserCutPart.inventory_data.quantity;
             }
         }
         return total;
@@ -97,7 +97,7 @@ export class Job {
         let total = 0;
         for (const assembly of this.getAllAssemblies()) {
             for (const laserCutPart of assembly.laser_cut_parts) {
-                total += laserCutPart.meta_data.weight * laserCutPart.inventory_data.quantity * assembly.meta_data.quantity;
+                total += laserCutPart.meta_data.weight * laserCutPart.inventory_data.quantity;
             }
         }
         return total;
