@@ -97,7 +97,7 @@ export class PurchaseOrder {
     }
 
     getName(): string {
-        return `${this.meta_data.vendor.name} #${this.meta_data.purchase_order_number}`;
+        return `${this.meta_data.vendor.name} PO ${this.meta_data.purchase_order_number}`;
     }
 
     setComponentOrderQuantity(component: Component, quantity: number): void {

@@ -2,26 +2,29 @@ import { LaserCutPartGroupData } from "@interfaces/laser-cut-part-group";
 import { naturalCompare } from "@utils/natural-sort";
 
 import { LaserCutPart } from "@models/laser-cut-part";
-import { Nest } from "@models/nest";
 
 export class LaserCutPartGroup {
     name: string;
     base_part: LaserCutPart;
     laser_cut_parts: LaserCutPart[];
 
-    nest: Nest | null = null;
 
     constructor(data: LaserCutPartGroupData) {
         this.name = data.name;
         this.base_part = new LaserCutPart(data.base_part);
 
         this.laser_cut_parts = data.laser_cut_parts
-            .map(p => new LaserCutPart(p))
             .sort((a, b) => naturalCompare(a.name, b.name));
     }
 
-    getNestName(): string {
-        return this.nest?.name.replace(".pdf", "") || "";
+    getNestNamePartNumber(): string {
+        let string = "";
+        for (const p of this.laser_cut_parts) {
+            if (p.nest) {
+                string += `${p.nest.name.replace(".pdf", "")} #${p.meta_data.part_number}<br>`;
+            }
+        }
+        return string;
     }
 
     applyNaturalSort() {

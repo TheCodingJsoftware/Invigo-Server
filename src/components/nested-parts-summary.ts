@@ -97,20 +97,14 @@ export class NestedPartsSummary implements BaseComponent {
     generatePartsTableBody(): string {
         let nestSummaryTable = "";
         for (const group of this.getAllGroupedLaserCutParts()) {
-            const { nest } = group;
-            let nestMultiplier = 1;
-            if (nest) {
-                nestMultiplier = nest.sheet_count;
-            }
-            const nestName = group.getNestName();
+            const nestNameNumber = group.getNestNamePartNumber();
             const material = group.getMaterial();
             const process = group.getProcess();
             const notes = group.getNotes();
             const shelfNumber = group.getShelfNumber();
-            const quantity = group.getQuantity();
+            const quantity = group.getTotalQuantity();
             const unitPrice = group.getPrice();
             const price = group.getTotalPrice();
-            const partNumber = group.getPartNumber();
             nestSummaryTable += `
             <tr>
                 <td class="min" data-column="nest-part-partName">
@@ -119,11 +113,8 @@ export class NestedPartsSummary implements BaseComponent {
                         <span class="wrap no-line small-width">${group.name}</span>
                     </div>
                 </td>
-                <td class="min" data-column="nest-name">
-                <div class="vertical">
-                        ${nestName}
-                        <span class="right-align"><i>tag</i> ${partNumber}</span>
-                    </div>
+                <td class="min right-align" data-column="nest-name">
+                        ${nestNameNumber}
                 </td>
                 <td class="center-align" data-column="nest-part-material">${material}</td>
                 <td class="center-align" data-column="nest-part-process">${process}</td>
@@ -169,18 +160,11 @@ export class NestedPartsSummary implements BaseComponent {
         return `$${price.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
     }
 
-    private getAllParts(): LaserCutPart[] {
-        let allParts: LaserCutPart[] = [];
-        for (const nest of this.nests) {
-            allParts = allParts.concat(nest.laser_cut_parts);
-        }
-        return allParts;
-    }
-
     public getAllGroupedLaserCutParts(): LaserCutPartGroup[] {
         let LaserCutPartGroups: LaserCutPartGroup[] = [];
         for (const nest of this.nests) {
             for (const part of nest.laser_cut_parts) {
+                part.nest = nest;
                 const group = LaserCutPartGroups.find(group => group.name === part.name);
                 if (group) {
                     group.laser_cut_parts.push(part);
@@ -191,7 +175,6 @@ export class NestedPartsSummary implements BaseComponent {
                             base_part: part,
                             laser_cut_parts: [part]
                         });
-                    laserCutPartGroup.nest = nest;
                     LaserCutPartGroups.push(laserCutPartGroup);
                 }
             }

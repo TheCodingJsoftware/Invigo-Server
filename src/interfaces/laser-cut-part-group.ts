@@ -1,7 +1,7 @@
-import { LaserCutPartData } from "@interfaces/laser-cut-part";
+import { LaserCutPart } from "@models/laser-cut-part";
 
 export interface LaserCutPartGroupData {
     name: string;
-    base_part: LaserCutPartData;
-    laser_cut_parts: LaserCutPartData[];
+    base_part: LaserCutPart;
+    laser_cut_parts: LaserCutPart[];
 }

@@ -1,4 +1,5 @@
 import { LaserCutPartData } from "@interfaces/laser-cut-part";
+import { Nest } from "@models/nest";
 
 export class LaserCutPart {
     id: number;
@@ -12,6 +13,9 @@ export class LaserCutPart {
     primer_data: LaserCutPartData["primer_data"];
     powder_data: LaserCutPartData["powder_data"];
     workspace_data: LaserCutPartData["workspace_data"];
+
+    // Computed properties
+    nest: Nest | null = null;
 
     constructor(data: LaserCutPartData) {
         this.id = data.id;
