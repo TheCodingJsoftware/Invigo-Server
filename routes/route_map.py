@@ -8,7 +8,10 @@ from handlers.auth.is_client_trusted import IsClientTrustedHandler
 from handlers.auth.login import LoginHandler
 from handlers.auth.logout import LogoutHandler
 from handlers.auth.protected import ProtectedHandler
+from handlers.auth.register_page import RegisterPageHandler
+from handlers.auth.roles_page import RolesPageHandler
 from handlers.auth.user import UserHandler
+from handlers.auth.users_page import UsersPageHandler
 from handlers.coatings_inventory.add_coating import AddCoatingHandler
 from handlers.coatings_inventory.delete_coating import DeleteCoatingHandler
 from handlers.coatings_inventory.get_all_coatings import GetAllCoatingsHandler
@@ -129,7 +132,9 @@ from handlers.workspace.get_parts_by_job import WorkspaceGetPartsByJobHandler
 from handlers.workspace.get_recut_parts_from_job import (
     WorkspaceGetRecutPartsFromJobHandler,
 )
+from handlers.workspace.part_view_handler import PartViewDataHandler
 from handlers.workspace.update_entry import WorkspaceUpdateEntryHandler
+from handlers.workspace.update_grouped_laser_cut_parts import WorkspaceUpdateGroupHandler
 from handlers.workspace.workspace import WorkspaceHandler
 from routes.route import route
 
@@ -179,8 +184,9 @@ page_routes = [
         template_name="purchase_order_printout.html",
     ),
     route(r"/login", PageHandler, template_name="login.html"),
-    route(r"/register", PageHandler, template_name="register.html"),
-    route(r"/roles", PageHandler, template_name="roles.html"),
+    route(r"/register", RegisterPageHandler),
+    route(r"/roles", RolesPageHandler),
+    route(r"/users", UsersPageHandler),
 ]
 
 api_routes = [
@@ -202,7 +208,7 @@ api_routes = [
     route(r"/file/(.*)", FileReceiveHandler),
     route(r"/upload", FileUploadHandler),
     route(r"/production_planner_upload", ProductionPlannerFileUploadHandler),
-    route(r"/workspace_upload", WorkspaceFileUploader),
+    route(r"/workspace/upload", WorkspaceFileUploader),
     route(r"/image/(.*)", ImageHandler),
     route(r"/images/(.*)", ImageHandler),
     route(r"/images/images/(.*)", ImageHandler),
@@ -216,6 +222,8 @@ api_routes = [
     route(r"/send_email", SendEmailHandler),
     # Workspace Routes
     route(r"/workspace", WorkspaceHandler),
+    route(r"/api/part_view", PartViewDataHandler),
+    route(r"/api/workspace/update_group", WorkspaceUpdateGroupHandler),
     # OLD Workspace Routes
     route(r"/workspace/get_file/(.*)", WorkspaceFileReceiverHandler),
     route(r"/workspace/add_job", WorkspaceAddJobHandler),

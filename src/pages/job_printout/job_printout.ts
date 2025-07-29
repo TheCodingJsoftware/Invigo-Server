@@ -715,7 +715,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = url;
-        a.download = "page.pdf";
+        a.download = `${document.title}.pdf`;
         a.click();
         URL.revokeObjectURL(url);
 

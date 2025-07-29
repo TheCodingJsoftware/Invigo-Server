@@ -27,7 +27,7 @@
                     <li>
                         <div class="max">
                             <h6 class="small"><b>Workorder</b> <i>tag</i>{{ workorder.id }}</h6>
-                            <nav class="row no-space">
+                            <nav class="row no-space wrap">
                                 {% for nest in workorder.nests %}
                                 <button class="border small-round extra tiny-margin nest-button" data-name="{{ nest.name }}" data-id="{{ workorder.id }}" data-image="{{ nest.image_path }}">
                                     <img class="responsive" src="http://invi.go/images/{{ nest.image_path }}">

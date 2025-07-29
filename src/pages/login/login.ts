@@ -29,7 +29,7 @@ window.addEventListener("DOMContentLoaded", async () => {
 document.getElementById("login-form")?.addEventListener("submit", async (e) => {
     e.preventDefault();
 
-    const name = (document.getElementById("name") as HTMLInputElement).value;
+    const name = (document.getElementById("username") as HTMLInputElement).value;
     const password = (document.getElementById("password") as HTMLInputElement).value;
 
     const res = await fetch("/api/login", {
@@ -40,7 +40,8 @@ document.getElementById("login-form")?.addEventListener("submit", async (e) => {
     });
 
     if (res.ok) {
-        window.location.reload();
+        window.location.href = "/";
+        // window.location.reload();
     } else {
         document.getElementById("login-error")!.textContent = "Login failed.";
     }

@@ -20,8 +20,8 @@ class UserHandler(BaseHandler):
         data = json.loads(self.request.body)
         name = data["name"]
         password = data["password"]
-        role = data["role"]
-        await self.users_db.add_user(name, password, role)
+        roles = data["roles"]
+        await self.users_db.add_user(name, password, roles)
         self.set_status(201)
         self.finish()
 
@@ -31,7 +31,7 @@ class UserHandler(BaseHandler):
             int(user_id),
             name=data.get("name"),
             password=data.get("password"),
-            role=data.get("role"),
+            role_names=data.get("roles"),
         )
         self.set_status(204)
         self.finish()

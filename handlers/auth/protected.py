@@ -5,8 +5,8 @@ from handlers.base import BaseHandler
 
 class ProtectedHandler(BaseHandler):
     def get_current_user(self):
-        cookie = self.get_secure_cookie("user")
-        return json.loads(cookie.decode()) if cookie else None
+        user_id = self.get_secure_cookie("user")
+        return json.loads(user_id.decode()) if user_id else None
 
     async def get(self):
         user_id = self.current_user

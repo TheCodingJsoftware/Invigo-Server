@@ -48,7 +48,7 @@ class EmailPurchaseOrderHandler(BaseHandler):
                 body=body,
                 recipients=to,
                 attachment=pdf_data,
-                attachment_filename="order.pdf",
+                attachment_filename=f"{subject}.pdf",
                 cc=cc,
             )
 

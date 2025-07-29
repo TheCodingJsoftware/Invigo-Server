@@ -42,7 +42,8 @@ class WorkspaceDB(BaseWithDBPool):
 
     @ensure_connection
     async def _create_table_if_not_exists(self):
-        with open(os.path.join(Environment.DATA_PATH, "utils", "database", "workspace.sql"), "r", encoding="utf-8") as f:
+        sql_path = os.path.join(os.path.dirname(__file__), "workspace.sql")
+        with open(sql_path, "r", encoding="utf-8") as f:
             query = f.read()
 
         async with self.db_pool.acquire() as conn:
@@ -64,60 +65,24 @@ class WorkspaceDB(BaseWithDBPool):
                         json.dumps(job.get("assemblies")),
                         json.dumps(job.get("nests")),
                     )
-
-                    grouped_assembly_ids = {}
+                    assembly_ids_by_path = {}
 
                     async def insert_assembly_group(assembly, parent_id=None):
-                        # result = await conn.fetchrow(
-                        #     """
-                        #     INSERT INTO workspace_grouped_assemblies
-                        #     (job_id, parent_id, name, quantity, flowtag, flowtag_index,
-                        #     setup_time, setup_time_seconds, process_time, process_time_seconds,
-                        #     automated_time, automated_time_seconds, start_time, end_time,
-                        #     meta_data, prices, paint_data, primer_data, powder_data, workspace_data)
-                        #     VALUES ($1,$2,$3,$4,$5,0,
-                        #             $6,$7,$8,$9,$10,$11,$12,$13,
-                        #             $14,$15,$16,$17,$18,$19)
-                        #     RETURNING id
-                        #     """,
-                        #     job_id,
-                        #     parent_id,
-                        #     assembly["name"],
-                        #     int(assembly["meta_data"]["quantity"]),
-                        #     assembly["workspace_data"]["flowtag"]["tags"],
-                        #     "{}",
-                        #     0,
-                        #     "{}",
-                        #     0,
-                        #     "{}",
-                        #     0,
-                        #     None,
-                        #     None,
-                        #     json.dumps(assembly.get("meta_data")),
-                        #     json.dumps(assembly.get("prices")),
-                        #     json.dumps(assembly.get("paint_data")),
-                        #     json.dumps(assembly.get("primer_data")),
-                        #     json.dumps(assembly.get("powder_data")),
-                        #     json.dumps(assembly.get("workspace_data")),
-                        # )
-                        # group_id = result["id"]
-                        # grouped_assembly_ids[assembly["name"]] = group_id
-
                         for _ in range(int(assembly["meta_data"]["quantity"])):
-                            await conn.execute(
+                            row = await conn.fetchrow(
                                 """
                                 INSERT INTO workspace_assemblies
-                                (job_id, parent_id, group_id, name, flowtag, flowtag_index,
+                                (job_id, parent_id, name, flowtag, flowtag_index,
                                 setup_time, setup_time_seconds, process_time, process_time_seconds,
                                 automated_time, automated_time_seconds, start_time, end_time,
                                 meta_data, prices, paint_data, primer_data, powder_data, workspace_data)
-                                VALUES ($1,$2,$3,$4,$5,0,
-                                        $6,0,$7,0,$8,0,$9,$10,
-                                        $11,$12,$13,$14,$15,$16)
+                                VALUES ($1,$2,$3,$4,0,
+                                        $5,0,$6,0,$7,0,$8,$9,
+                                        $10,$11,$12,$13,$14,$15)
+                                RETURNING id
                                 """,
                                 job_id,
-                                None,
-                                None,
+                                parent_id,
                                 assembly["name"],
                                 assembly["workspace_data"]["flowtag"]["tags"],
                                 "{}",
@@ -132,87 +97,112 @@ class WorkspaceDB(BaseWithDBPool):
                                 json.dumps(assembly.get("powder_data")),
                                 json.dumps(assembly.get("workspace_data")),
                             )
+                            this_assembly_id = row["id"]
 
-                        for part in assembly.get("laser_cut_parts", []):
-                            # part_group_id = await conn.fetchval(
-                            #     """
-                            #     INSERT INTO workspace_grouped_laser_cut_parts
-                            #     (job_id, assembly_group_id, name, quantity, flowtag, flowtag_index,
-                            #     setup_time, setup_time_seconds, process_time, process_time_seconds,
-                            #     automated_time, automated_time_seconds, start_time, end_time,
-                            #     meta_data, prices, paint_data, primer_data, powder_data, workspace_data)
-                            #     VALUES ($1,$2,$3,$4,$5,0,
-                            #             $6,0,$7,0,$8,0,$9,$10,
-                            #             $11,$12,$13,$14,$15,$16)
-                            #     RETURNING id
-                            #     """,
-                            #     job_id,
-                            #     group_id,
-                            #     part["name"],
-                            #     int(part["inventory_data"]["quantity"]),
-                            #     part["workspace_data"]["flowtag"]["tags"],
-                            #     "{}",
-                            #     "{}",
-                            #     "{}",
-                            #     None,
-                            #     None,
-                            #     json.dumps(part.get("meta_data")),
-                            #     json.dumps(part.get("prices")),
-                            #     json.dumps(part.get("paint_data")),
-                            #     json.dumps(part.get("primer_data")),
-                            #     json.dumps(part.get("powder_data")),
-                            #     json.dumps(part.get("workspace_data")),
-                            # )
+                            for part in assembly.get("laser_cut_parts", []):
+                                for _ in range(int(part["inventory_data"]["quantity"])):
+                                    await conn.execute(
+                                        """
+                                        INSERT INTO workspace_assembly_laser_cut_parts
+                                        (job_id, assembly_id, name, flowtag, flowtag_index,
+                                        setup_time, setup_time_seconds, process_time, process_time_seconds,
+                                        automated_time, automated_time_seconds, start_time, end_time,
+                                        inventory_data, meta_data, prices, paint_data, primer_data, powder_data, workspace_data)
+                                        VALUES ($1,$2,$3,$4,0,
+                                                $5,0,$6,0,$7,0,$8,$9,
+                                                $10,$11,$12,$13,$14,$15,$16)
+                                        """,
+                                        job_id,
+                                        this_assembly_id,
+                                        part["name"],
+                                        part["workspace_data"]["flowtag"]["tags"],
+                                        "{}",
+                                        "{}",
+                                        "{}",
+                                        None,
+                                        None,
+                                        json.dumps(part.get("inventory_data")),
+                                        json.dumps(part.get("meta_data")),
+                                        json.dumps(part.get("prices")),
+                                        json.dumps(part.get("paint_data")),
+                                        json.dumps(part.get("primer_data")),
+                                        json.dumps(part.get("powder_data")),
+                                        json.dumps(part.get("workspace_data")),
+                                    )
 
+                            for comp in assembly.get("components", []):
+                                await conn.execute(
+                                    """
+                                    INSERT INTO workspace_components
+                                    (job_id, assembly_id, name, quantity, data)
+                                    VALUES ($1, $2, $3, $4, $5)
+                                    """,
+                                    job_id,
+                                    this_assembly_id,
+                                    comp["part_name"],
+                                    int(comp["quantity"]),
+                                    json.dumps(comp),
+                                )
+
+                            for sub in assembly.get("sub_assemblies", []):
+                                await insert_assembly_group(sub, parent_id=this_assembly_id)
+
+                    async def insert_nest(nest):
+                        this_nest_id = await conn.fetchval(
+                            "INSERT INTO workspace_nests (job_id, sheet, laser_cut_parts) VALUES ($1, $2, $3) RETURNING id",
+                            job_id,
+                            json.dumps(nest["sheet"]),
+                            json.dumps(nest["laser_cut_parts"]),
+                        )
+
+                        for part in nest["laser_cut_parts"]:
                             for _ in range(int(part["inventory_data"]["quantity"])):
                                 await conn.execute(
                                     """
-                                    INSERT INTO workspace_laser_cut_parts
-                                    (job_id, laser_cut_part_group_id, name, flowtag, flowtag_index,
-                                    setup_time, setup_time_seconds, process_time, process_time_seconds,
-                                    automated_time, automated_time_seconds, start_time, end_time,
-                                    inventory_data, meta_data, prices, paint_data, primer_data, powder_data, workspace_data)
-                                    VALUES ($1,$2,$3,$4,0,
-                                            $5,0,$6,0,$7,0,$8,$9,
-                                            $10,$11,$12,$13,$14,$15,$16)
+                                    INSERT INTO workspace_nest_laser_cut_parts (
+                                        job_id, nest_id, name,
+                                        setup_time, setup_time_seconds,
+                                        process_time, process_time_seconds,
+                                        automated_time, automated_time_seconds,
+                                        start_time, end_time,
+                                        inventory_data, meta_data, prices,
+                                        paint_data, primer_data, powder_data, workspace_data
+                                    )
+                                    VALUES (
+                                        $1, $2, $3, $4,
+                                        $5, $6,
+                                        $7, $8,
+                                        $9, $10,
+                                        $11, $12,
+                                        $13, $14, $15,
+                                        $16, $17, $18
+                                    )
                                     """,
-                                    job_id,
-                                    None,
-                                    part["name"],
-                                    part["workspace_data"]["flowtag"]["tags"],
-                                    "{}",
-                                    "{}",
-                                    "{}",
-                                    None,
-                                    None,
-                                    json.dumps(part.get("inventory_data")),
-                                    json.dumps(part.get("meta_data")),
-                                    json.dumps(part.get("prices")),
-                                    json.dumps(part.get("paint_data")),
-                                    json.dumps(part.get("primer_data")),
-                                    json.dumps(part.get("powder_data")),
-                                    json.dumps(part.get("workspace_data")),
+                                    job_id,  # $1
+                                    this_nest_id,  # $2
+                                    part["name"],  # $3
+                                    "{}",  # $4 (setup_time)
+                                    0,  # $5 (setup_time_seconds)
+                                    "{}",  # $6 (process_time)
+                                    0,  # $7 (process_time_seconds)
+                                    "{}",  # $8 (automated_time)
+                                    0,  # $9 (automated_time_seconds)
+                                    None,  # $10 (start_time)
+                                    None,  # $11 (end_time)
+                                    json.dumps(part.get("inventory_data")),  # $12
+                                    json.dumps(part.get("meta_data")),  # $1#
+                                    json.dumps(part.get("prices")),  # $14
+                                    json.dumps(part.get("paint_data")),  # $15
+                                    json.dumps(part.get("primer_data")),  # $16
+                                    json.dumps(part.get("powder_data")),  # $17
+                                    json.dumps(part.get("workspace_data")),  # $18
                                 )
-
-                        for comp in assembly.get("components", []):
-                            await conn.execute(
-                                """
-                                INSERT INTO workspace_components
-                                (job_id, assembly_id, name, quantity, data)
-                                VALUES ($1, $2, $3, $4, $5)
-                                """,
-                                job_id,
-                                None,
-                                comp["part_name"],
-                                int(comp["quantity"]),
-                                json.dumps(comp),
-                            )
-
-                        for sub in assembly.get("sub_assemblies", []):
-                            await insert_assembly_group(sub, parent_id=group_id)
 
                     for assembly in job.get("assemblies", []):
                         await insert_assembly_group(assembly)
+
+                    for nest in job.get("nests", []):
+                        await insert_nest(nest)
 
                     # await conn.execute("NOTIFY workspace_jobs, $1", msgspec.json.encode({"type": "job_created", "job_id": job_id}).decode())
                     await conn.execute(f"NOTIFY workspace_jobs, '{msgspec.json.encode({'type': 'job_created', 'job_id': job_id}).decode()}'")
@@ -254,9 +244,9 @@ class WorkspaceDB(BaseWithDBPool):
         async with self.db_pool.acquire() as conn:
             rows = await conn.fetch(
                 """
-                SELECT * FROM workspace_grouped_laser_cut_parts
-                WHERE workspace_grouped_laser_cut_parts.job_id = $1
-                ORDER BY workspace_grouped_laser_cut_parts.id
+                SELECT * FROM workspace_assembly_laser_cut_parts
+                WHERE workspace_assembly_laser_cut_parts.job_id = $1
+                ORDER BY workspace_assembly_laser_cut_parts.id
                 """,
                 job_id,
             )
@@ -266,7 +256,20 @@ class WorkspaceDB(BaseWithDBPool):
     async def get_grouped_part_by_id(self, part_id: int):
         async with self.db_pool.acquire() as conn:
             row = await conn.fetchrow(
-                "SELECT * FROM workspace_grouped_laser_cut_parts WHERE id = $1",
+                "SELECT * FROM workspace_assembly_laser_cut_parts WHERE id = $1",
                 part_id,
             )
             return dict(row) if row else None
+
+    @ensure_connection
+    async def get_grouped_parts_view(self, view_name: str) -> list[dict]:
+        if view_name not in {
+            "view_grouped_laser_cut_parts_by_assembly",
+            "view_grouped_laser_cut_parts_by_job",
+            "view_grouped_laser_cut_parts_global",
+        }:
+            raise ValueError("Invalid view name")
+
+        async with self.db_pool.acquire() as conn:
+            rows = await conn.fetch(f"SELECT * FROM {view_name}")
+            return [dict(row) for row in rows]

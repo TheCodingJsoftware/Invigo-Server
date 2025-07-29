@@ -31,15 +31,15 @@ export class AssembliesParts implements BaseComponent {
                 <nav class="group connected primary-container">
                     <button class="left-round" id="nested-layout-button">
                         <i>account_tree</i>
-                        <span>Nested Layout</span>
+                        <span>Nested</span>
                     </button>
                     <button class="no-round" id="assemblies-list-button">
                         <i>gallery_thumbnail</i>
-                        <span>Assemblies List</span>
+                        <span>Assemblies</span>
                     </button>
                     <button class="right-round" id="grouped-parts-list-button">
                         <i>view_list</i>
-                        <span>Grouped Parts List</span>
+                        <span>Parts</span>
                     </button>
                 </nav>
                 <button class="circle transparent" id="toggle-button">

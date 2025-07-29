@@ -17,4 +17,5 @@ class LoginHandler(BaseHandler):
 
         self.set_secure_cookie("user", json.dumps(user), httponly=True)
         self.set_status(200)
-        self.write({"message": "Login successful", "user": user, "success": True})
+        # self.write({"message": "Login successful", "user": user, "success": True})
+        self.redirect("/login")

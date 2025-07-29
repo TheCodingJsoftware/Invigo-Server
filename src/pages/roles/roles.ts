@@ -1,7 +1,7 @@
 import "beercss"
 import '@static/css/style.css';
 import '@static/css/theme.css';
-import { Permission } from "@auth/permissions";
+import { Permissions, PermissionMap } from "@auth/permissions";
 import { User } from "@auth/user";
 
 interface Role {
@@ -38,12 +38,12 @@ function renderRole(role: Role): HTMLElement {
     const el = document.createElement("article");
     el.classList.add("border", "round");
 
-    const checkboxes = Object.values(Permission).map(p => {
-        const checked = role.permissions.includes(p) ? "checked" : "";
+    const checkboxes = Object.values(PermissionMap).map(p => {
+        const checked = role.permissions.includes(p.value) ? "checked" : "";
         return `
             <label class="checkbox">
-                <input type="checkbox" value="${p}" class="perm" ${checked}>
-                <span>${formatText(p)}</span>
+                <input type="checkbox" value="${p.value}" class="perm" ${checked}>
+                <span>${p.label}</span>
             </label>
         `;
     }).join("");
@@ -107,7 +107,7 @@ document.getElementById("add-role")?.addEventListener("click", async () => {
 });
 
 User.fetchCurrent().then(user => {
-    if (user.can(Permission.EditRoles)) {
+    if (user.can(Permissions.EditRoles)) {
         loadRoles();
     } else {
         document.getElementById("add-role")!.classList.add("hidden");

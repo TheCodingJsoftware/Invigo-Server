@@ -21,10 +21,13 @@
         </nav>
     </header>
     <main class="responsive">
+        {% if userCanEditRoles %}
         <div id="roles-list" class="bottom-margin"></div>
         <button id="add-role">Add Role</button>
+        {% else %}
+        <div id="not-allowed" class="snackbar top error active">You do not have permission to manage roles.</div>
+        {% endif %}
     </main>
-    <div id="not-allowed" class="snackbar top error">You do not have permission to manage roles.</div>
 </body>
 
 </html>

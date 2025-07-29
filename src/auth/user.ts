@@ -1,23 +1,31 @@
-import { Permission } from "@auth/permissions";
+import { PermissionMap, PermissionEntry, FlatPermissionEntry } from "@auth/permissions";
 
 export class User {
     id: number;
     name: string;
-    role: string;
-    permissions: Permission[];
+    roles: string[];
+    permissions: FlatPermissionEntry[];
 
-    constructor(data: { id: number; name: string; role: string; permissions: string[] }) {
+    constructor(data: { id: number; name: string; roles: string[]; permissions: string[] }) {
         this.id = data.id;
         this.name = data.name;
-        this.role = data.role;
-        this.permissions = data.permissions.map(p => p as Permission);
+        this.roles = data.roles;
+        this.permissions = data.permissions
+            .map(p => {
+                return PermissionMap[p];
+            })
+            .filter((p): p is FlatPermissionEntry => !!p);
     }
 
-    can(permission: Permission): boolean {
-        return this.permissions.includes(permission);
+    getPermission(value: string): PermissionEntry | null {
+        return PermissionMap[value] ?? null;
     }
 
-    require(permission: Permission, onAllow: () => void, onDeny?: () => void) {
+    can(permission: FlatPermissionEntry): boolean {
+        return this.permissions.some(p => p.value === permission.value);
+    }
+
+    require(permission: FlatPermissionEntry, onAllow: () => void, onDeny?: () => void) {
         this.can(permission) ? onAllow() : onDeny?.();
     }
 
@@ -27,8 +35,8 @@ export class User {
             return new User({
                 id: 0,
                 name: "Guest",
-                role: "Guest",
-                permissions: [Permission.ViewJobs]
+                roles: ["Guest"],
+                permissions: [PermissionMap.ViewJobs.value]
             });
         }
         const data = await res.json();

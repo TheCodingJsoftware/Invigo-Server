@@ -30,9 +30,7 @@ workspace_db = BaseHandler.workspace_db
 TABLE_CHANNELS = [
     "workspace_jobs",
     "workspace_assemblies",
-    "workspace_grouped_assemblies",
     "workspace_laser_cut_parts",
-    "workspace_grouped_laser_cut_parts",
     "workspace_components",
     "workspace_nests",
 ]
@@ -76,7 +74,7 @@ async def workspace_notify_handler(conn, pid, channel, payload):
     #         }
     #     )
 
-    elif table in ["workspace_grouped_laser_cut_parts", "workspace_laser_cut_parts"]:
+    elif table in ["workspace_laser_cut_parts"]:
         if op == "INSERT":
             if part_id is not None:
                 part = await workspace_db.get_grouped_part_by_id(part_id)
