@@ -80,7 +80,7 @@ module.exports = {
             '@static': path.resolve(__dirname, 'src/static'),
             '@models': path.resolve(__dirname, 'src/models'),
             '@config': path.resolve(__dirname, 'src/config'),
-            '@auth': path.resolve(__dirname, 'src/auth'),
+            '@core': path.resolve(__dirname, 'src/core'),
         },
         fallback: {
             fs: false,
