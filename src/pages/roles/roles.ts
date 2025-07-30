@@ -1,8 +1,8 @@
 import "beercss"
 import '@static/css/style.css';
 import '@static/css/theme.css';
-import { Permissions, PermissionMap } from "@auth/permissions";
-import { User } from "@auth/user";
+import { Permissions, PermissionMap } from "../../core/auth/permissions";
+import { User } from "../../core/auth/user";
 
 interface Role {
     id: number;

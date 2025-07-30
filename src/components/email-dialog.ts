@@ -1,4 +1,4 @@
-import { DialogComponent } from "@components/dialog-component";
+import { DialogComponent } from "@components/common/dialog/dialog-component";
 import { PurchaseOrder } from "@models/purchase-order";
 
 let Editor: typeof import('@toast-ui/editor').Editor;

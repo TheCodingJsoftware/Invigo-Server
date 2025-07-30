@@ -75,10 +75,10 @@ class GetComponentQuantityHistoryHandler(BaseHandler):
                 latest_quantity_chage: str = from_latest_change_quantity + to_latest_change_quantity
                 if (from_orders and to_orders and from_orders != to_orders) or "order" in latest_quantity_chage.lower():
                     details["modification_reason"] = "Order modification"
-                elif "manual" in latest_quantity_chage.lower() or "changed" in latest_quantity_chage.lower():
-                    details["modification_reason"] = "Manual update"
                 elif "category" in latest_quantity_chage.lower():
                     details["modification_reason"] = "Category update"
+                elif "manual" in latest_quantity_chage.lower() or "changed" in latest_quantity_chage.lower():
+                    details["modification_reason"] = "Manual update"
                 else:
                     details["modification_reason"] = "Unknown"
 

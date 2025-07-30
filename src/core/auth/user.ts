@@ -1,4 +1,4 @@
-import { PermissionMap, PermissionEntry, FlatPermissionEntry } from "@auth/permissions";
+import { PermissionMap, PermissionEntry, FlatPermissionEntry } from "./permissions";
 
 export class User {
     id: number;

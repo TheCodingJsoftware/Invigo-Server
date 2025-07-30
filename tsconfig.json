@@ -36,8 +36,8 @@
             "@config/*": [
                 "config/*"
             ],
-            "@auth/*": [
-                "auth/*"
+            "@core/*": [
+                "core/*"
             ],
         }
     },

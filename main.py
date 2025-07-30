@@ -1,4 +1,3 @@
-import asyncio
 import logging
 import os
 import shutil
@@ -11,11 +10,12 @@ from datetime import datetime, timedelta
 from functools import partial
 from typing import Literal
 
+import asyncio
 import msgspec
 import schedule
 import tornado
 import tornado.log
-from tornado.ioloop import IOLoop, PeriodicCallback
+from tornado.ioloop import IOLoop
 
 import config.variables as variables
 from config.environments import Environment
