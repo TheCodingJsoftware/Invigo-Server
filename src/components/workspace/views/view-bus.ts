@@ -1,5 +1,4 @@
-import {Permissions} from "../../../core/auth/permissions";
-import {SessionSettingsManager} from "../../../core/settings/session-settings";
+import {SessionSettingsManager} from "@core/settings/session-settings";
 import {DataTypeSwitcherMode} from "@config/data-type-mode";
 import {AssemblyViewMode} from "@config/assembly-view-mode";
 import {PartViewMode} from "@config/part-view-mode";

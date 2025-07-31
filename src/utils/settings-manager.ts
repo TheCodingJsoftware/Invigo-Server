@@ -32,7 +32,7 @@ function openDb(name: string, version: number, onUpgrade?: (db: IDBDatabase) => 
 }
 
 export class SettingsManager<T extends Record<string, JsonValue>> {
-    private dbName: string;
+    private readonly dbName: string;
     private store = "settings";
     private key = "root";
     private db: IDBDatabase | null = null;

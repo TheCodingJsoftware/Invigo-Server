@@ -1,8 +1,8 @@
 import "beercss"
 import '@static/css/style.css';
 import '@static/css/theme.css';
-import { Permissions, PermissionMap } from "../../core/auth/permissions";
-import { User } from "../../core/auth/user";
+import { Permissions, PermissionMap } from "@core/auth/permissions";
+import { User } from "@core/auth/user";
 
 interface Role {
     id: number;
@@ -26,12 +26,6 @@ async function updateRole(role: Role): Promise<void> {
 
 async function deleteRole(role: Role): Promise<void> {
     await fetch(`/api/roles?id=${role.id}`, { method: "DELETE" });
-}
-
-function formatText(text: string): string {
-    return text
-        .replace(/_/g, " ")
-        .replace(/\b\w/g, (char) => char.toUpperCase());
 }
 
 function renderRole(role: Role): HTMLElement {
@@ -98,6 +92,7 @@ async function loadRoles() {
     const container = document.getElementById("roles-list")!;
     container.innerHTML = "";
     roles.forEach(role => container.appendChild(renderRole(role)));
+    return container;
 }
 
 document.getElementById("add-role")?.addEventListener("click", async () => {

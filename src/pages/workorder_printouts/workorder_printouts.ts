@@ -13,7 +13,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         <i>close</i>
                     </button>
                 </nav>
-                <img class="responsive round nest-image" src="http://invi.go/image/${button.dataset.image}">
+                <img class="responsive round nest-image" src="http://invi.go/image/${button.dataset.image}" alt="nest-image">
             `, { id: "workorder-dialog", autoRemove: true });
 
             dialog.query<HTMLButtonElement>("#close-btn")?.addEventListener("click", () => {

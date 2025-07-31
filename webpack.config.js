@@ -170,7 +170,7 @@ module.exports = {
                     options: { cacheName: 'html-pages' },
                 },
                 {
-                    urlPattern: /\.(?:js)$/,
+                    urlPattern: /\.js$/,
                     handler: 'NetworkOnly',
                     options: { cacheName: 'js-cache' },
                 },

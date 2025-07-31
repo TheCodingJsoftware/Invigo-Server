@@ -1,5 +1,5 @@
 import {DataTypeSwitcherMode} from "@config/data-type-mode";
-import {Permissions} from "../../../../core/auth/permissions";
+import {Permissions} from "@core/auth/permissions";
 import {ViewBus} from "@components/workspace/views/view-bus";
 import {DataTypeSwitcher} from "@components/workspace/views/switchers/data-type-switcher";
 import {PartViewSwitcher} from "@components/workspace/views/switchers/part-view-switcher";

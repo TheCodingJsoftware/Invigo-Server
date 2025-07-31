@@ -26,7 +26,7 @@ export class Sheet {
     }
 
     getPOItemName(): string {
-        return `${this.thickness} ${this.material} width: ${this.width}in length: ${this.length}in`;
+        return `${this.thickness} ${this.material}<br>width: ${this.width}in length: ${this.length}in`;
     }
 
     getArea(): number {

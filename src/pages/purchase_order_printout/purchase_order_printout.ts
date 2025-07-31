@@ -16,6 +16,67 @@ import { createSwapy } from "swapy";
 import { EmailDialogComponent } from "@components/email-dialog";
 import { add } from "date-fns";
 
+interface ColumnToggleOptions {
+    columnName: string;
+    defaultVisible?: boolean;
+    storageKey?: string;
+}
+
+class ColumnToggler {
+    private readonly checkboxId: string;
+    private readonly columnName: string;
+    private readonly storageKey: string;
+    private readonly defaultVisible: boolean;
+    private checkbox: HTMLInputElement;
+
+    constructor(options: ColumnToggleOptions) {
+        this.columnName = options.columnName;
+        this.defaultVisible = options.defaultVisible ?? true;
+        this.checkboxId = `show-${this.columnName}`;
+        this.storageKey = options.storageKey ?? `show-${this.columnName}`;
+
+        const checkbox = document.querySelector(`#${this.checkboxId}`) as HTMLInputElement;
+        if (!checkbox) {
+            throw new Error(`Checkbox with id '${this.checkboxId}' not found`);
+        }
+        this.checkbox = checkbox;
+    }
+
+    initialize(): void {
+        // Set initial state from localStorage or default
+        const savedState = localStorage.getItem(this.storageKey);
+        this.checkbox.checked = savedState !== null
+            ? savedState === "true"
+            : this.defaultVisible;
+
+        // Apply initial state
+        this.toggleColumns(this.checkbox.checked);
+
+        // Add event listener
+        this.checkbox.addEventListener("click", () => {
+            localStorage.setItem(this.storageKey, this.checkbox.checked.toString());
+            this.toggleColumns(this.checkbox.checked);
+        });
+    }
+
+    private toggleColumns(visible: boolean): void {
+        const tables = document.querySelectorAll("table");
+        tables.forEach(table => {
+            const headerCells = table.querySelectorAll(`th[data-column="${this.columnName}"]`);
+            headerCells.forEach(th => {
+                const index = Array.from(th.parentElement?.children || []).indexOf(th);
+                if (index === -1) return;
+
+                th.classList.toggle('hidden', !visible);
+                const bodyCells = table.querySelectorAll(`tbody tr td:nth-child(${index + 1})`);
+                bodyCells.forEach(cell => {
+                    cell.classList.toggle('hidden', !visible);
+                });
+            });
+        });
+    }
+}
+
 class ItemsTable implements BaseComponent {
     private readonly components: Component[] = [];
     private readonly componentsOrderItems: POItemDict[] = [];
@@ -95,45 +156,35 @@ class ItemsTable implements BaseComponent {
     }
 
     generateTable(): HTMLElement {
-        const subtotal = this.purchaseOrder.getSheetsCost() + this.purchaseOrder.getComponentsCost();
-
-        const gstRate = this.purchaseOrder.meta_data.business_info.gst_rate ?? 0.05; // Default 5% GST
-        const pstRate = this.purchaseOrder.meta_data.business_info.pst_rate ?? 0.07; // Default 7% PST
-
-        const gstAmount = subtotal * gstRate;
-        const pstAmount = subtotal * pstRate;
-
-        const totalWithTaxes = subtotal + gstAmount + pstAmount;
-
         const template = document.createElement("template");
         template.innerHTML = `
         <table class="no-space border">
             <thead>
                 <tr>
-                    <th>Description</th>
-                    <th>Part Number</th>
-                    <th>Order Quantity</th>
-                    <th data-column="unitPrice">Unit Price</th>
-                    <th data-column="price">Price</th>
+                    <th class="no-line">Description</th>
+                    <th class="no-line" data-column="partNumber">Part Number</th>
+                    <th class="no-line">Order<br>Quantity</th>
+                    <th class="no-line" data-column="unitPrice">Unit<br>Price</th>
+                    <th class="no-line" data-column="price">Price</th>
                 </tr>
             </thead>
             <tbody>
                 ${this.sheets.map(sheet => `
                 <tr>
-                    <td>${sheet.getPOItemName()}</td>
-                    <td></td>
+                    <td class="no-line tiny-padding">${sheet.getPOItemName()}</td>
+                    <td data-column="partNumber"></td>
                     <td>${this.getSheetOrderQuantity(sheet)} (${this.formatNumber(this.getSheetOrderQuantity(sheet) * ((sheet.length * sheet.width) / 144) * sheet.pounds_per_square_foot)} lbs)</td>
-                    <td data-column="unitPrice">${this.formatPrice(sheet.price_per_pound)}/lb CAD</td>
-                    <td data-column="price">${this.formatPrice(sheet.price_per_pound * this.getSheetOrderQuantity(sheet) * ((sheet.length * sheet.width) / 144) * sheet.pounds_per_square_foot)} CAD</td>
+                    <td data-column="unitPrice">${this.formatPrice(sheet.price_per_pound)}/lb</td>
+                    <td data-column="price">${this.formatPrice(sheet.price_per_pound * this.getSheetOrderQuantity(sheet) * ((sheet.length * sheet.width) / 144) * sheet.pounds_per_square_foot)}</td>
                 </tr>
                 `).join("")}
                 ${this.components.map(component => `
                 <tr>
                     <td>${component.part_name}</td>
-                    <td>${component.part_number}</td>
+                    <td data-column="partNumber">${component.part_number}</td>
                     <td>${this.getComponentOrderQuantity(component)}</td>
-                    <td data-column="unitPrice">${this.formatPrice(component.price)} ${component.use_exchange_rate ? "USD" : "CAD"}</td>
-                    <td data-column="price">${this.formatPrice(component.price * this.getComponentOrderQuantity(component))} ${component.use_exchange_rate ? "USD" : "CAD"}</td>
+                    <td data-column="unitPrice">${this.formatPrice(component.price)}</td>
+                    <td data-column="price">${this.formatPrice(component.price * this.getComponentOrderQuantity(component))}</td>
                 </tr>
                 `).join("")}
             </tbody>
@@ -149,10 +200,6 @@ class ItemsTable implements BaseComponent {
 
     formatPrice(price: number): string {
         return `$${price.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-    }
-
-    formatPercent(value: number): string {
-        return `${(value * 100).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%`;
     }
 
     public hide(): void {
@@ -200,8 +247,7 @@ class PurchaseOrderPrintout {
             Effect.map(async (data) => {
                 this.purchaseOrder = new PurchaseOrder();
                 await this.purchaseOrder.loadAll(data);
-
-                this.setUpSections();
+                await this.setUpSections();
                 this.setUpTabs();
                 this.setActiveTab();
                 this.purchaseOrderTypeChanged();
@@ -221,7 +267,14 @@ class PurchaseOrderPrintout {
                     day: "numeric"
                 });
 
+                const priceToggler = new ColumnToggler({
+                    columnName: "partNumber",
+                    defaultVisible: true,
+                    storageKey: "show-partNumber" // optional custom storage key
+                });
+                priceToggler.initialize();
 
+                this.totalCostComponent.updateTotalPrice();
                 this.toggleLoadingIndicator(false);
             }),
         );

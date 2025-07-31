@@ -130,7 +130,6 @@ class PageHost {
         await this.partPage.load(mode);
     }
 
-
     private renderAssemblyPage(mode: AssemblyViewMode) {
         const page = document.createElement("div");
         page.textContent = `Assembly Page: ${mode}`;
@@ -172,7 +171,8 @@ class WorkspacePage {
     }
 
     resyncState() {
-        this.mainElement.innerHTML = "";
+        // this.mainElement.innerHTML = "";
+        ViewBus.update({ dataType: SessionSettingsManager.get().lastActiveDataType, viewMode: SessionSettingsManager.get().lastActiveView });
     }
 
     registerSocketHandlers() {
@@ -285,7 +285,6 @@ class WorkspacePage {
         dialog.query<HTMLButtonElement>("#close-btn")?.addEventListener("click", () => {
             ui("#profile-dialog");
         });
-
     }
 
     loadThemeSettings() {

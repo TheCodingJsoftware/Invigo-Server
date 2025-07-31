@@ -3,7 +3,7 @@ import "@utils/theme"
 import QRCode from 'qrcode'
 
 async function loadQRCodes(){
-    document.querySelectorAll('.qr-item').forEach(async item => {
+    for (const item of document.querySelectorAll('.qr-item')) {
         const name = item.getAttribute('data-name');
         const baseUrl = "http://invi.go/";
         const encodedUrl = encodeURI(
@@ -28,7 +28,7 @@ async function loadQRCodes(){
         qrDiv.addEventListener('click', () => {
             window.open(encodedUrl, '_blank');
         });
-    });
+    }
 }
 
 document.addEventListener('DOMContentLoaded', async function () {

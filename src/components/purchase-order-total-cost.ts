@@ -55,7 +55,7 @@ export class PurchaseOrderTotalCost implements BaseComponent {
                         </tr>
                         <tr>
                             <th class="min right-align">Total</th>
-                            <th class="left-align" id="total-price">${this.formatPrice(totalWithTaxes)}</th>
+                            <th class="left-align" id="total-price">${this.formatPrice(totalWithTaxes)} ${this.getPriceSuffix()}</th>
                         </tr>
                     <tbody>
                 </table>
@@ -68,6 +68,16 @@ export class PurchaseOrderTotalCost implements BaseComponent {
         this.element.id = `purchase-order-total-cost-${this.purchaseOrderId}`;
 
         return this.element;
+    }
+
+    getPriceSuffix(): string {
+        if (this.purchaseOrder.components.length > 0) {
+            return this.purchaseOrder.components[0].use_exchange_rate ? "USD" : "CAD";
+        } else if (this.purchaseOrder.sheets.length > 0) {
+            return "CAD"
+        } else {
+            return "";
+        }
     }
 
     updateTotalPrice(): void {
