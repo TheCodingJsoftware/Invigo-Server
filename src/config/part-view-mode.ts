@@ -1,7 +1,6 @@
 export enum PartViewMode {
     Global = "global",
     Job = "job",
-    Assembly = "assembly",
 }
 
 export const PartViewConfig: Record<PartViewMode, {
@@ -9,11 +8,6 @@ export const PartViewConfig: Record<PartViewMode, {
     label: string;
     icon: string;
 }> = {
-    [PartViewMode.Assembly]: {
-        dbView: "view_grouped_laser_cut_parts_by_assembly",
-        label: "Assembly View",
-        icon: "precision_manufacturing",
-    },
     [PartViewMode.Job]: {
         dbView: "view_grouped_laser_cut_parts_by_job",
         label: "Job View",

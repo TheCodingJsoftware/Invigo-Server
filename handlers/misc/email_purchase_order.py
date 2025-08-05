@@ -4,6 +4,7 @@ import json
 import logging
 import os
 import tempfile
+import traceback
 
 import tornado
 
@@ -55,7 +56,7 @@ class EmailPurchaseOrderHandler(BaseHandler):
             self.set_status(200)
             self.write("Email sent.")
         except Exception as e:
-            logging.exception("Email send failed")
+            logging.exception(traceback.format_exc())
             self.set_status(500)
             self.write(f"Email send failed: {e}")
         finally:

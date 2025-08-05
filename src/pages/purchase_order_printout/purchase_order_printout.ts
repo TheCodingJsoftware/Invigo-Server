@@ -13,8 +13,7 @@ import { PurchaseOrderDetails } from "@components/purchase-order-details";
 import { QRCodeComponent } from "@components/qr-code-component";
 import { PurchaseOrderTotalCost } from "@components/purchase-order-total-cost";
 import { createSwapy } from "swapy";
-import { EmailDialogComponent } from "@components/email-dialog";
-import { add } from "date-fns";
+import { EmailDialogComponent } from "@components/common/dialog/email-dialog";
 
 interface ColumnToggleOptions {
     columnName: string;

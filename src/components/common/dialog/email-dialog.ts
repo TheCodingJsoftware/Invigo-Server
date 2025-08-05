@@ -34,42 +34,42 @@ export class EmailDialogComponent extends DialogComponent {
     purchaseOrder: PurchaseOrder;
 
     constructor(purchaseOrder: PurchaseOrder) {
-        console.log(purchaseOrder);
-        super(`
-            <div class="">
-                <div class="s12 field label border small-round">
-                    <input type="email" id="email-from" value="${purchaseOrder.meta_data.contact_info.name} (${purchaseOrder.meta_data.contact_info.email})" disabled>
-                    <label for="email-from">From</label>
+        super({
+            id: "email-dialog",
+            title: purchaseOrder.getName(),
+            bodyContent: `
+                <div class="padding">
+                    <div class="s12 field label border small-round">
+                        <input type="email" id="email-from" value="${purchaseOrder.meta_data.contact_info.name} (${purchaseOrder.meta_data.contact_info.email})" disabled>
+                        <label for="email-from">From</label>
+                    </div>
+                    <div class="s12 field label border small-round">
+                        <input type="email" id="email-to" value="${purchaseOrder.meta_data.vendor.email}" required>
+                        <label for="email-to">To</label>
+                        <span class="helper">${purchaseOrder.meta_data.vendor.name}</span>
+                    </div>
+                    <div class="s12 field label border small-round">
+                        <input type="email" id="email-cc">
+                        <label>CC (Optional)</label>
+                    </div>
+                    <div class="s12 field label border small-round">
+                        <input type="text" id="email-subject" value="PO ${purchaseOrder.meta_data.purchase_order_number} from ${purchaseOrder.meta_data.business_info.name}">
+                        <label>Subject</label>
+                    </div>
+                    <div class="s12 border no-round">
+                        <div id="email-body" style="z-index: 0;"></div>
+                    </div>
                 </div>
-                <div class="s12 field label border small-round">
-                    <input type="email" id="email-to" value="${purchaseOrder.meta_data.vendor.email}" required>
-                    <label for="email-to">To</label>
-                    <span class="helper">${purchaseOrder.meta_data.vendor.name}</span>
-                </div>
-                <div class="s12 field label border small-round">
-                    <input type="email" id="email-cc">
-                    <label>CC (Optional)</label>
-                </div>
-                <div class="s12 field label border small-round">
-                    <input type="text" id="email-subject" value="PO ${purchaseOrder.meta_data.purchase_order_number} from ${purchaseOrder.meta_data.business_info.name}">
-                    <label>Subject</label>
-                </div>
-                <div class="s12 border no-round">
-                    <div id="email-body" style="z-index: 0;"></div>
-                </div>
-                <nav class="s12 row top-margin right-align">
-                    <p class="italic max">This printout is automatically attached as a PDF.</p>
-                    <button type="button" id="email-cancel">
-                        <i>close</i>
-                        <span>Close</span>
-                    </button>
-                    <button type="button" id="email-send">
-                        <i>send</i>
-                        <span>Send</span>
-                    </button>
-                </nav>
-            </div>
-        `, { id: "email-dialog", autoRemove: true });
+            `,
+            footerContent: `
+                    <nav class="s12 row top-margin right-align">
+                        <p class="italic max">This printout is automatically attached as a PDF.</p>
+                        <button type="button" id="email-send">
+                            <i>send</i>
+                            <span>Send</span>
+                        </button>
+                    </nav>`
+        });
         this.purchaseOrder = purchaseOrder;
 
         this.init();
@@ -82,6 +82,7 @@ export class EmailDialogComponent extends DialogComponent {
                 loadEditorModules(),
             ]);
 
+            // ui("mode") can return auto, this is why we check.
             const editorTheme = ui("mode") === "dark" ? "dark" : "light";
 
             this.editor = new Editor({
@@ -97,8 +98,6 @@ export class EmailDialogComponent extends DialogComponent {
             this.editor.on("change", () => {
                 localStorage.setItem("email-body", this.editor.getMarkdown());
             });
-
-            this.query("#email-cancel")?.addEventListener("click", () => this.close());
 
             this.query("#email-send")?.addEventListener("click", async () => {
                 const to = (this.query<HTMLInputElement>("#email-to")?.value || "").trim();

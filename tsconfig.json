@@ -5,6 +5,8 @@
         "moduleResolution": "node",
         "outDir": "./public",
         "rootDir": "./src",
+        "experimentalDecorators": true,
+        "emitDecoratorMetadata": true,
         "strict": true,
         "allowJs": true,
         "checkJs": false,

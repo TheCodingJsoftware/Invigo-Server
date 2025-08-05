@@ -6,7 +6,7 @@ body:not(.loaded) {
     display: none;
 }
 
-.logo{
+.logo {
     width: 100px;
     height: auto;
 }
@@ -19,6 +19,10 @@ body:not(.loaded) {
 ::-moz-selection {
     background-color: var(--primary);
     color: var(--on-primary);
+}
+
+.green-font {
+    color: #4caf50;
 }
 
 /* workspace_dashboard.html */
@@ -141,4 +145,62 @@ body:not(.loaded) {
 .workorder-image {
     -webkit-filter: invert(0.9);
     filter: invert(0.9);
+}
+
+/* wokrspace.html */
+
+.finsihed>td {
+    color: red !important;
+}
+
+.table-checkbox {
+    opacity: 0;
+    transition: var(--speed3);
+}
+
+.table-checkbox.show-checkbox {
+    opacity: 1;
+}
+
+tr {
+    transition: background-color var(--speed1);
+}
+
+tr.selected {
+    background-color: var(--primary-container) !important;
+}
+
+.fade-hidden {
+    opacity: 0;
+    pointer-events: none;
+    visibility: hidden;
+}
+
+.floating-part-menu {
+    transition:
+        opacity var(--speed3) ease,
+        transform var(--speed3) ease;
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    z-index: 10 !important;
+}
+
+.floating-part-menu.fade-hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.floating-part-menu .handle {
+    cursor: grab;
+}
+
+.floating-part-menu.dragging .handle {
+    cursor: grabbing;
+    color: var(--primary);
+}
+
+.floating-part-menu.dragging {
+    transition:
+        transform var(--speed1) !important;
 }

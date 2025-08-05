@@ -2,6 +2,7 @@ import json
 import logging
 import os
 from datetime import timedelta
+from typing import Optional
 
 import asyncpg
 import msgspec
@@ -260,16 +261,3 @@ class WorkspaceDB(BaseWithDBPool):
                 part_id,
             )
             return dict(row) if row else None
-
-    @ensure_connection
-    async def get_grouped_parts_view(self, view_name: str) -> list[dict]:
-        if view_name not in {
-            "view_grouped_laser_cut_parts_by_assembly",
-            "view_grouped_laser_cut_parts_by_job",
-            "view_grouped_laser_cut_parts_global",
-        }:
-            raise ValueError("Invalid view name")
-
-        async with self.db_pool.acquire() as conn:
-            rows = await conn.fetch(f"SELECT * FROM {view_name}")
-            return [dict(row) for row in rows]

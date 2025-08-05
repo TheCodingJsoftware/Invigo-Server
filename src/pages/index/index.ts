@@ -2,9 +2,9 @@ import "beercss"
 import '@static/css/style.css';
 import '@static/css/theme.css';
 
- if ('serviceWorker' in navigator) {
-     navigator.serviceWorker.register('/service-worker.js');
- }
+//  if ('serviceWorker' in navigator) {
+//      navigator.serviceWorker.register('/service-worker.js');
+//  }
 
 document.addEventListener("DOMContentLoaded", async () => {
     await fetch("/api/protected", { credentials: "include" }).then(async (res) => {

@@ -35,6 +35,14 @@ interface WorkspaceJobData {
     modified_at: string;
 }
 
+export interface GroupedPartsChangeData {
+    operation: "insert" | "update" | "delete";
+    job_id?: number;
+    part_name: string;
+    flowtag: string[];
+    flowtag_index: number;
+}
+
 type Listener<T extends WorkspaceMessage> = (data: T) => void;
 
 type WorkspaceMessage =
@@ -46,7 +54,9 @@ type WorkspaceMessage =
     | { type: "assembly_deleted"; job_id: number; data: any }
     | { type: "part_created"; part: PartData }
     | { type: "part_updated"; part_id: number; delta: Partial<PartData> }
-    | { type: "part_deleted"; part_id: number; };
+    | { type: "part_deleted"; part_id: number; }
+    | ({ type: "grouped_parts_job_view_changed" } & GroupedPartsChangeData)
+    | ({ type: "grouped_parts_global_view_changed" } & GroupedPartsChangeData);
 
 export class WorkspaceWebSocket {
     private static socket: WebSocket;

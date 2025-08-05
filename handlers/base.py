@@ -28,6 +28,7 @@ from utils.database.sheets_inventory_db import SheetsInventoryDB
 from utils.database.shipping_address_db import ShippingAddressesDB
 from utils.database.users_db import UsersDB
 from utils.database.vendors_db import VendorsDB
+from utils.database.view_db import ViewDB
 from utils.database.workorders_db import WorkordersDB
 from utils.database.workspace_db import WorkspaceDB
 
@@ -58,6 +59,7 @@ class BaseHandler(RequestHandler):
     shipping_addresses_db = ShippingAddressesDB()
     users_db = UsersDB()
     roles_db = RolesDB()
+    view_db = ViewDB()
 
     def write_error(self, status_code: int, **kwargs):
         if exc_info := kwargs.get("exc_info"):

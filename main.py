@@ -1,3 +1,4 @@
+import asyncio
 import logging
 import os
 import shutil
@@ -10,7 +11,6 @@ from datetime import datetime, timedelta
 from functools import partial
 from typing import Literal
 
-import asyncio
 import msgspec
 import schedule
 import tornado
@@ -33,6 +33,8 @@ TABLE_CHANNELS = [
     "workspace_laser_cut_parts",
     "workspace_components",
     "workspace_nests",
+    "view_grouped_laser_cut_parts_by_job",
+    "view_grouped_laser_cut_parts_global",
 ]
 
 
@@ -63,30 +65,42 @@ async def workspace_notify_handler(conn, pid, channel, payload):
             WebSocketWorkspaceHandler.broadcast({"type": "job_updated", "job": job})
         elif op == "DELETE":
             WebSocketWorkspaceHandler.broadcast({"type": "job_deleted", "job_id": job_id})
+    elif table == "view_grouped_laser_cut_parts_by_job":
+        # This notification means the grouped view for a specific job changed
+        part_name = msg.get("part_name")
+        flowtag = msg.get("flowtag")
+        flowtag_index = msg.get("flowtag_index")
 
-    # elif table in ["workspace_grouped_assemblies", "workspace_assemblies"]:
-    #     # You can resolve or fetch data if needed
-    #     WebSocketWorkspaceHandler.broadcast(
-    #         {
-    #             "type": f"assembly_{op.lower()}",
-    #             "job_id": job_id,
-    #             "data": msg.get("data"),  # optional
-    #         }
-    #     )
-
-    elif table in ["workspace_laser_cut_parts"]:
         if op == "INSERT":
-            if part_id is not None:
-                part = await workspace_db.get_grouped_part_by_id(part_id)
-                WebSocketWorkspaceHandler.broadcast({"type": "part_created", "part": part})
-            else:
-                logging.warning(f"part_created missing id in payload: {msg}")
-
-            # WebSocketWorkspaceHandler.broadcast({"type": "part_created", "part": msg.get("data")})
+            WebSocketWorkspaceHandler.broadcast(
+                {"type": "grouped_parts_job_view_changed", "operation": "insert", "job_id": job_id, "part_name": part_name, "flowtag": flowtag, "flowtag_index": flowtag_index}
+            )
         elif op == "UPDATE":
-            WebSocketWorkspaceHandler.broadcast({"type": "part_updated", "part_id": part_id, "delta": delta})
+            WebSocketWorkspaceHandler.broadcast(
+                {"type": "grouped_parts_job_view_changed", "operation": "update", "job_id": job_id, "part_name": part_name, "flowtag": flowtag, "flowtag_index": flowtag_index}
+            )
         elif op == "DELETE":
-            WebSocketWorkspaceHandler.broadcast({"type": "part_deleted", "part_id": part_id})
+            WebSocketWorkspaceHandler.broadcast(
+                {"type": "grouped_parts_job_view_changed", "operation": "delete", "job_id": job_id, "part_name": part_name, "flowtag": flowtag, "flowtag_index": flowtag_index}
+            )
+    elif table == "view_grouped_laser_cut_parts_global":
+        # This notification means the global grouped view changed
+        part_name = msg.get("part_name")
+        flowtag = msg.get("flowtag")
+        flowtag_index = msg.get("flowtag_index")
+
+        if op == "INSERT":
+            WebSocketWorkspaceHandler.broadcast(
+                {"type": "grouped_parts_global_view_changed", "operation": "insert", "part_name": part_name, "flowtag": flowtag, "flowtag_index": flowtag_index}
+            )
+        elif op == "UPDATE":
+            WebSocketWorkspaceHandler.broadcast(
+                {"type": "grouped_parts_global_view_changed", "operation": "update", "part_name": part_name, "flowtag": flowtag, "flowtag_index": flowtag_index}
+            )
+        elif op == "DELETE":
+            WebSocketWorkspaceHandler.broadcast(
+                {"type": "grouped_parts_global_view_changed", "operation": "delete", "part_name": part_name, "flowtag": flowtag, "flowtag_index": flowtag_index}
+            )
 
 
 setup_logging()

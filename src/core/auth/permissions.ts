@@ -110,12 +110,7 @@ export const PermissionTree = {
             value: "part_job_view",
             label: "Job Part View",
             description: "Allows viewing parts grouped by job.",
-        },
-        [PartViewMode.Assembly]: {
-            value: "part_assembly_view",
-            label: "Assembly Part View",
-            description: "Allows viewing parts grouped under their assemblies.",
-        },
+        }
     },
 
     NestView: {

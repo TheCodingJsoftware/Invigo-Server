@@ -1,7 +1,5 @@
 import os
 
-from matplotlib.dviread import Page
-
 from handlers.auth.client_name import GetClientNameHandler
 from handlers.auth.connect import ConnectHandler
 from handlers.auth.is_client_trusted import IsClientTrustedHandler
@@ -112,6 +110,7 @@ from handlers.vendors.get_vendor import GetVendorHandler
 from handlers.vendors.save_vendor import SaveVendorHandler
 from handlers.wayback_machine.fetch_data import FetchDataHandler
 from handlers.wayback_machine.get_data import WayBackMachineDataHandler
+from handlers.wayback_machine.way_back_machine import WayBackMachineHandler
 from handlers.websocket.software import WebSocketSoftwareHandler
 from handlers.websocket.website import WebSocketWebsiteHandler
 from handlers.websocket.workspace import WebSocketWorkspaceHandler
@@ -128,6 +127,7 @@ from handlers.workspace.get_all_recut_parts import WorkspaceGetAllRecutPartsHand
 from handlers.workspace.get_entries_by_name import WorkspaceGetEntriesByNamesHandler
 from handlers.workspace.get_entry import WorkspaceGetEntryHandler
 from handlers.workspace.get_job import WorkspaceGetJobHandler
+from handlers.workspace.get_part_data import GetPartDataHandler
 from handlers.workspace.get_parts_by_job import WorkspaceGetPartsByJobHandler
 from handlers.workspace.get_recut_parts_from_job import (
     WorkspaceGetRecutPartsFromJobHandler,
@@ -136,11 +136,12 @@ from handlers.workspace.part_view_handler import PartViewDataHandler
 from handlers.workspace.update_entry import WorkspaceUpdateEntryHandler
 from handlers.workspace.update_grouped_laser_cut_parts import WorkspaceUpdateGroupHandler
 from handlers.workspace.workspace import WorkspaceHandler
+from handlers.workspace.workspace_part_view import WorkspacePartViewHandler
 from routes.route import route
 
 page_routes = [
     route(r"/", PageHandler, name="index", template_name="index.html"),
-    route(r"/way_back_machine", PageHandler, template_name="way_back_machine.html"),
+    route(r"/way_back_machine", WayBackMachineHandler),
     route(
         r"/workspace_dashboard",
         PageHandler,
@@ -222,8 +223,10 @@ api_routes = [
     route(r"/send_email", SendEmailHandler),
     # Workspace Routes
     route(r"/workspace", WorkspaceHandler),
-    route(r"/api/part_view", PartViewDataHandler),
     route(r"/api/workspace/update_group", WorkspaceUpdateGroupHandler),
+    route(r"/api/workspace/view/parts/(.*)", PartViewDataHandler),
+    route(r"/api/workspace/get/part", GetPartDataHandler),
+    route(r"/api/workspace/laser_cut_part", WorkspacePartViewHandler),
     # OLD Workspace Routes
     route(r"/workspace/get_file/(.*)", WorkspaceFileReceiverHandler),
     route(r"/workspace/add_job", WorkspaceAddJobHandler),
