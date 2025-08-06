@@ -162,7 +162,7 @@ class ItemsTable implements BaseComponent {
                 <tr>
                     <th class="no-line">Description</th>
                     <th class="no-line" data-column="partNumber">Part Number</th>
-                    <th class="no-line">Order<br>Quantity</th>
+                    <th class="no-line">Order<br>Qty</th>
                     <th class="no-line" data-column="unitPrice">Unit<br>Price</th>
                     <th class="no-line" data-column="price">Price</th>
                 </tr>
@@ -179,7 +179,7 @@ class ItemsTable implements BaseComponent {
                 `).join("")}
                 ${this.components.map(component => `
                 <tr>
-                    <td>${component.part_name}</td>
+                    <td class="medium-width no-line tiny-padding">${component.part_name}</td>
                     <td data-column="partNumber">${component.part_number}</td>
                     <td>${this.getComponentOrderQuantity(component)}</td>
                     <td data-column="unitPrice">${this.formatPrice(component.price)}</td>
@@ -637,6 +637,7 @@ const handleClipboardCopy = async (blob: Blob): Promise<boolean> => {
         return false;
     }
 };
+
 function addPageGuides(container: HTMLElement) {
     const pageHeight = 1123; // A4 at 96dpi
     const totalHeight = container.scrollHeight;
@@ -655,6 +656,7 @@ function addPageGuides(container: HTMLElement) {
         container.appendChild(guide);
     }
 }
+
 document.addEventListener("DOMContentLoaded", () => {
     addPageGuides(document.querySelector(".page-grid-overlay") as HTMLElement);
     loadTheme();

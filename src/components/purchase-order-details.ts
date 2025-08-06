@@ -4,6 +4,9 @@ import { BusinessInfo } from "@models/business-info";
 import { ContactInfo } from "@models/contact-info";
 import { PurchaseOrder } from "@models/purchase-order";
 import { Vendor } from "@models/vendor";
+import flatpickr from "flatpickr";
+require("flatpickr/dist/themes/dark.css");
+import { Instance as FlatpickrInstance } from "flatpickr/dist/types/instance";
 
 export class PurchaseOrderDetails implements BaseComponent {
     purchaseOrder: PurchaseOrder;
@@ -83,7 +86,7 @@ export class PurchaseOrderDetails implements BaseComponent {
                     <div class="s6 small small-round field label prefix border">
                         <i>event</i>
                         <input type="date" id="required-by-date" value="${this.purchaseOrder.meta_data.order_date}">
-                        <label>Required By Date</label>
+                        <label>Required By</label>
                     </div>
                 </div>
             </div>
@@ -107,6 +110,13 @@ export class PurchaseOrderDetails implements BaseComponent {
     public async render(): Promise<void> {
         const container = document.querySelector('#purchase-order-details-container') as HTMLDivElement;
         container.appendChild(this.build());
+
+        const requiredByDate = flatpickr("#required-by-date", {
+            altInput: true,
+            altFormat: "F j, Y",
+            dateFormat: "Y-m-d",
+        }) as FlatpickrInstance;
+
         return Promise.resolve();
     }
 
