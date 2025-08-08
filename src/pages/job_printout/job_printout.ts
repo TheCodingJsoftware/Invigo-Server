@@ -70,10 +70,12 @@ class JobPrintout {
 
                 const dateShipped_fp = flatpickr("#date-shipped", {
                     enableTime: true,
+                    altFormat: "F j, Y",
                     dateFormat: "Y-m-d h:i K"
                 }) as FlatpickrInstance;
                 const dateExpected_fp = flatpickr("#date-expected", {
                     enableTime: true,
+                    altFormat: "F j, Y",
                     dateFormat: "Y-m-d h:i K"
                 }) as FlatpickrInstance;
 

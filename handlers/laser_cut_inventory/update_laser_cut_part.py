@@ -1,3 +1,5 @@
+import logging
+
 import msgspec
 
 from handlers.base import BaseHandler
@@ -20,3 +22,4 @@ class UpdateLaserCutPartHandler(BaseHandler):
         except Exception as e:
             self.set_status(400)
             self.write({"error": str(e)})
+            logging.error(f"Error updating laser cut part {laser_cut_part_id}: {str(e)}. payload: {data}")

@@ -2,7 +2,6 @@ import "beercss"
 import '@static/css/style.css';
 import '@static/css/theme.css';
 
-// on DOM loaded:
 document.addEventListener("DOMContentLoaded", async () => {
     const articles = document.querySelectorAll("article[data-user-id]") as NodeListOf<HTMLElement>;
     articles.forEach((article) => {

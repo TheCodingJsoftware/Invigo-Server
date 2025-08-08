@@ -10,11 +10,25 @@ export class User {
         this.id = data.id;
         this.name = data.name;
         this.roles = data.roles;
-        this.permissions = data.permissions
-            .map(p => {
-                return PermissionMap[p];
-            })
-            .filter((p): p is FlatPermissionEntry => !!p);
+        this.permissions = data.permissions.map((value) => {
+            // First try from static PermissionMap
+            const staticPerm = PermissionMap[value];
+            if (staticPerm) return staticPerm;
+
+            // Fallback: if it's a dynamic tag permission
+            const match = value.match(/^(view_tag|apply_tag):(.+)$/);
+            if (match) {
+                const [, type, raw] = match;
+                const tag = raw.replace(/_/g, " ");
+                return {
+                    value,
+                    label: `${type === "view_tag" ? "View Tag" : "Apply Tag"}: ${tag}`,
+                    description: `${type === "view_tag" ? "Allows viewing" : "Allows applying actions"} to the "${tag}" tag.`
+                };
+            }
+
+            return null;
+        }).filter((p): p is FlatPermissionEntry => !!p);
     }
 
     getPermission(value: string): PermissionEntry | null {
@@ -23,6 +37,16 @@ export class User {
 
     can(permission: FlatPermissionEntry): boolean {
         return this.permissions.some(p => p.value === permission.value);
+    }
+
+    canViewTag(tag: string): boolean {
+        const key = `view_tag:${tag}`;
+        return this.permissions.some(p => p.value === key);
+    }
+
+    canApplyTag(tag: string): boolean {
+        const key = `apply_tag:${tag}`;
+        return this.permissions.some(p => p.value === key);
     }
 
     require(permission: FlatPermissionEntry, onAllow: () => void, onDeny?: () => void) {

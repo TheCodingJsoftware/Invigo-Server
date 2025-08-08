@@ -32,7 +32,8 @@ const puppeteer = require("puppeteer");
         }
     }, localStorageData);
 
-    await page.goto(url, { waitUntil: "networkidle0", timeout: 20000 });
+    const internalUrl = url.replace("http://invi.go", "http://10.0.0.10:5057");
+    await page.goto(internalUrl, { waitUntil: "networkidle0", timeout: 20000 });
 
     await page.evaluate(() => {
         if (window.applyStoredSettings) {

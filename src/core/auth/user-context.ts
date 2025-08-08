@@ -22,7 +22,7 @@ export class UserContext {
         this._user = value;
     }
 
-    static async initialize(): Promise<void> {
+    static async init(): Promise<void> {
         const context = UserContext.getInstance();
         context.user = await User.fetchCurrent();
     }

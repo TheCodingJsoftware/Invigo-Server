@@ -14,9 +14,11 @@ import {ViewSettingsManager} from "@core/settings/view-settings";
 import {ViewBus, ViewChangePayload} from "@components/workspace/views/view-bus";
 import {ViewSwitcherPanel} from "@components/workspace/views/switchers/view-switcher-panel";
 import {WorkspaceWebSocket} from "@core/websocket/workspace-websocket";
-import {FilterDialog} from "@components/common/dialog/filter-dialog";
 import {WorkspaceFilter} from "@models/workspace-filter";
 import {PartPage} from "@components/workspace/parts/part-page";
+import {WorkspaceSettings} from "@core/settings/workspace-settings";
+import {SortMenuButton} from "@components/common/buttons/sort-menu-button";
+import {FilterMenuButton} from "@components/common/buttons/sort-filter-button";
 
 let pageLoaded = false;
 
@@ -148,13 +150,21 @@ class WorkspacePage {
         themeToggleButton.classList.add("circle", "transparent");
         themeToggleButton.innerHTML = "<i>dark_mode</i>"
 
-        const filterButton = document.createElement("button");
-        filterButton.classList.add("circle", "transparent");
-        filterButton.innerHTML = "<i>filter_list</i>"
-        filterButton.onclick = () => this.showFilter();
+        const filterButton = new FilterMenuButton()
+        filterButton.onToggle.connect(({key, value}) => {
+            console.log(`Toggled ${key} to ${value}`);
+            this.resyncState();
+        })
+
+        const sortButton = new SortMenuButton();
+        sortButton.onToggle.connect(({ key, value }) => {
+            console.log(`Toggled ${key} to ${value}`);
+            this.resyncState();
+        });
 
         nav.appendChild(headline);
-        nav.appendChild(filterButton);
+        nav.appendChild(sortButton.button);
+        nav.appendChild(filterButton.button);
         nav.appendChild(themeToggleButton);
 
         document.body.appendChild(nav);
@@ -182,11 +192,6 @@ class WorkspacePage {
         nav.appendChild(profileButton);
 
         document.body.appendChild(nav);
-    }
-
-    showFilter() {
-        const filterDialog = new FilterDialog(this.workspaceFilterSettings);
-        filterDialog.applyButton.onclick = () => this.resyncState();
     }
 
     showProfile() {
@@ -236,6 +241,8 @@ class WorkspacePage {
 document.addEventListener("DOMContentLoaded", async () => {
     loadTheme();
     loadAnimationStyleSheet();
-    await UserContext.initialize();
+    await UserContext.init();
+    await WorkspaceSettings.load();
+    await WorkspaceFilter.init();
     new WorkspacePage();
 });

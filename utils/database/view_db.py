@@ -1,9 +1,12 @@
+import contextlib
 import logging
+import traceback
 from datetime import timedelta
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
 import asyncpg
+import msgspec
 from asyncpg import Pool
 
 from config.environments import Environment
@@ -142,20 +145,37 @@ class ViewDB(BaseWithDBPool):
         async with self.db_pool.acquire() as conn:
             await conn.execute(query, new_index, name, flowtag, flowtag_index)
 
+    def decode_json_fields(self, row, fields=("meta_data", "workspace_data")):
+        result = dict(row)
+        for field in fields:
+            if field in result and isinstance(result[field], str):
+                with contextlib.suppress(msgspec.DecodeError):
+                    result[field] = msgspec.json.decode(result[field])
+        return result
+
     @ensure_connection
-    async def get_grouped_parts_view(self, db_view: str, show_completed: int) -> list[dict]:
+    async def get_grouped_parts_view(self, db_view: str, show_completed: int, viewable_tags: list[str]) -> list[dict]:
         if db_view not in {
             "view_grouped_laser_cut_parts_by_job",
             "view_grouped_laser_cut_parts_global",
         }:
             raise ValueError("Invalid view name")
+        try:
+            async with self.db_pool.acquire() as conn:
+                where_clauses = []
+                params = []
 
-        async with self.db_pool.acquire() as conn:
-            query = f"SELECT * FROM {db_view}"
-            params = []
+                if show_completed == 0:
+                    where_clauses.append("is_completed = false")
 
-            if show_completed == 0:  # ❌ don't show completed
-                query += " WHERE is_completed = false"
+                if viewable_tags:
+                    where_clauses.append("current_flowtag = ANY($1::text[])")
+                    params.append(viewable_tags)
 
-            rows = await conn.fetch(query, *params)
-            return [dict(row) for row in rows]
+                where_sql = " WHERE " + " AND ".join(where_clauses) if where_clauses else ""
+                query = f"SELECT * FROM {db_view}{where_sql}"
+                rows = await conn.fetch(query, *params)
+                return [self.decode_json_fields(row) for row in rows]
+        except Exception as e:
+            logging.error(f"Error getting grouped parts view: {e} {traceback.format_exc()}")
+            raise e

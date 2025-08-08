@@ -204,3 +204,19 @@ tr.selected {
     transition:
         transform var(--speed1) !important;
 }
+
+.part-table-thumbnail {
+    height: 64px;
+    width: auto;
+    transition: transform var(--speed2);
+    transform: scale(1);
+}
+
+.part-table-thumbnail:hover {
+    transform: scale(1.1);
+    cursor: pointer;
+}
+
+button menu {
+    max-height: 100vh;
+}

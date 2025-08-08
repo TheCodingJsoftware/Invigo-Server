@@ -3,6 +3,7 @@ import { DataTypeSwitcherMode } from "@config/data-type-mode";
 import { JobViewMode } from "@config/job-view-mode";
 import { NestViewMode } from "@config/nest-view-mode";
 import { PartViewMode } from "@config/part-view-mode";
+import {WorkspaceSettings} from "@core/settings/workspace-settings";
 
 export type PermissionEntry = {
     value: string;
@@ -156,13 +157,37 @@ export const Permissions = {
     ...PermissionTree.PartView,
     ...PermissionTree.NestView,
     ...PermissionTree.JobView,
-} as const;
+};
 
 export type FlatPermissionKey = keyof typeof Permissions;
-export type FlatPermissionEntry = typeof Permissions[FlatPermissionKey];
+export type FlatPermissionEntry = PermissionEntry;
 
 const AllPermissionEntries = Object.values(Permissions) as FlatPermissionEntry[];
 
-export const PermissionMap: { [K in PermissionEntry["value"]]: FlatPermissionEntry } = Object.fromEntries(
-    AllPermissionEntries.map((entry) => [entry.value, entry])
-) as any;
+export const PermissionMap: Record<string, FlatPermissionEntry> = Object.fromEntries(
+  (Object.values(Permissions) as FlatPermissionEntry[]).map(entry => [entry.value, entry])
+);
+
+
+export function extendPermissionMapWithTags() {
+    const tags = WorkspaceSettings.tags;
+
+    for (const tagName of Object.keys(tags)) {
+        // const base = tagName.toLowerCase().replace(/\s+/g, "_");
+
+        const viewKey = `view_tag:${tagName}`;
+        const applyKey = `apply_tag:${tagName}`;
+
+        PermissionMap[viewKey] = {
+            value: viewKey,
+            label: `View Tag: ${tagName}`,
+            description: `Allows viewing items that are currently have the "${tagName}" tag.`
+        };
+
+        PermissionMap[applyKey] = {
+            value: applyKey,
+            label: `Apply Tag: ${tagName}`,
+            description: `Allows applying actions to items with the "${tagName}" tag.`
+        };
+    }
+}

@@ -135,45 +135,71 @@ UPDATE
 
 -- Notification Trigger for laser cut parts
 -- Auto-updated grouping view per job
-CREATE
-OR REPLACE VIEW view_grouped_laser_cut_parts_by_job AS
+CREATE OR REPLACE VIEW view_grouped_laser_cut_parts_by_job AS
+WITH latest_data AS (
+    SELECT DISTINCT ON (name)
+        name,
+        meta_data::jsonb AS meta_data,
+        workspace_data::jsonb AS workspace_data
+    FROM workspace_assembly_laser_cut_parts
+    ORDER BY name, modified_at DESC
+)
 SELECT
-    MIN(id) AS group_id,
-    job_id,
-    name,
-    flowtag,
-    flowtag_index,
-    flowtag [flowtag_index + 1] AS current_flowtag,
-    (flowtag_index + 1 = cardinality(flowtag)) AS is_completed,
+    MIN(w.id) AS group_id,
+    w.job_id,
+    w.name,
+    w.flowtag,
+    w.flowtag_index,
+    w.flowtag[w.flowtag_index + 1] AS current_flowtag,
+    (w.flowtag_index + 1 = cardinality(w.flowtag)) AS is_completed,
     COUNT(*) AS quantity,
-    MIN(created_at) AS created_at,
-    MAX(modified_at) AS modified_at
+    ld.meta_data::jsonb,
+    ld.workspace_data::jsonb,
+    MIN(w.created_at) AS created_at,
+    MAX(w.modified_at) AS modified_at
 FROM
     workspace_assembly_laser_cut_parts w
+JOIN
+    latest_data ld ON ld.name = w.name
 GROUP BY
-    job_id,
-    name,
-    flowtag,
-    flowtag_index;
+    w.job_id,
+    w.name,
+    w.flowtag,
+    w.flowtag_index,
+    ld.meta_data,
+    ld.workspace_data;
 
-CREATE
-OR REPLACE VIEW view_grouped_laser_cut_parts_global AS
+CREATE OR REPLACE VIEW view_grouped_laser_cut_parts_global AS
+WITH latest_data AS (
+    SELECT DISTINCT ON (name)
+        name,
+        meta_data::jsonb AS meta_data,
+        workspace_data::jsonb AS workspace_data
+    FROM workspace_assembly_laser_cut_parts
+    ORDER BY name, modified_at DESC
+)
 SELECT
-    MIN(id) AS group_id,
-    name,
-    flowtag,
-    flowtag_index,
-    flowtag [flowtag_index + 1] AS current_flowtag,
-    (flowtag_index + 1 = cardinality(flowtag)) AS is_completed,
+    MIN(w.id) AS group_id,
+    w.name,
+    w.flowtag,
+    w.flowtag_index,
+    w.flowtag[w.flowtag_index + 1] AS current_flowtag,
+    (w.flowtag_index + 1 = cardinality(w.flowtag)) AS is_completed,
     COUNT(*) AS quantity,
-    MIN(created_at) AS created_at,
-    MAX(modified_at) AS modified_at
+    ld.meta_data::jsonb,
+    ld.workspace_data::jsonb,
+    MIN(w.created_at) AS created_at,
+    MAX(w.modified_at) AS modified_at
 FROM
     workspace_assembly_laser_cut_parts w
+JOIN
+    latest_data ld ON ld.name = w.name
 GROUP BY
-    name,
-    flowtag,
-    flowtag_index;
+    w.name,
+    w.flowtag,
+    w.flowtag_index,
+    ld.meta_data,
+    ld.workspace_data;
 
 -- Notification function for laser cut parts view changes
 CREATE OR REPLACE FUNCTION notify_laser_cut_parts_view_change()

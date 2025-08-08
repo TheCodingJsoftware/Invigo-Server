@@ -40,12 +40,12 @@ export class AssembliesSummary implements BaseComponent {
                 </button>
             </nav>
             <div class="content-wrapper" style="height: auto;">
-                <div class="small-padding">
-                    <label class="checkbox hide-on-print">
+                <div class="small-padding hide-on-print">
+                    <label class="checkbox">
                         <input type="checkbox" id="show-assemblyPicture" checked>
                         <span>Picture</span>
                     </label>
-                    <label class="checkbox hide-on-print">
+                    <label class="checkbox">
                         <input type="checkbox" id="show-assemblyProcess" checked>
                         <span>Assembly Process</span>
                     </label>
@@ -114,18 +114,18 @@ export class AssembliesSummary implements BaseComponent {
         const rows = this.allAssemblies
             .map(assembly => `
             <tr>
-                <td>
-                    <nav class="row tiny-padding">
-                        <img
-                            class="extra square small-round border assembly-picture-div assembly-image-list"
-                            src="http://invi.go/image/${assembly.meta_data.assembly_image}">
-                        <div class="max">
-                            <h6>${assembly.name}</h6>
-                            <div class="assembly-process-div">${assembly.generateProcessTagString()}</div>
-                        </div>
-                    </nav>
+                <td class="assembly-picture-div min assembly-image-list tiny-padding">
+                    <img
+                        class="extra square small-round border"
+                        src="http://invi.go/image/${assembly.meta_data.assembly_image}">
                 </td>
-                <td class="center-align min"><h5>× ${assembly.meta_data.quantity}</h5></td>
+                <td>
+                    <p class="no-margin">${assembly.name}</p>
+                </td>
+                <td class="assembly-process-div">
+                    <div>${assembly.generateProcessTagString()}</div>   
+                </td>
+                <td class="left-align min"><span>× ${assembly.meta_data.quantity}</span></td>
             </tr>
         `.trim())
             .join('\n');
@@ -134,7 +134,9 @@ export class AssembliesSummary implements BaseComponent {
         <table class="border no-space">
             <thead>
                 <tr>
+                    <th class="assembly-picture-div"></th>
                     <th>Assembly</th>
+                    <th class="assembly-process-div">Process</th>
                     <th class="center-align">Quantity</th>
                 </tr>
             </thead>

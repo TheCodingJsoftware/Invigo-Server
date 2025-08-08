@@ -22,7 +22,6 @@ export class NestViewSwitcher {
         div.id = "nest-view-switcher";
 
         Object.values(NestViewMode).forEach(mode => {
-            console.log(mode);
             if (!this.#user.can(Permissions[mode])) {
                 return;
             }
