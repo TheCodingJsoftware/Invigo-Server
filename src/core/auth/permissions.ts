@@ -53,8 +53,27 @@ export const PermissionTree = {
             label: "Plan Production",
             description: "Allows access to production planning interfaces.",
         },
+        ViewAssemblyFiles: {
+            value: "view_assembly_files",
+            label: "View Assembly Files",
+            description: "Allows access to view assembly files.",
+        },
+        ViewWeldingFiles: {
+            value: "view_welding_files",
+            label: "View Welding Files",
+            description: "Allows access to view welding files.",
+        },
+        ViewBendingFiles: {
+            value: "view_bending_files",
+            label: "View Bending Files",
+            description: "Allows access to view bending files.",
+        },
+        ViewCNCMillingFiles: {
+            value: "view_CNCMillingFiles",
+            label: "View CNC/Milling Files",
+            description: "Allows access to view CNCMilling files.",
+        }
     },
-
     DataType: {
         SwitchDataTypes: {
             value: "switch_data_types",

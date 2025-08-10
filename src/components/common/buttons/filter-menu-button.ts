@@ -25,9 +25,8 @@ export class FilterMenuButton {
 
     private buildMenu() {
         const settings = WorkspaceFilter.getManager().get();
-        console.log(settings);
-
         (Object.keys(settings) as BooleanSettingKey[]).forEach((key) => {
+            if ((key as string) === "searchQuery") return;
             const li = document.createElement("li");
             const active = (WorkspaceFilter as any)[key];
 

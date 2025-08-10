@@ -1,4 +1,4 @@
-type DialogPosition = "left" | "right" | "top" | "bottom";
+type DialogPosition = "left" | "right" | "top" | "bottom" | "max";
 type DialogWidth = "small-width" | "medium-width" | "large-width";
 
 interface DialogOptions {
@@ -18,7 +18,7 @@ export class DialogComponent {
     private options: Required<Omit<DialogOptions, "id" | "onClose" | "headerContent" | "bodyContent" | "footerContent">> & 
                     Pick<DialogOptions, "id" | "onClose" | "headerContent" | "bodyContent" | "footerContent">;
     private readonly headerElement: HTMLElement;
-    private readonly bodyElement: HTMLElement;
+    protected readonly bodyElement: HTMLElement;
     private readonly footerElement: HTMLElement;
 
     constructor(options: DialogOptions = {}) {

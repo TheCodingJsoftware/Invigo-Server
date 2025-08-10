@@ -9,6 +9,7 @@
     "chartjs-chart-matrix": "^3.0.0",
     "date-fns": "^4.1.0",
     "dhtmlx-gantt": "^9.0.13",
+    "dxf": "^5.2.0",
     "effect": "^3.17.2",
     "flatpickr": "^4.6.13",
     "jquery": "^3.7.1",
@@ -21,6 +22,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.32.0",
+    "@types/dxf": "^4.6.10",
     "@types/pdfmake": "^0.2.11",
     "@types/qrcode": "^1.5.5",
     "@typescript-eslint/eslint-plugin": "^8.38.0",
@@ -38,6 +40,7 @@
     "glob-all": "^3.3.1",
     "html-webpack-plugin": "^5.6.3",
     "mini-css-extract-plugin": "^2.9.2",
+    "pdfjs-dist": "^5.4.54",
     "purgecss-webpack-plugin": "^7.0.2",
     "style-loader": "^4.0.0",
     "typescript": "^5.8.3",

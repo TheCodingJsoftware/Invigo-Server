@@ -92,6 +92,10 @@ module.exports = {
     module: {
         rules: [
             {
+                test: /pdf\.worker(\.min)?\.m?js$/,
+                type: "asset/resource"
+            },
+            {
                 test: /\.ts$/,
                 loader: 'esbuild-loader',
                 options: {

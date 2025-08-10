@@ -18,7 +18,8 @@ import {WorkspaceFilter} from "@models/workspace-filter";
 import {PartPage} from "@components/workspace/parts/part-page";
 import {WorkspaceSettings} from "@core/settings/workspace-settings";
 import {SortMenuButton} from "@components/common/buttons/sort-menu-button";
-import {FilterMenuButton} from "@components/common/buttons/sort-filter-button";
+import {FilterMenuButton} from "@components/common/buttons/filter-menu-button";
+import {SearchInput} from "@components/common/input/search-input";
 
 let pageLoaded = false;
 
@@ -97,6 +98,7 @@ class WorkspacePage {
     private viewSwitcherPanel: ViewSwitcherPanel;
     private pageHost: PageHost;
     private workspaceFilterSettings: WorkspaceFilter = new WorkspaceFilter();
+    private searchInput!: SearchInput;
 
     constructor() {
         this.mainElement = document.querySelector("main") as HTMLElement;
@@ -163,6 +165,15 @@ class WorkspacePage {
         });
 
         nav.appendChild(headline);
+        if (SearchInput.element){
+            SearchInput.onChange.connect(() => {
+                this.resyncState();
+            })
+            SearchInput.onSearch.connect(() => {
+                this.resyncState();
+            })
+            nav.appendChild(SearchInput.element);
+        }
         nav.appendChild(sortButton.button);
         nav.appendChild(filterButton.button);
         nav.appendChild(themeToggleButton);
@@ -244,5 +255,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     await UserContext.init();
     await WorkspaceSettings.load();
     await WorkspaceFilter.init();
+    await SearchInput.init();
     new WorkspacePage();
 });
