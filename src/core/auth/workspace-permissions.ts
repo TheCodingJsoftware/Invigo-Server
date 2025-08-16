@@ -72,6 +72,11 @@ export const PermissionTree = {
             value: "view_CNCMillingFiles",
             label: "View CNC/Milling Files",
             description: "Allows access to view CNCMilling files.",
+        },
+        CanRequestRecut: {
+            value: "can_request_recut",
+            label: "Can Request Recut",
+            description: "Allows being able to mark parts as recut.",
         }
     },
     DataType: {
