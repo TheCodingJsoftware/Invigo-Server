@@ -1,7 +1,7 @@
 import "beercss"
 import '@static/css/style.css';
 import '@static/css/theme.css';
-import {Permissions, PermissionMap, extendPermissionMapWithTags} from "@core/auth/permissions";
+import {WorkspacePermissions, PermissionMap, extendPermissionMapWithTags} from "@core/auth/workspace-permissions";
 import { User } from "@core/auth/user";
 import { WorkspaceSettings } from "@core/settings/workspace-settings";
 
@@ -189,7 +189,7 @@ WorkspaceSettings.load().then(() => {
 });
 
 User.fetchCurrent().then(async (user) => {
-    if (user.can(Permissions.EditRoles)) {
+    if (user.can(WorkspacePermissions.EditRoles)) {
         await loadRoles();
     } else {
         document.getElementById("add-role")!.classList.add("hidden");

@@ -136,7 +136,8 @@ from handlers.workspace.part_view_handler import PartViewDataHandler
 from handlers.workspace.update_entry import WorkspaceUpdateEntryHandler
 from handlers.workspace.update_grouped_laser_cut_parts import WorkspaceUpdateGroupHandler
 from handlers.workspace.workspace import WorkspaceHandler
-from handlers.workspace.workspace_part_view import WorkspacePartViewHandler
+from handlers.workspace.workspace_part_handler import WorkspaceLaserCutPartHandler
+from handlers.workspace.workspace_recut_handler import RecutPartHandler
 from routes.route import route
 
 page_routes = [
@@ -226,7 +227,8 @@ api_routes = [
     route(r"/api/workspace/update_group", WorkspaceUpdateGroupHandler),
     route(r"/api/workspace/view/parts/(.*)", PartViewDataHandler),
     route(r"/api/workspace/get/part", GetPartDataHandler),
-    route(r"/api/workspace/laser_cut_part", WorkspacePartViewHandler),
+    route(r"/api/workspace/laser_cut_part", WorkspaceLaserCutPartHandler),
+    route(r"/api/workspace/recut", RecutPartHandler),
     # OLD Workspace Routes
     route(r"/workspace/get_file/(.*)", WorkspaceFileReceiverHandler),
     route(r"/workspace/add_job", WorkspaceAddJobHandler),

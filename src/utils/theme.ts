@@ -46,8 +46,9 @@ export function toggleTheme() {
 }
 
 export function invertImages() {
+    let mode = ui("mode");
     const images = document.querySelectorAll('img');
-    if (ui("mode") === "light") {
+    if (mode === "light") {
         for (let i = 0; i < images.length; i++) {
             images[i].style.filter = 'invert(0)';
         }

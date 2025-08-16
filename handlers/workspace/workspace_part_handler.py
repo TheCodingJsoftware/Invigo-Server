@@ -4,6 +4,7 @@ import traceback
 from enum import Enum
 
 from handlers.base import BaseHandler
+from utils.database.view_db import ViewType
 
 
 class PartDataType(Enum):
@@ -16,25 +17,20 @@ class PartDataType(Enum):
     POWDER = "powder_data"
 
 
-class WorkspacePartViewHandler(BaseHandler):
+class WorkspaceLaserCutPartHandler(BaseHandler):
     async def get(self):
         view = self.get_argument("view", "global")
-        job_id = self.get_argument("job_id", -1)
+        job_id = int(self.get_argument("job_id", -1)) if view == ViewType.GROUPED_BY_JOB else None
         name = self.get_argument("name", "")
         flowtag = self.get_argument("flowtag", []).split(",")
         flowtag_index = self.get_argument("flowtag_index", -1)
+        flowtag_status_index = self.get_argument("flowtag_status_index", -1)
         data_type = self.get_argument("data_type", None)
 
         try:
-            if "by_job" in view:
-                if job_id:
-                    data = await self.view_db.find_by_job(job_id=int(job_id), name=name, flowtag=flowtag, flowtag_index=int(flowtag_index), data_type=data_type)
-                else:
-                    self.send_error(400, reason="job_id is required for by_job view")
-                    return
-            else:  # global view
-                data = await self.view_db.find_global(name=name, flowtag=flowtag, flowtag_index=int(flowtag_index), data_type=data_type)
-
+            data = await self.view_db.find(
+                job_id=job_id, name=name, flowtag=flowtag, flowtag_index=int(flowtag_index), flowtag_status_index=int(flowtag_status_index), data_type=data_type
+            )
             self.write({"data": data})
 
         except ValueError as e:
@@ -49,19 +45,35 @@ class WorkspacePartViewHandler(BaseHandler):
             body = self.request.body.decode("utf-8")
             data = json.loads(body)
 
-            view = data.get("view")
-            job_id = data.get("job_id")
+            job_id = int(data.get("job_id")) if data.get("job_id") else None
             name = data.get("name")
             flowtag = data.get("flowtag")
             flowtag_index = data.get("flowtag_index")
+            flowtag_status_index = data.get("flowtag_status_index")
             data_type = data.get("data_type")
             new_value = data.get("new_value")
 
             if data_type == "flowtag_index":
-                if "by_job" in view:
-                    await self.view_db.update_flowtag_index_by_job(job_id=int(job_id), name=name, flowtag=flowtag, flowtag_index=int(flowtag_index), new_index=int(new_value))
-                else:
-                    await self.view_db.update_flowtag_index_global(name=name, flowtag=flowtag, flowtag_index=int(flowtag_index), new_index=int(new_value))
+                await self.view_db.update_flowtag_index(
+                    name=name,
+                    flowtag=flowtag,
+                    flowtag_index=int(flowtag_index),
+                    flowtag_status_index=int(flowtag_status_index),
+                    new_index=int(new_value),
+                    changed_by=self.get_client_name_from_header(),
+                    job_id=job_id,
+                )
+                self.write({"status": "ok"})
+            elif data_type == "flowtag_status_index":
+                await self.view_db.update_flowtag_status_index(
+                    name=name,
+                    flowtag=flowtag,
+                    flowtag_index=int(flowtag_index),
+                    flowtag_status_index=int(flowtag_status_index),
+                    new_status_index=int(new_value),
+                    changed_by=self.get_client_name_from_header(),
+                    job_id=job_id,
+                )
                 self.write({"status": "ok"})
             else:
                 self.send_error(400, reason="Unsupported data_type")

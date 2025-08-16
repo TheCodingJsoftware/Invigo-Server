@@ -1,25 +1,25 @@
 import "beercss";
 import '@static/css/style.css';
 import '@static/css/theme.css';
-import {UserContext} from '@core/auth/user-context';
-import {loadAnimationStyleSheet, toggleTheme, loadTheme, invertImages} from "@utils/theme"
-import {DialogComponent} from "@components/common/dialog/dialog-component";
-import {PartViewMode} from "@config/part-view-mode";
-import {AssemblyViewMode} from "@config/assembly-view-mode";
-import {DataTypeSwitcherMode} from "@config/data-type-mode";
-import {NestViewMode} from "@config/nest-view-mode";
-import {JobViewMode} from "@config/job-view-mode";
-import {SessionSettingsManager} from "@core/settings/session-settings";
-import {ViewSettingsManager} from "@core/settings/view-settings";
-import {ViewBus, ViewChangePayload} from "@components/workspace/views/view-bus";
-import {ViewSwitcherPanel} from "@components/workspace/views/switchers/view-switcher-panel";
-import {WorkspaceWebSocket} from "@core/websocket/workspace-websocket";
-import {WorkspaceFilter} from "@models/workspace-filter";
-import {PartPage} from "@components/workspace/parts/part-page";
-import {WorkspaceSettings} from "@core/settings/workspace-settings";
-import {SortMenuButton} from "@components/common/buttons/sort-menu-button";
-import {FilterMenuButton} from "@components/common/buttons/filter-menu-button";
-import {SearchInput} from "@components/common/input/search-input";
+import { FilterMenuButton } from "@components/common/buttons/filter-menu-button";
+import { SortMenuButton } from "@components/common/buttons/sort-menu-button";
+import { DialogComponent } from "@components/common/dialog/dialog-component";
+import { SearchInput } from "@components/common/input/search-input";
+import { PartPage } from "@components/workspace/parts/part-page";
+import { ViewSwitcherPanel } from "@components/workspace/views/switchers/view-switcher-panel";
+import { ViewBus, ViewChangePayload } from "@components/workspace/views/view-bus";
+import { AssemblyViewMode } from "@config/assembly-view-mode";
+import { DataTypeSwitcherMode } from "@config/data-type-mode";
+import { JobViewMode } from "@config/job-view-mode";
+import { NestViewMode } from "@config/nest-view-mode";
+import { PartViewMode } from "@config/part-view-mode";
+import { UserContext } from '@core/auth/user-context';
+import { SessionSettingsManager } from "@core/settings/session-settings";
+import { ViewSettingsManager } from "@core/settings/view-settings";
+import { WorkspaceSettings } from "@core/settings/workspace-settings";
+import { WorkspaceWebSocket } from "@core/websocket/workspace-websocket";
+import { WorkspaceFilter } from "@models/workspace-filter";
+import { loadAnimationStyleSheet, toggleTheme, loadTheme, invertImages } from "@utils/theme"
 
 let pageLoaded = false;
 
@@ -114,7 +114,6 @@ class WorkspacePage {
         });
         this.loadHeader();
         this.loadTopNav();
-        this.loadLeftNav();
         this.loadThemeSettings();
         this.registerSocketHandlers();
         pageLoaded = true;
@@ -143,6 +142,13 @@ class WorkspacePage {
         const nav = document.createElement("nav");
         nav.classList.add("top", "row");
 
+        const homeButton = document.createElement("button");
+        homeButton.classList.add("square", "round", "extra");
+        const homeIcon = document.createElement("i");
+        homeIcon.innerText = "home";
+        homeButton.appendChild(homeIcon);
+        homeButton.onclick = () => window.location.href = "/";
+
         const headline = document.createElement("h6");
         headline.classList.add("max", "left-align");
         headline.innerText = "Workspace";
@@ -153,7 +159,7 @@ class WorkspacePage {
         themeToggleButton.innerHTML = "<i>dark_mode</i>"
 
         const filterButton = new FilterMenuButton()
-        filterButton.onToggle.connect(({key, value}) => {
+        filterButton.onToggle.connect(({ key, value }) => {
             console.log(`Toggled ${key} to ${value}`);
             this.resyncState();
         })
@@ -164,8 +170,16 @@ class WorkspacePage {
             this.resyncState();
         });
 
+        const profileButton = document.createElement("button");
+        profileButton.classList.add("border", "large", "circle");
+        profileButton.innerHTML = `
+            <i>person</i>
+        `
+        profileButton.onclick = () => this.showProfile();
+
+        nav.appendChild(homeButton); 2
         nav.appendChild(headline);
-        if (SearchInput.element){
+        if (SearchInput.element) {
             SearchInput.onChange.connect(() => {
                 this.resyncState();
             })
@@ -177,29 +191,6 @@ class WorkspacePage {
         nav.appendChild(sortButton.button);
         nav.appendChild(filterButton.button);
         nav.appendChild(themeToggleButton);
-
-        document.body.appendChild(nav);
-    }
-
-    loadLeftNav() {
-        const nav = document.createElement("nav");
-        nav.classList.add("left");
-
-        const homeButton = document.createElement("button");
-        homeButton.classList.add("square", "round", "extra");
-        const homeIcon = document.createElement("i");
-        homeIcon.innerText = "home";
-        homeButton.appendChild(homeIcon);
-        homeButton.onclick = () => window.location.href = "/";
-
-        const profileButton = document.createElement("button");
-        profileButton.classList.add("border", "large", "circle");
-        profileButton.innerHTML = `
-            <i>person</i>
-        `
-        profileButton.onclick = () => this.showProfile();
-
-        nav.appendChild(homeButton);
         nav.appendChild(profileButton);
 
         document.body.appendChild(nav);
@@ -207,10 +198,10 @@ class WorkspacePage {
 
     showProfile() {
         new DialogComponent({
-                id: "profile-dialog",
-                title: this.#user.name,
-                position: "left",
-                bodyContent: `
+            id: "profile-dialog",
+            title: this.#user.name,
+            position: "right",
+            bodyContent: `
                     <nav class = "row no-space wrap">
                         ${this.#user.roles.map(role => `
                         <button class="chip tiny-margin">
@@ -232,7 +223,7 @@ class WorkspacePage {
                                     `).join("")}
                             </ul>
                     </fieldset>`,
-            }
+        }
         );
     }
 

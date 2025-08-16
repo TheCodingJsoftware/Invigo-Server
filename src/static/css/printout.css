@@ -2,10 +2,6 @@
     display: none !important;
 }
 
-body:not(.loaded) {
-    display: none;
-}
-
 .handle {
     cursor: move;
 }

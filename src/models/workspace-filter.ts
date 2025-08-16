@@ -1,4 +1,3 @@
-// src/models/workspace-filter.ts
 import { SettingsManager } from "@core/settings/settings";
 import { WorkspaceSettings } from "@core/settings/workspace-settings";
 import { UserContext } from "@core/auth/user-context";
@@ -16,10 +15,15 @@ export type BooleanSettingKey = {
 export class WorkspaceFilter {
     private static readonly manager = new SettingsManager<WorkspaceFilterDict>(
         "WorkspaceFilter",
-        { showCompleted: false, searchQuery: "" }
+        {
+            showCompleted: false,
+            searchQuery: ""
+        }
     );
 
     static showCompleted: boolean;
+    static showRecut: boolean;
+    static showRecoat: boolean;
 
     static async init(): Promise<void> {
         const user = Object.freeze(UserContext.getInstance().user);
@@ -42,10 +46,13 @@ export class WorkspaceFilter {
         if (Object.keys(seed).length) manager.set(seed);
 
         const freshly = manager.get();
+
         const pruned: Partial<WorkspaceFilterDict> = { searchQuery: freshly.searchQuery ?? "" };
+
         for (const key of keys) pruned[key] = freshly[key];
 
         localStorage.setItem("WorkspaceFilter", JSON.stringify(pruned));
+
         for (const key of keys) {
             Object.defineProperty(WorkspaceFilter, key, {
                 get() {

@@ -1,5 +1,5 @@
 import {JobViewConfig, JobViewMode} from "@config/job-view-mode";
-import {Permissions} from "@core/auth/permissions";
+import {WorkspacePermissions} from "@core/auth/workspace-permissions";
 import {ViewSettingsManager} from "@core/settings/view-settings";
 import {ViewBus} from "@components/workspace/views/view-bus";
 import {UserContext} from "@core/auth/user-context";
@@ -22,7 +22,7 @@ export class JobViewSwitcher {
         div.classList.add("tabs", "center-align");
 
         Object.values(JobViewMode).forEach(mode => {
-            if (!this.#user.can(Permissions[mode])) {
+            if (!this.#user.can(WorkspacePermissions[mode])) {
                 return;
             }
             const button = document.createElement("a");

@@ -1,11 +1,12 @@
 import { DialogComponent } from "@components/common/dialog/dialog-component";
 import { PartData } from "@components/workspace/parts/part-page";
-import { Permissions } from "@core/auth/permissions";
+import { WorkspacePermissions } from "@core/auth/workspace-permissions";
 import { UserContext } from "@core/auth/user-context";
 import { Helper as DxfHelper } from "dxf";
 import * as pdfjsLib from "pdfjs-dist";
 import workerSrc from "pdfjs-dist/build/pdf.worker.mjs";
-import {getFileIcon} from "@components/common/buttons/file-button";
+import { getFileIcon } from "@components/common/buttons/file-button";
+import { invertImages } from "@utils/theme";
 
 (pdfjsLib as any).GlobalWorkerOptions.workerSrc = workerSrc as any;
 
@@ -34,7 +35,7 @@ export class FileViewerDialog extends DialogComponent {
                     <header class="surface-container"><nav class="wrap no-space" id="parts"></nav></header>
                     <nav class="surface-container left" id="files"></nav>
                     <main class="no-padding" id="content"></main>
-                </div> 
+                </div>
             `,
         });
         super.element.className = "max no-padding";
@@ -76,6 +77,7 @@ export class FileViewerDialog extends DialogComponent {
 
         const targetPart = this.findPartForInitialSelection();
         this.selectPart(targetPart ?? this.parts[0]);
+        invertImages();
     }
 
     private findPartForInitialSelection(): PartData | undefined {
@@ -91,13 +93,13 @@ export class FileViewerDialog extends DialogComponent {
 
     private getFilesForPart(part: PartData): string[] {
         const files: string[] = [];
-        this.#user.require(Permissions.ViewBendingFiles, () => {
+        this.#user.require(WorkspacePermissions.ViewBendingFiles, () => {
             for (const f of part.workspace_data.bending_files) files.push(f);
         });
-        this.#user.require(Permissions.ViewWeldingFiles, () => {
+        this.#user.require(WorkspacePermissions.ViewWeldingFiles, () => {
             for (const f of part.workspace_data.welding_files) files.push(f);
         });
-        this.#user.require(Permissions.ViewCNCMillingFiles, () => {
+        this.#user.require(WorkspacePermissions.ViewCNCMillingFiles, () => {
             for (const f of part.workspace_data.cnc_milling_files) files.push(f);
         });
         return files;
@@ -179,7 +181,7 @@ export class FileViewerDialog extends DialogComponent {
             const container = document.createElement("div");
             container.className = "center-align middle";
             const img = document.createElement("img");
-            img.classList.add("responsive");
+            img.classList.add("responsive", "round");
             img.src = `/images/${name}`;
             img.style.maxWidth = "50%";
             img.style.maxHeight = "50%";

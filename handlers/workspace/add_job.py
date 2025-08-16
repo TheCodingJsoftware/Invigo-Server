@@ -28,4 +28,5 @@ class WorkspaceAddJobHandler(BaseHandler):
             await self.workspace_db.add_job(data)
             print(f"Job insertion: {time.perf_counter() - t1:.2f}s")
         except Exception as e:
+            print(f"Error adding job: {e}")
             logging.error(f"Error adding job in background: {e}")

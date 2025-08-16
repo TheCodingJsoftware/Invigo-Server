@@ -162,29 +162,29 @@ module.exports = {
             },
         }),
         ...htmlPlugins,
-        new GenerateSW({
-            swDest: 'service-worker.js',
-            clientsClaim: true,
-            skipWaiting: true,
-            maximumFileSizeToCacheInBytes: 32 * 1024 * 1024,
-            runtimeCaching: [
-                {
-                    urlPattern: ({ request }) => request.mode === 'navigate',
-                    handler: 'NetworkOnly',
-                    options: { cacheName: 'html-pages' },
-                },
-                {
-                    urlPattern: /\.js$/,
-                    handler: 'NetworkOnly',
-                    options: { cacheName: 'js-cache' },
-                },
-                {
-                    urlPattern: /\.(?:css|png|jpg|jpeg|svg|woff2?)$/,
-                    handler: 'StaleWhileRevalidate',
-                    options: { cacheName: 'static-assets' },
-                },
-            ],
-        }),
+        // new GenerateSW({
+        //     swDest: 'service-worker.js',
+        //     clientsClaim: true,
+        //     skipWaiting: true,
+        //     maximumFileSizeToCacheInBytes: 32 * 1024 * 1024,
+        //     runtimeCaching: [
+        //         {
+        //             urlPattern: ({ request }) => request.mode === 'navigate',
+        //             handler: 'NetworkOnly',
+        //             options: { cacheName: 'html-pages' },
+        //         },
+        //         {
+        //             urlPattern: /\.js$/,
+        //             handler: 'NetworkOnly',
+        //             options: { cacheName: 'js-cache' },
+        //         },
+        //         {
+        //             urlPattern: /\.(?:css|png|jpg|jpeg|svg|woff2?)$/,
+        //             handler: 'StaleWhileRevalidate',
+        //             options: { cacheName: 'static-assets' },
+        //         },
+        //     ],
+        // }),
         new CopyWebpackPlugin({
             patterns: [
                 {

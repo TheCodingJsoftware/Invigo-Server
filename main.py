@@ -191,10 +191,10 @@ if __name__ == "__main__":
     # periodic_callback = PeriodicCallback(check_if_jobs_are_complete, 60000)  # 60000 ms = 1 minute
     # periodic_callback.start()
 
-    IOLoop.current().run_sync(start_workspace_services)
-
     thread = threading.Thread(target=schedule_thread)
     thread.start()
+
+    IOLoop.current().run_sync(start_workspace_services)
 
     app = tornado.httpserver.HTTPServer(make_app(), xheaders=True)
     # IOLoop.current().add_callback(BaseHandler.workspace_db.start_background_cache_worker)

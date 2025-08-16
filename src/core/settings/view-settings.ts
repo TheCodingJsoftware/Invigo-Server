@@ -1,4 +1,4 @@
-import { SettingsManager } from "./settings";
+import { SettingsManager } from "@core/settings/settings";
 import { DataTypeSwitcherMode } from "@config/data-type-mode";
 import { AssemblyViewMode } from "@config/assembly-view-mode";
 import { PartViewMode } from "@config/part-view-mode";

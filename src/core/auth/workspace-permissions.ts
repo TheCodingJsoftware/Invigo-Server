@@ -174,7 +174,7 @@ export const PermissionTree = {
     },
 } as const;
 
-export const Permissions = {
+export const WorkspacePermissions = {
     ...PermissionTree.Action,
     ...PermissionTree.DataType,
     ...PermissionTree.AssemblyView,
@@ -183,13 +183,13 @@ export const Permissions = {
     ...PermissionTree.JobView,
 };
 
-export type FlatPermissionKey = keyof typeof Permissions;
+export type FlatPermissionKey = keyof typeof WorkspacePermissions;
 export type FlatPermissionEntry = PermissionEntry;
 
-const AllPermissionEntries = Object.values(Permissions) as FlatPermissionEntry[];
+const AllPermissionEntries = Object.values(WorkspacePermissions) as FlatPermissionEntry[];
 
 export const PermissionMap: Record<string, FlatPermissionEntry> = Object.fromEntries(
-  (Object.values(Permissions) as FlatPermissionEntry[]).map(entry => [entry.value, entry])
+  (Object.values(WorkspacePermissions) as FlatPermissionEntry[]).map(entry => [entry.value, entry])
 );
 
 

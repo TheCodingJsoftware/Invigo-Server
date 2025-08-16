@@ -26,10 +26,6 @@ CREATE TABLE IF NOT EXISTS workspace_nest_laser_cut_parts (
     name TEXT NOT NULL,
     setup_time JSONB,
     setup_time_seconds INTEGER,
-    process_time JSONB,
-    process_time_seconds INTEGER,
-    automated_time JSONB,
-    automated_time_seconds INTEGER,
     start_time TIMESTAMPTZ,
     end_time TIMESTAMPTZ,
     inventory_data JSONB,
@@ -39,6 +35,7 @@ CREATE TABLE IF NOT EXISTS workspace_nest_laser_cut_parts (
     primer_data JSONB,
     powder_data JSONB,
     workspace_data JSONB,
+    changed_by TEXT,
     created_at TIMESTAMPTZ DEFAULT now(),
     modified_at TIMESTAMPTZ DEFAULT now()
 );
@@ -50,12 +47,9 @@ CREATE TABLE IF NOT EXISTS workspace_assemblies (
     name TEXT NOT NULL,
     flowtag TEXT [] NOT NULL,
     flowtag_index INTEGER NOT NULL DEFAULT 0,
+    flowtag_status_index INTEGER NOT NULL DEFAULT 0,
     setup_time JSONB,
     setup_time_seconds INTEGER,
-    process_time JSONB,
-    process_time_seconds INTEGER,
-    automated_time JSONB,
-    automated_time_seconds INTEGER,
     start_time TIMESTAMPTZ,
     end_time TIMESTAMPTZ,
     meta_data JSONB,
@@ -64,6 +58,24 @@ CREATE TABLE IF NOT EXISTS workspace_assemblies (
     primer_data JSONB,
     powder_data JSONB,
     workspace_data JSONB,
+    changed_by TEXT,
+    created_at TIMESTAMPTZ DEFAULT now(),
+    modified_at TIMESTAMPTZ DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS workspace_recut_laser_cut_parts (
+    id SERIAL PRIMARY KEY,
+    name TEXT NOT NULL,
+    flowtag TEXT [] NOT NULL,
+    recut_reason TEXT,
+    inventory_data JSONB,
+    meta_data JSONB,
+    prices JSONB,
+    paint_data JSONB,
+    primer_data JSONB,
+    powder_data JSONB,
+    workspace_data JSONB,
+    changed_by TEXT,
     created_at TIMESTAMPTZ DEFAULT now(),
     modified_at TIMESTAMPTZ DEFAULT now()
 );
@@ -75,12 +87,11 @@ CREATE TABLE IF NOT EXISTS workspace_assembly_laser_cut_parts (
     name TEXT NOT NULL,
     flowtag TEXT [] NOT NULL,
     flowtag_index INTEGER NOT NULL DEFAULT 0,
+    flowtag_status_index INTEGER NOT NULL DEFAULT 0,
+    recut BOOLEAN NOT NULL DEFAULT false,
+    recoat BOOLEAN NOT NULL DEFAULT false,
     setup_time JSONB,
     setup_time_seconds INTEGER,
-    process_time JSONB,
-    process_time_seconds INTEGER,
-    automated_time JSONB,
-    automated_time_seconds INTEGER,
     start_time TIMESTAMPTZ,
     end_time TIMESTAMPTZ,
     inventory_data JSONB,
@@ -90,8 +101,24 @@ CREATE TABLE IF NOT EXISTS workspace_assembly_laser_cut_parts (
     primer_data JSONB,
     powder_data JSONB,
     workspace_data JSONB,
+    changed_by TEXT,
     created_at TIMESTAMPTZ DEFAULT now(),
     modified_at TIMESTAMPTZ DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS workspace_part_status_timeline (
+    id SERIAL PRIMARY KEY,
+    name TEXT NOT NULL,
+    part_id INTEGER NOT NULL REFERENCES workspace_assembly_laser_cut_parts(id) ON DELETE SET NULL,
+    flowtag TEXT [] NOT NULL,
+    flowtag_index INTEGER NOT NULL,
+    flowtag_name TEXT NOT NULL,
+    flowtag_status_index INTEGER NOT NULL,
+    recut BOOLEAN NOT NULL,
+    recoat BOOLEAN NOT NULL,
+    changed_by TEXT,
+    started_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    ended_at TIMESTAMPTZ
 );
 
 CREATE TABLE IF NOT EXISTS workspace_components (
@@ -150,8 +177,11 @@ SELECT
     w.name,
     w.flowtag,
     w.flowtag_index,
+    w.flowtag_status_index,
+    w.recut,
+    w.recoat,
     w.flowtag[w.flowtag_index + 1] AS current_flowtag,
-    (w.flowtag_index + 1 = cardinality(w.flowtag)) AS is_completed,
+    (w.flowtag_index = cardinality(w.flowtag)) AS is_completed,
     COUNT(*) AS quantity,
     ld.meta_data::jsonb,
     ld.workspace_data::jsonb,
@@ -166,6 +196,9 @@ GROUP BY
     w.name,
     w.flowtag,
     w.flowtag_index,
+    w.flowtag_status_index,
+    w.recut,
+    w.recoat,
     ld.meta_data,
     ld.workspace_data;
 
@@ -183,8 +216,11 @@ SELECT
     w.name,
     w.flowtag,
     w.flowtag_index,
+    w.flowtag_status_index,
+    w.recut,
+    w.recoat,
     w.flowtag[w.flowtag_index + 1] AS current_flowtag,
-    (w.flowtag_index + 1 = cardinality(w.flowtag)) AS is_completed,
+    (w.flowtag_index = cardinality(w.flowtag)) AS is_completed,
     COUNT(*) AS quantity,
     ld.meta_data::jsonb,
     ld.workspace_data::jsonb,
@@ -198,6 +234,9 @@ GROUP BY
     w.name,
     w.flowtag,
     w.flowtag_index,
+    w.flowtag_status_index,
+    w.recut,
+    w.recoat,
     ld.meta_data,
     ld.workspace_data;
 
@@ -214,7 +253,10 @@ BEGIN
             'job_id', COALESCE(NEW.job_id, OLD.job_id),
             'part_name', COALESCE(NEW.name, OLD.name),
             'flowtag', COALESCE(NEW.flowtag, OLD.flowtag),
-            'flowtag_index', COALESCE(NEW.flowtag_index, OLD.flowtag_index)
+            'flowtag_index', COALESCE(NEW.flowtag_index, OLD.flowtag_index),
+            'flowtag_status_index', COALESCE(NEW.flowtag_status_index, OLD.flowtag_status_index),
+            'recut', COALESCE(NEW.recut, OLD.recut),
+            'recoat', COALESCE(NEW.recoat, OLD.recoat)
         )::text
     );
 
@@ -226,7 +268,10 @@ BEGIN
             'table', TG_TABLE_NAME,
             'part_name', COALESCE(NEW.name, OLD.name),
             'flowtag', COALESCE(NEW.flowtag, OLD.flowtag),
-            'flowtag_index', COALESCE(NEW.flowtag_index, OLD.flowtag_index)
+            'flowtag_index', COALESCE(NEW.flowtag_index, OLD.flowtag_index),
+            'flowtag_status_index', COALESCE(NEW.flowtag_status_index, OLD.flowtag_status_index),
+            'recut', COALESCE(NEW.recut, OLD.recut),
+            'recoat', COALESCE(NEW.recoat, OLD.recoat)
         )::text
     );
 
@@ -240,3 +285,63 @@ CREATE OR REPLACE TRIGGER laser_cut_parts_view_event_trigger
     ON workspace_assembly_laser_cut_parts
     FOR EACH ROW
     EXECUTE FUNCTION notify_laser_cut_parts_view_change();
+
+CREATE OR REPLACE FUNCTION log_part_status_timeline()
+RETURNS TRIGGER AS $$
+BEGIN
+    -- If part is complete, close any open timeline and exit
+    IF NEW.flowtag_index = cardinality(NEW.flowtag) THEN
+        UPDATE workspace_part_status_timeline
+        SET ended_at = now()
+        WHERE part_id = OLD.id
+          AND ended_at IS NULL;
+        RETURN NEW;
+    END IF;
+
+    -- Otherwise, log state change
+    IF OLD.flowtag_index IS DISTINCT FROM NEW.flowtag_index
+       OR OLD.flowtag_status_index IS DISTINCT FROM NEW.flowtag_status_index
+       OR OLD.recut IS DISTINCT FROM NEW.recut
+       OR OLD.recoat IS DISTINCT FROM NEW.recoat
+    THEN
+        -- Close old state
+        UPDATE workspace_part_status_timeline
+        SET ended_at = now()
+        WHERE part_id = OLD.id
+          AND ended_at IS NULL;
+
+        -- Insert new state
+        INSERT INTO workspace_part_status_timeline (
+            part_id,
+            name,
+            flowtag,
+            flowtag_index,
+            flowtag_name,
+            flowtag_status_index,
+            recut,
+            recoat,
+            changed_by,
+            started_at
+        )
+        VALUES (
+            OLD.id,
+            OLD.name,
+            NEW.flowtag,
+            NEW.flowtag_index,
+            NEW.flowtag[NEW.flowtag_index + 1],
+            NEW.flowtag_status_index,
+            NEW.recut,
+            NEW.recoat,
+            NEW.changed_by,
+            now()
+        );
+    END IF;
+
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE TRIGGER trg_part_status_timeline
+    AFTER UPDATE ON workspace_assembly_laser_cut_parts
+    FOR EACH ROW
+    EXECUTE FUNCTION log_part_status_timeline();

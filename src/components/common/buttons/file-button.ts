@@ -1,6 +1,7 @@
 import {PartData} from "@components/workspace/parts/part-page";
 import {Ext, Previewer} from "@utils/preview-cache";
 import {FileViewerDialog} from "@components/common/dialog/file-viewer-dialog";
+import {invertImages} from "@utils/theme";
 
 export function getFileIcon(extension: string): string {
     if (["DXF", "JPG", "JPEG", "WEBP"].includes(extension)) return "image";
@@ -24,7 +25,7 @@ export class FileButton {
     constructor(part: PartData, filePath: string) {
         this.part = part;
         this.element = document.createElement("button");
-        this.element.classList.add("file-button", "chip");
+        this.element.classList.add("file-button", "chip", "vertical");
         this.element.addEventListener("click", () => this.buttonPressed());
 
         this.filePath = filePath;
@@ -64,6 +65,7 @@ export class FileButton {
         const node = await Previewer.get(this.fileName, this.extension);
         this.previewHost.innerHTML = "";
         this.previewHost.appendChild(node);
+        invertImages();
     }
 
     buttonPressed() {

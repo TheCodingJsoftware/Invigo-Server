@@ -3,6 +3,7 @@ import { Signal } from "@utils/signal";
 
 export class SortMenuButton {
     readonly button: HTMLButtonElement;
+    readonly badge: HTMLDivElement;
     readonly onToggle = new Signal<{ key: BooleanSettingKey; value: boolean }>();
     private readonly menu: HTMLMenuElement;
 
@@ -10,6 +11,10 @@ export class SortMenuButton {
         this.button = document.createElement("button");
         this.button.id = "sort-menu-button";
         this.button.className = "circle transparent"
+
+        this.badge = document.createElement("div");
+        this.badge.className = "badge";
+        this.button.appendChild(this.badge);
 
         const icon = document.createElement("i");
         icon.textContent = "sort";
@@ -21,6 +26,7 @@ export class SortMenuButton {
         this.button.appendChild(this.menu);
 
         this.buildMenu();
+        this.updateBadge();
     }
 
     private buildMenu() {
@@ -44,10 +50,25 @@ export class SortMenuButton {
                 li.classList.toggle("fill", next);
                 checkIcon.style.visibility = next ? "visible" : "hidden";
                 this.onToggle.emit({ key, value: next });
+                this.updateBadge();
             });
 
             this.menu.appendChild(li);
         });
+    }
+
+    private updateBadge() {
+        const settings = WorkspaceSort.getManager().get();
+        const activeCount = (Object.keys(settings) as BooleanSettingKey[])
+            .filter(key => (WorkspaceSort as any)[key])
+            .length;
+
+        if (activeCount > 0) {
+            this.badge.textContent = String(activeCount);
+            this.badge.style.display = "";
+        } else {
+            this.badge.style.display = "none";
+        }
     }
 
     private titleFromKey(key: string): string {

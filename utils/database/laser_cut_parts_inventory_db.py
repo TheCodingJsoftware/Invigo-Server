@@ -263,7 +263,6 @@ class LaserCutPartsInventoryDB(BaseWithDBPool):
                     json.dumps(new_data.get("powder_data", {})),
                     json.dumps(new_data.get("workspace_data", {})),
                     json.dumps(new_data),
-                    json.dumps(new_data),
                 )
 
         # Invalidate caches

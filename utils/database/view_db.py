@@ -50,18 +50,18 @@ class ViewDB(BaseWithDBPool):
     @ensure_connection
     async def find(
         self,
-        view_type: ViewType,
         job_id: Optional[int] = None,
         name: Optional[str] = None,
         flowtag: Optional[list[str]] = None,
         flowtag_index: Optional[int] = None,
+        flowtag_status_index: Optional[int] = None,
         data_type: Optional[str] = None,
     ) -> List[Dict[str, Any]]:
         conditions = []
         params = []
         param_index = 1
 
-        if job_id is not None and view_type == ViewType.GROUPED_BY_JOB:
+        if job_id is not None:
             conditions.append(f"job_id = ${param_index}")
             params.append(job_id)
             param_index += 1
@@ -79,6 +79,12 @@ class ViewDB(BaseWithDBPool):
         if flowtag_index is not None:
             conditions.append(f"flowtag_index = ${param_index}")
             params.append(flowtag_index)
+            param_index += 1
+
+        if flowtag_status_index is not None:
+            conditions.append(f"flowtag_status_index = ${param_index}")
+            params.append(flowtag_status_index)
+            param_index += 1
 
         where_clause = " AND ".join(conditions)
         where_clause = f"WHERE {where_clause}" if where_clause else ""
@@ -92,7 +98,6 @@ class ViewDB(BaseWithDBPool):
             ORDER BY created_at DESC
             LIMIT 1
             """
-
         try:
             async with self.db_pool.acquire() as conn:
                 row = await conn.fetchrow(query, *params)  # Using fetchrow instead of fetch
@@ -104,46 +109,134 @@ class ViewDB(BaseWithDBPool):
             raise
 
     @ensure_connection
-    async def find_by_job(self, job_id: int, name: str, flowtag: Optional[list[str]], flowtag_index: Optional[int], data_type: Optional[str]) -> List[Dict[str, Any]]:
+    async def update_flowtag_index(
+        self, new_index: int, name: str, flowtag: list, flowtag_index: int, flowtag_status_index: int, changed_by: str, job_id: int | None = None
+    ) -> None:
+        base_query = """
+        UPDATE workspace_assembly_laser_cut_parts
+        SET
+            flowtag_index = $1,
+            changed_by = $6,
+            modified_at = NOW()
+        WHERE
+            name = $2
+            AND flowtag = $3::text[]
+            AND flowtag_index = $4
+            AND flowtag_status_index = $5
         """
-        Convenience method to find parts by job ID
-        """
-        return await self.find(view_type=ViewType.GROUPED_BY_JOB, job_id=job_id, name=name, flowtag=flowtag, flowtag_index=flowtag_index, data_type=data_type)
+
+        params = [new_index, name, flowtag, flowtag_index, flowtag_status_index, changed_by]
+
+        if job_id is not None:
+            base_query += " AND job_id = $7"
+            params.append(job_id)
+
+        async with self.db_pool.acquire() as conn:
+            await conn.execute(base_query, *params)
 
     @ensure_connection
-    async def find_global(self, name: str, flowtag: Optional[list[str]], flowtag_index: Optional[int], data_type: Optional[str]) -> List[Dict[str, Any]]:
-        return await self.find(view_type=ViewType.GROUPED_GLOBAL, name=name, flowtag=flowtag, flowtag_index=flowtag_index, data_type=data_type)
-
-    @ensure_connection
-    async def update_flowtag_index_by_job(self, job_id: int, name: str, flowtag: list, flowtag_index: int, new_index: int) -> None:
+    async def update_flowtag_status_index(
+        self, name: str, flowtag: list, flowtag_index: int, flowtag_status_index: int, new_status_index: int, changed_by: str, job_id: int | None = None
+    ) -> None:
         query = """
         UPDATE workspace_assembly_laser_cut_parts
         SET
-        flowtag_index = $1,
-        modified_at = NOW()
+            flowtag_status_index = $1,
+            changed_by = $6,
+            modified_at = NOW()
         WHERE
-        job_id = $2
-        AND name = $3
-        AND flowtag = $4::text[]
-        AND flowtag_index = $5
+            name = $2
+            AND flowtag = $3::text[]
+            AND flowtag_index = $4
+            AND flowtag_status_index = $5
         """
+        params = [new_status_index, name, flowtag, flowtag_index, flowtag_status_index, changed_by]
+
+        if job_id is not None:
+            query += " AND job_id = $7"
+            params.append(job_id)
+
         async with self.db_pool.acquire() as conn:
-            await conn.execute(query, new_index, job_id, name, flowtag, flowtag_index)
+            await conn.execute(query, *params)
 
     @ensure_connection
-    async def update_flowtag_index_global(self, name: str, flowtag: list, flowtag_index: int, new_index: int) -> None:
-        query = """
-        UPDATE workspace_assembly_laser_cut_parts
+    async def handle_recut(
+        self, name: str, flowtag: list, flowtag_index: int, flowtag_status_index: int, recut_quantity: int, recut_reason: str, changed_by: str, job_id: int | None = None
+    ) -> None:
+        where_clauses = ["name = $2", "flowtag = $3::text[]", "flowtag_index = $4", "flowtag_status_index = $5", "recut = false"]
+        params = [
+            True,  # $1 recut flag
+            name,  # $2
+            flowtag,  # $3
+            flowtag_index,  # $4
+            flowtag_status_index,  # $5
+            recut_quantity,  # $6 limit
+            changed_by,  # $7
+        ]
+
+        if job_id is not None:
+            where_clauses.insert(0, "job_id = $2")
+            params.insert(1, job_id)
+            # need to shift the rest of the placeholders in the WHERE
+            where_clauses = [clause.replace("$2", "$3").replace("$3", "$4").replace("$4", "$5").replace("$5", "$6") for clause in where_clauses]
+            # and bump limit placeholder
+            limit_placeholder = "$7"
+        else:
+            limit_placeholder = "$6"
+
+        update_query = f"""
+        WITH rows_to_update AS (
+            SELECT id
+            FROM workspace_assembly_laser_cut_parts
+            WHERE {" AND ".join(where_clauses)}
+            LIMIT {limit_placeholder}
+        )
+        UPDATE workspace_assembly_laser_cut_parts AS w
         SET
-        flowtag_index = $1,
-        modified_at = NOW()
-        WHERE
-        name = $2
-        AND flowtag = $3::text[]
-        AND flowtag_index = $4
+            recut = $1,
+            flowtag_index = 0,
+            flowtag_status_index = 0,
+            changed_by = $7,
+            modified_at = NOW()
+        FROM rows_to_update r
+        WHERE w.id = r.id
+        RETURNING w.*;
         """
-        async with self.db_pool.acquire() as conn:
-            await conn.execute(query, new_index, name, flowtag, flowtag_index)
+
+        insert_query = """
+        INSERT INTO workspace_recut_laser_cut_parts
+            (name, flowtag, recut_reason, inventory_data, meta_data, prices, paint_data, primer_data, powder_data, workspace_data, changed_by)
+        VALUES
+            ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11);
+        """
+
+        try:
+            async with self.db_pool.acquire() as conn:
+                async with conn.transaction():
+                    updated_parts = await conn.fetch(update_query, *params)
+
+                    await conn.executemany(
+                        insert_query,
+                        [
+                            (
+                                part["name"],
+                                part["flowtag"],
+                                recut_reason,
+                                part["inventory_data"],
+                                part["meta_data"],
+                                part["prices"],
+                                part["paint_data"],
+                                part["primer_data"],
+                                part["powder_data"],
+                                part["workspace_data"],
+                                changed_by,
+                            )
+                            for part in updated_parts
+                        ],
+                    )
+        except Exception as e:
+            print(e)
+            print(traceback.format_exc())
 
     def decode_json_fields(self, row, fields=("meta_data", "workspace_data")):
         result = dict(row)
@@ -165,11 +258,14 @@ class ViewDB(BaseWithDBPool):
                 where_clauses = []
                 params = []
 
-                if show_completed == 0:
-                    where_clauses.append("is_completed = false")
+                if show_completed == 1:
+                    where_clauses.append("is_completed = true")
 
                 if viewable_tags:
-                    where_clauses.append("current_flowtag = ANY($1::text[])")
+                    if show_completed:
+                        where_clauses.append("(current_flowtag IS NULL OR current_flowtag = ANY($1::text[]))")
+                    else:
+                        where_clauses.append("current_flowtag = ANY($1::text[])")
                     params.append(viewable_tags)
 
                 where_sql = " WHERE " + " AND ".join(where_clauses) if where_clauses else ""

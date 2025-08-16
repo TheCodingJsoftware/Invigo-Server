@@ -161,7 +161,7 @@ class ItemsTable implements BaseComponent {
             <thead>
                 <tr>
                     <th class="no-line">Description</th>
-                    <th class="no-line" data-column="partNumber">Part Number</th>
+                    <th class="no-line" data-column="partNumber">Part<br>Number</th>
                     <th class="no-line">Order<br>Qty</th>
                     <th class="no-line" data-column="unitPrice">Unit<br>Price</th>
                     <th class="no-line" data-column="price">Price</th>
@@ -179,7 +179,7 @@ class ItemsTable implements BaseComponent {
                 `).join("")}
                 ${this.components.map(component => `
                 <tr>
-                    <td class="medium-width no-line tiny-padding">${component.part_name}</td>
+                    <td class="no-line tiny-padding" style="width: 50%;">${component.part_name}</td>
                     <td data-column="partNumber">${component.part_number}</td>
                     <td>${this.getComponentOrderQuantity(component)}</td>
                     <td data-column="unitPrice">${this.formatPrice(component.price)}</td>

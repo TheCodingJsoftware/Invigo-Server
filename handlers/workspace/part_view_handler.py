@@ -14,6 +14,7 @@ PART_VIEW_WHITELIST = {
 class PartViewDataHandler(BaseHandler):
     async def get(self, db_view: str):
         show_completed = int(self.get_argument("show_completed", "0"))
+
         tag_str = self.get_argument("tags", "")
         viewable_tags = [tag.strip() for tag in tag_str.split(",") if tag.strip()]
 

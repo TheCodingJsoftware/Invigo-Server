@@ -1,4 +1,4 @@
-import { PermissionMap, PermissionEntry, FlatPermissionEntry } from "@core/auth/permissions";
+import { PermissionMap, PermissionEntry, FlatPermissionEntry } from "@core/auth/workspace-permissions";
 
 export class User {
     id: number;
