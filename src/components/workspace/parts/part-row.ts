@@ -16,6 +16,7 @@ import { SnackbarComponent } from "@components/common/snackbar/snackbar-componen
 import { PartColumn } from "@components/workspace/parts/parts-table";
 import { FileButton } from "@components/common/buttons/file-button";
 import { RecutFinishedButton } from "@components/common/buttons/recut-finished-button";
+import {TimerButton} from "@components/common/buttons/timer-button";
 
 export class PartRow {
     readonly element: HTMLTableRowElement;
@@ -58,6 +59,7 @@ export class PartRow {
             } else if (column.key === 'thumbnail') {
                 const img = document.createElement("img");
                 img.classList.add("part-table-thumbnail", "small-round", "border");
+                img.loading = "lazy";
                 img.src = <string>column.render(data);
                 img.alt = data.name;
                 img.onclick = () => {
@@ -151,11 +153,20 @@ export class PartRow {
         const container = document.createElement("div");
         container.classList.add("row");
 
-        const viewButton = document.createElement("button");
-        viewButton.classList.add("circle", "transparent");
-        viewButton.innerHTML = "<i>visibility</i>";
-        viewButton.onclick = () => PartRow.showWorkspaceData(data);
-        container.appendChild(viewButton);
+        if (user.can(WorkspacePermissions.CanToggleTimer)){
+            const timerButton = new TimerButton(data);
+            if (data.is_timing) {
+                timerButton.toggle()
+            }
+            timerButton.onclick((data) => {
+                if (data.is_timing) {
+                    PartRow.stopTiming(data);
+                } else {
+                    PartRow.startTiming(data);
+                }
+            });
+            container.appendChild(timerButton.getElement());
+        }
 
         if (!data.is_completed && !data.recut && user.canApplyTag(data.current_flowtag) && user.can(WorkspacePermissions.AdvanceFlow)) {
             if (Object.keys(WorkspaceSettings.tags[data.current_flowtag].statuses).length > 1) {
@@ -175,7 +186,7 @@ export class PartRow {
             container.appendChild(recutButton.getElement());
         }
 
-        if (data.recut) {
+        if (data.recut && user.can(WorkspacePermissions.CanFinishRecut)) {
             const recutButton = new RecutFinishedButton(data);
             recutButton.onclick((data) => PartRow.markAsRecutFinished(data));
             container.appendChild(recutButton.getElement());
@@ -184,19 +195,88 @@ export class PartRow {
         return container;
     }
 
+    static async startTiming(data: PartData): Promise<void> {
+        try {
+            Loading.show();
+            PartDataService.startTiming({
+                groupId: data.group_id,
+                jobId: data.job_id,
+                name: data.name,
+                flowtag: data.flowtag,
+                flowtagIndex: data.flowtag_index,
+                flowtagStatusIndex: data.flowtag_status_index,
+                startTime: data.start_time,
+                endTime: data.end_time,
+                newValue: true,
+            });
+            new SnackbarComponent({
+                message: "Started timing",
+                icon: "timer",
+                type: "green",
+                position: "bottom",
+                duration: 1000,
+            });
+        } catch (error) {
+            console.error('Failed to start timing:', error);
+            new DialogComponent({title: "Error", bodyContent: "Failed to start timing.", width: "small-width"})
+        }
+    }
+
+    static async stopTiming(data: PartData): Promise<void> {
+        try {
+            Loading.show();
+            PartDataService.stopTiming({
+                groupId: data.group_id,
+                jobId: data.job_id,
+                name: data.name,
+                flowtag: data.flowtag,
+                flowtagIndex: data.flowtag_index,
+                flowtagStatusIndex: data.flowtag_status_index,
+                startTime: data.start_time,
+                endTime: data.end_time,
+                newValue: false,
+            });
+            new SnackbarComponent({
+                message: "Stopped timing",
+                icon: "timer",
+                type: "green",
+                position: "bottom",
+                duration: 1000,
+            });
+        } catch (error) {
+            console.error('Failed to stop timing:', error);
+            new DialogComponent({title: "Error", bodyContent: "Failed to stop timing.", width: "small-width"})
+        }
+    }
+
     static async markAsRecut(data: PartData): Promise<void> {
         const recutDialog = new RecutDialog([data]);
     }
 
     static async markAsRecutFinished(data: PartData): Promise<void> {
-        PartDataService.recutFinished({
-            jobId: data.job_id,
-            groupId: data.group_id,
-            name: data.name,
-            flowtag: data.flowtag,
-            flowtagIndex: data.flowtag_index,
-            flowtagStatusIndex: data.flowtag_status_index,
-        })
+        try {
+            Loading.show();
+            PartDataService.recutFinished({
+                jobId: data.job_id,
+                groupId: data.group_id,
+                name: data.name,
+                flowtag: data.flowtag,
+                flowtagIndex: data.flowtag_index,
+                flowtagStatusIndex: data.flowtag_status_index,
+                startTime: data.start_time,
+                endTime: data.end_time,
+            })
+            new SnackbarComponent({
+                message: "Successfully marked as recut finished.",
+                icon: "check",
+                type: "green",
+                position: "bottom",
+                duration: 1000,
+            });
+        } catch (error) {
+            console.error('Failed to mark as recut finished:', error);
+            new DialogComponent({title: "Error", bodyContent: "Failed to mark as recut finished.", width: "small-width"});
+        }
     }
 
     static async flowtagStatusChanged(flowtagStatusButton: FlowtagStatusMenuButton, data: PartData): Promise<void> {
@@ -215,10 +295,13 @@ export class PartRow {
                     flowtag: data.flowtag,
                     flowtagIndex: data.flowtag_index,
                     flowtagStatusIndex: data.flowtag_status_index,
+                    startTime: data.start_time,
+                    endTime: data.end_time,
                     newValue: flowtagStatusButton.getSelectedIndex(),
                 });
                 new SnackbarComponent({
-                    message: "Status updated",
+                    message: "Synced",
+                    icon: "sync",
                     type: "green",
                     position: "bottom",
                     duration: 1000,
@@ -244,6 +327,8 @@ export class PartRow {
                 flowtag: data.flowtag,
                 flowtagIndex: data.flowtag_index,
                 flowtagStatusIndex: data.flowtag_status_index,
+                startTime: data.start_time,
+                endTime: data.end_time,
                 newValue: data.flowtag_index + 1,
             });
             new SnackbarComponent({
@@ -271,6 +356,8 @@ export class PartRow {
                 flowtag: data.flowtag,
                 flowtagIndex: data.flowtag_index,
                 flowtagStatusIndex: data.flowtag_status_index,
+                startTime: data.start_time,
+                endTime: data.end_time,
             });
 
             new DialogComponent({

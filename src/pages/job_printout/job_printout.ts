@@ -1,28 +1,29 @@
 import "beercss"
 import "@static/css/printout.css"
 import "material-dynamic-colors";
-import { AssembliesParts } from "@components/assemblies-parts";
-import { AssembliesSummary } from "@components/assemblies-summary";
-import { JobDetails } from "@components/job-details";
-import { NestedParts } from "@components/nested-parts";
-import { NestedPartsSummary } from "@components/nested-parts-summary";
-import { NestedSheets } from "@components/nested-sheets";
-import { NestedSheetsSummary } from "@components/nested-sheets-summary";
-import { NetWeight } from "@components/net-weight";
-import { PageBreak } from "@components/page-break";
-import { QRCodeComponent } from "@components/qr-code-component";
-import { TotalCost } from "@components/total-cost";
-import { CHECKBOX_CONFIG } from "@config/checkbox-config";
-import { JOB_COLORS, JobType } from "@config/job-printout-config";
-import { BaseComponent } from "@interfaces/base-component";
-import { JobData } from "@interfaces/job";
-import { Job } from "@models/job";
-import { loadAnimationStyleSheet, toggleTheme, loadTheme, invertImages } from "@utils/theme"
-import { Effect } from "effect"
-import { createSwapy } from 'swapy'
+import {AssembliesParts} from "@components/assemblies-parts";
+import {AssembliesSummary} from "@components/assemblies-summary";
+import {JobDetails} from "@components/job-details";
+import {NestedParts} from "@components/nested-parts";
+import {NestedPartsSummary} from "@components/nested-parts-summary";
+import {NestedSheets} from "@components/nested-sheets";
+import {NestedSheetsSummary} from "@components/nested-sheets-summary";
+import {NetWeight} from "@components/net-weight";
+import {PageBreak} from "@components/page-break";
+import {QRCodeComponent} from "@components/qr-code-component";
+import {TotalCost} from "@components/total-cost";
+import {CHECKBOX_CONFIG} from "@config/checkbox-config";
+import {JOB_COLORS, JobType} from "@config/job-printout-config";
+import {BaseComponent} from "@interfaces/base-component";
+import {JobData} from "@interfaces/job";
+import {Job} from "@models/job";
+import {loadAnimationStyleSheet, toggleTheme, loadTheme, invertImages} from "@utils/theme"
+import {Effect} from "effect"
+import {createSwapy} from 'swapy'
 import flatpickr from "flatpickr";
+
 require("flatpickr/dist/themes/dark.css");
-import { Instance as FlatpickrInstance } from "flatpickr/dist/types/instance";
+import {Instance as FlatpickrInstance} from "flatpickr/dist/types/instance";
 
 class JobPrintout {
     jobID: number;
@@ -155,7 +156,7 @@ class JobPrintout {
                 return;
             }
 
-            const saved = localStorage.getItem(`show-${key}`);
+            const saved = localStorage.getItem(`${this.getJobType()}-show-${key}`);
             if (saved !== null) {
                 checkbox.checked = saved === "true";
             }
@@ -163,7 +164,7 @@ class JobPrintout {
             checkbox.checked ? section.show() : section.hide();
 
             checkbox.addEventListener("change", () => {
-                localStorage.setItem(`show-${key}`, String(checkbox.checked));
+                localStorage.setItem(`${this.getJobType()}-show-${key}`, String(checkbox.checked));
                 checkbox.checked ? section.show() : section.hide();
             });
 
@@ -187,7 +188,7 @@ class JobPrintout {
                             observer.disconnect();
                         }
                     });
-                }, { threshold: 0.5 });
+                }, {threshold: 0.5});
 
                 observer.observe(section.element);
             });
@@ -356,7 +357,7 @@ class JobPrintout {
 
                     wrapper.addEventListener("transitionend", () => {
                         wrapper.style.maxHeight = "none"; // reset to large value after animation
-                    }, { once: true });
+                    }, {once: true});
                 } else {
                     wrapper.style.maxHeight = wrapper.scrollHeight + "px"; // set current height
 
@@ -372,7 +373,7 @@ class JobPrintout {
                     wrapper.addEventListener("transitionend", () => {
                         // Collapse finished, ensure maxHeight stays at 0
                         wrapper.style.maxHeight = "0";
-                    }, { once: true });
+                    }, {once: true});
                 }
             });
         });
@@ -388,6 +389,7 @@ class JobPrintout {
         this.toggleSlotBorders(showGridLinesCheckbox.checked);
 
         const enabledPageBreaksCheckbox = document.getElementById('enable-pageBreaks') as HTMLInputElement;
+
         function updatePageBreakCheckboxes() {
             const checkboxs = document.querySelectorAll('.page-break-item input[type="checkbox"]') as NodeListOf<HTMLInputElement>;
             checkboxs.forEach(checkbox => {
@@ -395,6 +397,7 @@ class JobPrintout {
                 checkbox.dispatchEvent(new Event('change'));
             });
         }
+
         enabledPageBreaksCheckbox.addEventListener('change', () => {
             localStorage.setItem('enable-pageBreaks', enabledPageBreaksCheckbox.checked.toString());
             updatePageBreakCheckboxes();
@@ -405,6 +408,7 @@ class JobPrintout {
         }
 
         const showPageBreaksCheckbox = document.getElementById('show-pageBreaks') as HTMLInputElement;
+
         function updateShowPageBreaksCheckbox() {
             const pageBreakItems = document.querySelectorAll('.page-break-item') as NodeListOf<HTMLElement>;
             pageBreakItems.forEach(item => {
@@ -417,6 +421,7 @@ class JobPrintout {
                 }
             });
         }
+
         showPageBreaksCheckbox.addEventListener('change', () => {
             localStorage.setItem('show-pageBreaks', showPageBreaksCheckbox.checked.toString());
             updateShowPageBreaksCheckbox();
@@ -560,6 +565,36 @@ class JobPrintout {
         ui("theme", JOB_COLORS[jobType]);
         this.changeCheckboxes(jobType);
         this.changeJobPrintoutType(jobType);
+        this.updateJobTypeCheckboxes();
+
+    }
+
+    private updateJobTypeCheckboxes() {
+        const sections: string[] = [
+                "qrCode",
+                "jobDetails",
+                "assembliesSummary",
+                "nestSummary",
+                "nestedPartsSummary",
+                "nestedSheets",
+                "nestedParts",
+                "assembliesParts",
+                "totalCost",
+                "netWeight"
+            ]
+        for (const key of sections) {
+            const checkbox = document.getElementById(`show-${key}`) as HTMLInputElement;
+            if (!checkbox) {
+                return;
+            }
+
+            const saved = localStorage.getItem(`${this.getJobType()}-show-${key}`);
+            if (saved !== null) {
+                checkbox.checked = saved === "true";
+            }
+
+            checkbox.dispatchEvent(new Event('change'));
+        }
     }
 
     private changeJobPrintoutType(jobType: JobType) {
@@ -573,13 +608,13 @@ class JobPrintout {
             jobPrintoutType.querySelector('i')!.innerText = 'construction'
             jobPrintoutType.querySelector('span')!.textContent = 'Workorder';
             businessInfo.classList.add('hidden');
-        }
-        else if (jobType === JobType.PackingSlip) {
+        } else if (jobType === JobType.PackingSlip) {
             jobPrintoutType.querySelector('i')!.innerText = 'receipt_long'
             jobPrintoutType.querySelector('span')!.textContent = 'Packing Slip';
             businessInfo.classList.remove('hidden');
         }
     }
+
     private toggleSlotBorders(enable: boolean) {
         const slots = document.querySelectorAll('.slot') as NodeListOf<HTMLElement>;
         slots.forEach(slot => {
@@ -637,6 +672,7 @@ class SwapyGrid {
             slot.classList.add(`s${newSpan}`, "slot");
         }
     }
+
     addPageBreak() {
         const slot = this.createSlot();
         const pageBreak = new PageBreak(-1, this.items.length + 1);
@@ -669,8 +705,8 @@ const getLocalStorageObject = (): Record<string, string> => {
 const generateBlob = async (endpoint: string): Promise<Blob | null> => {
     const res = await fetch(endpoint, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ localStorage: getLocalStorageObject() }),
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({localStorage: getLocalStorageObject()}),
     });
 
     if (!res.ok) {

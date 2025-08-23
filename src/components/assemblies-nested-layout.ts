@@ -32,6 +32,10 @@ class AssemblyLaserCutPartsComponent {
                         <span>Part Name</span>
                     </label>
                     <label class="s12 m4 l3 checkbox">
+                        <input type="checkbox" id="show-assembly-laser-cut-part-coating" checked>
+                        <span>Coating</span>
+                    </label>
+                    <label class="s12 m4 l3 checkbox">
                         <input type="checkbox" id="show-assembly-laser-cut-part-material" checked>
                         <span>Material</span>
                     </label>

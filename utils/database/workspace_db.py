@@ -1,7 +1,8 @@
 import json
 import logging
 import os
-from datetime import timedelta
+import traceback
+from datetime import datetime, timedelta
 from typing import Any, Optional
 
 import asyncpg
@@ -258,3 +259,155 @@ class WorkspaceDB(BaseWithDBPool):
                 part_id,
             )
             return dict(row) if row else None
+
+    @ensure_connection
+    async def get_job_timeline(self, job_id: int | None):
+        try:
+            async with self.db_pool.acquire() as conn:
+                params = []
+                where_clause = ""
+                if job_id:
+                    where_clause = "WHERE id = $1"
+                    params.append(job_id)
+
+                # Fetch Jobs
+                jobs_query = f"""
+                    SELECT id, name, job_data, start_time, end_time, 'job' AS type
+                    FROM workspace_jobs
+                    {where_clause}
+                """
+                jobs = await conn.fetch(jobs_query, *params)
+
+                def row_to_dict(row):
+                    return {
+                        "id": row["id"],
+                        "name": row["name"],
+                        "job_data": msgspec.json.decode(row["job_data"]),
+                        "starting_date": row["start_time"],
+                        "ending_date": row["end_time"],
+                    }
+
+                results = {}
+
+                for job in jobs:
+                    job_id = job["id"]
+                    job_dict = row_to_dict(job)
+
+                    # Fetch assemblies for this job
+                    assemblies_query = """
+                        SELECT id, name, start_time, end_time
+                        FROM workspace_assemblies
+                        WHERE job_id = $1
+                    """
+                    assemblies = await conn.fetch(assemblies_query, job_id)
+                    assembly_timeline = {}
+                    for a in assemblies:
+                        assembly_timeline[a["name"]] = {
+                            "starting_date": a["start_time"].isoformat() if a["start_time"] else None,
+                            "ending_date": a["end_time"].isoformat() if a["end_time"] else None,
+                        }
+
+                    # Fetch parts/items for this job
+                    parts_query = """
+                        SELECT group_id AS id, name, start_time, end_time
+                        FROM view_grouped_laser_cut_parts_by_job
+                        WHERE job_id = $1
+                    """
+                    parts = await conn.fetch(parts_query, job_id)
+                    item_timeline = {}
+                    for p in parts:
+                        item_timeline[p["name"]] = {
+                            "starting_date": p["start_time"].isoformat() if p["start_time"] else None,
+                            "ending_date": p["end_time"].isoformat() if p["end_time"] else None,
+                        }
+
+                    # Attach timelines
+                    job_dict["assembly_timeline"] = assembly_timeline
+                    job_dict["item_timeline"] = item_timeline
+
+                    results[str(job_id)] = job_dict
+
+                return results
+
+        except Exception as e:
+            logging.error(f"Error in get_job_items_timelines: {e} {traceback.format_exc()}")
+            raise e
+
+    @ensure_connection
+    async def save_job_flowtag_timeline(self, job_id: int, flowtag_timeline: str):
+        async with self.db_pool.acquire() as conn:
+            query = """
+            UPDATE workspace_jobs
+            SET job_data = jsonb_set(job_data, '{flowtag_timeline}', $1::jsonb, true)
+            WHERE id = $2
+            """
+            await conn.execute(query, flowtag_timeline, job_id)
+        await self.update_part_flowtag_dates(job_id, flowtag_timeline)
+
+    @ensure_connection
+    async def update_part_flowtag_dates(self, job_id: int, flowtag_timeline: str):
+        flowtag_timeline: dict = msgspec.json.decode(flowtag_timeline)
+        parsed_timeline = {
+            tag: {
+                "starting_date": datetime.fromisoformat(dates["starting_date"].replace("Z", "+00:00")) if dates.get("starting_date") else None,
+                "ending_date": datetime.fromisoformat(dates["ending_date"].replace("Z", "+00:00")) if dates.get("ending_date") else None,
+            }
+            for tag, dates in flowtag_timeline.items()
+        }
+        async with self.db_pool.acquire() as conn:
+            # fetch all parts for this job
+            assemblies_query = """
+                SELECT id, flowtag
+                FROM workspace_assembly_laser_cut_parts
+                WHERE job_id = $1
+            """
+            assemblies = await conn.fetch(assemblies_query, job_id)
+
+            updates = []
+            for assembly in assemblies:
+                flowtags = assembly["flowtag"]
+                start_dates = [parsed_timeline[tag]["starting_date"] for tag in flowtags if parsed_timeline.get(tag) and parsed_timeline[tag]["starting_date"]]
+                end_dates = [parsed_timeline[tag]["ending_date"] for tag in flowtags if parsed_timeline.get(tag) and parsed_timeline[tag]["ending_date"]]
+
+                if start_dates and end_dates:
+                    min_start = min(start_dates)
+                    max_end = max(end_dates)
+                    updates.append((assembly["id"], min_start, max_end))
+
+            update_query = """
+                UPDATE workspace_assembly_laser_cut_parts
+                SET start_time = $2,
+                    end_time = $3,
+                    modified_at = NOW()
+                WHERE id = $1
+            """
+            await conn.executemany(update_query, updates)
+
+        async with self.db_pool.acquire() as conn:
+            # fetch all parts for this job
+            assemblies_query = """
+                SELECT id, flowtag
+                FROM workspace_assemblies
+                WHERE job_id = $1
+            """
+            assemblies = await conn.fetch(assemblies_query, job_id)
+
+            updates = []
+            for assembly in assemblies:
+                flowtags = assembly["flowtag"]
+                start_dates = [parsed_timeline[tag]["starting_date"] for tag in flowtags if parsed_timeline.get(tag) and parsed_timeline[tag]["starting_date"]]
+                end_dates = [parsed_timeline[tag]["ending_date"] for tag in flowtags if parsed_timeline.get(tag) and parsed_timeline[tag]["ending_date"]]
+
+                if start_dates and end_dates:
+                    min_start = min(start_dates)
+                    max_end = max(end_dates)
+                    updates.append((assembly["id"], min_start, max_end))
+
+            update_query = """
+                UPDATE workspace_assemblies
+                SET start_time = $2,
+                    end_time = $3,
+                    modified_at = NOW()
+                WHERE id = $1
+            """
+            await conn.executemany(update_query, updates)

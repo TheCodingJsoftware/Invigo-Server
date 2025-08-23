@@ -1,6 +1,5 @@
-import "beercss";
-import '@static/css/style.css';
-import '@static/css/theme.css';
+import "beercss"
+import "@utils/theme"
 
 document.getElementById("register-form")?.addEventListener("submit", async (e) => {
     e.preventDefault();

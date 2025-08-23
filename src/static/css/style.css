@@ -151,7 +151,7 @@
 
 .table-checkbox {
     opacity: 0;
-    transition: var(--speed3);
+    transition: var(--speed3) ease;
 }
 
 .table-checkbox.show-checkbox {
@@ -159,7 +159,7 @@
 }
 
 tr {
-    transition: background-color var(--speed1);
+    transition: background-color var(--speed1) ease;
 }
 
 tr.selected {
@@ -215,4 +215,20 @@ tr.selected {
 
 button menu {
     max-height: 100vh;
+}
+
+.global-table {
+    max-height: 80vh !important;
+}
+
+/* blinking red border when timing */
+.timer-btn.timing {
+    border: .0625rem solid var(--error);
+    animation: border-blink 1.5s infinite;
+}
+
+@keyframes border-blink {
+    0% { border-color: var(--error); color: var(--error); }
+    50% { border-color: transparent; color: var(--error); }
+    100% { border-color: var(--error); color: var(--error); }
 }

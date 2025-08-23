@@ -21,10 +21,6 @@ export class WorkspaceFilter {
         }
     );
 
-    static showCompleted: boolean;
-    static showRecut: boolean;
-    static showRecoat: boolean;
-
     static async init(): Promise<void> {
         const user = Object.freeze(UserContext.getInstance().user);
         const allTags = Object.keys(WorkspaceSettings.tags);

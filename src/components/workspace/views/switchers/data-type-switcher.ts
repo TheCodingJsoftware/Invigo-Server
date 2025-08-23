@@ -9,7 +9,7 @@ export class DataTypeSwitcher {
     readonly #user = Object.freeze(UserContext.getInstance().user);
 
     constructor() {
-        this.element = document.createElement("header");
+        this.element = document.createElement("div");
     }
 
     initialize() {
@@ -18,7 +18,7 @@ export class DataTypeSwitcher {
 
     render() {
         const nav = document.createElement("nav");
-        nav.classList.add("tabbed", "primary-container");
+        nav.classList.add("tabbed", "small", "primary-container");
         nav.id = "data-type-switcher";
 
         Object.values(DataTypeSwitcherMode).forEach(mode => {

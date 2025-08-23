@@ -20,7 +20,11 @@ class PartDataType(Enum):
 class WorkspaceLaserCutPartHandler(BaseHandler):
     async def get(self):
         view = self.get_argument("view", "global")
-        job_id = int(self.get_argument("job_id", -1)) if view == ViewType.GROUPED_BY_JOB else None
+        job_id = (
+            int(self.get_argument("job_id", -1))
+            if view == ViewType.GROUPED_BY_JOB
+            else None
+        )
         name = self.get_argument("name", "")
         flowtag = self.get_argument("flowtag", []).split(",")
         flowtag_index = self.get_argument("flowtag_index", -1)
@@ -29,7 +33,12 @@ class WorkspaceLaserCutPartHandler(BaseHandler):
 
         try:
             data = await self.view_db.find(
-                job_id=job_id, name=name, flowtag=flowtag, flowtag_index=int(flowtag_index), flowtag_status_index=int(flowtag_status_index), data_type=data_type
+                job_id=job_id,
+                name=name,
+                flowtag=flowtag,
+                flowtag_index=int(flowtag_index),
+                flowtag_status_index=int(flowtag_status_index),
+                data_type=data_type,
             )
             self.write({"data": data})
 
@@ -71,6 +80,17 @@ class WorkspaceLaserCutPartHandler(BaseHandler):
                     flowtag_index=int(flowtag_index),
                     flowtag_status_index=int(flowtag_status_index),
                     new_status_index=int(new_value),
+                    changed_by=self.get_client_name_from_header(),
+                    job_id=job_id,
+                )
+                self.write({"status": "ok"})
+            elif data_type == "is_timing":
+                await self.view_db.update_is_timing(
+                    name=name,
+                    flowtag=flowtag,
+                    flowtag_index=int(flowtag_index),
+                    flowtag_status_index=int(flowtag_status_index),
+                    is_timing=bool(new_value),
                     changed_by=self.get_client_name_from_header(),
                     job_id=job_id,
                 )

@@ -78,6 +78,8 @@ from handlers.order_number.get_order_number import GetOrderNumberHandler
 from handlers.order_number.set_order_number import SetOrderNumberHandler
 from handlers.page import PageHandler
 from handlers.production_planner.file_uploader import ProductionPlannerFileUploadHandler
+from handlers.production_planner.item_timeline_handler import ItemTimelineHandler
+from handlers.production_planner.job_timeline_handler import JobTimelineHandler
 from handlers.purchase_orders.delete_purchase_order import DeletePurchaseOrderHandler
 from handlers.purchase_orders.get_all_purchase_orders import GetAllPurchaseOrdersHandler
 from handlers.purchase_orders.get_purchase_order import GetPurchaseOrderHandler
@@ -94,8 +96,12 @@ from handlers.sheets_inventory.get_sheet import GetSheetHandler
 from handlers.sheets_inventory.sheet_quantity import SheetQuantityHandler
 from handlers.sheets_inventory.update_sheet import UpdateSheetHandler
 from handlers.sheets_inventory.update_sheets import UpdateSheetsHandler
-from handlers.shipping_addresses.delete_shipping_address import DeleteShippingAddressHandler
-from handlers.shipping_addresses.get_all_shipping_addresses import GetAllShippingAddressesHandler
+from handlers.shipping_addresses.delete_shipping_address import (
+    DeleteShippingAddressHandler,
+)
+from handlers.shipping_addresses.get_all_shipping_addresses import (
+    GetAllShippingAddressesHandler,
+)
 from handlers.shipping_addresses.get_shipping_address import GetShippingAddressHandler
 from handlers.shipping_addresses.save_shipping_address import SaveShippingAddressHandler
 from handlers.static.custom import CustomStaticFileHandler
@@ -134,9 +140,12 @@ from handlers.workspace.get_recut_parts_from_job import (
 )
 from handlers.workspace.part_view_handler import PartViewDataHandler
 from handlers.workspace.update_entry import WorkspaceUpdateEntryHandler
-from handlers.workspace.update_grouped_laser_cut_parts import WorkspaceUpdateGroupHandler
+from handlers.workspace.update_grouped_laser_cut_parts import (
+    WorkspaceUpdateGroupHandler,
+)
 from handlers.workspace.workspace import WorkspaceHandler
 from handlers.workspace.workspace_part_handler import WorkspaceLaserCutPartHandler
+from handlers.workspace.workspace_recut_finished_handler import RecutPartFinishedHandler
 from handlers.workspace.workspace_recut_handler import RecutPartHandler
 from routes.route import route
 
@@ -228,7 +237,11 @@ api_routes = [
     route(r"/api/workspace/view/parts/(.*)", PartViewDataHandler),
     route(r"/api/workspace/get/part", GetPartDataHandler),
     route(r"/api/workspace/laser_cut_part", WorkspaceLaserCutPartHandler),
-    route(r"/api/workspace/recut", RecutPartHandler),
+    route(r"/api/workspace/request_recut", RecutPartHandler),
+    route(r"/api/workspace/recut_finished", RecutPartFinishedHandler),
+    # Production Planner Routes
+    route(r"/api/production_planner/job/timeline", JobTimelineHandler),
+    route(r"/api/production_planner/job/timeline/(.*)", JobTimelineHandler),
     # OLD Workspace Routes
     route(r"/workspace/get_file/(.*)", WorkspaceFileReceiverHandler),
     route(r"/workspace/add_job", WorkspaceAddJobHandler),

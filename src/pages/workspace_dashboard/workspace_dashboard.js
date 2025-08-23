@@ -1,6 +1,5 @@
-import "beercss";
-import '@static/css/style.css';
-import '@static/css/theme.css';
+import "beercss"
+import "@utils/theme"
 import flatpickr from 'flatpickr';
 import { Chart, registerables } from 'chart.js';
 import 'chartjs-adapter-date-fns';

@@ -59,6 +59,10 @@ export class LaserCutPartGroup {
         return this.base_part.meta_data.gauge;
     }
 
+    getCoating(): string {
+        return this.base_part.getCoating();
+    }
+
     getMaterial(): string {
         return this.base_part.meta_data.gauge + "<br>" + this.base_part.meta_data.material;
     }

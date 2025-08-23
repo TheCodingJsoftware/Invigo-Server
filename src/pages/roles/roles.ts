@@ -1,6 +1,5 @@
 import "beercss"
-import '@static/css/style.css';
-import '@static/css/theme.css';
+import "@utils/theme"
 import {WorkspacePermissions, PermissionMap, extendPermissionMapWithTags} from "@core/auth/workspace-permissions";
 import { User } from "@core/auth/user";
 import { WorkspaceSettings } from "@core/settings/workspace-settings";

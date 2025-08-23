@@ -1,7 +1,7 @@
 import contextlib
 import logging
 import traceback
-from datetime import timedelta
+from datetime import datetime, timedelta
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
@@ -110,12 +110,23 @@ class ViewDB(BaseWithDBPool):
 
     @ensure_connection
     async def update_flowtag_index(
-        self, new_index: int, name: str, flowtag: list, flowtag_index: int, flowtag_status_index: int, changed_by: str, job_id: int | None = None
+        self,
+        new_index: int,
+        name: str,
+        flowtag: list,
+        flowtag_index: int,
+        flowtag_status_index: int,
+        changed_by: str,
+        job_id: int | None = None,
     ) -> None:
         base_query = """
         UPDATE workspace_assembly_laser_cut_parts
         SET
             flowtag_index = $1,
+            flowtag_status_index = 0,
+            recut = false,
+            recoat = false,
+            is_timing = false,
             changed_by = $6,
             modified_at = NOW()
         WHERE
@@ -125,7 +136,14 @@ class ViewDB(BaseWithDBPool):
             AND flowtag_status_index = $5
         """
 
-        params = [new_index, name, flowtag, flowtag_index, flowtag_status_index, changed_by]
+        params = [
+            new_index,
+            name,
+            flowtag,
+            flowtag_index,
+            flowtag_status_index,
+            changed_by,
+        ]
 
         if job_id is not None:
             base_query += " AND job_id = $7"
@@ -136,7 +154,14 @@ class ViewDB(BaseWithDBPool):
 
     @ensure_connection
     async def update_flowtag_status_index(
-        self, name: str, flowtag: list, flowtag_index: int, flowtag_status_index: int, new_status_index: int, changed_by: str, job_id: int | None = None
+        self,
+        name: str,
+        flowtag: list,
+        flowtag_index: int,
+        flowtag_status_index: int,
+        new_status_index: int,
+        changed_by: str,
+        job_id: int | None = None,
     ) -> None:
         query = """
         UPDATE workspace_assembly_laser_cut_parts
@@ -150,7 +175,53 @@ class ViewDB(BaseWithDBPool):
             AND flowtag_index = $4
             AND flowtag_status_index = $5
         """
-        params = [new_status_index, name, flowtag, flowtag_index, flowtag_status_index, changed_by]
+        params = [
+            new_status_index,
+            name,
+            flowtag,
+            flowtag_index,
+            flowtag_status_index,
+            changed_by,
+        ]
+
+        if job_id is not None:
+            query += " AND job_id = $7"
+            params.append(job_id)
+
+        async with self.db_pool.acquire() as conn:
+            await conn.execute(query, *params)
+
+    @ensure_connection
+    async def update_is_timing(
+        self,
+        name: str,
+        flowtag: list,
+        flowtag_index: int,
+        flowtag_status_index: int,
+        is_timing: bool,
+        changed_by: str,
+        job_id: int | None = None,
+    ) -> None:
+        query = """
+        UPDATE workspace_assembly_laser_cut_parts
+        SET
+            is_timing = $1,
+            changed_by = $6,
+            modified_at = NOW()
+        WHERE
+            name = $2
+            AND flowtag = $3::text[]
+            AND flowtag_index = $4
+            AND flowtag_status_index = $5
+        """
+        params = [
+            is_timing,
+            name,
+            flowtag,
+            flowtag_index,
+            flowtag_status_index,
+            changed_by,
+        ]
 
         if job_id is not None:
             query += " AND job_id = $7"
@@ -161,9 +232,23 @@ class ViewDB(BaseWithDBPool):
 
     @ensure_connection
     async def handle_recut(
-        self, name: str, flowtag: list, flowtag_index: int, flowtag_status_index: int, recut_quantity: int, recut_reason: str, changed_by: str, job_id: int | None = None
+        self,
+        name: str,
+        flowtag: list,
+        flowtag_index: int,
+        flowtag_status_index: int,
+        recut_quantity: int,
+        recut_reason: str,
+        changed_by: str,
+        job_id: int | None = None,
     ) -> None:
-        where_clauses = ["name = $2", "flowtag = $3::text[]", "flowtag_index = $4", "flowtag_status_index = $5", "recut = false"]
+        where_clauses = [
+            "name = $2",
+            "flowtag = $3::text[]",
+            "flowtag_index = $4",
+            "flowtag_status_index = $5",
+            "recut = false",
+        ]
         params = [
             True,  # $1 recut flag
             name,  # $2
@@ -196,6 +281,7 @@ class ViewDB(BaseWithDBPool):
             recut = $1,
             flowtag_index = 0,
             flowtag_status_index = 0,
+            is_timing = false,
             changed_by = $7,
             modified_at = NOW()
         FROM rows_to_update r
@@ -238,6 +324,48 @@ class ViewDB(BaseWithDBPool):
             print(e)
             print(traceback.format_exc())
 
+    @ensure_connection
+    async def handle_recut_finished(
+        self,
+        name: str,
+        flowtag: list,
+        flowtag_index: int,
+        flowtag_status_index: int,
+        changed_by: str,
+        job_id: int | None = None,
+    ) -> None:
+        base_query = """
+        UPDATE workspace_assembly_laser_cut_parts
+        SET
+            flowtag_index = $1,
+            flowtag_status_index = 0,
+            recut = false,
+            is_timing = false,
+            changed_by = $6,
+            modified_at = NOW()
+        WHERE
+            name = $2
+            AND flowtag = $3::text[]
+            AND flowtag_index = $4
+            AND flowtag_status_index = $5
+        """
+
+        params = [
+            flowtag_index + 1,
+            name,
+            flowtag,
+            flowtag_index,
+            flowtag_status_index,
+            changed_by,
+        ]
+
+        if job_id is not None:
+            base_query += " AND job_id = $7"
+            params.append(job_id)
+
+        async with self.db_pool.acquire() as conn:
+            await conn.execute(base_query, *params)
+
     def decode_json_fields(self, row, fields=("meta_data", "workspace_data")):
         result = dict(row)
         for field in fields:
@@ -247,7 +375,11 @@ class ViewDB(BaseWithDBPool):
         return result
 
     @ensure_connection
-    async def get_grouped_parts_view(self, db_view: str, show_completed: int, viewable_tags: list[str]) -> list[dict]:
+    async def get_grouped_parts_view(self, db_view: str, show_completed: int, viewable_tags: list[str], start_date: str | None, end_date: str | None) -> list[dict]:
+        def parse_iso_date(date_str: str) -> datetime:
+            # Handles "2025-08-30T05:00:00.000Z"
+            return datetime.fromisoformat(date_str.replace("Z", "+00:00"))
+
         if db_view not in {
             "view_grouped_laser_cut_parts_by_job",
             "view_grouped_laser_cut_parts_global",
@@ -258,8 +390,8 @@ class ViewDB(BaseWithDBPool):
                 where_clauses = []
                 params = []
 
-                if show_completed == 1:
-                    where_clauses.append("is_completed = true")
+                if show_completed == 0:
+                    where_clauses.append("is_completed = false")
 
                 if viewable_tags:
                     if show_completed:
@@ -267,6 +399,13 @@ class ViewDB(BaseWithDBPool):
                     else:
                         where_clauses.append("current_flowtag = ANY($1::text[])")
                     params.append(viewable_tags)
+
+                if start_date and end_date and db_view == "view_grouped_laser_cut_parts_by_job":
+                    start_dt = parse_iso_date(start_date) if isinstance(start_date, str) else start_date
+                    end_dt = parse_iso_date(end_date) if isinstance(end_date, str) else end_date
+
+                    where_clauses.append(f"(start_time <= ${len(params) + 1} AND end_time >= ${len(params) + 2})")
+                    params.extend([end_dt, start_dt])  # notice order: $end then $start
 
                 where_sql = " WHERE " + " AND ".join(where_clauses) if where_clauses else ""
                 query = f"SELECT * FROM {db_view}{where_sql}"

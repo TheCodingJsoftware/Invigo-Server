@@ -1,7 +1,9 @@
 -- Base Tables
 CREATE TABLE IF NOT EXISTS workspace_jobs (
-    id SERIAL PRIMARY KEY,
+    id BIGSERIAL PRIMARY KEY,
     name TEXT NOT NULL,
+    start_time TIMESTAMPTZ,
+    end_time TIMESTAMPTZ,
     job_data JSONB,
     assemblies JSONB,
     nests JSONB,
@@ -10,8 +12,8 @@ CREATE TABLE IF NOT EXISTS workspace_jobs (
 );
 
 CREATE TABLE IF NOT EXISTS workspace_nests (
-    id SERIAL PRIMARY KEY,
-    job_id INTEGER NOT NULL REFERENCES workspace_jobs(id) ON DELETE CASCADE,
+    id BIGSERIAL PRIMARY KEY,
+    job_id BIGINT NOT NULL REFERENCES workspace_jobs(id) ON DELETE CASCADE,
     sheet JSONB,
     laser_cut_parts JSONB,
     data JSONB,
@@ -20,8 +22,8 @@ CREATE TABLE IF NOT EXISTS workspace_nests (
 );
 
 CREATE TABLE IF NOT EXISTS workspace_nest_laser_cut_parts (
-    id SERIAL PRIMARY KEY,
-    job_id INTEGER NOT NULL REFERENCES workspace_jobs(id) ON DELETE CASCADE,
+    id BIGSERIAL PRIMARY KEY,
+    job_id BIGINT NOT NULL REFERENCES workspace_jobs(id) ON DELETE CASCADE,
     nest_id INTEGER NOT NULL REFERENCES workspace_nests(id) ON DELETE CASCADE,
     name TEXT NOT NULL,
     setup_time JSONB,
@@ -41,13 +43,14 @@ CREATE TABLE IF NOT EXISTS workspace_nest_laser_cut_parts (
 );
 
 CREATE TABLE IF NOT EXISTS workspace_assemblies (
-    id SERIAL PRIMARY KEY,
-    job_id INTEGER NOT NULL REFERENCES workspace_jobs(id) ON DELETE CASCADE,
-    parent_id INTEGER REFERENCES workspace_assemblies(id) ON DELETE CASCADE,
+    id BIGSERIAL PRIMARY KEY,
+    job_id BIGINT NOT NULL REFERENCES workspace_jobs(id) ON DELETE CASCADE,
+    parent_id BIGINT REFERENCES workspace_assemblies(id) ON DELETE CASCADE,
     name TEXT NOT NULL,
     flowtag TEXT [] NOT NULL,
     flowtag_index INTEGER NOT NULL DEFAULT 0,
     flowtag_status_index INTEGER NOT NULL DEFAULT 0,
+    is_timing BOOLEAN NOT NULL DEFAULT false,
     setup_time JSONB,
     setup_time_seconds INTEGER,
     start_time TIMESTAMPTZ,
@@ -64,7 +67,7 @@ CREATE TABLE IF NOT EXISTS workspace_assemblies (
 );
 
 CREATE TABLE IF NOT EXISTS workspace_recut_laser_cut_parts (
-    id SERIAL PRIMARY KEY,
+    id BIGSERIAL PRIMARY KEY,
     name TEXT NOT NULL,
     flowtag TEXT [] NOT NULL,
     recut_reason TEXT,
@@ -81,15 +84,16 @@ CREATE TABLE IF NOT EXISTS workspace_recut_laser_cut_parts (
 );
 
 CREATE TABLE IF NOT EXISTS workspace_assembly_laser_cut_parts (
-    id SERIAL PRIMARY KEY,
-    job_id INTEGER NOT NULL REFERENCES workspace_jobs(id) ON DELETE CASCADE,
-    assembly_id INTEGER NOT NULL REFERENCES workspace_assemblies(id) ON DELETE CASCADE,
+    id BIGSERIAL PRIMARY KEY,
+    job_id BIGINT NOT NULL REFERENCES workspace_jobs(id) ON DELETE CASCADE,
+    assembly_id BIGINT NOT NULL REFERENCES workspace_assemblies(id) ON DELETE CASCADE,
     name TEXT NOT NULL,
     flowtag TEXT [] NOT NULL,
     flowtag_index INTEGER NOT NULL DEFAULT 0,
     flowtag_status_index INTEGER NOT NULL DEFAULT 0,
     recut BOOLEAN NOT NULL DEFAULT false,
     recoat BOOLEAN NOT NULL DEFAULT false,
+    is_timing BOOLEAN NOT NULL DEFAULT false,
     setup_time JSONB,
     setup_time_seconds INTEGER,
     start_time TIMESTAMPTZ,
@@ -107,24 +111,25 @@ CREATE TABLE IF NOT EXISTS workspace_assembly_laser_cut_parts (
 );
 
 CREATE TABLE IF NOT EXISTS workspace_part_status_timeline (
-    id SERIAL PRIMARY KEY,
+    id BIGSERIAL PRIMARY KEY,
     name TEXT NOT NULL,
-    part_id INTEGER NOT NULL REFERENCES workspace_assembly_laser_cut_parts(id) ON DELETE SET NULL,
+    part_id BIGINT NOT NULL REFERENCES workspace_assembly_laser_cut_parts(id) ON DELETE SET NULL,
     flowtag TEXT [] NOT NULL,
     flowtag_index INTEGER NOT NULL,
     flowtag_name TEXT NOT NULL,
     flowtag_status_index INTEGER NOT NULL,
     recut BOOLEAN NOT NULL,
     recoat BOOLEAN NOT NULL,
+    is_timing BOOLEAN NOT NULL,
     changed_by TEXT,
     started_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     ended_at TIMESTAMPTZ
 );
 
 CREATE TABLE IF NOT EXISTS workspace_components (
-    id SERIAL PRIMARY KEY,
-    job_id INTEGER NOT NULL REFERENCES workspace_jobs(id) ON DELETE CASCADE,
-    assembly_id INTEGER,
+    id BIGSERIAL PRIMARY KEY,
+    job_id BIGINT NOT NULL REFERENCES workspace_jobs(id) ON DELETE CASCADE,
+    assembly_id BIGINT NOT NULL REFERENCES workspace_assemblies(id) ON DELETE CASCADE,
     name TEXT NOT NULL,
     quantity INTEGER NOT NULL,
     data JSONB,
@@ -180,9 +185,12 @@ SELECT
     w.flowtag_status_index,
     w.recut,
     w.recoat,
+    w.is_timing,
     w.flowtag[w.flowtag_index + 1] AS current_flowtag,
     (w.flowtag_index = cardinality(w.flowtag)) AS is_completed,
     COUNT(*) AS quantity,
+    MIN(w.start_time) AS start_time,
+    MAX(w.end_time) AS end_time,
     ld.meta_data::jsonb,
     ld.workspace_data::jsonb,
     MIN(w.created_at) AS created_at,
@@ -199,6 +207,9 @@ GROUP BY
     w.flowtag_status_index,
     w.recut,
     w.recoat,
+    w.is_timing,
+    w.start_time,
+    w.end_time,
     ld.meta_data,
     ld.workspace_data;
 
@@ -219,9 +230,12 @@ SELECT
     w.flowtag_status_index,
     w.recut,
     w.recoat,
+    w.is_timing,
     w.flowtag[w.flowtag_index + 1] AS current_flowtag,
     (w.flowtag_index = cardinality(w.flowtag)) AS is_completed,
     COUNT(*) AS quantity,
+    -- MIN(w.start_time) AS start_time,
+    -- MAX(w.end_time) AS end_time,
     ld.meta_data::jsonb,
     ld.workspace_data::jsonb,
     MIN(w.created_at) AS created_at,
@@ -237,6 +251,9 @@ GROUP BY
     w.flowtag_status_index,
     w.recut,
     w.recoat,
+    w.is_timing,
+    -- w.start_time,
+    -- w.end_time,
     ld.meta_data,
     ld.workspace_data;
 
@@ -256,7 +273,10 @@ BEGIN
             'flowtag_index', COALESCE(NEW.flowtag_index, OLD.flowtag_index),
             'flowtag_status_index', COALESCE(NEW.flowtag_status_index, OLD.flowtag_status_index),
             'recut', COALESCE(NEW.recut, OLD.recut),
-            'recoat', COALESCE(NEW.recoat, OLD.recoat)
+            'recoat', COALESCE(NEW.recoat, OLD.recoat),
+            'start_time', COALESCE(NEW.start_time, OLD.start_time),
+            'end_time', COALESCE(NEW.end_time, OLD.end_time),
+            'is_timing', COALESCE(NEW.is_timing, OLD.is_timing)
         )::text
     );
 
@@ -271,7 +291,10 @@ BEGIN
             'flowtag_index', COALESCE(NEW.flowtag_index, OLD.flowtag_index),
             'flowtag_status_index', COALESCE(NEW.flowtag_status_index, OLD.flowtag_status_index),
             'recut', COALESCE(NEW.recut, OLD.recut),
-            'recoat', COALESCE(NEW.recoat, OLD.recoat)
+            'recoat', COALESCE(NEW.recoat, OLD.recoat),
+            'start_time', COALESCE(NEW.start_time, OLD.start_time),
+            'end_time', COALESCE(NEW.end_time, OLD.end_time),
+            'is_timing', COALESCE(NEW.is_timing, OLD.is_timing)
         )::text
     );
 
@@ -303,6 +326,7 @@ BEGIN
        OR OLD.flowtag_status_index IS DISTINCT FROM NEW.flowtag_status_index
        OR OLD.recut IS DISTINCT FROM NEW.recut
        OR OLD.recoat IS DISTINCT FROM NEW.recoat
+       OR OLD.is_timing IS DISTINCT FROM NEW.is_timing
     THEN
         -- Close old state
         UPDATE workspace_part_status_timeline
@@ -320,6 +344,7 @@ BEGIN
             flowtag_status_index,
             recut,
             recoat,
+            is_timing,
             changed_by,
             started_at
         )
@@ -332,6 +357,7 @@ BEGIN
             NEW.flowtag_status_index,
             NEW.recut,
             NEW.recoat,
+            NEW.is_timing,
             NEW.changed_by,
             now()
         );
@@ -345,3 +371,60 @@ CREATE OR REPLACE TRIGGER trg_part_status_timeline
     AFTER UPDATE ON workspace_assembly_laser_cut_parts
     FOR EACH ROW
     EXECUTE FUNCTION log_part_status_timeline();
+
+CREATE OR REPLACE VIEW workspace_part_full_duration AS
+SELECT
+    part_id,
+    name,
+    MIN(started_at) AS first_seen,
+    MAX(COALESCE(ended_at, now())) AS last_seen,
+    AGE(MAX(COALESCE(ended_at, now())), MIN(started_at)) AS total_duration
+FROM workspace_part_status_timeline
+GROUP BY part_id, name;
+
+CREATE OR REPLACE VIEW workspace_part_intervals AS
+SELECT
+    id AS timeline_id,
+    part_id,
+    name,
+    recut,
+    recoat,
+    is_timing,
+    flowtag_index,
+    flowtag_name,
+    flowtag_status_index,
+    started_at,
+    ended_at,
+    COALESCE(ended_at, now()) - started_at AS duration
+FROM workspace_part_status_timeline
+ORDER BY part_id, started_at;
+
+CREATE OR REPLACE VIEW workspace_part_state_summary AS
+SELECT
+    part_id,
+    name,
+    recut,
+    recoat,
+    is_timing,
+    flowtag_index,
+    flowtag_name,
+    SUM(COALESCE(ended_at, now()) - started_at) AS total_duration,
+    COUNT(*) AS transitions
+FROM workspace_part_status_timeline
+GROUP BY part_id, name, recut, recoat, is_timing, flowtag_index, flowtag_name
+ORDER BY part_id, total_duration DESC;
+
+-- CREATE OR REPLACE VIEW workspace_part_state_summary AS
+-- SELECT
+--     part_id,
+--     name,
+--     recut,
+--     recoat,
+--     flowtag_index,
+--     flowtag_name,
+--     MIN(started_at) AS first_seen,
+--     MAX(COALESCE(ended_at, now())) AS last_seen,
+--     AGE(MAX(COALESCE(ended_at, now())), MIN(started_at)) AS duration
+-- FROM workspace_part_status_timeline
+-- GROUP BY part_id, name, recut, recoat, flowtag_index, flowtag_name
+-- ORDER BY part_id, first_seen;

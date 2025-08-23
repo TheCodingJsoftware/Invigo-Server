@@ -66,7 +66,7 @@ export class PartsTable {
 
     constructor() {
         this.table = document.createElement("table") as HTMLTableElement;
-        this.table.classList.add("border", "rounded");
+        this.table.classList.add("border", "round");
         this.thead = document.createElement("thead");
         this.tbody = document.createElement("tbody");
 

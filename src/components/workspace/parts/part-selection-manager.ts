@@ -1,6 +1,8 @@
 import {RecutDialog} from "@components/common/dialog/recut-dialog";
 import {FileViewerDialog} from "@components/common/dialog/file-viewer-dialog";
 import {PartRow} from "@components/workspace/parts/part-row";
+import {UserContext} from "@core/auth/user-context";
+import {WorkspacePermissions} from "@core/auth/workspace-permissions";
 
 export class PartSelectionManager {
     private static element: HTMLElement;
@@ -13,6 +15,8 @@ export class PartSelectionManager {
     private static signalsBlocked = false;
 
     static buildFloatingMenuContent(selected: PartRow[]): HTMLElement {
+        const user = Object.freeze(UserContext.getInstance().user);
+
         const container = document.createElement("div");
         container.classList.add("menu-card");
 
@@ -37,6 +41,35 @@ export class PartSelectionManager {
             <span>Mark Complete</span>
         `.trim();
 
+        if (!user.can(WorkspacePermissions.AdvanceFlow)){
+            completeButton.classList.add("hidden");
+        }
+
+        const startTimingButton = document.createElement("button");
+        startTimingButton.disabled = selected.some(row => row.data.is_timing);
+        startTimingButton.classList.add("transparent", "responsive", "left-align");
+        startTimingButton.id = "start-timing";
+        startTimingButton.onclick = () => this.startTiming();
+        startTimingButton.innerHTML = `
+            <i>play_arrow</i>
+            <span>Start Timing</span>
+        `.trim();
+
+        const stopTimingButton = document.createElement("button");
+        stopTimingButton.disabled = selected.some(row => !row.data.is_timing);
+        stopTimingButton.classList.add("transparent", "responsive", "left-align");
+        stopTimingButton.id = "stop-timing";
+        stopTimingButton.onclick = () => this.stopTiming();
+        stopTimingButton.innerHTML = `
+            <i>stop</i>
+            <span>Stop Timing</span>
+        `.trim();
+
+        if (!user.can(WorkspacePermissions.CanToggleTimer)){
+            startTimingButton.classList.add("hidden");
+            stopTimingButton.classList.add("hidden");
+        }
+
         const viewFilesButton = document.createElement("button");
         viewFilesButton.classList.add("transparent", "responsive", "left-align");
         viewFilesButton.id = "view-files";
@@ -55,6 +88,10 @@ export class PartSelectionManager {
             <span>Recut</span>
         `.trim();
 
+        if (!user.can(WorkspacePermissions.CanRequestRecut)){
+            recutButton.classList.add("hidden");
+        }
+
         const clearButton = document.createElement("button");
         clearButton.classList.add("transparent", "responsive", "left-align");
         clearButton.id = "clear-selection";
@@ -67,6 +104,8 @@ export class PartSelectionManager {
         container.appendChild(handle);
         container.appendChild(label);
         verticalStack.appendChild(completeButton);
+        verticalStack.appendChild(startTimingButton);
+        verticalStack.appendChild(stopTimingButton);
         verticalStack.appendChild(viewFilesButton);
         verticalStack.appendChild(recutButton);
         verticalStack.appendChild(clearButton);
@@ -77,12 +116,30 @@ export class PartSelectionManager {
 
     static markSelectionComplete() {
         for (const row of this.getSelected()) {
-            const data = row.data;
-            if (!data.is_completed) {
-                PartRow.incrementFlowtagIndex(data);
+            if (!row.data.is_completed) {
+                PartRow.incrementFlowtagIndex(row.data);
             }
             this.remove(row);
         }
+        this.clearSelection();
+    }
+
+    static startTiming() {
+        for (const row of this.getSelected()) {
+            if (!row.data.is_timing) {
+                PartRow.startTiming(row.data);
+            }
+        }
+        this.clearSelection();
+    }
+
+    static stopTiming() {
+        for (const row of this.getSelected()) {
+            if (row.data.is_timing) {
+                PartRow.stopTiming(row.data);
+            }
+        }
+        this.clearSelection();
     }
 
     static recutParts() {

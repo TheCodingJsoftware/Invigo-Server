@@ -50,6 +50,8 @@ export class RecutDialog extends DialogComponent {
                     flowtag: part.flowtag,
                     flowtagIndex: part.flowtag_index,
                     flowtagStatusIndex: part.flowtag_status_index,
+                    startTime: part.start_time,
+                    endTime: part.end_time,
                     recutQuantity: this.recutQuantity,
                     recutReason: this.recutReason
                 })

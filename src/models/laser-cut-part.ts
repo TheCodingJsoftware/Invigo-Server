@@ -1,5 +1,6 @@
 import { LaserCutPartData } from "@interfaces/laser-cut-part";
 import { Nest } from "@models/nest";
+import {PartsTable} from "@components/workspace/parts/parts-table";
 
 export class LaserCutPart {
     id: number;
@@ -29,6 +30,20 @@ export class LaserCutPart {
         this.primer_data = data.primer_data;
         this.powder_data = data.powder_data;
         this.workspace_data = data.workspace_data;
+    }
+
+    getCoating(): string {
+        let html = "";
+        if (this.primer_data.uses_primer) {
+            html += `${this.primer_data.primer_name}`;
+        }
+        if (this.paint_data.uses_paint) {
+            html += `${this.paint_data.paint_name}`;
+        }
+        if (this.powder_data.uses_powder) {
+            html += `${this.powder_data.powder_name}`;
+        }
+        return html;
     }
 
     getTotalCoatingCost(): number {

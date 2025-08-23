@@ -20,6 +20,7 @@ import { WorkspaceSettings } from "@core/settings/workspace-settings";
 import { WorkspaceWebSocket } from "@core/websocket/workspace-websocket";
 import { WorkspaceFilter } from "@models/workspace-filter";
 import { loadAnimationStyleSheet, toggleTheme, loadTheme, invertImages } from "@utils/theme"
+import {DateRangeButton} from "@components/common/buttons/date-range-button";
 
 let pageLoaded = false;
 
@@ -158,17 +159,17 @@ class WorkspacePage {
         themeToggleButton.classList.add("circle", "transparent");
         themeToggleButton.innerHTML = "<i>dark_mode</i>"
 
-        const filterButton = new FilterMenuButton()
+        const filterButton = new FilterMenuButton();
         filterButton.onToggle.connect(({ key, value }) => {
-            console.log(`Toggled ${key} to ${value}`);
             this.resyncState();
         })
 
         const sortButton = new SortMenuButton();
         sortButton.onToggle.connect(({ key, value }) => {
-            console.log(`Toggled ${key} to ${value}`);
             this.resyncState();
         });
+
+        const dateRangeButton = new DateRangeButton();
 
         const profileButton = document.createElement("button");
         profileButton.classList.add("border", "large", "circle");
@@ -188,6 +189,7 @@ class WorkspacePage {
             })
             nav.appendChild(SearchInput.element);
         }
+        nav.appendChild(dateRangeButton.button);
         nav.appendChild(sortButton.button);
         nav.appendChild(filterButton.button);
         nav.appendChild(themeToggleButton);
@@ -241,7 +243,7 @@ class WorkspacePage {
 }
 
 document.addEventListener("DOMContentLoaded", async () => {
-    loadTheme();
+    loadTheme(localStorage.getItem("mode") || "dark");
     loadAnimationStyleSheet();
     await UserContext.init();
     await WorkspaceSettings.load();

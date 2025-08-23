@@ -23,7 +23,10 @@ export interface PartData {
     recoat: boolean;
     current_flowtag: string;
     is_completed: boolean;
+    is_timing: boolean;
     quantity: number;
+    start_time: string;
+    end_time: string;
     meta_data: LaserCutPartData["meta_data"];
     workspace_data: LaserCutPartData["workspace_data"];
     created_at: string;
@@ -197,12 +200,17 @@ export class PartPage {
     }
 
     private async loadGlobalTable(data: PartPageData) {
+        console.log(data)
         const fragment = document.createDocumentFragment();
         const article = document.createElement("article");
         article.classList.add("round", "border");
 
         const globalTable = new PartsTable();
         await globalTable.loadData(data);
+
+        globalTable.table.classList.add("global-table");
+        globalTable.table.classList.add("scroll");
+        globalTable.thead.classList.add("fixed");
 
         article.appendChild(globalTable.table);
 

@@ -5,6 +5,7 @@ import { SnackbarComponent } from "@components/common/snackbar/snackbar-componen
 import { WorkspaceFilter } from "@models/workspace-filter";
 import { UserContext } from "@core/auth/user-context";
 import { WorkspaceSettings } from "@core/settings/workspace-settings";
+import {WorkspaceDateRange} from "@models/workspace-date-range";
 
 export enum PartDataType {
     WORKSPACE = "workspace_data",
@@ -15,7 +16,8 @@ export enum PartDataType {
     PRIMER = "primer_data",
     POWDER = "powder_data",
     FLOWTAG_INDEX = "flowtag_index",
-    FLOWTAG_STATUS_INDEX = "flowtag_status_index"
+    FLOWTAG_STATUS_INDEX = "flowtag_status_index",
+    IS_TIMING = "is_timing"
 }
 
 interface PartDataParams {
@@ -25,6 +27,8 @@ interface PartDataParams {
     flowtag: string[];
     flowtagIndex: number;
     flowtagStatusIndex: number;
+    startTime: string;
+    endTime: string;
     dataType: PartDataType;
 }
 
@@ -66,17 +70,17 @@ export class PartDataService {
     }
 
     private static buildGetPartsUrl(): string {
-        const settings = WorkspaceFilter.getManager().get();
+        const workspaceFilter = WorkspaceFilter.getManager().get();
         const user = Object.freeze(UserContext.getInstance().user);
 
         const currentView = ViewSettingsManager.get().lastActivePartView;
         const dbView = PartViewConfig[currentView].dbView;
         const url = new URL(`/api/workspace/view/parts/${dbView}`, window.location.origin);
 
-        url.searchParams.append("show_completed", String(Number(settings.showCompleted)));
+        url.searchParams.append("show_completed", String(Number(workspaceFilter.showCompleted)));
 
         const filterTags = Object
-            .entries(settings)
+            .entries(workspaceFilter)
             .filter(([key, value]) => key.startsWith("show_tag:") && value)
             .map(([key]) => key.slice("show_tag:".length));
 
@@ -88,6 +92,12 @@ export class PartDataService {
             if (viewableTags.length > 0) {
                 url.searchParams.append("tags", viewableTags.join(","));
             }
+        }
+
+        const range = WorkspaceDateRange.getActiveRange();
+        if (range) {
+            url.searchParams.append("start_date", range.start.toISOString());
+            url.searchParams.append("end_date", range.end.toISOString());
         }
 
         return url.toString();
@@ -107,6 +117,20 @@ export class PartDataService {
             })
         }
         return await response.json();
+    }
+
+    static async startTiming(params: Omit<UpdatePartDataParams, "dataType">): Promise<any> {
+        return await this.updatePartData({
+            ...params,
+            dataType: PartDataType.IS_TIMING,
+        })
+    }
+
+    static async stopTiming(params: Omit<UpdatePartDataParams, "dataType">): Promise<any> {
+        return await this.updatePartData({
+            ...params,
+            dataType: PartDataType.IS_TIMING,
+        })
     }
 
     static async updatePartData(params: UpdatePartDataParams): Promise<any> {

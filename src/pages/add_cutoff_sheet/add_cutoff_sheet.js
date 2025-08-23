@@ -1,6 +1,5 @@
 import "beercss"
-import '@static/css/style.css';
-import '@static/css/theme.css';
+import "@utils/theme"
 
 function goToMainUrl() {
     window.location.href = "/";

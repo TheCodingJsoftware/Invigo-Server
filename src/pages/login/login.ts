@@ -1,8 +1,7 @@
 import "beercss"
-import '@static/css/style.css';
-import '@static/css/theme.css';
+import "@utils/theme"
 
-window.addEventListener("DOMContentLoaded", async () => {
+document.addEventListener("DOMContentLoaded", async () => {
     const logoutDiv = document.getElementById("logout-container");
     const loginForm = document.getElementById("login-form");
     const userInfo = document.getElementById("user-info");

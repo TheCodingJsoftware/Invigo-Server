@@ -1,403 +1,84 @@
 <!DOCTYPE html>
 <html lang="en">
-
-    <head>
-        <meta charset="UTF-8">
-        <meta http-equiv="Content-type" content="text/html; charset=utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <meta name="google" content="notranslate">
-        <script src="/static/gantt/codebase/dhtmlx.js"></script>
-        <link rel="stylesheet" type="text/css" href="/static/gantt/codebase/skins/dhtmlxgantt_terrace.css">
-        <link rel="stylesheet" type="text/css" href="/static/gantt/codebase/skins/dhtmlx.css">
-        <link rel="stylesheet" type="text/css" href="/static/gantt/samples/common/controls_styles.css">
-        <link rel="stylesheet" type="text/css" href="/static/css/bootstrap-theme.min.css">
-        <link rel="stylesheet" type="text/css" href="/static/css/bootstrap.min.css">
-        <link rel="stylesheet" type="text/css" href="/flatpickr.css">
-        <link rel="icon" href="/static/icon.png">
-        <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=yes" />
-        <title>Production Planner</title>
-    </head>
-
-    <style>
-    @font-face {
-        font-family: 'Material Symbols Rounded';
-        font-style: normal;
-        font-weight: 400;
-        src: url(/material-symbols-rounded.woff2) format('woff2');
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <meta name="google" content="notranslate">
+    <link rel="apple-touch-icon" sizes="57x57" href="/static/icons/apple-icon-57x57.png">
+    <link rel="apple-touch-icon" sizes="60x60" href="/static/icons/apple-icon-60x60.png">
+    <link rel="apple-touch-icon" sizes="72x72" href="/static/icons/apple-icon-72x72.png">
+    <link rel="apple-touch-icon" sizes="76x76" href="/static/icons/apple-icon-76x76.png">
+    <link rel="apple-touch-icon" sizes="114x114" href="/static/icons/apple-icon-114x114.png">
+    <link rel="apple-touch-icon" sizes="120x120" href="/static/icons/apple-icon-120x120.png">
+    <link rel="apple-touch-icon" sizes="144x144" href="/static/icons/apple-icon-144x144.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="/static/icons/apple-icon-152x152.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/static/icons/apple-icon-180x180.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="/static/icons/android-icon-192x192.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/static/icons/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="96x96" href="/static/icons/favicon-96x96.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/static/icons/favicon-16x16.png">
+    <link rel="icon" type="image/png" href="/static/icons/favicon-96x96.png" sizes="96x96"/>
+    <link rel="icon" type="image/svg+xml" href="/static/icons/favicon.svg"/>
+    <link rel="shortcut icon" href="/static/icons/favicon.ico"/>
+    <link rel="manifest" href="/static/icons/manifest.json">
+    <meta name="msapplication-TileColor" content="#ffffff">
+    <meta name="msapplication-TileImage" content="/ms-icon-144x144.png">
+    <title>Production Planner</title>
+    <meta property="og:title" content="Production Planner"/>
+    <meta property="og:description" content="Production Planner."/>
+</head>
+<style>
+    /* alternating column backgrounds */
+    .vis-time-axis, .vis-grid {
+        border-radius: 0;
     }
 
-    .material-symbols-rounded {
-        font-family: 'Material Symbols Rounded';
-        font-weight: normal;
-        font-style: normal;
-        font-size: 24px;
-        line-height: 1;
-        letter-spacing: normal;
-        text-transform: none;
-        display: inline-block;
-        white-space: nowrap;
-        word-wrap: normal;
-        direction: ltr;
-        -webkit-font-feature-settings: 'liga';
-        -webkit-font-smoothing: antialiased;
+    .vis-time-axis .vis-grid.vis-odd {
+        background: #f5f5f5;
     }
 
-    .hidden,
-    .gantt_cal_ltext.gantt_section_description,
-    .gantt_cal_lsection,
-    .gantt_btn_set.gantt_left_btn_set.gantt_delete_btn_set,
-    .gantt_task_progress_drag,
-    .gantt_link_point {
-        display: none !important;
+    /* gray background in weekends, white text color */
+    .vis-time-axis .vis-grid.vis-saturday,
+    .vis-time-axis .vis-grid.vis-sunday {
+        background: gray;
     }
 
-    html,
-    body {
-        height: 100%;
-        padding: 0px;
-        margin: 0px;
-        font: Inter, Roboto, "Helvetica Neue", "Arial Nova", "Nimbus Sans", Arial, sans-serif;
-        background-color: var(--surface);
-        border-color: var(--outline);
-        font-size: 9pt;
+    .vis-time-axis .vis-text.vis-saturday,
+    .vis-time-axis .vis-text.vis-sunday {
+        color: white;
     }
 
-    .well {
-        text-align: right;
-    }
-
-    @media (max-width: 991px) {
-        .nav-stacked>li {
-            float: left;
-        }
-    }
-
-    label {
-        color: var(--on-background);
-        margin: auto;
-        margin-right: 0;
-    }
-
-    .panel,
-    .panel-default {
-        background-color: var(--surface-container-low);
-        background-image: var(--surface-container-low);
-        box-shadow: var(--elevate1);
-        color: var(--on-surface);
-        border: 1px solid transparent;
-        border-radius: 10px;
-    }
-
-    .panel-default>.panel-heading {
-        background-color: var(--surface-container-low);
-        background-image: var(--surface-container-low);
-        color: var(--on-surface);
-        border: 1px solid transparent;
-        border-radius: 10px;
-    }
-
-    .gantt_radio:checked+label,
-    .gantt_radio:not(:checked)+label {
-        color: var(--on-background);
-        margin-left: 0;
-
-    }
-
-    .container-fluid .row {}
-
-    .navbar {
-        position: fixed;
-        background-color: var(--primary);
-        top: 0;
-        margin-top: 0;
-        padding-top: 0;
-        border-radius: 0px;
-        height: 64px;
-        z-index: 999;
-        width: 100%;
-    }
-
-    .navbar-header {
-        font-size: 28px;
-        color: var(--on-primary);
-        margin-left: 5px;
-        width: 100%;
-        height: 100%;
-        display: flex;
-        flex-wrap: nowrap;
-        justify-content: flex-start;
-        align-items: center;
-        flex-direction: row;
-        align-content: space-around;
-    }
-
-    .container {
-        text-align: right;
-        margin-top: 10px;
-        margin-right: 0;
-    }
-
-    .container-fluid .gantt_wrapper {
-        height: 93vh;
-        width: 100%;
-    }
-
-    .gantt_container {
-        border-radius: 5px;
-    }
-
-    .gantt_grid_scale {
-        background-color: transparent;
-    }
-
-    .gantt_hor_scroll {
-        margin-bottom: 1px;
-    }
-
-    .gantt_task_progress {
-        text-align: left;
-        padding-left: 10px;
-        box-sizing: border-box;
-        color: var(--on-background);
-        font-weight: bold;
-    }
-
-    .gantt_grid_scale .gantt_grid_head_cell,
-    .gantt_task .gantt_task_scale .gantt_scale_cell {
-        font-weight: bold;
-        font-size: 14px;
-    }
-
-    input[type="date"] {
-        background-color: var(--surface);
-        color: var(--on-background);
-        border-radius: 5px;
-        border: 0.20rem solid var(--primary);
-        padding: 7px 13px;
-    }
-
-    button {
-        color: var(--on-primary);
-        background-color: var(--primary);
-        padding: 7px 13px;
-        border-radius: 5px;
-        border: 0.01em solid transparent;
-    }
-
-    table td,
-    th {
-        padding: 5px;
-    }
-
-    table td {
-        border-top: 1px solid var(--outline);
-        text-align: center;
-    }
-
-    .gantt_tree_content,
-    .gantt_cell {
-        color: var(--on-background);
-    }
-
-    .gantt_layout_cell,
-    .gantt_task_cell,
-    .gantt_row_task,
-    .gantt_scale_cell,
-    .gantt_grid_head_cell,
-    .gantt_grid_scale,
-    .gantt_grid_head_text,
-    .gantt_row_project,
-    .gantt_task .gantt_task_scale .gantt_scale_cell {
-        background-color: var(--surface);
-        border: 0.01em solid var(--background);
-
-    }
-
-    .gantt_row.odd,
-    .gantt_task_row.odd {
-        background-color: var(--surface-container-lowest);
-    }
-
-    .weekend {
-        background: #f4f7f4 !important;
-    }
-
-    .gantt_selected .weekend {
-        background: #FFF3A1 !important;
-    }
-
-    .gantt_selected,
-    .gantt_task_row.gantt_selected .gantt_task_cell,
-    .gantt_grid_data .gantt_row.gantt_selected,
-    .gantt_grid_data .gantt_row.odd.gantt_selected,
-    .gantt_task_row.gantt_selected {
-        background-color: var(--primary-container);
-        color: var(--on-primary);
-        border: 0.01em solid var(--on-primary);
-    }
-
-    .gantt_left,
-    .gantt_right {
-        color: var(--on-background);
-        font-size: 8pt;
-        padding-top: 7px;
-    }
-
-    .gridHoverStyle,
-    .gridSelection,
-    .timelineSelection {
-        background-color: var(--primary-container);
-        color: var(--on-primary);
-    }
-
-    .gantt_grid_data .gantt_row.odd:hover,
-    .gantt_grid_data .gantt_row:hover {
-        background-color: var(--primary-container);
-        color: var(--on-primary);
-    }
-
-    .gantt_grid_data .gantt_row.gantt_selected,
-    .gantt_grid_data .gantt_row.odd.gantt_selected,
-    .gantt_task_row.gantt_selected {
-        background-color: var(--primary-container);
-        color: var(--on-primary);
-    }
-
-    .gantt_row,
-    .gantt_task_row {
-        border: 0.01em solid var(--background);
-    }
-
-    .circle,
-    .transparent {
-        background-color: transparent;
-        color: var(--on-primary);
-    }
-    .gantt_layout_root,.gantt_layout_cell{
-        border: 1px solid var(--surface);
-        background-color: var(--surface);
-        border-radius: 10px;
-    }
-    .gantt_hor_scroll{
-        height: 5px;
-    }
-    .gantt_task_link.start_to_start .gantt_line_wrapper div {
-        background-color: #dd5640;
-    }
-
-    .gantt_task_link.start_to_start:hover .gantt_line_wrapper div {
-        box-shadow: 0 0 5px 0px #dd5640;
-    }
-
-    .gantt_task_link.start_to_start .gantt_link_arrow_right {
-        border-left-color: #dd5640;
-    }
-
-    .gantt_task_link.finish_to_start .gantt_line_wrapper div {
-        background-color: #7576ba;
-    }
-
-    .gantt_task_link.finish_to_start:hover .gantt_line_wrapper div {
-        box-shadow: 0 0 5px 0px #7576ba;
-    }
-
-    .gantt_task_link.finish_to_start .gantt_link_arrow_right {
-        border-left-color: #7576ba;
-    }
-
-    .gantt_task_link.finish_to_finish .gantt_line_wrapper div {
-        background-color: #55d822;
-    }
-
-    .gantt_task_link.finish_to_finish:hover .gantt_line_wrapper div {
-        box-shadow: 0 0 5px 0px #55d822;
-    }
-
-    .gantt_task_link.finish_to_finish .gantt_link_arrow_left {
-        border-right-color: #55d822;
+    .vis-item .vis-item-overflow {
+        overflow: visible;
     }
 </style>
-
-    <body>
-        <div class="container-fluid">
-            <div class="row">
-                <div class="col-md-13">
-                    <div class="navbar">
-                        <div class="navbar-header">
-                            <button class="circle transparent" onclick="window.location.href = '/'">
-                                <span class="material-symbols-rounded">
-                                    arrow_back
-                                </span>
-                            </button>
-                            <div style="width: 95%;">
-                                Production Planner
-                            </div>
-                            <button class="circle transparent" onclick="window.location.href = '/workspace_dashboard'">
-                                <span class="material-symbols-rounded">
-                                    browse_activity
-                                </span>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <br>
-            <br>
-            <br>
-            <br>
-            <div class="row">
-                <div class="col-md-2 col-md-push-10">
-                    <div class="panel panel-default">
-                        <div class="panel-heading">
-                            <h3 class="panel-title">Date and Range Controls</h3>
-                        </div>
-                        <div class="panel-body">
-                            <div style="display: grid; grid-template-columns: repeat(1, 1fr); gap: 5px; padding: 10px;">
-                                <input type="text" id="date-range-picker" placeholder="Select Date Range" />
-                            </div>
-                            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 5px; padding: 10px;">
-                                <button id="thisMonth">This Month</button>
-                                <button id="thisYear">This Year</button>
-                                <button id="prevMonth">Previous Month</button>
-                                <button id="nextMonth">Next Month</button>
-                            </div>
-                            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 5px; padding: 10px;">
-                                <input type="radio" id="scale1" class="gantt_radio" name="scale" value="day">
-                                <label for="scale1">Day scale</label>
-
-                                <input type="radio" id="scale2" class="gantt_radio" name="scale" value="week">
-                                <label for="scale2">Week scale</label>
-
-                                <input type="radio" id="scale3" class="gantt_radio" name="scale" value="month">
-                                <label for="scale3">Month scale</label>
-
-                                <input type="radio" id="scale4" class="gantt_radio" name="scale" value="quarter"
-                                    checked>
-                                <label for="scale4">Quarter scale</label>
-
-                                <input type="radio" id="scale5" class="gantt_radio" name="scale" value="year">
-                                <label for="scale5">Year scale</label>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="panel panel-default">
-                        <div class="panel-heading">
-                            <h3 class="panel-title">Assembly Summary</h3>
-                        </div>
-                        <div class="panel-body">
-                            <ul class="nav nav-pills nav-stacked" id="gantt_info">
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-10 col-md-pull-2">
-                    <div class="gantt_wrapper panel" id="gantt_here"></div>
-                </div>
-            </div>
-        </div>
-        <div id="context"></div>
-        <link href="/static/css/theme.css" rel="stylesheet">
-    </body>
+<body class="light">
+<header class="fixed primary">
+    <nav>
+        <button class="circle transparent" onclick="window.location.href = '/'">
+            <i>arrow_back</i>
+        </button>
+        <h5 class="max">
+            Production Planner
+        </h5>
+        <a href="/workspace">
+            <i>construction</i>
+        </a>
+    </nav>
+</header>
+<main class="responsive">
+    <div class="page padding active">
+        <div id="job-timeline"></div>
+        <footer class="fixed transparent">
+            <nav class="right-align">
+                <button class="square round extra primary medium-elevate" id="save-button">
+                    <i>save</i>
+                </button>
+            </nav>
+        </footer>
+    </div>
+</main>
+</body>
 
 </html>

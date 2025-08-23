@@ -110,7 +110,7 @@ export class NestedPartsSummary implements BaseComponent {
                 <td class="min" data-column="nest-part-partName">
                     <div class="row">
                         <img class="square extra small-round" src="http://invi.go/images/${group.getImagePath()}">
-                        <span class="wrap no-line small-width">${group.name}</span>
+                        <span class="wrap no-line">${group.name}</span>
                     </div>
                 </td>
                 <td class="min right-align" data-column="nest-name">

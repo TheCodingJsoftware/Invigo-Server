@@ -31,6 +31,10 @@ class GroupedLaserCutParts {
                         <span>Part Name</span>
                     </label>
                     <label class="s12 m4 l3 checkbox">
+                        <input type="checkbox" id="show-assembly-laser-cut-part-coating" checked>
+                        <span>Coating</span>
+                    </label>
+                    <label class="s12 m4 l3 checkbox">
                         <input type="checkbox" id="show-assembly-laser-cut-part-material" checked>
                         <span>Material</span>
                     </label>
@@ -104,6 +108,7 @@ class GroupedLaserCutPartsTable {
         let partsTableHeader = `
             <tr>
                 <th data-column="assembly-laser-cut-part-partName">Part Name</th>
+                <th class="center-align" data-column="assembly-laser-cut-part-coating">Coating</th>
                 <th class="center-align" data-column="assembly-laser-cut-part-material">Material</th>
                 <th class="center-align" data-column="assembly-laser-cut-part-process">Process</th>
                 <th class="center-align" data-column="assembly-laser-cut-part-notes">Notes</th>
@@ -118,6 +123,7 @@ class GroupedLaserCutPartsTable {
     generatePartsTableBody(): string {
         let partsTable = "";
         for (const laserCutPart of this.laserCutParts) {
+            const coating = laserCutPart.getCoating();
             const material = laserCutPart.getMaterial();
             const process = laserCutPart.getProcess();
             const notes = laserCutPart.getNotes();
@@ -130,9 +136,10 @@ class GroupedLaserCutPartsTable {
                 <td class="min" data-column="assembly-laser-cut-part-partName">
                     <div class="row">
                         <img class="square extra small-round" src="http://invi.go/images/${laserCutPart.getImagePath()}">
-                        <span class="wrap no-line small-width">${laserCutPart.name}</span>
+                        <span class="wrap no-line">${laserCutPart.name}</span>
                     </div>
                 </td>
+                <td class="center-align" data-column="assembly-laser-cut-part-coating">${coating}</td>
                 <td class="center-align" data-column="assembly-laser-cut-part-material">${material}</td>
                 <td class="center-align" data-column="assembly-laser-cut-part-process">${process}</td>
                 <td class="center-align" data-column="assembly-laser-cut-part-notes">${notes}</td>

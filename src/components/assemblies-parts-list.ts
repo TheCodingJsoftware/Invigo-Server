@@ -30,6 +30,10 @@ class AssemblyLaserCutPartsComponent {
                         <span>Part Name</span>
                     </label>
                     <label class="s12 m4 l3 checkbox">
+                        <input type="checkbox" id="show-assembly-laser-cut-part-coating" checked>
+                        <span>Coating</span>
+                    </label>
+                    <label class="s12 m4 l3 checkbox">
                         <input type="checkbox" id="show-assembly-laser-cut-part-material" checked>
                         <span>Material</span>
                     </label>
@@ -114,6 +118,7 @@ export class AssemblyLaserCutPartsTable {
         let partsTableHeader = `
             <tr>
                 <th data-column="assembly-laser-cut-part-partName">Part Name</th>
+                <th class="center-align" data-column="assembly-laser-cut-part-coating">Coating</th>
                 <th class="center-align" data-column="assembly-laser-cut-part-material">Material</th>
                 <th class="center-align" data-column="assembly-laser-cut-part-process">Process</th>
                 <th class="center-align" data-column="assembly-laser-cut-part-notes">Notes</th>
@@ -129,6 +134,7 @@ export class AssemblyLaserCutPartsTable {
     generatePartsTableBody(): string {
         let partsTable = "";
         for (const laserCutPart of this.laserCutParts) {
+            const coating = laserCutPart.getCoating();
             const material = laserCutPart.meta_data.gauge + "<br>" + laserCutPart.meta_data.material;
             const process = laserCutPart.workspace_data.flowtag.tags.join(" ➜ ");
             const notes = laserCutPart.meta_data.notes;
@@ -142,9 +148,10 @@ export class AssemblyLaserCutPartsTable {
                 <td class="min" data-column="assembly-laser-cut-part-partName">
                     <div class="row">
                         <img class="square extra small-round" src="http://invi.go/images/${laserCutPart.meta_data.image_index}">
-                        <span class="wrap no-line small-width">${laserCutPart.name}</span>
+                        <span class="wrap no-line">${laserCutPart.name}</span>
                     </div>
                 </td>
+                <td class="center-align" data-column="assembly-laser-cut-part-coating">${coating}</td>
                 <td class="center-align" data-column="assembly-laser-cut-part-material">${material}</td>
                 <td class="center-align" data-column="assembly-laser-cut-part-process">${process}</td>
                 <td class="left-align" data-column="assembly-laser-cut-part-notes">${notes}</td>
@@ -167,6 +174,7 @@ export class AssemblyLaserCutPartsTable {
         let partsTableFooter = `
             <tr>
                 <th data-column="assembly-laser-cut-part-partName"></th>
+                <th class="center-align" data-column="assembly-laser-cut-part-coating"></th>
                 <th class="center-align" data-column="assembly-laser-cut-part-material"></th>
                 <th class="center-align" data-column="assembly-laser-cut-part-process"></th>
                 <th class="center-align" data-column="assembly-laser-cut-part-notes"></th>
@@ -313,7 +321,7 @@ export class AssemblyComponentsTable {
             const price = unitPrice * quantity;
             partsTable += `
             <tr>
-                <td class="min" data-column="assembly-component-partName">
+                <td data-column="assembly-component-partName">
                     <div class="row">
                         <img class="square extra small-round" src="http://invi.go/images/${component.image_path}">
                         <span class="wrap no-line">${component.part_name}</span>

@@ -10,18 +10,25 @@ class UpdateComponentsHandler(BaseHandler):
             client_name = self.get_client_name_from_header()
 
             if not isinstance(data, list):
-                raise ValueError("Expected a list of sheets")
+                raise ValueError("Expected a list of components")
             component_ids = []
             for component_data in data:
                 component_id = component_data.get("id", -1)
                 component_ids.append(component_id)
-                await self.components_inventory_db.update_component(component_id, component_data, modified_by=client_name)
-            if changes_urls := [f"/components_inventory/get_component/{component_id}" for component_id in component_ids]:
+                await self.components_inventory_db.update_component(
+                    component_id, component_data, modified_by=client_name
+                )
+            if changes_urls := [
+                f"/components_inventory/get_component/{component_id}"
+                for component_id in component_ids
+            ]:
                 self.signal_clients_for_changes(
                     client_name,
                     changes_urls,
                 )
-            self.write({"status": "success", "message": "Sheets updated successfully."})
+            self.write(
+                {"status": "success", "message": "Components updated successfully."}
+            )
         except Exception as e:
             self.set_status(400)
             self.write({"error": str(e)})

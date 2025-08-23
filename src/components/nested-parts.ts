@@ -136,7 +136,7 @@ export class NestedParts implements BaseComponent {
                     <div class="row">
                         <img class="square extra small-round" src="http://invi.go/images/${laserCutPart.meta_data.image_index}">
                         <div class="vertical">
-                            <span class="wrap no-line small-width">${laserCutPart.name}</span>
+                            <span class="wrap no-line">${laserCutPart.name}</span>
                             <span><i>tag</i> ${partNumber}</span>
                         </div>
                     </div>

@@ -60,7 +60,7 @@ export class User {
                 id: 0,
                 name: "Guest",
                 roles: ["Guest"],
-                permissions: [PermissionMap.ViewJobs.value]
+                permissions: []
             });
         }
         const data = await res.json();

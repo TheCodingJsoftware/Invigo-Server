@@ -19,8 +19,12 @@ class ComponentsInventoryDB(BaseWithDBPool):
         self.cache_manager = InventoryCacheManager(expiry_seconds=1)
         self.components_history_db = ItemHistoryDB("component")
         load_dotenv()
-        self.cache_manager.schedule_refresh("all_components", self.get_all_components_no_cache, 60)
-        self.cache_manager.schedule_refresh("all_categories", self.get_categories_no_cache, 60)
+        self.cache_manager.schedule_refresh(
+            "all_components", self.get_all_components_no_cache, 60
+        )
+        self.cache_manager.schedule_refresh(
+            "all_categories", self.get_categories_no_cache, 60
+        )
 
     async def connect(self):
         if self.db_pool is None or self.db_pool._closed:
@@ -71,7 +75,9 @@ class ComponentsInventoryDB(BaseWithDBPool):
         async with self.db_pool.acquire() as conn:
             rows = await conn.fetch(query)
 
-        all_categories = sorted({cat for row in rows if row["categories"] for cat in row["categories"]})
+        all_categories = sorted(
+            {cat for row in rows if row["categories"] for cat in row["categories"]}
+        )
         self.cache_manager.set(key, all_categories)
         return all_categories
 
@@ -81,7 +87,9 @@ class ComponentsInventoryDB(BaseWithDBPool):
         async with self.db_pool.acquire() as conn:
             rows = await conn.fetch(query)
 
-        all_categories = sorted({cat for row in rows if row["categories"] for cat in row["categories"]})
+        all_categories = sorted(
+            {cat for row in rows if row["categories"] for cat in row["categories"]}
+        )
         return all_categories
 
     @ensure_connection
@@ -104,7 +112,11 @@ class ComponentsInventoryDB(BaseWithDBPool):
         if cached := self.cache_manager.get(key):
             return cached
 
-        query = f"SELECT * FROM {self.TABLE_NAME} WHERE id = $1" if isinstance(component_id, int) else f"SELECT * FROM {self.TABLE_NAME} WHERE part_number = $1"
+        query = (
+            f"SELECT * FROM {self.TABLE_NAME} WHERE id = $1"
+            if isinstance(component_id, int)
+            else f"SELECT * FROM {self.TABLE_NAME} WHERE part_number = $1"
+        )
         async with self.db_pool.acquire() as conn:
             row = await conn.fetchrow(query, component_id)
 
@@ -164,6 +176,7 @@ class ComponentsInventoryDB(BaseWithDBPool):
         ) VALUES ($1, $2, $3, $4, $5)
         RETURNING id;
         """
+        self.cache_manager.invalidate("all_components")
         async with self.db_pool.acquire() as conn:
             return await conn.fetchval(
                 query,
@@ -192,7 +205,9 @@ class ComponentsInventoryDB(BaseWithDBPool):
         return -1
 
     @ensure_connection
-    async def update_component(self, component_id: int, new_data: dict, modified_by: str = "system"):
+    async def update_component(
+        self, component_id: int, new_data: dict, modified_by: str = "system"
+    ):
         if component_id < 0:
             component_id = await self.get_component_id(new_data["part_number"])
             new_data["id"] = component_id
@@ -200,13 +215,25 @@ class ComponentsInventoryDB(BaseWithDBPool):
         async with self.db_pool.acquire() as conn:
             async with conn.transaction():
                 # Fetch current row
-                current_row = await conn.fetchrow(f"SELECT * FROM {self.TABLE_NAME} WHERE id = $1", component_id)
+                current_row = await conn.fetchrow(
+                    f"SELECT * FROM {self.TABLE_NAME} WHERE id = $1", component_id
+                )
                 current_json = json.loads(current_row["data"])
                 new_json = new_data.copy()
 
                 if current_json != new_json:
-                    task = asyncio.create_task(self.components_history_db.insert_history_item(component_id, new_data, modified_by))
-                    task.add_done_callback(lambda t: logging.error("Unhandled task error", exc_info=t.exception()) if t.exception() else None)
+                    task = asyncio.create_task(
+                        self.components_history_db.insert_history_item(
+                            component_id, new_data, modified_by
+                        )
+                    )
+                    task.add_done_callback(
+                        lambda t: logging.error(
+                            "Unhandled task error", exc_info=t.exception()
+                        )
+                        if t.exception()
+                        else None
+                    )
 
                 # Update the main row
                 await conn.execute(
@@ -231,7 +258,9 @@ class ComponentsInventoryDB(BaseWithDBPool):
     @ensure_connection
     async def delete_component(self, component_id: int | str) -> bool:
         query = (
-            f"DELETE FROM {self.TABLE_NAME} WHERE id = $1 RETURNING id" if isinstance(component_id, int) else f"DELETE FROM {self.TABLE_NAME} WHERE part_number = $1 RETURNING id"
+            f"DELETE FROM {self.TABLE_NAME} WHERE id = $1 RETURNING id"
+            if isinstance(component_id, int)
+            else f"DELETE FROM {self.TABLE_NAME} WHERE part_number = $1 RETURNING id"
         )
         async with self.db_pool.acquire() as conn:
             deleted_id = await conn.fetchval(query, component_id)

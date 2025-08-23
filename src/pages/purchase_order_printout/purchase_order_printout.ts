@@ -161,7 +161,7 @@ class ItemsTable implements BaseComponent {
             <thead>
                 <tr>
                     <th class="no-line">Description</th>
-                    <th class="no-line" data-column="partNumber">Part<br>Number</th>
+                    <th class="no-line" data-column="partNumber">Part #</th>
                     <th class="no-line">Order<br>Qty</th>
                     <th class="no-line" data-column="unitPrice">Unit<br>Price</th>
                     <th class="no-line" data-column="price">Price</th>
@@ -173,13 +173,13 @@ class ItemsTable implements BaseComponent {
                     <td class="no-line tiny-padding">${sheet.getPOItemName()}</td>
                     <td data-column="partNumber"></td>
                     <td>${this.getSheetOrderQuantity(sheet)} (${this.formatNumber(this.getSheetOrderQuantity(sheet) * ((sheet.length * sheet.width) / 144) * sheet.pounds_per_square_foot)} lbs)</td>
-                    <td data-column="unitPrice">${this.formatPrice(sheet.price_per_pound)}/lb</td>
-                    <td data-column="price">${this.formatPrice(sheet.price_per_pound * this.getSheetOrderQuantity(sheet) * ((sheet.length * sheet.width) / 144) * sheet.pounds_per_square_foot)}</td>
+                    <td data-column="unitPrice">${this.formatPrice(sheet.price_per_pound, 3)}/lb</td>
+                    <td data-column="price">${this.formatPrice(sheet.price_per_pound * this.getSheetOrderQuantity(sheet) * ((sheet.length * sheet.width) / 144) * sheet.pounds_per_square_foot,3)}</td>
                 </tr>
                 `).join("")}
                 ${this.components.map(component => `
                 <tr>
-                    <td class="no-line tiny-padding" style="width: 50%;">${component.part_name}</td>
+                    <td class="no-line tiny-padding" style="width: 35%;">${component.part_name}</td>
                     <td data-column="partNumber">${component.part_number}</td>
                     <td>${this.getComponentOrderQuantity(component)}</td>
                     <td data-column="unitPrice">${this.formatPrice(component.price)}</td>
@@ -197,8 +197,8 @@ class ItemsTable implements BaseComponent {
         return value.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     }
 
-    formatPrice(price: number): string {
-        return `$${price.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    formatPrice(price: number, decimals: number = 2): string {
+        return `$${price.toLocaleString("en-US", { minimumFractionDigits: decimals, maximumFractionDigits: decimals })}`;
     }
 
     public hide(): void {

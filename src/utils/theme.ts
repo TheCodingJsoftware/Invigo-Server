@@ -24,13 +24,23 @@ export function loadAnimationStyleSheet() {
     document.head.appendChild(style);
 }
 
-export function loadTheme() {
-    const mode = localStorage.getItem("mode");
-    if (mode === "dark") {
-        ui("mode", "dark");
+function getPreferredTheme() {
+    return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+}
+
+export function loadTheme(overideMode?: string) {
+    if (overideMode) {
+        ui("mode", overideMode);
     } else {
-        ui("mode", "light");
+        ui("mode", getPreferredTheme());
+
     }
+    // const mode = localStorage.getItem("mode");
+    // if (mode === "dark") {
+    //     ui("mode", "dark");
+    // } else {
+    //     ui("mode", "light");
+    // }
 }
 
 export function toggleTheme() {
@@ -58,3 +68,12 @@ export function invertImages() {
         }
     }
 }
+
+window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
+    const newTheme = e.matches ? 'dark' : 'light';
+    ui('mode', newTheme);
+});
+
+document.addEventListener("DOMContentLoaded", () => {
+    loadTheme();
+})

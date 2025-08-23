@@ -64,7 +64,9 @@ async def workspace_notify_handler(conn, pid, channel, payload):
             job = await workspace_db.get_job_by_id(job_id)
             WebSocketWorkspaceHandler.broadcast({"type": "job_updated", "job": job})
         elif op == "DELETE":
-            WebSocketWorkspaceHandler.broadcast({"type": "job_deleted", "job_id": job_id})
+            WebSocketWorkspaceHandler.broadcast(
+                {"type": "job_deleted", "job_id": job_id}
+            )
     elif table == "view_grouped_laser_cut_parts_by_job":
         # This notification means the grouped view for a specific job changed
         part_name = msg.get("part_name")
@@ -73,15 +75,36 @@ async def workspace_notify_handler(conn, pid, channel, payload):
 
         if op == "INSERT":
             WebSocketWorkspaceHandler.broadcast(
-                {"type": "grouped_parts_job_view_changed", "operation": "insert", "job_id": job_id, "part_name": part_name, "flowtag": flowtag, "flowtag_index": flowtag_index}
+                {
+                    "type": "grouped_parts_job_view_changed",
+                    "operation": "insert",
+                    "job_id": job_id,
+                    "part_name": part_name,
+                    "flowtag": flowtag,
+                    "flowtag_index": flowtag_index,
+                }
             )
         elif op == "UPDATE":
             WebSocketWorkspaceHandler.broadcast(
-                {"type": "grouped_parts_job_view_changed", "operation": "update", "job_id": job_id, "part_name": part_name, "flowtag": flowtag, "flowtag_index": flowtag_index}
+                {
+                    "type": "grouped_parts_job_view_changed",
+                    "operation": "update",
+                    "job_id": job_id,
+                    "part_name": part_name,
+                    "flowtag": flowtag,
+                    "flowtag_index": flowtag_index,
+                }
             )
         elif op == "DELETE":
             WebSocketWorkspaceHandler.broadcast(
-                {"type": "grouped_parts_job_view_changed", "operation": "delete", "job_id": job_id, "part_name": part_name, "flowtag": flowtag, "flowtag_index": flowtag_index}
+                {
+                    "type": "grouped_parts_job_view_changed",
+                    "operation": "delete",
+                    "job_id": job_id,
+                    "part_name": part_name,
+                    "flowtag": flowtag,
+                    "flowtag_index": flowtag_index,
+                }
             )
     elif table == "view_grouped_laser_cut_parts_global":
         # This notification means the global grouped view changed
@@ -91,15 +114,33 @@ async def workspace_notify_handler(conn, pid, channel, payload):
 
         if op == "INSERT":
             WebSocketWorkspaceHandler.broadcast(
-                {"type": "grouped_parts_global_view_changed", "operation": "insert", "part_name": part_name, "flowtag": flowtag, "flowtag_index": flowtag_index}
+                {
+                    "type": "grouped_parts_global_view_changed",
+                    "operation": "insert",
+                    "part_name": part_name,
+                    "flowtag": flowtag,
+                    "flowtag_index": flowtag_index,
+                }
             )
         elif op == "UPDATE":
             WebSocketWorkspaceHandler.broadcast(
-                {"type": "grouped_parts_global_view_changed", "operation": "update", "part_name": part_name, "flowtag": flowtag, "flowtag_index": flowtag_index}
+                {
+                    "type": "grouped_parts_global_view_changed",
+                    "operation": "update",
+                    "part_name": part_name,
+                    "flowtag": flowtag,
+                    "flowtag_index": flowtag_index,
+                }
             )
         elif op == "DELETE":
             WebSocketWorkspaceHandler.broadcast(
-                {"type": "grouped_parts_global_view_changed", "operation": "delete", "part_name": part_name, "flowtag": flowtag, "flowtag_index": flowtag_index}
+                {
+                    "type": "grouped_parts_global_view_changed",
+                    "operation": "delete",
+                    "part_name": part_name,
+                    "flowtag": flowtag,
+                    "flowtag_index": flowtag_index,
+                }
             )
 
 
@@ -154,7 +195,9 @@ def schedule_daily_task_at(hour, minute, task):
     delay = (next_run - now).total_seconds()
 
     IOLoop.current().call_later(delay, task)
-    IOLoop.current().call_later(delay + 86400, lambda: schedule_daily_task_at(hour, minute, task))  # Reschedule for the next day
+    IOLoop.current().call_later(
+        delay + 86400, lambda: schedule_daily_task_at(hour, minute, task)
+    )  # Reschedule for the next day
 
 
 def copy_server_log_file():
@@ -180,7 +223,9 @@ if __name__ == "__main__":
     signal.signal(signal.SIGINT, lambda s, f: shutdown())
     signal.signal(signal.SIGTERM, lambda s, f: shutdown())
     # Does not need to be thread safe
-    schedule.every().monday.at("04:00").do(partial(generate_sheet_report, variables.software_connected_clients))
+    schedule.every().monday.at("04:00").do(
+        partial(generate_sheet_report, variables.software_connected_clients)
+    )
     schedule.every().hour.do(hourly_backup_inventory_files)
     schedule.every().day.at("04:00").do(copy_server_log_file)
     schedule.every().day.at("04:00").do(daily_backup_inventory_files)

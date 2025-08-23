@@ -77,7 +77,18 @@ export const PermissionTree = {
             value: "can_request_recut",
             label: "Can Request Recut",
             description: "Allows being able to mark parts as recut.",
+        },
+        CanFinishRecut: {
+            value: "can_finish_recut",
+            label: "Can Finish Recut",
+            description: "Allows being able to finish recutting parts.",
+        },
+        CanToggleTimer: {
+            value: "can_toggle_timer",
+            label: "Can Toggle Timer",
+            description: "Allows being able to toggle the timer on and off.",
         }
+
     },
     DataType: {
         SwitchDataTypes: {
