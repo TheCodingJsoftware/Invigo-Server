@@ -1,7 +1,7 @@
-import { PanelComponent } from '@interfaces/panel-component';
+import {PanelComponent} from '@interfaces/panel-component';
 import QRCode from 'qrcode';
 
-export class QRCodeComponent implements PanelComponent{
+export class QRCodeComponent implements PanelComponent {
     url: string;
     element!: HTMLElement;
 

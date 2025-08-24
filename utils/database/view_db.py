@@ -33,7 +33,7 @@ class ViewDB(BaseWithDBPool):
                 self.db_pool = await asyncpg.create_pool(
                     user=Environment.POSTGRES_USER,
                     password=Environment.POSTGRES_PASSWORD,
-                    database=Environment.POSTGRES_DB,
+                    database=Environment.POSTGRES_WORKSPACE_DB,
                     host=Environment.POSTGRES_HOST,
                     port=Environment.POSTGRES_PORT,
                     min_size=Environment.POSTGRES_MIN_POOL_SIZE,
@@ -93,7 +93,7 @@ class ViewDB(BaseWithDBPool):
         columns = data_type if data_type else "*"
         query = f"""
             SELECT {columns}
-            FROM workspace_assembly_laser_cut_parts
+            FROM assembly_laser_cut_parts
             {where_clause}
             ORDER BY created_at DESC
             LIMIT 1
@@ -120,7 +120,7 @@ class ViewDB(BaseWithDBPool):
         job_id: int | None = None,
     ) -> None:
         base_query = """
-        UPDATE workspace_assembly_laser_cut_parts
+        UPDATE assembly_laser_cut_parts
         SET
             flowtag_index = $1,
             flowtag_status_index = 0,
@@ -164,7 +164,7 @@ class ViewDB(BaseWithDBPool):
         job_id: int | None = None,
     ) -> None:
         query = """
-        UPDATE workspace_assembly_laser_cut_parts
+        UPDATE assembly_laser_cut_parts
         SET
             flowtag_status_index = $1,
             changed_by = $6,
@@ -203,7 +203,7 @@ class ViewDB(BaseWithDBPool):
         job_id: int | None = None,
     ) -> None:
         query = """
-        UPDATE workspace_assembly_laser_cut_parts
+        UPDATE assembly_laser_cut_parts
         SET
             is_timing = $1,
             changed_by = $6,
@@ -272,11 +272,11 @@ class ViewDB(BaseWithDBPool):
         update_query = f"""
         WITH rows_to_update AS (
             SELECT id
-            FROM workspace_assembly_laser_cut_parts
+            FROM assembly_laser_cut_parts
             WHERE {" AND ".join(where_clauses)}
             LIMIT {limit_placeholder}
         )
-        UPDATE workspace_assembly_laser_cut_parts AS w
+        UPDATE assembly_laser_cut_parts AS w
         SET
             recut = $1,
             flowtag_index = 0,
@@ -290,7 +290,7 @@ class ViewDB(BaseWithDBPool):
         """
 
         insert_query = """
-        INSERT INTO workspace_recut_laser_cut_parts
+        INSERT INTO recut_laser_cut_parts
             (name, flowtag, recut_reason, inventory_data, meta_data, prices, paint_data, primer_data, powder_data, workspace_data, changed_by)
         VALUES
             ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11);
@@ -335,7 +335,7 @@ class ViewDB(BaseWithDBPool):
         job_id: int | None = None,
     ) -> None:
         base_query = """
-        UPDATE workspace_assembly_laser_cut_parts
+        UPDATE assembly_laser_cut_parts
         SET
             flowtag_index = $1,
             flowtag_status_index = 0,

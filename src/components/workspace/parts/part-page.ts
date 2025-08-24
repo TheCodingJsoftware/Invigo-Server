@@ -1,16 +1,16 @@
-import { LaserCutPartData } from "@interfaces/laser-cut-part";
-import { PartViewMode } from "@config/part-view-mode";
-import { PartDataService } from "@components/workspace/parts/part-data.service";
-import { WorkspaceWebSocket } from "@core/websocket/workspace-websocket";
-import { ViewSettingsManager } from "@core/settings/view-settings";
-import { Loading } from "@components/common/loading/loading";
-import { WorkspaceSort } from "@models/workspace-sort";
-import { WorkspaceFilter } from "@models/workspace-filter";
-import { SearchInput } from "@components/common/input/search-input";
-import { invertImages } from "@utils/theme";
-import { PartSelectionManager } from "@components/workspace/parts/part-selection-manager";
-import { PartsTable } from "@components/workspace/parts/parts-table";
-import { CookieSettingsManager } from "@core/settings/cookies";
+import {LaserCutPartData} from "@interfaces/laser-cut-part";
+import {PartViewMode} from "@config/part-view-mode";
+import {PartDataService} from "@components/workspace/parts/part-data.service";
+import {WorkspaceWebSocket} from "@core/websocket/workspace-websocket";
+import {ViewSettingsManager} from "@core/settings/view-settings";
+import {Loading} from "@components/common/loading/loading";
+import {WorkspaceSort} from "@models/workspace-sort";
+import {WorkspaceFilter} from "@models/workspace-filter";
+import {SearchInput} from "@components/common/input/search-input";
+import {invertImages} from "@utils/theme";
+import {PartSelectionManager} from "@components/workspace/parts/part-selection-manager";
+import {PartsTable} from "@components/workspace/parts/parts-table";
+import {CookieSettingsManager} from "@core/settings/cookies";
 
 export interface PartData {
     group_id: number;
@@ -49,7 +49,7 @@ class JobElement {
     constructor(jobId: number, parts: PartData[]) {
         this.jobId = jobId;
         this.parts = parts;
-        this.jobSettings = new CookieSettingsManager(`jobSettings:${this.jobId}`, { isCollapsed: false });
+        this.jobSettings = new CookieSettingsManager(`jobSettings:${this.jobId}`, {isCollapsed: false});
 
         this.element = document.createElement("article");
         this.element.classList.add("round", "border");
@@ -101,7 +101,7 @@ class JobElement {
             this.articleContent.classList.toggle('hidden');
             const isCollapsed = this.articleContent.classList.contains('hidden')
             toggleButton.querySelector('i')!.textContent = isCollapsed ? 'expand_more' : 'expand_less';
-            this.jobSettings.set({ "isCollapsed": isCollapsed })
+            this.jobSettings.set({"isCollapsed": isCollapsed})
         }
     }
 }

@@ -1,8 +1,7 @@
-import { BaseComponent } from "@interfaces/base-component";
-import { LaserCutPart } from "@models/laser-cut-part";
-import { LaserCutPartGroup } from "@models/laser-cut-part-group";
-import { Nest } from "@models/nest";
-import { naturalCompare } from "@utils/natural-sort";
+import {BaseComponent} from "@interfaces/base-component";
+import {LaserCutPartGroup} from "@models/laser-cut-part-group";
+import {Nest} from "@models/nest";
+import {naturalCompare} from "@utils/natural-sort";
 
 
 export class NestedPartsSummary implements BaseComponent {
@@ -156,10 +155,6 @@ export class NestedPartsSummary implements BaseComponent {
         return partsTableFooter.trim();
     }
 
-    private formatPrice(price: number): string {
-        return `$${price.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-    }
-
     public getAllGroupedLaserCutParts(): LaserCutPartGroup[] {
         let LaserCutPartGroups: LaserCutPartGroup[] = [];
         for (const nest of this.nests) {
@@ -194,5 +189,9 @@ export class NestedPartsSummary implements BaseComponent {
 
     public show(): void {
         this.element?.classList.remove("hidden");
+    }
+
+    private formatPrice(price: number): string {
+        return `$${price.toLocaleString("en-US", {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
     }
 }

@@ -59,6 +59,10 @@ export class FileButton {
         Previewer.prefetch(this.fileName, this.extension);
     }
 
+    buttonPressed() {
+        const fileViewerDialog = new FileViewerDialog([this.part], this.filePath);
+    }
+
     private async ensurePreview() {
         if (this.previewLoaded) return;
         this.previewLoaded = true;
@@ -66,9 +70,5 @@ export class FileButton {
         this.previewHost.innerHTML = "";
         this.previewHost.appendChild(node);
         invertImages();
-    }
-
-    buttonPressed() {
-        const fileViewerDialog = new FileViewerDialog([this.part], this.filePath);
     }
 }

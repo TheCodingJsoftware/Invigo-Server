@@ -1,5 +1,5 @@
-import { WorkorderData } from "@interfaces/workorder";
-import { Nest } from "@models/nest";
+import {WorkorderData} from "@interfaces/workorder";
+import {Nest} from "@models/nest";
 
 
 export class Workorder {

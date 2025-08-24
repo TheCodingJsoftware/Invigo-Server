@@ -1,6 +1,6 @@
-import { BaseComponent } from "@interfaces/base-component";
-import { Assembly } from "@models/assembly";
-import { Job } from "@models/job";
+import {BaseComponent} from "@interfaces/base-component";
+import {Assembly} from "@models/assembly";
+import {Job} from "@models/job";
 
 export class AssembliesSummary implements BaseComponent {
     job: Job;
@@ -61,6 +61,87 @@ export class AssembliesSummary implements BaseComponent {
         this.element.id = `assemblies-${this.jobId}`;
 
         return this.element;
+    }
+
+    public async render(): Promise<void> {
+        const container = document.querySelector('#assemblies-summary-layout') as HTMLDivElement;
+        container.appendChild(this.build());
+
+        const toggleAssemblyProcessCheckbox = this.element.querySelector("#show-assemblyProcess") as HTMLInputElement;
+        const storedStateAssemblyProcess = localStorage.getItem("show-assemblyProcess") ?? "true";
+        toggleAssemblyProcessCheckbox.checked = storedStateAssemblyProcess === "true";
+
+        this.toggleAssemblyProcessVisibility(false);
+
+        toggleAssemblyProcessCheckbox.addEventListener("change", () => {
+            this.toggleAssemblyProcessVisibility();
+        });
+
+        const toggleAssemblyPictureCheckbox = this.element.querySelector("#show-assemblyPicture") as HTMLInputElement;
+        const storedStateAssemblyPicture = localStorage.getItem("show-assemblyPicture") ?? "true";
+        toggleAssemblyPictureCheckbox.checked = storedStateAssemblyPicture === "true";
+
+        this.toggleAssemblyPictureVisibility(false);
+
+        toggleAssemblyPictureCheckbox.addEventListener("change", () => {
+            this.toggleAssemblyPictureVisibility();
+        });
+
+        const gridCompactButton = this.element.querySelector('#grid-compact-button') as HTMLButtonElement;
+        const gridModuleButton = this.element.querySelector('#grid-module-button') as HTMLButtonElement;
+        const gridCozyButton = this.element.querySelector('#grid-cozy-button') as HTMLButtonElement;
+        const listButton = this.element.querySelector('#list-button') as HTMLButtonElement;
+        const gridView = this.element.querySelector('#assemblies-grid-view')!;
+        const listView = this.element.querySelector('#assemblies-list-view')!;
+
+        const setView = (mode: 'grid-compact' | 'grid-module' | 'grid-cozy' | 'list') => {
+            localStorage.setItem('assemblies-view', mode);
+
+            if (mode === 'grid-compact' || mode === 'grid-module' || mode === 'grid-cozy') {
+                gridView.classList.remove('hidden');
+                listView.classList.add('hidden');
+
+                const gridDivs = gridView.querySelectorAll<HTMLDivElement>('div.s3, div.s4, div.s6');
+                gridDivs.forEach(div => {
+                    div.classList.remove("s3", "s4", "s6");
+
+                    if (mode === 'grid-compact') {
+                        div.classList.add("s3");
+                    } else if (mode === 'grid-module') {
+                        div.classList.add("s4");
+                    } else if (mode === 'grid-cozy') {
+                        div.classList.add("s6");
+                    }
+                });
+            } else {
+                gridView.classList.add('hidden');
+                listView.classList.remove('hidden');
+            }
+
+            gridCompactButton.classList.toggle('active', mode === 'grid-compact');
+            gridModuleButton.classList.toggle('active', mode === 'grid-module');
+            gridCozyButton.classList.toggle('active', mode === 'grid-cozy');
+            listButton.classList.toggle('active', mode === 'list');
+        };
+
+        // Restore initial view
+        const savedMode = (localStorage.getItem('assemblies-view') as 'grid-compact' | 'grid-module' | 'grid-cozy' | 'list') || 'grid-compact';
+        setView(savedMode);
+
+        gridCompactButton.addEventListener('click', () => setView('grid-compact'));
+        gridModuleButton.addEventListener('click', () => setView('grid-module'));
+        gridCozyButton.addEventListener('click', () => setView('grid-cozy'));
+        listButton.addEventListener('click', () => setView('list'));
+
+        return Promise.resolve();
+    }
+
+    public hide(): void {
+        this.element?.classList.add("hidden");
+    }
+
+    public show(): void {
+        this.element?.classList.remove("hidden");
     }
 
     private toggleAssemblyProcessVisibility(save: boolean = true) {
@@ -156,86 +237,5 @@ export class AssembliesSummary implements BaseComponent {
             }
         }
         return allAssemblies;
-    }
-
-    public async render(): Promise<void> {
-        const container = document.querySelector('#assemblies-summary-layout') as HTMLDivElement;
-        container.appendChild(this.build());
-
-        const toggleAssemblyProcessCheckbox = this.element.querySelector("#show-assemblyProcess") as HTMLInputElement;
-        const storedStateAssemblyProcess = localStorage.getItem("show-assemblyProcess") ?? "true";
-        toggleAssemblyProcessCheckbox.checked = storedStateAssemblyProcess === "true";
-
-        this.toggleAssemblyProcessVisibility(false);
-
-        toggleAssemblyProcessCheckbox.addEventListener("change", () => {
-            this.toggleAssemblyProcessVisibility();
-        });
-
-        const toggleAssemblyPictureCheckbox = this.element.querySelector("#show-assemblyPicture") as HTMLInputElement;
-        const storedStateAssemblyPicture = localStorage.getItem("show-assemblyPicture") ?? "true";
-        toggleAssemblyPictureCheckbox.checked = storedStateAssemblyPicture === "true";
-
-        this.toggleAssemblyPictureVisibility(false);
-
-        toggleAssemblyPictureCheckbox.addEventListener("change", () => {
-            this.toggleAssemblyPictureVisibility();
-        });
-
-        const gridCompactButton = this.element.querySelector('#grid-compact-button') as HTMLButtonElement;
-        const gridModuleButton = this.element.querySelector('#grid-module-button') as HTMLButtonElement;
-        const gridCozyButton = this.element.querySelector('#grid-cozy-button') as HTMLButtonElement;
-        const listButton = this.element.querySelector('#list-button') as HTMLButtonElement;
-        const gridView = this.element.querySelector('#assemblies-grid-view')!;
-        const listView = this.element.querySelector('#assemblies-list-view')!;
-
-        const setView = (mode: 'grid-compact' | 'grid-module' | 'grid-cozy' | 'list') => {
-            localStorage.setItem('assemblies-view', mode);
-
-            if (mode === 'grid-compact' || mode === 'grid-module' || mode === 'grid-cozy') {
-                gridView.classList.remove('hidden');
-                listView.classList.add('hidden');
-
-                const gridDivs = gridView.querySelectorAll<HTMLDivElement>('div.s3, div.s4, div.s6');
-                gridDivs.forEach(div => {
-                    div.classList.remove("s3", "s4", "s6");
-
-                    if (mode === 'grid-compact') {
-                        div.classList.add("s3");
-                    } else if (mode === 'grid-module') {
-                        div.classList.add("s4");
-                    } else if (mode === 'grid-cozy') {
-                        div.classList.add("s6");
-                    }
-                });
-            } else {
-                gridView.classList.add('hidden');
-                listView.classList.remove('hidden');
-            }
-
-            gridCompactButton.classList.toggle('active', mode === 'grid-compact');
-            gridModuleButton.classList.toggle('active', mode === 'grid-module');
-            gridCozyButton.classList.toggle('active', mode === 'grid-cozy');
-            listButton.classList.toggle('active', mode === 'list');
-        };
-
-        // Restore initial view
-        const savedMode = (localStorage.getItem('assemblies-view') as 'grid-compact' | 'grid-module' | 'grid-cozy' | 'list') || 'grid-compact';
-        setView(savedMode);
-
-        gridCompactButton.addEventListener('click', () => setView('grid-compact'));
-        gridModuleButton.addEventListener('click', () => setView('grid-module'));
-        gridCozyButton.addEventListener('click', () => setView('grid-cozy'));
-        listButton.addEventListener('click', () => setView('list'));
-
-        return Promise.resolve();
-    }
-
-    public hide(): void {
-        this.element?.classList.add("hidden");
-    }
-
-    public show(): void {
-        this.element?.classList.remove("hidden");
     }
 }

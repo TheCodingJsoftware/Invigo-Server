@@ -1,4 +1,4 @@
-import { OrderData } from "@interfaces/order";
+import {OrderData} from "@interfaces/order";
 
 export interface SheetData {
     id: number;

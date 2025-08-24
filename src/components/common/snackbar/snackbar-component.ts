@@ -20,7 +20,7 @@ interface SnackbarOptions {
 export class SnackbarComponent {
     private readonly snackbar: HTMLDivElement;
     private options: Required<Omit<SnackbarOptions, "id" | "action" | "icon" | "onClose">> &
-                    Pick<SnackbarOptions, "id" | "action" | "icon" | "onClose">;
+        Pick<SnackbarOptions, "id" | "action" | "icon" | "onClose">;
     private timeoutId?: number;
 
     constructor(options: SnackbarOptions) {

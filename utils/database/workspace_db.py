@@ -28,7 +28,7 @@ class WorkspaceDB(BaseWithDBPool):
                 self.db_pool = await asyncpg.create_pool(
                     user=Environment.POSTGRES_USER,
                     password=Environment.POSTGRES_PASSWORD,
-                    database=Environment.POSTGRES_DB,
+                    database=Environment.POSTGRES_WORKSPACE_DB,
                     host=Environment.POSTGRES_HOST,
                     port=Environment.POSTGRES_PORT,
                     min_size=Environment.POSTGRES_MIN_POOL_SIZE,
@@ -81,7 +81,7 @@ class WorkspaceDB(BaseWithDBPool):
                 async with conn.transaction():
                     job_id = await self.insert_into_table(
                         conn,
-                        "workspace_jobs",
+                        "jobs",
                         {
                             "name": job["job_data"]["name"],
                             "job_data": json.dumps(job.get("job_data")),
@@ -95,7 +95,7 @@ class WorkspaceDB(BaseWithDBPool):
                         for _ in range(int(assembly["meta_data"]["quantity"])):
                             this_assembly_id = await self.insert_into_table(
                                 conn,
-                                "workspace_assemblies",
+                                "assemblies",
                                 {
                                     "job_id": job_id,
                                     "parent_id": parent_id,
@@ -122,7 +122,7 @@ class WorkspaceDB(BaseWithDBPool):
                                 for _ in range(int(part["inventory_data"]["quantity"])):
                                     await self.insert_into_table(
                                         conn,
-                                        "workspace_assembly_laser_cut_parts",
+                                        "assembly_laser_cut_parts",
                                         {
                                             "job_id": job_id,
                                             "assembly_id": this_assembly_id,
@@ -150,7 +150,7 @@ class WorkspaceDB(BaseWithDBPool):
                             for comp in assembly.get("components", []):
                                 await self.insert_into_table(
                                     conn,
-                                    "workspace_components",
+                                    "components",
                                     {
                                         "job_id": job_id,
                                         "assembly_id": this_assembly_id,
@@ -165,7 +165,7 @@ class WorkspaceDB(BaseWithDBPool):
                     async def insert_nest(nest):
                         nest_id = await self.insert_into_table(
                             conn,
-                            "workspace_nests",
+                            "nests",
                             {
                                 "job_id": job_id,
                                 "sheet": json.dumps(nest["sheet"]),
@@ -177,7 +177,7 @@ class WorkspaceDB(BaseWithDBPool):
                             for _ in range(int(part["inventory_data"]["quantity"])):
                                 await self.insert_into_table(
                                     conn,
-                                    "workspace_nest_laser_cut_parts",
+                                    "nest_laser_cut_parts",
                                     {
                                         "job_id": job_id,
                                         "nest_id": nest_id,
@@ -203,8 +203,8 @@ class WorkspaceDB(BaseWithDBPool):
                     for nest in job.get("nests", []):
                         await insert_nest(nest)
 
-                    # await conn.execute("NOTIFY workspace_jobs, $1", msgspec.json.encode({"type": "job_created", "job_id": job_id}).decode())
-                    await conn.execute(f"NOTIFY workspace_jobs, '{msgspec.json.encode({'type': 'job_created', 'job_id': job_id}).decode()}'")
+                    # await conn.execute("NOTIFY jobs, $1", msgspec.json.encode({"type": "job_created", "job_id": job_id}).decode())
+                    await conn.execute(f"NOTIFY jobs, '{msgspec.json.encode({'type': 'job_created', 'job_id': job_id}).decode()}'")
                     return job_id
         except Exception as e:
             print(f"Error adding job: {e}")
@@ -214,7 +214,7 @@ class WorkspaceDB(BaseWithDBPool):
     @ensure_connection
     async def get_all_jobs(self):
         async with self.db_pool.acquire() as conn:
-            rows = await conn.fetch("SELECT id, name, job_data, created_at, modified_at FROM workspace_jobs")
+            rows = await conn.fetch("SELECT id, name, job_data, created_at, modified_at FROM jobs")
             return [
                 {
                     **dict(row),
@@ -229,7 +229,7 @@ class WorkspaceDB(BaseWithDBPool):
     async def get_job_by_id(self, job_id):
         async with self.db_pool.acquire() as conn:
             row = await conn.fetchrow(
-                "SELECT id, name, job_data, created_at, modified_at FROM workspace_jobs WHERE id = $1",
+                "SELECT id, name, job_data, created_at, modified_at FROM jobs WHERE id = $1",
                 job_id,
             )
             return {
@@ -243,9 +243,9 @@ class WorkspaceDB(BaseWithDBPool):
         async with self.db_pool.acquire() as conn:
             rows = await conn.fetch(
                 """
-                SELECT * FROM workspace_assembly_laser_cut_parts
-                WHERE workspace_assembly_laser_cut_parts.job_id = $1
-                ORDER BY workspace_assembly_laser_cut_parts.id
+                SELECT * FROM assembly_laser_cut_parts
+                WHERE assembly_laser_cut_parts.job_id = $1
+                ORDER BY assembly_laser_cut_parts.id
                 """,
                 job_id,
             )
@@ -255,7 +255,7 @@ class WorkspaceDB(BaseWithDBPool):
     async def get_grouped_part_by_id(self, part_id: int):
         async with self.db_pool.acquire() as conn:
             row = await conn.fetchrow(
-                "SELECT * FROM workspace_assembly_laser_cut_parts WHERE id = $1",
+                "SELECT * FROM assembly_laser_cut_parts WHERE id = $1",
                 part_id,
             )
             return dict(row) if row else None
@@ -273,7 +273,7 @@ class WorkspaceDB(BaseWithDBPool):
                 # Fetch Jobs
                 jobs_query = f"""
                     SELECT id, name, job_data, start_time, end_time, 'job' AS type
-                    FROM workspace_jobs
+                    FROM jobs
                     {where_clause}
                 """
                 jobs = await conn.fetch(jobs_query, *params)
@@ -296,7 +296,7 @@ class WorkspaceDB(BaseWithDBPool):
                     # Fetch assemblies for this job
                     assemblies_query = """
                         SELECT id, name, start_time, end_time
-                        FROM workspace_assemblies
+                        FROM assemblies
                         WHERE job_id = $1
                     """
                     assemblies = await conn.fetch(assemblies_query, job_id)
@@ -337,7 +337,7 @@ class WorkspaceDB(BaseWithDBPool):
     async def save_job_flowtag_timeline(self, job_id: int, flowtag_timeline: str):
         async with self.db_pool.acquire() as conn:
             query = """
-            UPDATE workspace_jobs
+            UPDATE jobs
             SET job_data = jsonb_set(job_data, '{flowtag_timeline}', $1::jsonb, true)
             WHERE id = $2
             """
@@ -358,7 +358,7 @@ class WorkspaceDB(BaseWithDBPool):
             # fetch all parts for this job
             assemblies_query = """
                 SELECT id, flowtag
-                FROM workspace_assembly_laser_cut_parts
+                FROM assembly_laser_cut_parts
                 WHERE job_id = $1
             """
             assemblies = await conn.fetch(assemblies_query, job_id)
@@ -375,7 +375,7 @@ class WorkspaceDB(BaseWithDBPool):
                     updates.append((assembly["id"], min_start, max_end))
 
             update_query = """
-                UPDATE workspace_assembly_laser_cut_parts
+                UPDATE assembly_laser_cut_parts
                 SET start_time = $2,
                     end_time = $3,
                     modified_at = NOW()
@@ -387,7 +387,7 @@ class WorkspaceDB(BaseWithDBPool):
             # fetch all parts for this job
             assemblies_query = """
                 SELECT id, flowtag
-                FROM workspace_assemblies
+                FROM assemblies
                 WHERE job_id = $1
             """
             assemblies = await conn.fetch(assemblies_query, job_id)
@@ -404,7 +404,7 @@ class WorkspaceDB(BaseWithDBPool):
                     updates.append((assembly["id"], min_start, max_end))
 
             update_query = """
-                UPDATE workspace_assemblies
+                UPDATE assemblies
                 SET start_time = $2,
                     end_time = $3,
                     modified_at = NOW()

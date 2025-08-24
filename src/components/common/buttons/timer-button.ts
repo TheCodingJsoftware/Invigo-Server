@@ -1,4 +1,4 @@
-import { PartData } from "@components/workspace/parts/part-page";
+import {PartData} from "@components/workspace/parts/part-page";
 
 export class TimerButton {
     private readonly data: PartData;
@@ -19,6 +19,26 @@ export class TimerButton {
         this.init();
     }
 
+    toggle() {
+        if (this.isTimerStarted) {
+            this.stop();
+        } else {
+            this.start();
+        }
+    }
+
+    onclick(handler: (data: PartData, ev: MouseEvent) => void): this {
+        this.element.addEventListener("click", (ev) => {
+            this.toggle();
+            handler(this.data, ev);
+        });
+        return this;
+    }
+
+    getElement(): HTMLButtonElement {
+        return this.element;
+    }
+
     private init() {
         this.element.classList.add("chip", "border", "circle", "timer-btn");
 
@@ -34,14 +54,6 @@ export class TimerButton {
 
         // Tooltip updates on hover
         this.element.addEventListener("mouseenter", () => this.updateTooltip());
-    }
-
-    toggle() {
-        if (this.isTimerStarted) {
-            this.stop();
-        } else {
-            this.start();
-        }
     }
 
     private start() {
@@ -75,17 +87,5 @@ export class TimerButton {
         const mins = Math.floor(elapsed / 60);
         const secs = elapsed % 60;
         this.tooltip.textContent = `${mins}m ${secs}s`;
-    }
-
-    onclick(handler: (data: PartData, ev: MouseEvent) => void): this {
-        this.element.addEventListener("click", (ev) => {
-            this.toggle();
-            handler(this.data, ev);
-        });
-        return this;
-    }
-
-    getElement(): HTMLButtonElement {
-        return this.element;
     }
 }

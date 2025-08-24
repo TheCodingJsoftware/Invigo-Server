@@ -42,7 +42,7 @@ export class JobViewSwitcher {
         const savedButton = div.querySelector(`a[data-target="${savedView}"]`) as HTMLElement;
         if (savedButton) {
             savedButton.classList.add("active");
-            ViewBus.update({ viewMode: savedView });
+            ViewBus.update({viewMode: savedView});
         }
 
         this.element.appendChild(div);
@@ -55,8 +55,8 @@ export class JobViewSwitcher {
             button.classList.remove("active");
             if (button.dataset.target === mode) {
                 button.classList.add("active");
-                ViewSettingsManager.set({ lastActiveJobView: mode });
-                ViewBus.update({ viewMode: mode });
+                ViewSettingsManager.set({lastActiveJobView: mode});
+                ViewBus.update({viewMode: mode});
             }
         });
     }

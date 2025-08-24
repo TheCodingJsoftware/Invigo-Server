@@ -7,6 +7,7 @@ import sys
 import threading
 import time
 import zipfile
+from collections import defaultdict
 from datetime import datetime, timedelta
 from functools import partial
 from typing import Literal
@@ -27,12 +28,16 @@ from utils.sheet_report import generate_sheet_report
 
 workspace_db = BaseHandler.workspace_db
 
-TABLE_CHANNELS = [
-    "workspace_jobs",
-    "workspace_assemblies",
-    "workspace_laser_cut_parts",
-    "workspace_components",
-    "workspace_nests",
+# A buffer to collect notifications briefly
+_notify_buffer = defaultdict(list)
+_notify_tasks = {}
+
+WORKSPACE_TABLE_CHANNELS = [
+    "jobs",
+    "assemblies",
+    "assembly_laser_cut_parts",
+    "components",
+    "nests",
     "view_grouped_laser_cut_parts_by_job",
     "view_grouped_laser_cut_parts_global",
 ]
@@ -42,8 +47,34 @@ async def start_workspace_services():
     await workspace_db.connect()
     if workspace_db.db_pool:
         conn = await workspace_db.db_pool.acquire()
-        for channel in TABLE_CHANNELS:
+        for channel in WORKSPACE_TABLE_CHANNELS:
             await conn.add_listener(channel, workspace_notify_handler)
+
+
+def debounce_broadcast(channel: str, event: dict, delay: float = 0.1):
+    """Collect notifications and flush once after `delay` seconds."""
+    loop = IOLoop.current()
+    _notify_buffer[channel].append(event)
+
+    # If a flush is already scheduled, don't schedule another
+    if channel not in _notify_tasks:
+
+        def flush():
+            events = _notify_buffer.pop(channel, [])
+            _notify_tasks.pop(channel, None)
+
+            if events:
+                # Option A: send them aggregated
+                WebSocketWorkspaceHandler.broadcast(
+                    {
+                        "type": f"{channel}_batched",
+                        "events": events,
+                    }
+                )
+                # Option B: or just re-query fresh state once
+                # WebSocketWorkspaceHandler.broadcast({"type": f"{channel}_refresh"})
+
+        _notify_tasks[channel] = loop.call_later(delay, flush)
 
 
 async def workspace_notify_handler(conn, pid, channel, payload):
@@ -56,7 +87,7 @@ async def workspace_notify_handler(conn, pid, channel, payload):
     part_id = msg.get("id")
     delta = msg.get("delta")
 
-    if table == "workspace_jobs":
+    if table == "jobs":
         if op == "INSERT":
             job = await workspace_db.get_job_by_id(job_id)
             WebSocketWorkspaceHandler.broadcast({"type": "job_created", "job": job})
@@ -64,9 +95,7 @@ async def workspace_notify_handler(conn, pid, channel, payload):
             job = await workspace_db.get_job_by_id(job_id)
             WebSocketWorkspaceHandler.broadcast({"type": "job_updated", "job": job})
         elif op == "DELETE":
-            WebSocketWorkspaceHandler.broadcast(
-                {"type": "job_deleted", "job_id": job_id}
-            )
+            WebSocketWorkspaceHandler.broadcast({"type": "job_deleted", "job_id": job_id})
     elif table == "view_grouped_laser_cut_parts_by_job":
         # This notification means the grouped view for a specific job changed
         part_name = msg.get("part_name")
@@ -195,9 +224,7 @@ def schedule_daily_task_at(hour, minute, task):
     delay = (next_run - now).total_seconds()
 
     IOLoop.current().call_later(delay, task)
-    IOLoop.current().call_later(
-        delay + 86400, lambda: schedule_daily_task_at(hour, minute, task)
-    )  # Reschedule for the next day
+    IOLoop.current().call_later(delay + 86400, lambda: schedule_daily_task_at(hour, minute, task))  # Reschedule for the next day
 
 
 def copy_server_log_file():
@@ -223,9 +250,7 @@ if __name__ == "__main__":
     signal.signal(signal.SIGINT, lambda s, f: shutdown())
     signal.signal(signal.SIGTERM, lambda s, f: shutdown())
     # Does not need to be thread safe
-    schedule.every().monday.at("04:00").do(
-        partial(generate_sheet_report, variables.software_connected_clients)
-    )
+    schedule.every().monday.at("04:00").do(partial(generate_sheet_report, variables.software_connected_clients))
     schedule.every().hour.do(hourly_backup_inventory_files)
     schedule.every().day.at("04:00").do(copy_server_log_file)
     schedule.every().day.at("04:00").do(daily_backup_inventory_files)

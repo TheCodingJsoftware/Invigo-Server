@@ -1,9 +1,9 @@
-import { BaseComponent } from "@interfaces/base-component";
+import {BaseComponent} from "@interfaces/base-component";
 
-export class PageBreak implements BaseComponent{
+export class PageBreak implements BaseComponent {
+    element!: HTMLElement;
     private swapyItemId: number;
     private jobId: number;
-    element!: HTMLElement;
 
     constructor(jobId: number, swapyItemId: number) {
         this.jobId = jobId;

@@ -1,7 +1,7 @@
-import { AssemblyData } from "@interfaces/assembly";
-import { NestData } from "@interfaces/nest";
-import { ContactInfoDict } from "./contact-info";
-import { BusinessInfoDict } from "./business-info";
+import {AssemblyData} from "@interfaces/assembly";
+import {NestData} from "@interfaces/nest";
+import {ContactInfoDict} from "./contact-info";
+import {BusinessInfoDict} from "./business-info";
 
 export interface JobData {
     job_data: JobMetaData;
@@ -55,4 +55,4 @@ enum JobColorClass {
     ARCHIVE = "archive"
 }
 
-export { };
+export {};

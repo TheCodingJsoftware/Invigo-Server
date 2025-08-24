@@ -1,4 +1,4 @@
-import { ShippingAddressDict } from "@interfaces/shipping-address";
+import {ShippingAddressDict} from "@interfaces/shipping-address";
 
 export class ShippingAddress {
     id: number = 0;

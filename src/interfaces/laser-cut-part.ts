@@ -1,4 +1,4 @@
-import { FlowtagData } from "@interfaces/flowtag";
+import {FlowtagData} from "@interfaces/flowtag";
 
 export interface LaserCutPartData {
     id: number;

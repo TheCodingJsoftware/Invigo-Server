@@ -1,5 +1,5 @@
-import { WorkspaceFilter, BooleanSettingKey } from "@models/workspace-filter";
-import { Signal } from "@utils/signal";
+import {BooleanSettingKey, WorkspaceFilter} from "@models/workspace-filter";
+import {Signal} from "@utils/signal";
 
 export class FilterMenuButton {
     readonly button: HTMLButtonElement;
@@ -50,7 +50,7 @@ export class FilterMenuButton {
                 (WorkspaceFilter as any)[key] = next;
                 li.classList.toggle("fill", next);
                 checkIcon.style.visibility = next ? "visible" : "hidden";
-                this.onToggle.emit({ key, value: next });
+                this.onToggle.emit({key, value: next});
                 this.updateBadge();
             });
 

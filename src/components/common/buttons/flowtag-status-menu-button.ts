@@ -1,5 +1,5 @@
-import { PartData } from "@components/workspace/parts/part-page";
-import { WorkspaceSettings } from "@core/settings/workspace-settings";
+import {PartData} from "@components/workspace/parts/part-page";
+import {WorkspaceSettings} from "@core/settings/workspace-settings";
 
 export class FlowtagStatusMenuButton {
     private readonly data: PartData;

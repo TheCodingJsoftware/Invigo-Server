@@ -1,4 +1,4 @@
-import { PartData } from "@components/workspace/parts/part-page";
+import {PartData} from "@components/workspace/parts/part-page";
 
 export class RecutFinishedButton {
     private readonly data: PartData;

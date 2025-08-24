@@ -62,12 +62,23 @@ export class WorkspaceWebSocket {
     private static socket: WebSocket;
     private static listeners: Partial<{ [K in WorkspaceMessage["type"]]: Listener<any>[] }> = {};
     static reconnectHandlers: (() => void)[] = [];
+    private static buffer: Partial<Record<WorkspaceMessage["type"], any[]>> = {};
+    private static timers: Partial<Record<WorkspaceMessage["type"], number>> = {};
+
 
     static connect() {
         this.socket = new WebSocket(`ws://${location.host}/ws/workspace`);
         this.socket.onmessage = (event) => {
             const message: WorkspaceMessage = JSON.parse(event.data);
-            this.listeners[message.type]?.forEach((cb) => cb(message));
+
+            if (
+                message.type === "grouped_parts_job_view_changed" ||
+                message.type === "grouped_parts_global_view_changed"
+            ) {
+                this.enqueue(message); // debounce bursts
+            } else {
+                this.listeners[message.type]?.forEach((cb) => cb(message));
+            }
         };
 
         this.socket.onclose = () => {
@@ -80,6 +91,25 @@ export class WorkspaceWebSocket {
 
     static onReconnect(handler: () => void) {
         this.reconnectHandlers.push(handler);
+    }
+
+    private static enqueue<T extends WorkspaceMessage>(msg: T, delay = 200) {
+        const type = msg.type;
+        if (!this.buffer[type]) this.buffer[type] = [];
+        this.buffer[type]!.push(msg);
+
+        if (!this.timers[type]) {
+            this.timers[type] = window.setTimeout(() => {
+                const batch = this.buffer[type] ?? [];
+                delete this.buffer[type];
+                delete this.timers[type];
+
+                // Fire one synthetic batched event
+                this.listeners[type]?.forEach((cb) =>
+                    cb({type: `${type}_batched`, events: batch} as any)
+                );
+            }, delay);
+        }
     }
 
     static on<T extends WorkspaceMessage["type"]>(type: T, handler: Listener<Extract<WorkspaceMessage, { type: T }>>) {

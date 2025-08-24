@@ -20,8 +20,6 @@ class PartViewDataHandler(BaseHandler):
         start_date = self.get_argument("start_date", None)
         end_date = self.get_argument("end_date", None)
 
-        print(start_date, end_date)
-
         if db_view not in PART_VIEW_WHITELIST:
             self.set_status(400)
             self.finish({"error": "Invalid view"})

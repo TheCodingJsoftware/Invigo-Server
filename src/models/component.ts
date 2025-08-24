@@ -1,5 +1,5 @@
-import { ComponentData } from "@interfaces/component";
-import { Order } from "@models/order";
+import {ComponentData} from "@interfaces/component";
+import {Order} from "@models/order";
 
 export class Component {
     id!: number;
@@ -42,6 +42,6 @@ export class Component {
     }
 
     toJSON(): ComponentData {
-        return { ...this };
+        return {...this};
     }
 }

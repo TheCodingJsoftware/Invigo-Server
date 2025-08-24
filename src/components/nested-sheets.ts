@@ -1,5 +1,5 @@
-import { BaseComponent } from "@interfaces/base-component";
-import { Nest } from "@models/nest";
+import {BaseComponent} from "@interfaces/base-component";
+import {Nest} from "@models/nest";
 import QRCode from 'qrcode';
 
 export class NestedSheets implements BaseComponent {
@@ -58,38 +58,6 @@ export class NestedSheets implements BaseComponent {
         this.element.id = `nested-sheets-${this.jobId}`;
 
         return this.element;
-    }
-
-    private getNestedSheetGridHTML(nest: Nest): string {
-        const sheetCount = nest.sheet_count;
-        const cuttingTime = nest.sheet_cut_time;
-        const nestCutTime = nest.sheet_cut_time * nest.sheet_count;
-        const totalParts = nest.laser_cut_parts.reduce((total, part) => total + part.inventory_data.quantity * nest.sheet_count, 0);
-        return `
-        <div class="s6">
-            <article class="nest no-padding border round">
-                <img class="responsive small top-round nest-image" src="http://invi.go/image/${nest.image_path}" class="responsive">
-                <div class="padding">
-                    <nav class="row">
-                        <div class="max bold large-text">${nest.name}</div>
-                        <h6>× ${sheetCount}</h6>
-                    </nav>
-                    <div>${nest.sheet.name}</div>
-                    <div>Total Parts: ${totalParts}</div>
-                    <div>Sheet Cut Time: ${this.formatDuration(cuttingTime)}</div>
-                    <div>Nest Cut Time: ${this.formatDuration(nestCutTime)}</div>
-                </div>
-            </article>
-        </div>
-        `;
-    }
-
-    private generateNestedSheetsGridView(): string {
-        let nestedSheets = "";
-        for (const nest of this.nests) {
-            nestedSheets += this.getNestedSheetGridHTML(nest);
-        }
-        return nestedSheets.trim();
     }
 
     generateNestedSheetsListHTML(nest: Nest): string {
@@ -163,6 +131,7 @@ export class NestedSheets implements BaseComponent {
             });
         }
     }
+
     getQRCodeUrl(nest: Nest): string {
         return encodeURI(`http://invi.go/sheets_in_inventory/${nest.sheet.name.replace(" ", "_")}`);
     }
@@ -175,16 +144,6 @@ export class NestedSheets implements BaseComponent {
                 <th class="center-align">Quantity</th>
             </tr>
         `.trim();
-    }
-
-    private formatDuration(seconds: number): string {
-        const h = Math.floor(seconds / 3600);
-        const m = Math.floor((seconds % 3600) / 60);
-        const s = Math.floor(seconds % 60);
-
-        const pad = (n: number) => n.toString().padStart(2, "0");
-
-        return `${pad(h)}h ${pad(m)}m ${pad(s)}s`;
     }
 
     public async render(): Promise<void> {
@@ -229,5 +188,47 @@ export class NestedSheets implements BaseComponent {
 
     public show(): void {
         this.element?.classList.remove("hidden");
+    }
+
+    private getNestedSheetGridHTML(nest: Nest): string {
+        const sheetCount = nest.sheet_count;
+        const cuttingTime = nest.sheet_cut_time;
+        const nestCutTime = nest.sheet_cut_time * nest.sheet_count;
+        const totalParts = nest.laser_cut_parts.reduce((total, part) => total + part.inventory_data.quantity * nest.sheet_count, 0);
+        return `
+        <div class="s6">
+            <article class="nest no-padding border round">
+                <img class="responsive small top-round nest-image" src="http://invi.go/image/${nest.image_path}" class="responsive">
+                <div class="padding">
+                    <nav class="row">
+                        <div class="max bold large-text">${nest.name}</div>
+                        <h6>× ${sheetCount}</h6>
+                    </nav>
+                    <div>${nest.sheet.name}</div>
+                    <div>Total Parts: ${totalParts}</div>
+                    <div>Sheet Cut Time: ${this.formatDuration(cuttingTime)}</div>
+                    <div>Nest Cut Time: ${this.formatDuration(nestCutTime)}</div>
+                </div>
+            </article>
+        </div>
+        `;
+    }
+
+    private generateNestedSheetsGridView(): string {
+        let nestedSheets = "";
+        for (const nest of this.nests) {
+            nestedSheets += this.getNestedSheetGridHTML(nest);
+        }
+        return nestedSheets.trim();
+    }
+
+    private formatDuration(seconds: number): string {
+        const h = Math.floor(seconds / 3600);
+        const m = Math.floor((seconds % 3600) / 60);
+        const s = Math.floor(seconds % 60);
+
+        const pad = (n: number) => n.toString().padStart(2, "0");
+
+        return `${pad(h)}h ${pad(m)}m ${pad(s)}s`;
     }
 }

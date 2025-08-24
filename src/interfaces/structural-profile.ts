@@ -1,5 +1,5 @@
-import type { FlowtagData } from "@interfaces/flowtag";
-import type { OrderData } from "@interfaces/order";
+import type {FlowtagData} from "@interfaces/flowtag";
+import type {OrderData} from "@interfaces/order";
 
 export interface StructuralProfileData {
     name: string;

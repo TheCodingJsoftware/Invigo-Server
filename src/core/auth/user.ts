@@ -1,4 +1,4 @@
-import { PermissionMap, PermissionEntry, FlatPermissionEntry } from "@core/auth/workspace-permissions";
+import {PermissionMap, PermissionEntry, FlatPermissionEntry} from "@core/auth/workspace-permissions";
 
 export class User {
     id: number;
@@ -54,7 +54,7 @@ export class User {
     }
 
     static async fetchCurrent(): Promise<User> {
-        const res = await fetch("/api/protected", { credentials: "include" });
+        const res = await fetch("/api/protected", {credentials: "include"});
         if (!res.ok) {
             return new User({
                 id: 0,
@@ -80,6 +80,6 @@ export class User {
     }
 
     async delete(): Promise<void> {
-        await fetch(`/api/users/${this.id}`, { method: "DELETE" });
+        await fetch(`/api/users/${this.id}`, {method: "DELETE"});
     }
 }

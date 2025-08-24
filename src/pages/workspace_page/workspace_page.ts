@@ -1,25 +1,25 @@
 import "beercss";
 import '@static/css/style.css';
 import '@static/css/theme.css';
-import { FilterMenuButton } from "@components/common/buttons/filter-menu-button";
-import { SortMenuButton } from "@components/common/buttons/sort-menu-button";
-import { DialogComponent } from "@components/common/dialog/dialog-component";
-import { SearchInput } from "@components/common/input/search-input";
-import { PartPage } from "@components/workspace/parts/part-page";
-import { ViewSwitcherPanel } from "@components/workspace/views/switchers/view-switcher-panel";
-import { ViewBus, ViewChangePayload } from "@components/workspace/views/view-bus";
-import { AssemblyViewMode } from "@config/assembly-view-mode";
-import { DataTypeSwitcherMode } from "@config/data-type-mode";
-import { JobViewMode } from "@config/job-view-mode";
-import { NestViewMode } from "@config/nest-view-mode";
-import { PartViewMode } from "@config/part-view-mode";
-import { UserContext } from '@core/auth/user-context';
-import { SessionSettingsManager } from "@core/settings/session-settings";
-import { ViewSettingsManager } from "@core/settings/view-settings";
-import { WorkspaceSettings } from "@core/settings/workspace-settings";
-import { WorkspaceWebSocket } from "@core/websocket/workspace-websocket";
-import { WorkspaceFilter } from "@models/workspace-filter";
-import { loadAnimationStyleSheet, toggleTheme, loadTheme, invertImages } from "@utils/theme"
+import {FilterMenuButton} from "@components/common/buttons/filter-menu-button";
+import {SortMenuButton} from "@components/common/buttons/sort-menu-button";
+import {DialogComponent} from "@components/common/dialog/dialog-component";
+import {SearchInput} from "@components/common/input/search-input";
+import {PartPage} from "@components/workspace/parts/part-page";
+import {ViewSwitcherPanel} from "@components/workspace/views/switchers/view-switcher-panel";
+import {ViewBus, ViewChangePayload} from "@components/workspace/views/view-bus";
+import {AssemblyViewMode} from "@config/assembly-view-mode";
+import {DataTypeSwitcherMode} from "@config/data-type-mode";
+import {JobViewMode} from "@config/job-view-mode";
+import {NestViewMode} from "@config/nest-view-mode";
+import {PartViewMode} from "@config/part-view-mode";
+import {UserContext} from '@core/auth/user-context';
+import {SessionSettingsManager} from "@core/settings/session-settings";
+import {ViewSettingsManager} from "@core/settings/view-settings";
+import {WorkspaceSettings} from "@core/settings/workspace-settings";
+import {WorkspaceWebSocket} from "@core/websocket/workspace-websocket";
+import {WorkspaceFilter} from "@models/workspace-filter";
+import {loadAnimationStyleSheet, toggleTheme, loadTheme, invertImages} from "@utils/theme"
 import {DateRangeButton} from "@components/common/buttons/date-range-button";
 
 let pageLoaded = false;
@@ -61,7 +61,7 @@ class PageHost {
                 this.renderJobPage(ViewSettingsManager.get().lastActiveJobView);
                 break;
         }
-        ViewSettingsManager.set({ lastActiveDataType: view.dataType });
+        ViewSettingsManager.set({lastActiveDataType: view.dataType});
         SessionSettingsManager.set({
             lastActiveDataType: view.dataType,
             lastActiveView: view.viewMode,
@@ -118,12 +118,18 @@ class WorkspacePage {
         this.loadThemeSettings();
         this.registerSocketHandlers();
         pageLoaded = true;
-        ViewBus.update({ dataType: SessionSettingsManager.get().lastActiveDataType, viewMode: SessionSettingsManager.get().lastActiveView });
+        ViewBus.update({
+            dataType: SessionSettingsManager.get().lastActiveDataType,
+            viewMode: SessionSettingsManager.get().lastActiveView
+        });
     }
 
     resyncState() {
         // this.mainElement.innerHTML = "";
-        ViewBus.update({ dataType: SessionSettingsManager.get().lastActiveDataType, viewMode: SessionSettingsManager.get().lastActiveView });
+        ViewBus.update({
+            dataType: SessionSettingsManager.get().lastActiveDataType,
+            viewMode: SessionSettingsManager.get().lastActiveView
+        });
     }
 
     registerSocketHandlers() {
@@ -160,12 +166,12 @@ class WorkspacePage {
         themeToggleButton.innerHTML = "<i>dark_mode</i>"
 
         const filterButton = new FilterMenuButton();
-        filterButton.onToggle.connect(({ key, value }) => {
+        filterButton.onToggle.connect(({key, value}) => {
             this.resyncState();
         })
 
         const sortButton = new SortMenuButton();
-        sortButton.onToggle.connect(({ key, value }) => {
+        sortButton.onToggle.connect(({key, value}) => {
             this.resyncState();
         });
 
@@ -178,7 +184,8 @@ class WorkspacePage {
         `
         profileButton.onclick = () => this.showProfile();
 
-        nav.appendChild(homeButton); 2
+        nav.appendChild(homeButton);
+        2
         nav.appendChild(headline);
         if (SearchInput.element) {
             SearchInput.onChange.connect(() => {
@@ -200,10 +207,10 @@ class WorkspacePage {
 
     showProfile() {
         new DialogComponent({
-            id: "profile-dialog",
-            title: this.#user.name,
-            position: "right",
-            bodyContent: `
+                id: "profile-dialog",
+                title: this.#user.name,
+                position: "right",
+                bodyContent: `
                     <nav class = "row no-space wrap">
                         ${this.#user.roles.map(role => `
                         <button class="chip tiny-margin">
@@ -225,7 +232,7 @@ class WorkspacePage {
                                     `).join("")}
                             </ul>
                     </fieldset>`,
-        }
+            }
         );
     }
 
@@ -245,9 +252,14 @@ class WorkspacePage {
 document.addEventListener("DOMContentLoaded", async () => {
     loadTheme(localStorage.getItem("mode") || "dark");
     loadAnimationStyleSheet();
+
+    await WorkspaceSettings.init();
     await UserContext.init();
-    await WorkspaceSettings.load();
-    await WorkspaceFilter.init();
-    await SearchInput.init();
+
+    await Promise.all([
+        WorkspaceFilter.init(),
+        SearchInput.init()
+    ]);
+
     new WorkspacePage();
 });

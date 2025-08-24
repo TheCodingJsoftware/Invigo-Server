@@ -1,4 +1,4 @@
-import { ContactInfoDict } from "@interfaces/contact-info";
+import {ContactInfoDict} from "@interfaces/contact-info";
 
 export class ContactInfo implements ContactInfoDict {
     name: string = "";

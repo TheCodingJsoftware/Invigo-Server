@@ -1,9 +1,9 @@
-import { ComponentGroupData } from "@interfaces/component-group";
-import { naturalCompare } from "@utils/natural-sort";
+import {ComponentGroupData} from "@interfaces/component-group";
+import {naturalCompare} from "@utils/natural-sort";
 
-import { Component } from "./component";
+import {Component} from "./component";
 
-export class ComponentGroup  {
+export class ComponentGroup {
     name: string;
     base_part: Component;
     components: Component[];

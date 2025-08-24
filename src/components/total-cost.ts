@@ -1,5 +1,5 @@
-import { BaseComponent } from "@interfaces/base-component";
-import { Job } from "@models/job";
+import {BaseComponent} from "@interfaces/base-component";
+import {Job} from "@models/job";
 
 export class TotalCost implements BaseComponent {
     job: Job;
@@ -128,14 +128,6 @@ export class TotalCost implements BaseComponent {
         totalPrice.textContent = this.formatPrice(totalWithTaxes);
     }
 
-    private formatPercent(value: number): string {
-        return `${(value * 100).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%`;
-    }
-
-    private formatPrice(price: number): string {
-        return `$${price.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-    }
-
     public async render(): Promise<void> {
         const container = document.querySelector('#total-cost-container') as HTMLDivElement;
         container.appendChild(this.build());
@@ -177,5 +169,13 @@ export class TotalCost implements BaseComponent {
 
     public show(): void {
         this.element?.classList.remove("hidden");
+    }
+
+    private formatPercent(value: number): string {
+        return `${(value * 100).toLocaleString("en-US", {minimumFractionDigits: 2, maximumFractionDigits: 2})}%`;
+    }
+
+    private formatPrice(price: number): string {
+        return `$${price.toLocaleString("en-US", {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
     }
 }

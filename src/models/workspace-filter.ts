@@ -1,10 +1,11 @@
-import { SettingsManager } from "@core/settings/settings";
-import { WorkspaceSettings } from "@core/settings/workspace-settings";
-import { UserContext } from "@core/auth/user-context";
+import {SettingsManager} from "@core/settings/settings";
+import {WorkspaceSettings} from "@core/settings/workspace-settings";
+import {UserContext} from "@core/auth/user-context";
 
 export interface WorkspaceFilterDict {
     showCompleted: boolean;
     searchQuery: string;
+
     [key: `show_tag:${string}`]: boolean;
 }
 
@@ -20,6 +21,14 @@ export class WorkspaceFilter {
             searchQuery: ""
         }
     );
+
+    static get searchQuery(): string {
+        return this.manager.get().searchQuery ?? "";
+    }
+
+    static set searchQuery(value: string) {
+        this.manager.set({searchQuery: value} as any);
+    }
 
     static async init(): Promise<void> {
         const user = Object.freeze(UserContext.getInstance().user);
@@ -43,7 +52,7 @@ export class WorkspaceFilter {
 
         const freshly = manager.get();
 
-        const pruned: Partial<WorkspaceFilterDict> = { searchQuery: freshly.searchQuery ?? "" };
+        const pruned: Partial<WorkspaceFilterDict> = {searchQuery: freshly.searchQuery ?? ""};
 
         for (const key of keys) pruned[key] = freshly[key];
 
@@ -55,20 +64,12 @@ export class WorkspaceFilter {
                     return WorkspaceFilter.manager.get()[key] ?? false;
                 },
                 set(value: boolean) {
-                    WorkspaceFilter.manager.set({ [key]: value } as any);
+                    WorkspaceFilter.manager.set({[key]: value} as any);
                 },
                 configurable: true,
                 enumerable: true,
             });
         }
-    }
-
-    static get searchQuery(): string {
-        return this.manager.get().searchQuery ?? "";
-    }
-
-    static set searchQuery(value: string) {
-        this.manager.set({ searchQuery: value } as any);
     }
 
     static getManager(): SettingsManager<WorkspaceFilterDict> {

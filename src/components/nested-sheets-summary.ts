@@ -1,5 +1,5 @@
-import { BaseComponent } from "@interfaces/base-component";
-import { Nest } from "@models/nest";
+import {BaseComponent} from "@interfaces/base-component";
+import {Nest} from "@models/nest";
 
 export class NestedSheetsSummary implements BaseComponent {
     nests: Nest[];
@@ -120,16 +120,6 @@ export class NestedSheetsSummary implements BaseComponent {
         return nestSummaryTableFooter.trim();
     }
 
-    private formatDuration(seconds: number): string {
-        const h = Math.floor(seconds / 3600);
-        const m = Math.floor((seconds % 3600) / 60);
-        const s = Math.floor(seconds % 60);
-
-        const pad = (n: number) => n.toString().padStart(2, "0");
-
-        return `${pad(h)}h ${pad(m)}m ${pad(s)}s`;
-    }
-
     public async render(): Promise<void> {
         const container = document.querySelector('#nested-sheets-summary-container') as HTMLDivElement;
         container.appendChild(this.build());
@@ -145,5 +135,15 @@ export class NestedSheetsSummary implements BaseComponent {
 
     public show(): void {
         this.element?.classList.remove("hidden");
+    }
+
+    private formatDuration(seconds: number): string {
+        const h = Math.floor(seconds / 3600);
+        const m = Math.floor((seconds % 3600) / 60);
+        const s = Math.floor(seconds % 60);
+
+        const pad = (n: number) => n.toString().padStart(2, "0");
+
+        return `${pad(h)}h ${pad(m)}m ${pad(s)}s`;
     }
 }

@@ -1,4 +1,4 @@
-import { VendorDict } from "@interfaces/vendor";
+import {VendorDict} from "@interfaces/vendor";
 
 export class Vendor {
     id: number = 0;

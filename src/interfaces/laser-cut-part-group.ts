@@ -1,4 +1,4 @@
-import { LaserCutPart } from "@models/laser-cut-part";
+import {LaserCutPart} from "@models/laser-cut-part";
 
 export interface LaserCutPartGroupData {
     name: string;

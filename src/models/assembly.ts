@@ -1,7 +1,15 @@
-import { AssemblyData, MetaData, PaintData, PowderData, PricesData, PrimerData, WorkspaceData } from "@interfaces/assembly";
-import { Component } from "@models/component";
-import { LaserCutPart } from "@models/laser-cut-part";
-import { naturalCompare } from "@utils/natural-sort";
+import {
+    AssemblyData,
+    MetaData,
+    PaintData,
+    PowderData,
+    PricesData,
+    PrimerData,
+    WorkspaceData
+} from "@interfaces/assembly";
+import {Component} from "@models/component";
+import {LaserCutPart} from "@models/laser-cut-part";
+import {naturalCompare} from "@utils/natural-sort";
 
 
 export class Assembly {

@@ -1,8 +1,8 @@
-import { AssemblyViewMode } from "@config/assembly-view-mode";
-import { DataTypeSwitcherMode } from "@config/data-type-mode";
-import { JobViewMode } from "@config/job-view-mode";
-import { NestViewMode } from "@config/nest-view-mode";
-import { PartViewMode } from "@config/part-view-mode";
+import {AssemblyViewMode} from "@config/assembly-view-mode";
+import {DataTypeSwitcherMode} from "@config/data-type-mode";
+import {JobViewMode} from "@config/job-view-mode";
+import {NestViewMode} from "@config/nest-view-mode";
+import {PartViewMode} from "@config/part-view-mode";
 import {WorkspaceSettings} from "@core/settings/workspace-settings";
 
 export type PermissionEntry = {
@@ -200,7 +200,7 @@ export type FlatPermissionEntry = PermissionEntry;
 const AllPermissionEntries = Object.values(WorkspacePermissions) as FlatPermissionEntry[];
 
 export const PermissionMap: Record<string, FlatPermissionEntry> = Object.fromEntries(
-  (Object.values(WorkspacePermissions) as FlatPermissionEntry[]).map(entry => [entry.value, entry])
+    (Object.values(WorkspacePermissions) as FlatPermissionEntry[]).map(entry => [entry.value, entry])
 );
 
 

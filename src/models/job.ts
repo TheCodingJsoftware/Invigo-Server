@@ -1,14 +1,14 @@
-import { JobData, JobMetaData, JobStatus } from "@interfaces/job";
-import { Assembly } from "@models/assembly";
-import { Nest } from "@models/nest";
-import { naturalCompare } from "@utils/natural-sort";
+import {JobData, JobMetaData, JobStatus} from "@interfaces/job";
+import {Assembly} from "@models/assembly";
+import {Nest} from "@models/nest";
+import {naturalCompare} from "@utils/natural-sort";
 
-import { Component } from "@models/component";
-import { ComponentGroup } from "@models/component-group";
-import { LaserCutPart } from "@models/laser-cut-part";
-import { LaserCutPartGroup } from "@models/laser-cut-part-group";
-import { ContactInfoDict } from "@interfaces/contact-info";
-import { BusinessInfoDict } from "@interfaces/business-info";
+import {Component} from "@models/component";
+import {ComponentGroup} from "@models/component-group";
+import {LaserCutPart} from "@models/laser-cut-part";
+import {LaserCutPartGroup} from "@models/laser-cut-part-group";
+import {ContactInfoDict} from "@interfaces/contact-info";
+import {BusinessInfoDict} from "@interfaces/business-info";
 
 export class JobMeta {
     id!: number;
@@ -43,7 +43,7 @@ export class JobMeta {
     }
 
     toJSON(): JobMetaData {
-        return { ...this };
+        return {...this};
     }
 }
 

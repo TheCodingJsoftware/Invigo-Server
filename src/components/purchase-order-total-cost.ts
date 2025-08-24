@@ -1,5 +1,5 @@
-import { BaseComponent } from "@interfaces/base-component";
-import { PurchaseOrder } from "@models/purchase-order";
+import {BaseComponent} from "@interfaces/base-component";
+import {PurchaseOrder} from "@models/purchase-order";
 
 export class PurchaseOrderTotalCost implements BaseComponent {
     purchaseOrder: PurchaseOrder;
@@ -104,11 +104,7 @@ export class PurchaseOrderTotalCost implements BaseComponent {
     }
 
     formatPercent(value: number): string {
-        return `${(value * 100).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%`;
-    }
-
-    private formatPrice(price: number): string {
-        return `$${price.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+        return `${(value * 100).toLocaleString("en-US", {minimumFractionDigits: 2, maximumFractionDigits: 2})}%`;
     }
 
     public async render(): Promise<void> {
@@ -124,5 +120,9 @@ export class PurchaseOrderTotalCost implements BaseComponent {
 
     public show(): void {
         this.element?.classList.remove("hidden");
+    }
+
+    private formatPrice(price: number): string {
+        return `$${price.toLocaleString("en-US", {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
     }
 }

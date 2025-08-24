@@ -1,9 +1,7 @@
-import { BaseComponent } from "@interfaces/base-component";
-import { Assembly } from "@models/assembly";
-import { Component } from "@models/component";
-import { LaserCutPart } from "@models/laser-cut-part";
+import {BaseComponent} from "@interfaces/base-component";
+import {Assembly} from "@models/assembly";
 
-import { AssemblyComponentsTable, AssemblyLaserCutPartsTable } from "./assemblies-parts-list";
+import {AssemblyComponentsTable, AssemblyLaserCutPartsTable} from "./assemblies-parts-list";
 
 class AssemblyLaserCutPartsComponent {
     assembly: Assembly;

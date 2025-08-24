@@ -1,8 +1,8 @@
-import { BaseComponent } from "@interfaces/base-component";
-import { LaserCutPart } from "@models/laser-cut-part";
-import { LaserCutPartGroup } from "@models/laser-cut-part-group";
-import { Nest } from "@models/nest";
-import { naturalCompare } from "@utils/natural-sort";
+import {BaseComponent} from "@interfaces/base-component";
+import {LaserCutPart} from "@models/laser-cut-part";
+import {LaserCutPartGroup} from "@models/laser-cut-part-group";
+import {Nest} from "@models/nest";
+import {naturalCompare} from "@utils/natural-sort";
 
 
 export class NestedParts implements BaseComponent {
@@ -183,18 +183,6 @@ export class NestedParts implements BaseComponent {
         return partsTableFooter.trim();
     }
 
-    private formatPrice(price: number): string {
-        return `$${price.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-    }
-
-    private getAllParts(): LaserCutPart[] {
-        let allParts: LaserCutPart[] = [];
-        for (const nest of this.nests) {
-            allParts = allParts.concat(nest.laser_cut_parts);
-        }
-        return allParts;
-    }
-
     public getAllGroupedLaserCutParts(): LaserCutPartGroup[] {
         let LaserCutPartGroups: LaserCutPartGroup[] = [];
         for (const part of this.getAllParts()) {
@@ -224,5 +212,17 @@ export class NestedParts implements BaseComponent {
 
     public show(): void {
         this.element?.classList.remove("hidden");
+    }
+
+    private formatPrice(price: number): string {
+        return `$${price.toLocaleString("en-US", {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+    }
+
+    private getAllParts(): LaserCutPart[] {
+        let allParts: LaserCutPart[] = [];
+        for (const nest of this.nests) {
+            allParts = allParts.concat(nest.laser_cut_parts);
+        }
+        return allParts;
     }
 }

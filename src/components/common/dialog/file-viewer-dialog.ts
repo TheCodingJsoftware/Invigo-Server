@@ -1,12 +1,12 @@
-import { DialogComponent } from "@components/common/dialog/dialog-component";
-import { PartData } from "@components/workspace/parts/part-page";
-import { WorkspacePermissions } from "@core/auth/workspace-permissions";
-import { UserContext } from "@core/auth/user-context";
-import { Helper as DxfHelper } from "dxf";
+import {DialogComponent} from "@components/common/dialog/dialog-component";
+import {PartData} from "@components/workspace/parts/part-page";
+import {WorkspacePermissions} from "@core/auth/workspace-permissions";
+import {UserContext} from "@core/auth/user-context";
+import {Helper as DxfHelper} from "dxf";
 import * as pdfjsLib from "pdfjs-dist";
 import workerSrc from "pdfjs-dist/build/pdf.worker.mjs";
-import { getFileIcon } from "@components/common/buttons/file-button";
-import { invertImages } from "@utils/theme";
+import {getFileIcon} from "@components/common/buttons/file-button";
+import {invertImages} from "@utils/theme";
 
 (pdfjsLib as any).GlobalWorkerOptions.workerSrc = workerSrc as any;
 
@@ -78,6 +78,14 @@ export class FileViewerDialog extends DialogComponent {
         const targetPart = this.findPartForInitialSelection();
         this.selectPart(targetPart ?? this.parts[0]);
         invertImages();
+    }
+
+    isDark(): boolean {
+        return ui("mode") === "dark";
+    }
+
+    partButtonPressed(part: PartData) {
+        this.selectPart(part);
     }
 
     private findPartForInitialSelection(): PartData | undefined {
@@ -206,10 +214,6 @@ export class FileViewerDialog extends DialogComponent {
         this.contentElement.appendChild(iframe);
     }
 
-    isDark(): boolean {
-        return ui("mode") === "dark";
-    }
-
     private async renderPdf(url: string) {
         const scroller = document.createElement("div");
         scroller.classList.add("center-align")
@@ -221,7 +225,7 @@ export class FileViewerDialog extends DialogComponent {
         for (let pageNum = 1; pageNum <= pdfDocument.numPages; pageNum++) {
             const pdfPage = await pdfDocument.getPage(pageNum);
 
-            const viewport = pdfPage.getViewport({ scale: 1.0 });
+            const viewport = pdfPage.getViewport({scale: 1.0});
 
             const canvas = document.createElement("canvas");
             const ctx = canvas.getContext("2d")!;
@@ -296,9 +300,5 @@ export class FileViewerDialog extends DialogComponent {
 
     private normalizeName(p: string): string {
         return this.filename(p).toUpperCase();
-    }
-
-    partButtonPressed(part: PartData) {
-        this.selectPart(part);
     }
 }

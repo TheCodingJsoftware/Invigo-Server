@@ -35,7 +35,7 @@ export interface FlowTagConfigData {
 export class WorkspaceSettings {
     private static data: FlowTagConfigData | null = null;
 
-    static async load(): Promise<void> {
+    static async init(): Promise<void> {
         if (!this.data) {
             const response = await fetch("/file/workspace_settings.json");
             this.data = await response.json();

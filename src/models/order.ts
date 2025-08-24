@@ -1,4 +1,4 @@
-import { OrderData } from "@interfaces/order";
+import {OrderData} from "@interfaces/order";
 
 export class Order {
     expected_arrival_time!: string;
@@ -27,6 +27,6 @@ export class Order {
     }
 
     toJSON(): OrderData {
-        return { ...this };
+        return {...this};
     }
 }

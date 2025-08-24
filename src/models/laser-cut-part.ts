@@ -1,6 +1,5 @@
-import { LaserCutPartData } from "@interfaces/laser-cut-part";
-import { Nest } from "@models/nest";
-import {PartsTable} from "@components/workspace/parts/parts-table";
+import {LaserCutPartData} from "@interfaces/laser-cut-part";
+import {Nest} from "@models/nest";
 
 export class LaserCutPart {
     id: number;

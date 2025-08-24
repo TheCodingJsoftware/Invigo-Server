@@ -1,7 +1,7 @@
-import { BaseComponent } from "@interfaces/base-component";
-import { Assembly } from "@models/assembly";
-import { Component } from "@models/component";
-import { LaserCutPart } from "@models/laser-cut-part";
+import {BaseComponent} from "@interfaces/base-component";
+import {Assembly} from "@models/assembly";
+import {Component} from "@models/component";
+import {LaserCutPart} from "@models/laser-cut-part";
 
 class AssemblyLaserCutPartsComponent {
     assembly: Assembly;
@@ -188,7 +188,7 @@ export class AssemblyLaserCutPartsTable {
     }
 
     private formatPrice(price: number): string {
-        return `$${price.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+        return `$${price.toLocaleString("en-US", {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
     }
 }
 
@@ -360,7 +360,7 @@ export class AssemblyComponentsTable {
     }
 
     private formatPrice(price: number): string {
-        return `$${price.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+        return `$${price.toLocaleString("en-US", {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
     }
 }
 
@@ -371,6 +371,7 @@ export class AssembliesPartsList implements BaseComponent {
 
     private assemblyLaserCutPartsComponent?: AssemblyLaserCutPartsComponent;
     private assemblyComponentsComponent?: AssemblyComponentsComponent;
+
     // private assemblyStructuralComponentsComponent?: AssemblyStructuralComponentsComponent;
 
     constructor(jobId: number, assembly: Assembly) {

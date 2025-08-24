@@ -1,8 +1,8 @@
-import { FlowtagData } from "@interfaces/flowtag";
-import { OrderData } from "@interfaces/order";
-import { StructuralProfileData } from "@interfaces/structural-profile";
-import { Flowtag } from "@models/flowtag";
-import { Order } from "@models/order";
+import {FlowtagData} from "@interfaces/flowtag";
+import {OrderData} from "@interfaces/order";
+import {StructuralProfileData} from "@interfaces/structural-profile";
+import {Flowtag} from "@models/flowtag";
+import {Order} from "@models/order";
 
 export class StructuralProfile {
     name!: string;
@@ -44,6 +44,6 @@ export class StructuralProfile {
     }
 
     toJSON(): StructuralProfileData {
-        return { ...this };
+        return {...this};
     }
 }

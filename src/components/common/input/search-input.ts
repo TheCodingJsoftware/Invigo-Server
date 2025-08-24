@@ -1,5 +1,5 @@
-import { Signal } from "@utils/signal";
-import { WorkspaceFilter } from "@models/workspace-filter";
+import {Signal} from "@utils/signal";
+import {WorkspaceFilter} from "@models/workspace-filter";
 
 type SearchInputOptions = {
     label?: string;
@@ -25,7 +25,8 @@ export class SearchInput {
     private static resultsCount: number | null = null;
     private static initialized = false;
 
-    private constructor() {}
+    private constructor() {
+    }
 
     static init(opts: SearchInputOptions = {}): HTMLDivElement {
         if (this.initialized && this.element) {
@@ -125,7 +126,7 @@ export class SearchInput {
         this.debounceId = window.setTimeout(() => {
             this.debounceId = null;
             WorkspaceFilter.searchQuery = this.query;
-            this.onChange.emit({ query: this.query });
+            this.onChange.emit({query: this.query});
         }, this.debounceMs);
     }
 
@@ -137,8 +138,8 @@ export class SearchInput {
         this.setLoading(true);
         const q = this.query;
         WorkspaceFilter.searchQuery = q;
-        this.onChange.emit({ query: q });
-        this.onSearch.emit({ query: q });
+        this.onChange.emit({query: q});
+        this.onSearch.emit({query: q});
     }
 
     private static updateHelper() {

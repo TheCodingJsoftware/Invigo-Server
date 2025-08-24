@@ -1,4 +1,4 @@
-import { SettingsManager } from "@core/settings/settings";
+import {SettingsManager} from "@core/settings/settings";
 
 interface WorkspaceSortDict {
     reverse: boolean;
@@ -43,15 +43,15 @@ export class WorkspaceSort {
 }
 
 (Object.keys(WorkspaceSort.manager.get()) as (keyof WorkspaceSortDict)[])
-.forEach((key) => {
-    Object.defineProperty(WorkspaceSort, key, {
-        get() {
-            return WorkspaceSort.manager.get()[key] ?? false;
-        },
-        set(value: boolean) {
-            WorkspaceSort.manager.set({ [key]: value });
-        },
-        configurable: true,
-        enumerable: true,
+    .forEach((key) => {
+        Object.defineProperty(WorkspaceSort, key, {
+            get() {
+                return WorkspaceSort.manager.get()[key] ?? false;
+            },
+            set(value: boolean) {
+                WorkspaceSort.manager.set({[key]: value});
+            },
+            configurable: true,
+            enumerable: true,
+        });
     });
-});

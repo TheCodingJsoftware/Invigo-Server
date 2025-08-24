@@ -1,11 +1,11 @@
-// core/auth/user-context.ts
-import { User } from "@core/auth/user";
+import {User} from "@core/auth/user";
 
 export class UserContext {
     private static instance: UserContext;
     private _user!: User;
 
-    private constructor() {}
+    private constructor() {
+    }
 
     static getInstance(): UserContext {
         if (!UserContext.instance) {

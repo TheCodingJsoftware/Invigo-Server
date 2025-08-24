@@ -14,18 +14,18 @@ interface DialogOptions {
 }
 
 export class DialogComponent {
-    private readonly dialog: HTMLDialogElement;
-    private options: Required<Omit<DialogOptions, "id" | "onClose" | "headerContent" | "bodyContent" | "footerContent">> & 
-                    Pick<DialogOptions, "id" | "onClose" | "headerContent" | "bodyContent" | "footerContent">;
-    private readonly headerElement: HTMLElement;
     protected readonly bodyElement: HTMLElement;
+    private readonly dialog: HTMLDialogElement;
+    private options: Required<Omit<DialogOptions, "id" | "onClose" | "headerContent" | "bodyContent" | "footerContent">> &
+        Pick<DialogOptions, "id" | "onClose" | "headerContent" | "bodyContent" | "footerContent">;
+    private readonly headerElement: HTMLElement;
     private readonly footerElement: HTMLElement;
 
     constructor(options: DialogOptions = {}) {
         this.headerElement = document.createElement("header");
         this.bodyElement = document.createElement("div");
         this.footerElement = document.createElement("footer");
-        
+
         this.options = {
             id: options.id,
             title: options.title ?? "Dialog",
@@ -56,6 +56,20 @@ export class DialogComponent {
         document.body.appendChild(this.dialog);
         ui(this.dialog);
         document.addEventListener("keydown", this.handleEscape);
+    }
+
+    public get element(): HTMLDialogElement {
+        return this.dialog;
+    }
+
+    public query<T extends Element>(selector: string): T | null {
+        return this.dialog.querySelector(selector);
+    }
+
+    public close(): void {
+        document.removeEventListener("keydown", this.handleEscape);
+        ui(this.dialog);
+        setTimeout(() => this.dialog.remove(), 1000);
     }
 
     private createDialogContent(): void {
@@ -126,18 +140,4 @@ export class DialogComponent {
             this.close();
         }
     };
-
-    public query<T extends Element>(selector: string): T | null {
-        return this.dialog.querySelector(selector);
-    }
-
-    public close(): void {
-        document.removeEventListener("keydown", this.handleEscape);
-        ui(this.dialog);
-        setTimeout(() => this.dialog.remove(), 1000);
-    }
-
-    public get element(): HTMLDialogElement {
-        return this.dialog;
-    }
 }

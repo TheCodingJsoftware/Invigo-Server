@@ -1,7 +1,7 @@
-import { BaseComponent } from "@interfaces/base-component";
-import { Job } from "@models/job";
+import {BaseComponent} from "@interfaces/base-component";
+import {Job} from "@models/job";
 
-export class NetWeight implements BaseComponent  {
+export class NetWeight implements BaseComponent {
     job: Job;
     jobId: number;
     element!: HTMLElement;
@@ -29,10 +29,6 @@ export class NetWeight implements BaseComponent  {
         return this.element;
     }
 
-    private formatWeight(price: number): string {
-        return `${price.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-    }
-
     public async render(): Promise<void> {
         const container = document.querySelector('#net-weight-container') as HTMLDivElement;
         container.appendChild(this.build());
@@ -45,5 +41,9 @@ export class NetWeight implements BaseComponent  {
 
     public show(): void {
         this.element?.classList.remove("hidden");
+    }
+
+    private formatWeight(price: number): string {
+        return `${price.toLocaleString("en-US", {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
     }
 }

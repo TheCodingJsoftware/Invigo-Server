@@ -1,9 +1,9 @@
-import { BaseComponent } from "@interfaces/base-component";
-import { Job } from "@models/job";
+import {BaseComponent} from "@interfaces/base-component";
+import {Job} from "@models/job";
 
-import { AssembliesGroupedPartsList } from "./assemblies-grouped-parts-list-layout";
-import { NestedAssembliesPartsLayout } from "./assemblies-nested-layout";
-import { AssembliesPartsList } from "./assemblies-parts-list";
+import {AssembliesGroupedPartsList} from "./assemblies-grouped-parts-list-layout";
+import {NestedAssembliesPartsLayout} from "./assemblies-nested-layout";
+import {AssembliesPartsList} from "./assemblies-parts-list";
 
 export class AssembliesParts implements BaseComponent {
     job: Job;
@@ -69,31 +69,6 @@ export class AssembliesParts implements BaseComponent {
         return this.element;
     }
 
-    private generateNestedAssembliesPartsLayout(): string {
-        let nestedAssembliesPartsLayoutHTML = "";
-        for (const assembly of this.job.assemblies) {
-            const nestedAssembliesPartsLayout = new NestedAssembliesPartsLayout(this.jobId, assembly);
-            nestedAssembliesPartsLayoutHTML += nestedAssembliesPartsLayout.build().outerHTML;
-            this.nestedAssemblyPartsLayout.push(nestedAssembliesPartsLayout);
-        }
-        return nestedAssembliesPartsLayoutHTML
-    }
-
-    private generateAssembliesPartsList(): string {
-        let assembliesGroupedPartsList = "";
-        for (const assembly of this.job.getAllAssemblies()) {
-            const assemblyGroupedPartsList = new AssembliesPartsList(this.jobId, assembly).build().outerHTML;
-            this.assemblyPartsList.push(new AssembliesPartsList(this.jobId, assembly));
-            assembliesGroupedPartsList += assemblyGroupedPartsList;
-        }
-        return assembliesGroupedPartsList.trim();
-    }
-
-    private generateAssembliesGroupedPartsList(): string {
-        this.assemblyGroupedPartsList = new AssembliesGroupedPartsList(this.jobId, this.job);
-        return this.assemblyGroupedPartsList.build().outerHTML;
-    }
-
     public async render(): Promise<void> {
         const container = document.querySelector('#parts-layout-container') as HTMLDivElement;
         container.appendChild(this.build());
@@ -153,5 +128,30 @@ export class AssembliesParts implements BaseComponent {
 
     public show(): void {
         this.element?.classList.remove("hidden");
+    }
+
+    private generateNestedAssembliesPartsLayout(): string {
+        let nestedAssembliesPartsLayoutHTML = "";
+        for (const assembly of this.job.assemblies) {
+            const nestedAssembliesPartsLayout = new NestedAssembliesPartsLayout(this.jobId, assembly);
+            nestedAssembliesPartsLayoutHTML += nestedAssembliesPartsLayout.build().outerHTML;
+            this.nestedAssemblyPartsLayout.push(nestedAssembliesPartsLayout);
+        }
+        return nestedAssembliesPartsLayoutHTML
+    }
+
+    private generateAssembliesPartsList(): string {
+        let assembliesGroupedPartsList = "";
+        for (const assembly of this.job.getAllAssemblies()) {
+            const assemblyGroupedPartsList = new AssembliesPartsList(this.jobId, assembly).build().outerHTML;
+            this.assemblyPartsList.push(new AssembliesPartsList(this.jobId, assembly));
+            assembliesGroupedPartsList += assemblyGroupedPartsList;
+        }
+        return assembliesGroupedPartsList.trim();
+    }
+
+    private generateAssembliesGroupedPartsList(): string {
+        this.assemblyGroupedPartsList = new AssembliesGroupedPartsList(this.jobId, this.job);
+        return this.assemblyGroupedPartsList.build().outerHTML;
     }
 }

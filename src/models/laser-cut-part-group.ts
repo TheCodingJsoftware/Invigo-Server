@@ -1,7 +1,7 @@
-import { LaserCutPartGroupData } from "@interfaces/laser-cut-part-group";
-import { naturalCompare } from "@utils/natural-sort";
+import {LaserCutPartGroupData} from "@interfaces/laser-cut-part-group";
+import {naturalCompare} from "@utils/natural-sort";
 
-import { LaserCutPart } from "@models/laser-cut-part";
+import {LaserCutPart} from "@models/laser-cut-part";
 
 export class LaserCutPartGroup {
     name: string;

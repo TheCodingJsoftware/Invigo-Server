@@ -1,5 +1,5 @@
-import { SettingsManager } from "@core/settings/settings";
-import { addDays, startOfWeek, endOfWeek, startOfMonth, endOfMonth } from "date-fns";
+import {SettingsManager} from "@core/settings/settings";
+import {addDays, endOfMonth, endOfWeek, startOfMonth, startOfWeek} from "date-fns";
 
 export interface WorkspaceDateRangeDict {
     disable: boolean;
@@ -43,13 +43,13 @@ export class WorkspaceDateRange {
 
         if (state.thisWeek) {
             return {
-                start: startOfWeek(today, { weekStartsOn: 1 }), // Monday
-                end: endOfWeek(today, { weekStartsOn: 1 }),
+                start: startOfWeek(today, {weekStartsOn: 1}), // Monday
+                end: endOfWeek(today, {weekStartsOn: 1}),
             };
         }
 
         if (state.thisNextWeek) {
-            const nextWeekStart = addDays(startOfWeek(today, { weekStartsOn: 1 }), 7);
+            const nextWeekStart = addDays(startOfWeek(today, {weekStartsOn: 1}), 7);
             return {
                 start: nextWeekStart,
                 end: addDays(nextWeekStart, 6),
@@ -57,7 +57,7 @@ export class WorkspaceDateRange {
         }
 
         if (state.thisLastWeek) {
-            const lastWeekStart = addDays(startOfWeek(today, { weekStartsOn: 1 }), -7);
+            const lastWeekStart = addDays(startOfWeek(today, {weekStartsOn: 1}), -7);
             return {
                 start: lastWeekStart,
                 end: addDays(lastWeekStart, 6),
@@ -65,9 +65,9 @@ export class WorkspaceDateRange {
         }
 
         if (state.thisLastNextWeek) {
-            const start = addDays(startOfWeek(today, { weekStartsOn: 1 }), -7);
+            const start = addDays(startOfWeek(today, {weekStartsOn: 1}), -7);
             const end = addDays(start, 13); // last week + this week
-            return { start, end };
+            return {start, end};
         }
 
         if (state.thisMonth) {
@@ -89,15 +89,15 @@ export class WorkspaceDateRange {
 }
 
 (Object.keys(WorkspaceDateRange.manager.get()) as (keyof WorkspaceDateRangeDict)[])
-.forEach((key) => {
-    Object.defineProperty(WorkspaceDateRange, key, {
-        get() {
-            return WorkspaceDateRange.manager.get()[key] ?? false;
-        },
-        set(value: boolean) {
-            WorkspaceDateRange.manager.set({ [key]: value });
-        },
-        configurable: true,
-        enumerable: true,
+    .forEach((key) => {
+        Object.defineProperty(WorkspaceDateRange, key, {
+            get() {
+                return WorkspaceDateRange.manager.get()[key] ?? false;
+            },
+            set(value: boolean) {
+                WorkspaceDateRange.manager.set({[key]: value});
+            },
+            configurable: true,
+            enumerable: true,
+        });
     });
-});

@@ -1,7 +1,7 @@
-import { MetaData, POItemDict, PurchaseOrderData } from "@interfaces/purchase-order";
-import { Component } from "@models/component";
-import { Sheet } from "@models/sheet";
-import { Effect } from "effect"
+import {MetaData, POItemDict, PurchaseOrderData} from "@interfaces/purchase-order";
+import {Component} from "@models/component";
+import {Sheet} from "@models/sheet";
+import {Effect} from "effect"
 
 export class PurchaseOrder {
     id: number = -1;
@@ -48,7 +48,7 @@ export class PurchaseOrder {
             return Effect.tryPromise(() =>
                 fetch(url).then(res => res.json()).then(data => new Component(data))
             ).pipe(
-                Effect.retry({ times: 3 }),
+                Effect.retry({times: 3}),
                 Effect.timeout("10 seconds")
             );
         });
@@ -68,7 +68,7 @@ export class PurchaseOrder {
             return Effect.tryPromise(() =>
                 fetch(url).then(res => res.json()).then(data => new Sheet(data))
             ).pipe(
-                Effect.retry({ times: 3 }),
+                Effect.retry({times: 3}),
                 Effect.timeout("10 seconds")
             );
         });
@@ -105,7 +105,7 @@ export class PurchaseOrder {
         if (item) {
             item.order_quantity = quantity;
         } else {
-            this.components_order_data.push({ id: component.id, order_quantity: quantity });
+            this.components_order_data.push({id: component.id, order_quantity: quantity});
         }
     }
 
@@ -114,7 +114,7 @@ export class PurchaseOrder {
         if (item) {
             item.order_quantity = quantity;
         } else {
-            this.sheets_order_data.push({ id: sheet.id, order_quantity: quantity });
+            this.sheets_order_data.push({id: sheet.id, order_quantity: quantity});
         }
     }
 

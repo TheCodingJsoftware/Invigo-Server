@@ -1,7 +1,7 @@
-import { BaseComponent } from "@interfaces/base-component";
-import { ComponentGroup } from "@models/component-group";
-import { Job } from "@models/job";
-import { LaserCutPartGroup } from "@models/laser-cut-part-group";
+import {BaseComponent} from "@interfaces/base-component";
+import {ComponentGroup} from "@models/component-group";
+import {Job} from "@models/job";
+import {LaserCutPartGroup} from "@models/laser-cut-part-group";
 
 
 class GroupedLaserCutParts {
@@ -175,11 +175,11 @@ class GroupedLaserCutPartsTable {
     }
 
     private formatQuantity(quantity: number): string {
-        return quantity.toLocaleString("en-US", { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+        return quantity.toLocaleString("en-US", {minimumFractionDigits: 0, maximumFractionDigits: 0});
     }
 
     private formatPrice(price: number): string {
-        return `$${price.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+        return `$${price.toLocaleString("en-US", {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
     }
 }
 
@@ -341,11 +341,11 @@ class GroupedComponentsTable {
     }
 
     private formatQuantity(quantity: number): string {
-        return quantity.toLocaleString("en-US", { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+        return quantity.toLocaleString("en-US", {minimumFractionDigits: 0, maximumFractionDigits: 0});
     }
 
     private formatPrice(price: number): string {
-        return `$${price.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+        return `$${price.toLocaleString("en-US", {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
     }
 }
 

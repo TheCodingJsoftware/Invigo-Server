@@ -1,7 +1,7 @@
-import { NestData } from "@interfaces/nest";
-import { LaserCutPart } from "@models/laser-cut-part";
-import { Sheet } from "@models/sheet";
-import { naturalCompare } from "@utils/natural-sort";
+import {NestData} from "@interfaces/nest";
+import {LaserCutPart} from "@models/laser-cut-part";
+import {Sheet} from "@models/sheet";
+import {naturalCompare} from "@utils/natural-sort";
 
 export class Nest {
     public id!: number;
@@ -46,8 +46,8 @@ export class Nest {
     toJSON(): NestData {
         return {
             ...this,
-            laser_cut_parts: this.laser_cut_parts.map(p => ({ ...p })),
-            sheet: { ...this.sheet },
+            laser_cut_parts: this.laser_cut_parts.map(p => ({...p})),
+            sheet: {...this.sheet},
         };
     }
 }

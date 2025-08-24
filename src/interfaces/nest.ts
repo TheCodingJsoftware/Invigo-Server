@@ -1,5 +1,5 @@
-import { LaserCutPartData } from "@interfaces/laser-cut-part";
-import { SheetData } from "@interfaces/sheet";
+import {LaserCutPartData} from "@interfaces/laser-cut-part";
+import {SheetData} from "@interfaces/sheet";
 
 export interface NestData {
     id: number;

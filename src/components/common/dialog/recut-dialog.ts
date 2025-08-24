@@ -1,7 +1,7 @@
-import { DialogComponent } from "@components/common/dialog/dialog-component";
-import { PartData } from "@components/workspace/parts/part-page";
-import { PartDataService } from "@components/workspace/parts/part-data.service";
-import { SnackbarComponent } from "../snackbar/snackbar-component";
+import {DialogComponent} from "@components/common/dialog/dialog-component";
+import {PartData} from "@components/workspace/parts/part-page";
+import {PartDataService} from "@components/workspace/parts/part-data.service";
+import {SnackbarComponent} from "../snackbar/snackbar-component";
 
 export class RecutDialog extends DialogComponent {
     parts: PartData[];

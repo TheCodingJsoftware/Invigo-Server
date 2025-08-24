@@ -1,5 +1,5 @@
-import { SheetData } from "@interfaces/sheet";
-import { Order } from "@models/order";
+import {SheetData} from "@interfaces/sheet";
+import {Order} from "@models/order";
 
 export class Sheet {
     id!: number;
@@ -42,6 +42,6 @@ export class Sheet {
     }
 
     toJSON(): SheetData {
-        return { ...this };
+        return {...this};
     }
 }

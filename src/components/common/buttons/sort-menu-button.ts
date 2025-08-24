@@ -1,5 +1,5 @@
-import { WorkspaceSort, BooleanSettingKey } from "@models/workspace-sort";
-import { Signal } from "@utils/signal";
+import {BooleanSettingKey, WorkspaceSort} from "@models/workspace-sort";
+import {Signal} from "@utils/signal";
 
 export class SortMenuButton {
     readonly button: HTMLButtonElement;
@@ -49,7 +49,7 @@ export class SortMenuButton {
                 (WorkspaceSort as any)[key] = next;
                 li.classList.toggle("fill", next);
                 checkIcon.style.visibility = next ? "visible" : "hidden";
-                this.onToggle.emit({ key, value: next });
+                this.onToggle.emit({key, value: next});
                 this.updateBadge();
             });
 

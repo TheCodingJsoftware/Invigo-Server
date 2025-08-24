@@ -183,7 +183,7 @@ document.getElementById("add-role")?.addEventListener("click", async () => {
     await loadRoles();
 });
 
-WorkspaceSettings.load().then(() => {
+WorkspaceSettings.init().then(() => {
     extendPermissionMapWithTags();
 });
 

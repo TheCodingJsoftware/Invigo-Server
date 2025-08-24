@@ -1,7 +1,6 @@
-import { ComponentData } from "@interfaces/component";
-import { FlowtagData } from "@interfaces/flowtag";
-import { LaserCutPartData } from "@interfaces/laser-cut-part";
-import { StructuralProfileData } from "@interfaces/structural-profile";
+import {ComponentData} from "@interfaces/component";
+import {FlowtagData} from "@interfaces/flowtag";
+import {LaserCutPartData} from "@interfaces/laser-cut-part";
 
 
 export interface PricesData {

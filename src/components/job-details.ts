@@ -1,5 +1,5 @@
-import { BaseComponent } from "@interfaces/base-component";
-import { JobMeta } from "@models/job";
+import {BaseComponent} from "@interfaces/base-component";
+import {JobMeta} from "@models/job";
 
 export class JobDetails implements BaseComponent {
     jobData: JobMeta;
@@ -12,7 +12,7 @@ export class JobDetails implements BaseComponent {
     }
 
     public build(): HTMLElement {
-        const { name, order_number, PO_number, starting_date, ending_date, ship_to } = this.jobData;
+        const {name, order_number, PO_number, starting_date, ending_date, ship_to} = this.jobData;
 
         const template = document.createElement("template");
         template.innerHTML = `

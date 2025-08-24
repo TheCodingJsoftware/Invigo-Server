@@ -2,7 +2,7 @@ import "beercss";
 import "@utils/theme";
 import {Timeline, TimelineOptions} from "vis-timeline/esnext";
 import {DataSet} from "vis-data";
-import {DataItem, DataGroup} from "vis-timeline/declarations";
+import {DataGroup, DataItem} from "vis-timeline/declarations";
 import "@static/css/vis-timeline-graph2d.min.css";
 import {loadTheme} from "@utils/theme";
 import {SnackbarComponent} from "@components/common/snackbar/snackbar-component";
@@ -132,6 +132,7 @@ export function buildJobProcessTimelines(items: DataItem[]): JobTimelinePayload[
 
     return Object.values(jobs);
 }
+
 //
 // class JobProcessTimeline {
 //     private container: HTMLElement;
@@ -270,12 +271,12 @@ export function buildJobProcessTimelines(items: DataItem[]): JobTimelinePayload[
 // }
 
 class JobTimeline {
-    private container: HTMLElement;
-    private timeline: Timeline | null = null;
-    private processes: DataSet<DataItem>;
-    private items: DataSet<DataItem>;
-    private assemblies: DataSet<DataItem>;
-    private groups: DataSet<DataGroup>;
+    private readonly container: HTMLElement;
+    private readonly timeline: Timeline | null = null;
+    private readonly processes: DataSet<DataItem>;
+    private readonly items: DataSet<DataItem>;
+    private readonly assemblies: DataSet<DataItem>;
+    private readonly groups: DataSet<DataGroup>;
 
     constructor(container: HTMLElement, options: TimelineOptions = {}) {
         this.container = container;

@@ -23,7 +23,7 @@ export class ViewBus {
     }
 
     static update(partial: Partial<ViewChangePayload>) {
-        this.state = { ...this.state, ...partial };
+        this.state = {...this.state, ...partial};
 
         // const next = { ...this.state, ...partial };
         // if (next.dataType === this.state.dataType && next.viewMode === this.state.viewMode) {

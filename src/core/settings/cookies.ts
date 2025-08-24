@@ -7,7 +7,8 @@ export type CookieOptions = {
 };
 
 export class CookieSettingsManager<T extends Record<string, any>> {
-    constructor(private key: string, private defaults: T, private options: CookieOptions = {}) {}
+    constructor(private key: string, private defaults: T, private options: CookieOptions = {}) {
+    }
 
     private read(): string | null {
         const name = this.key + "=";
@@ -42,7 +43,7 @@ export class CookieSettingsManager<T extends Record<string, any>> {
             return structuredClone(this.defaults);
         }
         try {
-            return { ...this.defaults, ...JSON.parse(raw) };
+            return {...this.defaults, ...JSON.parse(raw)};
         } catch {
             return structuredClone(this.defaults);
         }
@@ -50,7 +51,7 @@ export class CookieSettingsManager<T extends Record<string, any>> {
 
     set(patch: Partial<T>) {
         const current = this.get();
-        const next = { ...current, ...patch };
+        const next = {...current, ...patch};
         this.write(JSON.stringify(next));
     }
 

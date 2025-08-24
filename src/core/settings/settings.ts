@@ -1,5 +1,6 @@
 export class SettingsManager<T extends Record<string, any>> {
-    constructor(private key: string, private defaults: T) { }
+    constructor(private key: string, private defaults: T) {
+    }
 
     get(): T {
         const raw = localStorage.getItem(this.key);
@@ -7,7 +8,7 @@ export class SettingsManager<T extends Record<string, any>> {
             return structuredClone(this.defaults);
         }
         try {
-            return { ...this.defaults, ...JSON.parse(raw) };
+            return {...this.defaults, ...JSON.parse(raw)};
         } catch {
             return structuredClone(this.defaults);
         }
@@ -15,7 +16,7 @@ export class SettingsManager<T extends Record<string, any>> {
 
     set(patch: Partial<T>) {
         const current = this.get();
-        const next = { ...current, ...patch };
+        const next = {...current, ...patch};
         localStorage.setItem(this.key, JSON.stringify(next));
     }
 

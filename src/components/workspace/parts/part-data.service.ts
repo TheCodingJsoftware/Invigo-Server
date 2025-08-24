@@ -1,10 +1,10 @@
-import { PartData } from "@components/workspace/parts/part-page";
-import { PartViewConfig } from "@config/part-view-mode";
-import { ViewSettingsManager } from "@core/settings/view-settings";
-import { SnackbarComponent } from "@components/common/snackbar/snackbar-component";
-import { WorkspaceFilter } from "@models/workspace-filter";
-import { UserContext } from "@core/auth/user-context";
-import { WorkspaceSettings } from "@core/settings/workspace-settings";
+import {PartData} from "@components/workspace/parts/part-page";
+import {PartViewConfig} from "@config/part-view-mode";
+import {ViewSettingsManager} from "@core/settings/view-settings";
+import {SnackbarComponent} from "@components/common/snackbar/snackbar-component";
+import {WorkspaceFilter} from "@models/workspace-filter";
+import {UserContext} from "@core/auth/user-context";
+import {WorkspaceSettings} from "@core/settings/workspace-settings";
 import {WorkspaceDateRange} from "@models/workspace-date-range";
 
 export enum PartDataType {

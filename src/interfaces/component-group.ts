@@ -1,4 +1,4 @@
-import { ComponentData } from "@interfaces/component";
+import {ComponentData} from "@interfaces/component";
 
 export interface ComponentGroupData {
     name: string;

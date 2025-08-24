@@ -1,4 +1,4 @@
-import { BusinessInfoDict } from "@interfaces/business-info";
+import {BusinessInfoDict} from "@interfaces/business-info";
 
 export class BusinessInfo implements BusinessInfoDict {
     name: string = "";

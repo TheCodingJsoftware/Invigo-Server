@@ -1,12 +1,13 @@
-import { BaseComponent } from "@interfaces/base-component";
-import { SHIPPING_METHOD_ICONS, ShippingMethod } from "@interfaces/purchase-order";
-import { BusinessInfo } from "@models/business-info";
-import { ContactInfo } from "@models/contact-info";
-import { PurchaseOrder } from "@models/purchase-order";
-import { Vendor } from "@models/vendor";
+import {BaseComponent} from "@interfaces/base-component";
+import {SHIPPING_METHOD_ICONS, ShippingMethod} from "@interfaces/purchase-order";
+import {BusinessInfo} from "@models/business-info";
+import {ContactInfo} from "@models/contact-info";
+import {PurchaseOrder} from "@models/purchase-order";
+import {Vendor} from "@models/vendor";
 import flatpickr from "flatpickr";
+import {Instance as FlatpickrInstance} from "flatpickr/dist/types/instance";
+
 require("flatpickr/dist/themes/dark.css");
-import { Instance as FlatpickrInstance } from "flatpickr/dist/types/instance";
 
 export class PurchaseOrderDetails implements BaseComponent {
     purchaseOrder: PurchaseOrder;
@@ -42,7 +43,7 @@ export class PurchaseOrderDetails implements BaseComponent {
         const contactDetails = `
             ${this.businessInfo.name ? `${this.businessInfo.name}<br>` : ""}
             ${this.purchaseOrder.meta_data.shipping_address.address
-                ? `${this.purchaseOrder.meta_data.shipping_address.address.split("\n").join("<br>")}<br>` : ""}
+            ? `${this.purchaseOrder.meta_data.shipping_address.address.split("\n").join("<br>")}<br>` : ""}
             ${(this.contactInfo.name || this.contactInfo.email || this.contactInfo.phone) ? `
             <div id="contactDetails"><hr>
                 <b>Contact Information:</b><br>
