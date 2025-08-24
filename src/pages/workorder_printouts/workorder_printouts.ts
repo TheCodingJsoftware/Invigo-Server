@@ -1,6 +1,6 @@
 import "beercss"
 import "@utils/theme"
-import { DialogComponent } from "@components/common/dialog/dialog-component";
+import {DialogComponent} from "@components/common/dialog/dialog-component";
 
 document.addEventListener("DOMContentLoaded", () => {
     const nestButtons = document.querySelectorAll(".nest-button") as NodeListOf<HTMLButtonElement>;

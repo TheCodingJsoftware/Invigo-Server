@@ -6,7 +6,7 @@ import "@utils/theme"
 //  }
 
 document.addEventListener("DOMContentLoaded", async () => {
-    await fetch("/api/protected", { credentials: "include" }).then(async (res) => {
+    await fetch("/api/protected", {credentials: "include"}).then(async (res) => {
         if (res.ok) {
             const user = await res.json();
             const welcomeMessage = document.getElementById("welcome-message") as HTMLElement;

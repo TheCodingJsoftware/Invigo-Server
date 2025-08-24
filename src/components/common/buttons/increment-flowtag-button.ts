@@ -1,4 +1,4 @@
-import {PartData} from "@components/workspace/parts/part-page";
+import {PartData} from "@components/workspace/parts/part-container";
 import {WorkspaceSettings} from "@core/settings/workspace-settings";
 
 export class IncrementFlowtagButton {

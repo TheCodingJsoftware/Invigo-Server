@@ -1,67 +1,67 @@
 <!DOCTYPE html>
 <html lang="en">
 
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <meta http-equiv="X-UA-Compatible" content="ie=edge">
-        <meta name="google" content="notranslate">
-        <link rel="icon" href="/static/icon.png">
-        <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=yes" />
-        <title>Register</title>
-    </head>
+<head>
+    <meta charset="UTF-8">
+    <meta content="width=device-width, initial-scale=1" name="viewport">
+    <meta content="ie=edge" http-equiv="X-UA-Compatible">
+    <meta content="notranslate" name="google">
+    <link href="/static/icon.png" rel="icon">
+    <meta content="width=device-width,initial-scale=1,user-scalable=yes" name="viewport"/>
+    <title>Register</title>
+</head>
 
-    <body class="dark">
-        <header class="fixed primary">
-            <nav>
-                <button class="circle transparent" onclick="window.location.href='/'">
-                    <i>arrow_back</i>
+<body class="dark">
+<header class="fixed primary">
+    <nav>
+        <button class="circle transparent" onclick="window.location.href='/'">
+            <i>arrow_back</i>
+        </button>
+        <h5 class="max">Register</h5>
+    </nav>
+</header>
+<main class="responsive">
+    {% if userCanRegister %}
+    <form class="grid" id="register-form">
+        <article class="s12 border round">
+            <div class="field small-round label border">
+                <input id="name" required type="text"/>
+                <label>Username</label>
+            </div>
+            <fieldset class="s12 small-round">
+                <legend>Roles</legend>
+                {% for role in roles %}
+                <label class="s12 checkbox">
+                    <input name="role" type="checkbox" value="{{ role.name }}">
+                    <span>{{ role.name }}</span>
+                </label>
+                {% endfor %}
+            </fieldset>
+            <div class="s12 field small-round label border">
+                <input id="password" required type="password"/>
+                <label>Password</label>
+            </div>
+            <nav class="s12 right-align">
+                <button class="s12" type="submit">
+                    <i>person_add</i>
+                    <span>Register</span>
                 </button>
-                <h5 class="max">Register</h5>
             </nav>
-        </header>
-        <main class="responsive">
-            {% if userCanRegister %}
-            <form id="register-form" class="grid">
-                <article class="s12 border round">
-                    <div class="field small-round label border">
-                        <input type="text" id="name" required />
-                        <label>Username</label>
-                    </div>
-                    <fieldset class="s12 small-round">
-                        <legend>Roles</legend>
-                        {% for role in roles %}
-                        <label class="s12 checkbox">
-                            <input type="checkbox" name="role" value="{{ role.name }}">
-                            <span>{{ role.name }}</span>
-                        </label>
-                        {% endfor %}
-                    </fieldset>
-                    <div class="s12 field small-round label border">
-                        <input type="password" id="password" required />
-                        <label>Password</label>
-                    </div>
-                    <nav class="s12 right-align">
-                        <button class="s12" type="submit">
-                            <i>person_add</i>
-                            <span>Register</span>
-                        </button>
-                    </nav>
-                </article>
-            </form>
-            <div class="overlay blur"></div>
-            <dialog id="login-credentials" class="modal">
-                <h5>Account Registered</h5>
-                <p>You can now login with your new account.</p>
-                <div>Username: <code id="name-text"></code></div>
-                <div>Password: <code id="password-text"></code></div>
-                <button class="primary" onclick="ui('#login-credentials')">OK</button>
-            </dialog>
-            {% else %}
-             <div id="not-allowed" class="snackbar top error active">You do not have permission to register accounts.</div>
-            {% endif %}
-        </main>
-        <div id="register-error" class="snackbar top error"></div>
-    </body>
+        </article>
+    </form>
+    <div class="overlay blur"></div>
+    <dialog class="modal" id="login-credentials">
+        <h5>Account Registered</h5>
+        <p>You can now login with your new account.</p>
+        <div>Username: <code id="name-text"></code></div>
+        <div>Password: <code id="password-text"></code></div>
+        <button class="primary" onclick="ui('#login-credentials')">OK</button>
+    </dialog>
+    {% else %}
+    <div class="snackbar top error active" id="not-allowed">You do not have permission to register accounts.</div>
+    {% endif %}
+</main>
+<div class="snackbar top error" id="register-error"></div>
+</body>
 
 </html>

@@ -1,52 +1,52 @@
 <!DOCTYPE html>
 <html lang="en">
 
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <meta http-equiv="X-UA-Compatible" content="ie=edge">
-        <meta name="google" content="notranslate">
-        <link rel="icon" href="/static/icon.png">
-        <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=yes" />
-        <title>Way Back Machine</title>
-    </head>
+<head>
+    <meta charset="UTF-8">
+    <meta content="width=device-width, initial-scale=1" name="viewport">
+    <meta content="ie=edge" http-equiv="X-UA-Compatible">
+    <meta content="notranslate" name="google">
+    <link href="/static/icon.png" rel="icon">
+    <meta content="width=device-width,initial-scale=1,user-scalable=yes" name="viewport"/>
+    <title>Way Back Machine</title>
+</head>
 
-    <body class="dark">
-        <header class="fixed primary" style="height: 60px;">
-            <nav>
-                <button class="circle transparent" onclick="goToMainUrl()">
-                    <i>arrow_back</i>
-                </button>
-                <h5 class="max">Way Back Machine</h5>
-            </nav>
-        </header>
-        <main class="responsive">
-            <nav class="no-space center-align padding">
-                <div class="prefix field border left-round left-align" style="width: 80%;">
-                    <i>search</i>
-                    <input type="text" id="searchInput" placeholder="Search...">
-                </div>
-                <button class="large right-round" id="fetchButton">Fetch</button>
-            </nav>
-            <div class="field center-align">
-                <label class="radio">
-                    <input type="radio" id="components" name="inventory" value="components_inventory" checked>
-                    <span>Components Inventory</span>
-                </label>
-                <br>
-                <label class="radio">
-                    <input type="radio" id="laser_cut_parts" name="inventory" value="laser_cut_inventory">
-                    <span>Laser Cut Parts</span>
-                </label>
-                <br>
-                <label class="radio">
-                    <input type="radio" id="sheets_inventory" name="inventory" value="sheets_inventory">
-                    <span>Sheets Inventory</span>
-                </label>
-            </div>
-            <article id="autocomplete-container" class="transparent"></article>
-            <canvas id="myChart" width="400" height="200"></canvas>
-            <div class="snackbar error" id="snackbar-error">An error occurred while fetching data. Please try again.</div>
-        </main>
-    </body>
+<body class="dark">
+<header class="fixed primary" style="height: 60px;">
+    <nav>
+        <button class="circle transparent" onclick="goToMainUrl()">
+            <i>arrow_back</i>
+        </button>
+        <h5 class="max">Way Back Machine</h5>
+    </nav>
+</header>
+<main class="responsive">
+    <nav class="no-space center-align padding">
+        <div class="prefix field border left-round left-align" style="width: 80%;">
+            <i>search</i>
+            <input id="searchInput" placeholder="Search..." type="text">
+        </div>
+        <button class="large right-round" id="fetchButton">Fetch</button>
+    </nav>
+    <div class="field center-align">
+        <label class="radio">
+            <input checked id="components" name="inventory" type="radio" value="components_inventory">
+            <span>Components Inventory</span>
+        </label>
+        <br>
+        <label class="radio">
+            <input id="laser_cut_parts" name="inventory" type="radio" value="laser_cut_inventory">
+            <span>Laser Cut Parts</span>
+        </label>
+        <br>
+        <label class="radio">
+            <input id="sheets_inventory" name="inventory" type="radio" value="sheets_inventory">
+            <span>Sheets Inventory</span>
+        </label>
+    </div>
+    <article class="transparent" id="autocomplete-container"></article>
+    <canvas height="200" id="myChart" width="400"></canvas>
+    <div class="snackbar error" id="snackbar-error">An error occurred while fetching data. Please try again.</div>
+</main>
+</body>
 </html>

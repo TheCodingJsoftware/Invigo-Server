@@ -1,28 +1,21 @@
 import "beercss"
 import "@utils/theme"
 import flatpickr from 'flatpickr';
-import { Chart, registerables } from 'chart.js';
+import {Chart, registerables} from 'chart.js';
 import 'chartjs-adapter-date-fns';
-import { MatrixController, MatrixElement } from 'chartjs-chart-matrix';
+import {MatrixController, MatrixElement} from 'chartjs-chart-matrix';
 import {
     getAssemblies,
+    getAssemblyProcessExpectedTimeToComplete,
+    getColorForProcessTag,
+    getJobCompletionProgress,
+    getPartProcessExpectedTimeToComplete,
+    getPreference,
     isAssemblyComplete,
     isAssemblyPartsComplete,
-    isJobComplete,
-    getAssemblyCompletionProgress,
-    getJobCompletionProgress,
-    getAssemblyCompletionTime,
-    getPartProcessCountByTag,
-    getAssemblyCount,
-    getAssemblyProcessCountByTag,
-    getPartProcessExpectedTimeToComplete,
-    getAssemblyProcessExpectedTimeToComplete,
-    getPartsCount,
-    getColorForProcessTag,
-    calculateAssemblyProgress,
     savePreference,
-    getPreference,
 } from '../../utils.js';
+
 Chart.register(...registerables);
 Chart.register(MatrixController, MatrixElement);
 
@@ -87,7 +80,7 @@ class Accordion {
         this.isExpanding = true;
         const startHeight = `${this.detailElement.offsetHeight}px`;
         const endHeight = `${this.summary.offsetHeight + this.content.offsetHeight
-            }px`;
+        }px`;
 
         if (this.animation) {
             this.animation.cancel();
@@ -135,7 +128,7 @@ class HeatMap {
 
         this.populateProcessSelections();
 
-        this.processSelections.value = getPreference(this.container, 'lastSelectedProcess', { 'value': 'Everything' }).value;
+        this.processSelections.value = getPreference(this.container, 'lastSelectedProcess', {'value': 'Everything'}).value;
 
         this.processSelections.addEventListener('change', () => {
             this.currentProcess = this.processSelections.value;
@@ -419,8 +412,8 @@ class AssembliesInProcessChart {
 
         this.populateProcessSelections();
 
-        this.useWorkspaceArchivesCheckbox.checked = getPreference(this.container, 'useWorkspaceArchives', { 'value': false }).value;
-        this.processSelections.value = getPreference(this.container, 'lastSelectedProcess', { 'value': 'Everything' }).value;
+        this.useWorkspaceArchivesCheckbox.checked = getPreference(this.container, 'useWorkspaceArchives', {'value': false}).value;
+        this.processSelections.value = getPreference(this.container, 'lastSelectedProcess', {'value': 'Everything'}).value;
 
         this.setupDateRangePicker();
 
@@ -735,8 +728,8 @@ class SelectAssemblyChart {
 
         this.populateAssemblySelections();
 
-        this.useWorkspaceArchivesCheckbox.checked = getPreference(this.container, 'useWorkspaceArchives', { 'value': false }).value;
-        const lastSelectedAssembly = getPreference(this.container, 'lastSelectedAssembly', { 'value': null }).value
+        this.useWorkspaceArchivesCheckbox.checked = getPreference(this.container, 'useWorkspaceArchives', {'value': false}).value;
+        const lastSelectedAssembly = getPreference(this.container, 'lastSelectedAssembly', {'value': null}).value
         if (lastSelectedAssembly) {
             this.assemblySelections.value = lastSelectedAssembly;
         }
@@ -1033,7 +1026,7 @@ class AllAssembliesChart {
         this.thisMonthButton = this.containerDiv.querySelector("#this-month");
         this.thisYearButton = this.containerDiv.querySelector("#this-year");
 
-        this.useWorkspaceArchivesCheckbox.checked = getPreference(this.container, 'useWorkspaceArchives', { 'value': false }).value;
+        this.useWorkspaceArchivesCheckbox.checked = getPreference(this.container, 'useWorkspaceArchives', {'value': false}).value;
 
         const uniqueName = `radio-group-${this.container}`;
         const radioButtons = this.containerDiv.querySelectorAll('input[type="radio"]');
@@ -1360,8 +1353,8 @@ class LaserCutPartsInProcessChart {
 
         this.populateProcessSelections();
 
-        this.useWorkspaceArchivesCheckbox.checked = getPreference(this.container, 'useWorkspaceArchives', { 'value': false }).value;
-        this.processSelections.value = getPreference(this.container, 'lastSelectedProcess', { 'value': 'Everything' }).value;
+        this.useWorkspaceArchivesCheckbox.checked = getPreference(this.container, 'useWorkspaceArchives', {'value': false}).value;
+        this.processSelections.value = getPreference(this.container, 'lastSelectedProcess', {'value': 'Everything'}).value;
 
         this.setupDateRangePicker();
 
@@ -1449,6 +1442,7 @@ class LaserCutPartsInProcessChart {
             this.setThisYear();
         }
     }
+
     setDateRange(startDate, endDate) {
         this.dateRangePicker._flatpickr.setDate([startDate, endDate], true);
         this.startDate = startDate;
@@ -1639,7 +1633,7 @@ class LaserCutPartsInProcessChart {
     }
 }
 
-class ActivityPage{
+class ActivityPage {
     constructor(container, workspace, workspaceArchives, workspaceSettings) {
         this.container = container;
         this.workspace = workspace;
@@ -1811,7 +1805,7 @@ class ActivityPage{
                 const isComplete = isAssemblyComplete(assembly);
                 const isPartsComplete = isAssemblyPartsComplete(assembly);
                 let currentAssemblyProcess = assembly.assembly_data.flow_tag.tags[currentProcessIndex];
-                if (currentAssemblyProcess === undefined){
+                if (currentAssemblyProcess === undefined) {
                     currentAssemblyProcess = "Finished";
                 }
                 const assemblyArticle = document.createElement('article');
@@ -1982,12 +1976,12 @@ class ActivityPage{
             this.processSelections.appendChild(option);
         });
 
-        this.processSelections.value = getPreference(this.container, 'lastSelectedProcess', { 'value': 'Everything' }).value;
+        this.processSelections.value = getPreference(this.container, 'lastSelectedProcess', {'value': 'Everything'}).value;
     }
 }
 
-class HeatmapsPage{
-    constructor(container, productionPlan, workspace, workspaceSettings){
+class HeatmapsPage {
+    constructor(container, productionPlan, workspace, workspaceSettings) {
         this.container = container;
         this.productionPlan = productionPlan;
         this.workspace = workspace;
@@ -1997,7 +1991,7 @@ class HeatmapsPage{
         this.workspaceHeatmap = null;
     }
 
-    initialize(){
+    initialize() {
         this.loadHeatmaps();
     }
 
@@ -2017,8 +2011,8 @@ class HeatmapsPage{
     }
 }
 
-class AssemblyGraphsPage{
-    constructor(container, workspace, workspaceArchives, workspaceSettings){
+class AssemblyGraphsPage {
+    constructor(container, workspace, workspaceArchives, workspaceSettings) {
         this.container = container;
         this.workspace = workspace;
         this.workspaceArchives = workspaceArchives;
@@ -2034,7 +2028,7 @@ class AssemblyGraphsPage{
         this.allAssembliesChart1 = null;
     }
 
-    initialize(){
+    initialize() {
         this.assemblyInProcessChart1 = new AssembliesInProcessChart('#assemblies-in-process-chart-container-1', this.workspace, this.workspaceArchives, this.workspaceSettings);
         this.assemblyInProcessChart1.initialize();
         this.assemblyInProcessChart2 = new AssembliesInProcessChart('#assemblies-in-process-chart-container-2', this.workspace, this.workspaceArchives, this.workspaceSettings);
@@ -2061,8 +2055,8 @@ class AssemblyGraphsPage{
     }
 }
 
-class PartGraphsPage{
-    constructor(container, workspace, workspaceArchives, workspaceSettings){
+class PartGraphsPage {
+    constructor(container, workspace, workspaceArchives, workspaceSettings) {
         this.container = container;
         this.workspace = workspace;
         this.workspaceArchives = workspaceArchives;
@@ -2073,7 +2067,7 @@ class PartGraphsPage{
         this.laserCutPartsChart3 = null;
     }
 
-    initialize(){
+    initialize() {
         this.laserCutPartsChart1 = new LaserCutPartsInProcessChart('#laser-cut-parts-in-process-chart-container-1', this.workspace, this.workspaceArchives, this.workspaceSettings);
         this.laserCutPartsChart1.initialize();
         this.laserCutPartsChart2 = new LaserCutPartsInProcessChart('#laser-cut-parts-in-process-chart-container-2', this.workspace, this.workspaceArchives, this.workspaceSettings);
@@ -2127,7 +2121,7 @@ class WorkspaceDashboard {
         }
     }
 
-    loadPages(){
+    loadPages() {
         this.heatMapsPage.loadHeatmaps();
         this.assemblyGraphsPage.loadGraphs();
         this.partGraphsPage.loadGraphs();

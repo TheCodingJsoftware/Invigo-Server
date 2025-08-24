@@ -9,7 +9,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     logoutButton?.addEventListener("click", logout);
 
     try {
-        const res = await fetch("/api/protected", { credentials: "include" });
+        const res = await fetch("/api/protected", {credentials: "include"});
         if (res.ok) {
             const user = await res.json();
             userInfo!.textContent = `Logged in as ${user.name}`;
@@ -33,9 +33,9 @@ document.getElementById("login-form")?.addEventListener("submit", async (e) => {
 
     const res = await fetch("/api/login", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {"Content-Type": "application/json"},
         credentials: "include", // <- crucial!
-        body: JSON.stringify({ name, password }),
+        body: JSON.stringify({name, password}),
     });
 
     if (res.ok) {
@@ -47,6 +47,6 @@ document.getElementById("login-form")?.addEventListener("submit", async (e) => {
 });
 
 async function logout() {
-    await fetch("/api/logout", { method: "POST", credentials: "include" });
+    await fetch("/api/logout", {method: "POST", credentials: "include"});
     window.location.reload();
 }

@@ -1,5 +1,5 @@
 import {DialogComponent} from "@components/common/dialog/dialog-component";
-import {PartData} from "@components/workspace/parts/part-page";
+import {PartData} from "@components/workspace/parts/part-container";
 import {PartDataService} from "@components/workspace/parts/part-data.service";
 import {SnackbarComponent} from "../snackbar/snackbar-component";
 

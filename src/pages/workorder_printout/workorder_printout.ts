@@ -1,40 +1,29 @@
 import "beercss"
 import "@static/css/printout.css"
 import "material-dynamic-colors";
-import { NestedParts } from "@components/nested-parts";
-import { NestedPartsSummary } from "@components/nested-parts-summary";
-import { NestedSheets } from "@components/nested-sheets";
-import { NestedSheetsSummary } from "@components/nested-sheets-summary";
-import { PageBreak } from "@components/page-break";
-import { QRCodeComponent } from "@components/qr-code-component";
-import { BaseComponent } from "@interfaces/base-component";
-import { WorkorderData } from "@interfaces/workorder";
-import { Workorder } from "@models/workorder";
-import { loadAnimationStyleSheet, toggleTheme, loadTheme, invertImages } from "@utils/theme"
-import { Effect } from "effect"
-import { createSwapy } from 'swapy'
+import {NestedParts} from "@components/nested-parts";
+import {NestedPartsSummary} from "@components/nested-parts-summary";
+import {NestedSheets} from "@components/nested-sheets";
+import {NestedSheetsSummary} from "@components/nested-sheets-summary";
+import {PageBreak} from "@components/page-break";
+import {QRCodeComponent} from "@components/qr-code-component";
+import {BaseComponent} from "@interfaces/base-component";
+import {WorkorderData} from "@interfaces/workorder";
+import {Workorder} from "@models/workorder";
+import {invertImages, loadAnimationStyleSheet, loadTheme, toggleTheme} from "@utils/theme"
+import {Effect} from "effect"
+import {createSwapy} from 'swapy'
 
 class WorkorderPrintout {
     workorderID: number;
-    private _dataEffect: Effect.Effect<any, Error> | null = null;
     public workorder!: Workorder;
     public container: HTMLDivElement;
+    private _dataEffect: Effect.Effect<any, Error> | null = null;
     private swapy: ReturnType<typeof createSwapy> | null = null;
 
     constructor(workorderID: number) {
         this.workorderID = workorderID;
         this.container = document.getElementById('workorder-container') as HTMLDivElement;
-    }
-
-    private loadDataEffect(): Effect.Effect<WorkorderData, Error> {
-        return Effect.promise(async () => {
-            const response = await fetch(`/workorders/get/${this.workorderID}`);
-            if (!response.ok) {
-                const msg = await response.text();
-                throw new Error(`Failed to fetch workorder data: ${msg}`);
-            }
-            return response.json();
-        });
     }
 
     public getDataEffect(): Effect.Effect<any, Error> {
@@ -63,91 +52,11 @@ class WorkorderPrintout {
         );
     }
 
-    private initSwapy(): void {
-        this.swapy = createSwapy(this.container, {
-            animation: 'spring',
-            autoScrollOnDrag: true,
-            swapMode: 'drop',
-        });
-        this.swapy.enable(true);
-        this.swapy.onSwap((event) => {
-            document.querySelectorAll("expandable-section").forEach(el => {
-                (el as any).initialize();
-            });
-        });
-    }
-
     updateSwapy(): void {
         if (!this.swapy) {
             return;
         }
         this.swapy.update();
-    }
-
-    private async setUpSections(): Promise<void> {
-        const sections: Record<string, BaseComponent> = {
-            qrCode: new QRCodeComponent(window.location.href),
-            pageBreak3: new PageBreak(this.workorderID, 23),
-            nestSummary: new NestedSheetsSummary(this.workorderID, this.workorder.nests),
-            pageBreak4: new PageBreak(this.workorderID, 24),
-            nestedPartsSummary: new NestedPartsSummary(this.workorderID, this.workorder.nests),
-            pageBreak5: new PageBreak(this.workorderID, 25),
-            nestedSheets: new NestedSheets(this.workorderID, this.workorder.nests),
-            pageBreak6: new PageBreak(this.workorderID, 26),
-            nestedParts: new NestedParts(this.workorderID, this.workorder.nests),
-        };
-
-        await Promise.all(
-            Object.values(sections).map(section => section.render())
-        );
-        Object.entries(sections).forEach(([key, section]) => {
-            const viewButton = document.getElementById(`view-${key}`) as HTMLButtonElement;
-            if (!viewButton) {
-                return;
-            }
-
-            const checkbox = document.getElementById(`show-${key}`) as HTMLInputElement;
-            if (!checkbox) {
-                return;
-            }
-
-            const saved = localStorage.getItem(`show-${key}`);
-            if (saved !== null) {
-                checkbox.checked = saved === "true";
-            }
-
-            checkbox.checked ? section.show() : section.hide();
-
-            checkbox.addEventListener("change", () => {
-                localStorage.setItem(`show-${key}`, String(checkbox.checked));
-                checkbox.checked ? section.show() : section.hide();
-            });
-
-            viewButton.addEventListener("click", () => {
-                section.element.scrollIntoView({
-                    behavior: 'smooth',
-                    inline: 'nearest',
-                    block: 'nearest'
-                });
-
-                // Setup observer to detect when the element is in view
-                const observer = new IntersectionObserver((entries) => {
-                    entries.forEach(entry => {
-                        if (entry.isIntersecting) {
-                            section.element.classList.add('flash-border');
-
-                            setTimeout(() => {
-                                section.element.classList.remove('flash-border');
-                            }, 1000);
-
-                            observer.disconnect();
-                        }
-                    });
-                }, { threshold: 0.5 });
-
-                observer.observe(section.element);
-            });
-        });
     }
 
     toggleLoadingIndicator(show: boolean) {
@@ -312,7 +221,7 @@ class WorkorderPrintout {
 
                     wrapper.addEventListener("transitionend", () => {
                         wrapper.style.maxHeight = "none"; // reset to large value after animation
-                    }, { once: true });
+                    }, {once: true});
                 } else {
                     wrapper.style.maxHeight = wrapper.scrollHeight + "px"; // set current height
 
@@ -328,8 +237,99 @@ class WorkorderPrintout {
                     wrapper.addEventListener("transitionend", () => {
                         // Collapse finished, ensure maxHeight stays at 0
                         wrapper.style.maxHeight = "0";
-                    }, { once: true });
+                    }, {once: true});
                 }
+            });
+        });
+    }
+
+    private loadDataEffect(): Effect.Effect<WorkorderData, Error> {
+        return Effect.promise(async () => {
+            const response = await fetch(`/workorders/get/${this.workorderID}`);
+            if (!response.ok) {
+                const msg = await response.text();
+                throw new Error(`Failed to fetch workorder data: ${msg}`);
+            }
+            return response.json();
+        });
+    }
+
+    private initSwapy(): void {
+        this.swapy = createSwapy(this.container, {
+            animation: 'spring',
+            autoScrollOnDrag: true,
+            swapMode: 'drop',
+        });
+        this.swapy.enable(true);
+        this.swapy.onSwap((event) => {
+            document.querySelectorAll("expandable-section").forEach(el => {
+                (el as any).initialize();
+            });
+        });
+    }
+
+    private async setUpSections(): Promise<void> {
+        const sections: Record<string, BaseComponent> = {
+            qrCode: new QRCodeComponent(window.location.href),
+            pageBreak3: new PageBreak(this.workorderID, 23),
+            nestSummary: new NestedSheetsSummary(this.workorderID, this.workorder.nests),
+            pageBreak4: new PageBreak(this.workorderID, 24),
+            nestedPartsSummary: new NestedPartsSummary(this.workorderID, this.workorder.nests),
+            pageBreak5: new PageBreak(this.workorderID, 25),
+            nestedSheets: new NestedSheets(this.workorderID, this.workorder.nests),
+            pageBreak6: new PageBreak(this.workorderID, 26),
+            nestedParts: new NestedParts(this.workorderID, this.workorder.nests),
+        };
+
+        await Promise.all(
+            Object.values(sections).map(section => section.render())
+        );
+        Object.entries(sections).forEach(([key, section]) => {
+            const viewButton = document.getElementById(`view-${key}`) as HTMLButtonElement;
+            if (!viewButton) {
+                return;
+            }
+
+            const checkbox = document.getElementById(`show-${key}`) as HTMLInputElement;
+            if (!checkbox) {
+                return;
+            }
+
+            const saved = localStorage.getItem(`show-${key}`);
+            if (saved !== null) {
+                checkbox.checked = saved === "true";
+            }
+
+            checkbox.checked ? section.show() : section.hide();
+
+            checkbox.addEventListener("change", () => {
+                localStorage.setItem(`show-${key}`, String(checkbox.checked));
+                checkbox.checked ? section.show() : section.hide();
+            });
+
+            viewButton.addEventListener("click", () => {
+                section.element.scrollIntoView({
+                    behavior: 'smooth',
+                    inline: 'nearest',
+                    block: 'nearest'
+                });
+
+                // Setup observer to detect when the element is in view
+                const observer = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            section.element.classList.add('flash-border');
+
+                            setTimeout(() => {
+                                section.element.classList.remove('flash-border');
+                            }, 1000);
+
+                            observer.disconnect();
+                        }
+                    });
+                }, {threshold: 0.5});
+
+                observer.observe(section.element);
             });
         });
     }
@@ -344,6 +344,7 @@ class WorkorderPrintout {
         this.toggleSlotBorders(showGridLinesCheckbox.checked);
 
         const enabledPageBreaksCheckbox = document.getElementById('enable-pageBreaks') as HTMLInputElement;
+
         function updatePageBreakCheckboxes() {
             const checkboxs = document.querySelectorAll('.page-break-item input[type="checkbox"]') as NodeListOf<HTMLInputElement>;
             checkboxs.forEach(checkbox => {
@@ -351,6 +352,7 @@ class WorkorderPrintout {
                 checkbox.dispatchEvent(new Event('change'));
             });
         }
+
         enabledPageBreaksCheckbox.addEventListener('change', () => {
             localStorage.setItem('enable-pageBreaks', enabledPageBreaksCheckbox.checked.toString());
             updatePageBreakCheckboxes();
@@ -361,6 +363,7 @@ class WorkorderPrintout {
         }
 
         const showPageBreaksCheckbox = document.getElementById('show-pageBreaks') as HTMLInputElement;
+
         function updateShowPageBreaksCheckbox() {
             const pageBreakItems = document.querySelectorAll('.page-break-item') as NodeListOf<HTMLElement>;
             pageBreakItems.forEach(item => {
@@ -373,6 +376,7 @@ class WorkorderPrintout {
                 }
             });
         }
+
         showPageBreaksCheckbox.addEventListener('change', () => {
             localStorage.setItem('show-pageBreaks', showPageBreaksCheckbox.checked.toString());
             updateShowPageBreaksCheckbox();

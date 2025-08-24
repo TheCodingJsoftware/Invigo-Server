@@ -11,6 +11,7 @@ function getWorkorderNameFromUrl() {
     const parts = url.split('/');
     return parts[parts.length - 1]; // Assuming the workorder name is the last part of the URL
 }
+
 function parsePythonStyleJson(pythonStyleJson) {
     // Replace single quotes with double quotes for JSON compliance
     let validJson = pythonStyleJson
@@ -89,7 +90,7 @@ function validateRecutQuantity() {
     }
 }
 
-function openRecutDialog(button){
+function openRecutDialog(button) {
     const laser_cut_part = parsePythonStyleJson(button.getAttribute('data-part'));
     const nest_data = parsePythonStyleJson(button.getAttribute('data-nest'));
 
@@ -102,25 +103,25 @@ function openRecutDialog(button){
     document.getElementById('recut-quantity-input').value = '1';
     document.getElementById('recut-quantity-input').max = recut_max_quantity;
 
-    if (recut_max_quantity == 1){
+    if (recut_max_quantity == 1) {
         document.getElementById('recut-count-1').classList.remove("hidden");
         document.getElementById('recut-count-2').classList.add("hidden");
         document.getElementById('recut-count-3').classList.add("hidden");
         document.getElementById('recut-count-all').classList.add("hidden");
         document.getElementById('recut-quantity-div').classList.add("hidden");
-    } else if (recut_max_quantity == 2){
+    } else if (recut_max_quantity == 2) {
         document.getElementById('recut-count-1').classList.remove("hidden");
         document.getElementById('recut-count-2').classList.remove("hidden");
         document.getElementById('recut-count-3').classList.add("hidden");
         document.getElementById('recut-count-all').classList.add("hidden");
         document.getElementById('recut-quantity-div').classList.add("hidden");
-    } else if (recut_max_quantity == 3){
+    } else if (recut_max_quantity == 3) {
         document.getElementById('recut-count-1').classList.remove("hidden");
         document.getElementById('recut-count-2').classList.remove("hidden");
         document.getElementById('recut-count-3').classList.remove("hidden");
         document.getElementById('recut-count-all').classList.add("hidden");
         document.getElementById('recut-quantity-div').classList.add("hidden");
-    } else if (recut_max_quantity > 3){
+    } else if (recut_max_quantity > 3) {
         document.getElementById('recut-count-1').classList.remove("hidden");
         document.getElementById('recut-count-2').classList.remove("hidden");
         document.getElementById('recut-count-3').classList.remove("hidden");
@@ -129,13 +130,14 @@ function openRecutDialog(button){
     }
     ui('#recut-dialog');
 }
-function recutPart(quantity){
+
+function recutPart(quantity) {
     var recut_quantity = quantity
-    if (quantity === "All"){
+    if (quantity === "All") {
         recut_quantity = recut_nest.sheet_count * recut_laser_cut_part.quantity_in_nest;
     }
     document.getElementById('recut-quantity-input').value = recut_quantity;
-    if (recut_quantity <= recut_max_quantity){
+    if (recut_quantity <= recut_max_quantity) {
         submitRecutPart();
     }
 }

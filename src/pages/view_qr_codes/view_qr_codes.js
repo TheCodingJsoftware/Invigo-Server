@@ -2,7 +2,7 @@ import "beercss"
 import "@utils/theme"
 import QRCode from 'qrcode'
 
-async function loadQRCodes(){
+async function loadQRCodes() {
     for (const item of document.querySelectorAll('.qr-item')) {
         const name = item.getAttribute('data-name');
         const baseUrl = "http://invi.go/";

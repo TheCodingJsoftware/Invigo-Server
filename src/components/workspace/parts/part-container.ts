@@ -106,7 +106,7 @@ class JobElement {
     }
 }
 
-export class PartPage {
+export class PartContainer {
     readonly element: HTMLElement;
 
     constructor() {
@@ -200,7 +200,6 @@ export class PartPage {
     }
 
     private async loadGlobalTable(data: PartPageData) {
-        console.log(data)
         const fragment = document.createDocumentFragment();
         const article = document.createElement("article");
         article.classList.add("round", "border");

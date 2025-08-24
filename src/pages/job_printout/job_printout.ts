@@ -17,35 +17,24 @@ import {JOB_COLORS, JobType} from "@config/job-printout-config";
 import {BaseComponent} from "@interfaces/base-component";
 import {JobData} from "@interfaces/job";
 import {Job} from "@models/job";
-import {loadAnimationStyleSheet, toggleTheme, loadTheme, invertImages} from "@utils/theme"
+import {invertImages, loadAnimationStyleSheet, loadTheme, toggleTheme} from "@utils/theme"
 import {Effect} from "effect"
 import {createSwapy} from 'swapy'
 import flatpickr from "flatpickr";
+import {Instance as FlatpickrInstance} from "flatpickr/dist/types/instance";
 
 require("flatpickr/dist/themes/dark.css");
-import {Instance as FlatpickrInstance} from "flatpickr/dist/types/instance";
 
 class JobPrintout {
     jobID: number;
-    private _dataEffect: Effect.Effect<any, Error> | null = null;
     public job!: Job;
     public container: HTMLDivElement;
+    private _dataEffect: Effect.Effect<any, Error> | null = null;
     private swapy: ReturnType<typeof createSwapy> | null = null;
 
     constructor(jobID: number) {
         this.jobID = jobID;
         this.container = document.getElementById('job-container') as HTMLDivElement;
-    }
-
-    private loadDataEffect(): Effect.Effect<JobData, Error> {
-        return Effect.promise(async () => {
-            const response = await fetch(`/jobs/get_job/${this.jobID}`);
-            if (!response.ok) {
-                const msg = await response.text();
-                throw new Error(`Failed to fetch job data: ${msg}`);
-            }
-            return response.json();
-        });
     }
 
     public getDataEffect(): Effect.Effect<any, Error> {
@@ -96,103 +85,11 @@ class JobPrintout {
         );
     }
 
-    private initSwapy(): void {
-        this.swapy = createSwapy(this.container, {
-            animation: 'spring',
-            autoScrollOnDrag: true,
-            swapMode: 'drop',
-        });
-        this.swapy.enable(true);
-        this.swapy.onSwap((event) => {
-            document.querySelectorAll("expandable-section").forEach(el => {
-                (el as any).initialize();
-            });
-        });
-    }
-
     updateSwapy(): void {
         if (!this.swapy) {
             return;
         }
         this.swapy.update();
-    }
-
-    private async setUpSections(): Promise<void> {
-        const sections: Record<string, BaseComponent> = {
-            qrCode: new QRCodeComponent(window.location.href),
-            jobDetails: new JobDetails(this.jobID, this.job.job_data),
-            pageBreak2: new PageBreak(this.jobID, 22),
-            assembliesSummary: new AssembliesSummary(this.jobID, this.job),
-            pageBreak3: new PageBreak(this.jobID, 23),
-            nestSummary: new NestedSheetsSummary(this.jobID, this.job.nests),
-            pageBreak4: new PageBreak(this.jobID, 24),
-            nestedPartsSummary: new NestedPartsSummary(this.jobID, this.job.nests),
-            pageBreak5: new PageBreak(this.jobID, 25),
-            nestedSheets: new NestedSheets(this.jobID, this.job.nests),
-            pageBreak6: new PageBreak(this.jobID, 26),
-            nestedParts: new NestedParts(this.jobID, this.job.nests),
-            pageBreak7: new PageBreak(this.jobID, 27),
-            assembliesParts: new AssembliesParts(this.jobID, this.job),
-            totalCost: new TotalCost(this.job),
-            netWeight: new NetWeight(this.job),
-        };
-
-        await Promise.all(
-            Object.values(sections).map(section => section.render())
-        );
-        if (this.job.job_data.business_info) {
-            document.getElementById("business-name")!.textContent = this.job.job_data.business_info.name;
-            document.getElementById("business-address")!.innerHTML = this.job.job_data.business_info.address.replace(/\n/g, "<br>");
-        }
-
-        Object.entries(sections).forEach(([key, section]) => {
-            const viewButton = document.getElementById(`view-${key}`) as HTMLButtonElement;
-            if (!viewButton) {
-                return;
-            }
-
-            const checkbox = document.getElementById(`show-${key}`) as HTMLInputElement;
-            if (!checkbox) {
-                return;
-            }
-
-            const saved = localStorage.getItem(`${this.getJobType()}-show-${key}`);
-            if (saved !== null) {
-                checkbox.checked = saved === "true";
-            }
-
-            checkbox.checked ? section.show() : section.hide();
-
-            checkbox.addEventListener("change", () => {
-                localStorage.setItem(`${this.getJobType()}-show-${key}`, String(checkbox.checked));
-                checkbox.checked ? section.show() : section.hide();
-            });
-
-            viewButton.addEventListener("click", () => {
-                section.element.scrollIntoView({
-                    behavior: 'smooth',
-                    inline: 'nearest',
-                    block: 'nearest'
-                });
-
-                // Setup observer to detect when the element is in view
-                const observer = new IntersectionObserver((entries) => {
-                    entries.forEach(entry => {
-                        if (entry.isIntersecting) {
-                            section.element.classList.add('flash-border');
-
-                            setTimeout(() => {
-                                section.element.classList.remove('flash-border');
-                            }, 1000);
-
-                            observer.disconnect();
-                        }
-                    });
-                }, {threshold: 0.5});
-
-                observer.observe(section.element);
-            });
-        });
     }
 
     toggleLoadingIndicator(show: boolean) {
@@ -379,6 +276,121 @@ class JobPrintout {
         });
     }
 
+    setActiveTab(jobType: JobType) {
+        const tabs = document.getElementById('job-type-tabs') as HTMLElement;
+        const tabButtons = Array.from(tabs.querySelectorAll('a'));
+        tabButtons.forEach((button) => {
+            if (button.dataset.target === jobType) {
+                button.classList.add('active');
+            } else {
+                button.classList.remove('active');
+            }
+        });
+    }
+
+    private loadDataEffect(): Effect.Effect<JobData, Error> {
+        return Effect.promise(async () => {
+            const response = await fetch(`/jobs/get_job/${this.jobID}`);
+            if (!response.ok) {
+                const msg = await response.text();
+                throw new Error(`Failed to fetch job data: ${msg}`);
+            }
+            return response.json();
+        });
+    }
+
+    private initSwapy(): void {
+        this.swapy = createSwapy(this.container, {
+            animation: 'spring',
+            autoScrollOnDrag: true,
+            swapMode: 'drop',
+        });
+        this.swapy.enable(true);
+        this.swapy.onSwap((event) => {
+            document.querySelectorAll("expandable-section").forEach(el => {
+                (el as any).initialize();
+            });
+        });
+    }
+
+    private async setUpSections(): Promise<void> {
+        const sections: Record<string, BaseComponent> = {
+            qrCode: new QRCodeComponent(window.location.href),
+            jobDetails: new JobDetails(this.jobID, this.job.job_data),
+            pageBreak2: new PageBreak(this.jobID, 22),
+            assembliesSummary: new AssembliesSummary(this.jobID, this.job),
+            pageBreak3: new PageBreak(this.jobID, 23),
+            nestSummary: new NestedSheetsSummary(this.jobID, this.job.nests),
+            pageBreak4: new PageBreak(this.jobID, 24),
+            nestedPartsSummary: new NestedPartsSummary(this.jobID, this.job.nests),
+            pageBreak5: new PageBreak(this.jobID, 25),
+            nestedSheets: new NestedSheets(this.jobID, this.job.nests),
+            pageBreak6: new PageBreak(this.jobID, 26),
+            nestedParts: new NestedParts(this.jobID, this.job.nests),
+            pageBreak7: new PageBreak(this.jobID, 27),
+            assembliesParts: new AssembliesParts(this.jobID, this.job),
+            totalCost: new TotalCost(this.job),
+            netWeight: new NetWeight(this.job),
+        };
+
+        await Promise.all(
+            Object.values(sections).map(section => section.render())
+        );
+        if (this.job.job_data.business_info) {
+            document.getElementById("business-name")!.textContent = this.job.job_data.business_info.name;
+            document.getElementById("business-address")!.innerHTML = this.job.job_data.business_info.address.replace(/\n/g, "<br>");
+        }
+
+        Object.entries(sections).forEach(([key, section]) => {
+            const viewButton = document.getElementById(`view-${key}`) as HTMLButtonElement;
+            if (!viewButton) {
+                return;
+            }
+
+            const checkbox = document.getElementById(`show-${key}`) as HTMLInputElement;
+            if (!checkbox) {
+                return;
+            }
+
+            const saved = localStorage.getItem(`${this.getJobType()}-show-${key}`);
+            if (saved !== null) {
+                checkbox.checked = saved === "true";
+            }
+
+            checkbox.checked ? section.show() : section.hide();
+
+            checkbox.addEventListener("change", () => {
+                localStorage.setItem(`${this.getJobType()}-show-${key}`, String(checkbox.checked));
+                checkbox.checked ? section.show() : section.hide();
+            });
+
+            viewButton.addEventListener("click", () => {
+                section.element.scrollIntoView({
+                    behavior: 'smooth',
+                    inline: 'nearest',
+                    block: 'nearest'
+                });
+
+                // Setup observer to detect when the element is in view
+                const observer = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            section.element.classList.add('flash-border');
+
+                            setTimeout(() => {
+                                section.element.classList.remove('flash-border');
+                            }, 1000);
+
+                            observer.disconnect();
+                        }
+                    });
+                }, {threshold: 0.5});
+
+                observer.observe(section.element);
+            });
+        });
+    }
+
     private setupCheckboxes(): void {
         const showGridLinesCheckbox = document.getElementById('show-gridLines') as HTMLInputElement;
         showGridLinesCheckbox.addEventListener('change', () => {
@@ -482,18 +494,6 @@ class JobPrintout {
         }
     }
 
-    setActiveTab(jobType: JobType) {
-        const tabs = document.getElementById('job-type-tabs') as HTMLElement;
-        const tabButtons = Array.from(tabs.querySelectorAll('a'));
-        tabButtons.forEach((button) => {
-            if (button.dataset.target === jobType) {
-                button.classList.add('active');
-            } else {
-                button.classList.remove('active');
-            }
-        });
-    }
-
     private changeCheckboxes(jobType: JobType) {
         const config = CHECKBOX_CONFIG[jobType.toLowerCase() as keyof typeof CHECKBOX_CONFIG];
         if (!config) {
@@ -571,17 +571,17 @@ class JobPrintout {
 
     private updateJobTypeCheckboxes() {
         const sections: string[] = [
-                "qrCode",
-                "jobDetails",
-                "assembliesSummary",
-                "nestSummary",
-                "nestedPartsSummary",
-                "nestedSheets",
-                "nestedParts",
-                "assembliesParts",
-                "totalCost",
-                "netWeight"
-            ]
+            "qrCode",
+            "jobDetails",
+            "assembliesSummary",
+            "nestSummary",
+            "nestedPartsSummary",
+            "nestedSheets",
+            "nestedParts",
+            "assembliesParts",
+            "totalCost",
+            "netWeight"
+        ]
         for (const key of sections) {
             const checkbox = document.getElementById(`show-${key}`) as HTMLInputElement;
             if (!checkbox) {

@@ -1,40 +1,40 @@
 <html>
-    <!DOCTYPE html>
+<!DOCTYPE html>
 
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <meta http-equiv="X-UA-Compatible" content="ie=edge">
-        <meta name="google" content="notranslate">
-        <link rel="icon" href="/static/icon.png">
-        <title>{{sheet_name}}</title>
-        <meta property="og:title" content="{{sheet_name}}" />
-        <meta property="og:description" content="Invigo Sheets in Inventory Information." />
-    </head>
+<head>
+    <meta charset="UTF-8">
+    <meta content="width=device-width, initial-scale=1" name="viewport">
+    <meta content="ie=edge" http-equiv="X-UA-Compatible">
+    <meta content="notranslate" name="google">
+    <link href="/static/icon.png" rel="icon">
+    <title>{{sheet_name}}</title>
+    <meta content="{{sheet_name}}" property="og:title"/>
+    <meta content="Invigo Sheets in Inventory Information." property="og:description"/>
+</head>
 
-    <body class="dark">
-        <header class="fixed primary">
-            <nav>
-                <h5 class="max center-align small">
-                    {{sheet_name}}
-                </h5>
-            </nav>
-        </header>
-        <main class="responsive">
-            <h4 class="max center-align">Quantity in Stock: {{quantity}}</h4>
-            {% if pending_data %}
-            <h2 class="max center-align">Orders Pending:</h2>
-            {% for order in pending_data %}
-            <article class="round border">
-                <h4>Order</h4>
-                <p class="no-margin">Order Sent: {{order.order_pending_date}}</p>
-                <p class="no-margin">Expected Arrival Time: {{order.expected_arrival_time}}</p>
-                <p class="no-margin">Quantity Ordered: {{order.quantity}}</p>
-                <p class="no-margin">Notes: {{order.notes}}</p>
-            </article>
-            {% endfor %}
-            {% endif %}
-        </main>
-    </body>
+<body class="dark">
+<header class="fixed primary">
+    <nav>
+        <h5 class="max center-align small">
+            {{sheet_name}}
+        </h5>
+    </nav>
+</header>
+<main class="responsive">
+    <h4 class="max center-align">Quantity in Stock: {{quantity}}</h4>
+    {% if pending_data %}
+    <h2 class="max center-align">Orders Pending:</h2>
+    {% for order in pending_data %}
+    <article class="round border">
+        <h4>Order</h4>
+        <p class="no-margin">Order Sent: {{order.order_pending_date}}</p>
+        <p class="no-margin">Expected Arrival Time: {{order.expected_arrival_time}}</p>
+        <p class="no-margin">Quantity Ordered: {{order.quantity}}</p>
+        <p class="no-margin">Notes: {{order.notes}}</p>
+    </article>
+    {% endfor %}
+    {% endif %}
+</main>
+</body>
 
 </html>

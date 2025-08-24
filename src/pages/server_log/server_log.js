@@ -25,7 +25,7 @@ function resize() {
 window.addEventListener("load", resize);
 window.addEventListener("resize", resize);
 
-document.addEventListener("DOMContentLoaded", function() {
+document.addEventListener("DOMContentLoaded", function () {
     const search = document.getElementById("search");
     const savedSearch = localStorage.getItem("searchText");
     const scrollKeyX = "logScrollX";
@@ -54,7 +54,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
 
     if (search) {
-        search.addEventListener("input", function() {
+        search.addEventListener("input", function () {
             const searchText = search.value.toLowerCase();
 
             localStorage.setItem("searchText", search.value);
@@ -75,7 +75,7 @@ document.addEventListener("DOMContentLoaded", function() {
     const quickSearches = document.querySelectorAll("#quick-search");
     for (let i = 0; i < quickSearches.length; i++) {
         const quickSearch = quickSearches[i];
-        quickSearch.addEventListener("click", function() {
+        quickSearch.addEventListener("click", function () {
             const span = quickSearch.querySelector("span");
             const searchText = span.textContent.toLowerCase();
             search.value = searchText;

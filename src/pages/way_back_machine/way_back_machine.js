@@ -1,6 +1,6 @@
 import "beercss"
 import "@utils/theme"
-import { Chart, registerables } from 'chart.js';
+import {Chart, registerables} from 'chart.js';
 import 'chartjs-adapter-date-fns';
 
 Chart.register(...registerables);

@@ -1,191 +1,192 @@
 <!DOCTYPE html>
 <html lang="en">
 
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <meta http-equiv="X-UA-Compatible" content="ie=edge">
-        <meta name="google" content="notranslate">
-        <link rel="icon" href="/static/icon.png">
-        <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=yes" />
-        <title></title>
-    </head>
+<head>
+    <meta charset="UTF-8">
+    <meta content="width=device-width, initial-scale=1" name="viewport">
+    <meta content="ie=edge" http-equiv="X-UA-Compatible">
+    <meta content="notranslate" name="google">
+    <link href="/static/icon.png" rel="icon">
+    <meta content="width=device-width,initial-scale=1,user-scalable=yes" name="viewport"/>
+    <title></title>
+</head>
 
-    <body class="dark">
-        <header class="fixed transparent center-align hide-on-print">
-            <div class="margin">
-                <nav class="toolbar primary elevate min">
-                    <button class="circle transparent" onclick="window.location.href='/workorders'">
-                        <i>home</i>
-                    </button>
-                    <h4 id="workorder-title">Workorder Printout</h4>
-                    <button id="print-button" class="circle transparent" onclick="window.print()">
-                        <i>print</i>
-                    </button>
-                    <button id="theme-toggle" class="circle transparent">
-                        <i>light_mode</i>
-                    </button>
-                </nav>
-            </div>
-        </header>
-        <span class="absolute top right tiny-padding" style="z-index: 999;" id="today-date"></span>
-        <nav class="left max hide-on-print">
-            <nav class="row">
-                <label class="switch icon">
-                    <input type="checkbox" id="show-qrCode" checked>
-                    <span>
+<body class="dark">
+<header class="fixed transparent center-align hide-on-print">
+    <div class="margin">
+        <nav class="toolbar primary elevate min">
+            <button class="circle transparent" onclick="window.location.href='/workorders'">
+                <i>home</i>
+            </button>
+            <h4 id="workorder-title">Workorder Printout</h4>
+            <button class="circle transparent" id="print-button" onclick="window.print()">
+                <i>print</i>
+            </button>
+            <button class="circle transparent" id="theme-toggle">
+                <i>light_mode</i>
+            </button>
+        </nav>
+    </div>
+</header>
+<span class="absolute top right tiny-padding" id="today-date" style="z-index: 999;"></span>
+<nav class="left max hide-on-print">
+    <nav class="row">
+        <label class="switch icon">
+            <input checked id="show-qrCode" type="checkbox">
+            <span>
                         <i>visibility_off</i>
                         <i>visibility</i>
                     </span>
-                </label>
-                <h6 class="max small">QR Code</h6>
-                <button class="chip link transparent view-button" id="view-qrCode">
-                    <span>Go</span>
-                </button>
-            </nav>
-            <nav class="row">
-                <label class="switch icon">
-                    <input type="checkbox" id="show-nestSummary" checked>
-                    <span>
+        </label>
+        <h6 class="max small">QR Code</h6>
+        <button class="chip link transparent view-button" id="view-qrCode">
+            <span>Go</span>
+        </button>
+    </nav>
+    <nav class="row">
+        <label class="switch icon">
+            <input checked id="show-nestSummary" type="checkbox">
+            <span>
                         <i>visibility_off</i>
                         <i>visibility</i>
                     </span>
-                </label>
-                <h6 class="max small">Sheets Summary</h6>
-                <button class="chip link transparent view-button" id="view-nestSummary">
-                    <span>Go</span>
-                </button>
-            </nav>
-            <nav class="row">
-                <label class="switch icon">
-                    <input type="checkbox" id="show-nestedPartsSummary" checked>
-                    <span>
+        </label>
+        <h6 class="max small">Sheets Summary</h6>
+        <button class="chip link transparent view-button" id="view-nestSummary">
+            <span>Go</span>
+        </button>
+    </nav>
+    <nav class="row">
+        <label class="switch icon">
+            <input checked id="show-nestedPartsSummary" type="checkbox">
+            <span>
                         <i>visibility_off</i>
                         <i>visibility</i>
                     </span>
-                </label>
-                <h6 class="max small">Nested Parts Summary</h6>
-                <button class="chip link transparent view-button" id="view-nestedPartsSummary">
-                    <span>Go</span>
-                </button>
-            </nav>
-            <nav class="row">
-                <label class="switch icon">
-                    <input type="checkbox" id="show-nestedSheets" checked>
-                    <span>
+        </label>
+        <h6 class="max small">Nested Parts Summary</h6>
+        <button class="chip link transparent view-button" id="view-nestedPartsSummary">
+            <span>Go</span>
+        </button>
+    </nav>
+    <nav class="row">
+        <label class="switch icon">
+            <input checked id="show-nestedSheets" type="checkbox">
+            <span>
                         <i>visibility_off</i>
                         <i>visibility</i>
                     </span>
-                </label>
-                <h6 class="max small">Nested Sheets</h6>
-                <button class="chip link transparent view-button" id="view-nestedSheets">
-                    <span>Go</span>
-                </button>
-            </nav>
-            <nav class="row">
-                <label class="switch icon">
-                    <input type="checkbox" id="show-nestedParts" checked>
-                    <span>
+        </label>
+        <h6 class="max small">Nested Sheets</h6>
+        <button class="chip link transparent view-button" id="view-nestedSheets">
+            <span>Go</span>
+        </button>
+    </nav>
+    <nav class="row">
+        <label class="switch icon">
+            <input checked id="show-nestedParts" type="checkbox">
+            <span>
                         <i>visibility_off</i>
                         <i>visibility</i>
                     </span>
-                </label>
-                <h6 class="max small">Nested Sheets Parts</h6>
-                <button class="chip link transparent view-button" id="view-nestedParts">
-                    <span>Go</span>
-                </button>
-            </nav>
-            <nav class="row">
-                <label class="switch icon">
-                    <input type="checkbox" id="show-gridLines" checked>
-                    <span>
+        </label>
+        <h6 class="max small">Nested Sheets Parts</h6>
+        <button class="chip link transparent view-button" id="view-nestedParts">
+            <span>Go</span>
+        </button>
+    </nav>
+    <nav class="row">
+        <label class="switch icon">
+            <input checked id="show-gridLines" type="checkbox">
+            <span>
                         <i>visibility_off</i>
                         <i>visibility</i>
                     </span>
-                </label>
-                <h6 class="max small">Grid Lines</h6>
-            </nav>
-            <nav class="row">
-                <label class="switch icon">
-                    <input type="checkbox" id="enable-pageBreaks" checked>
-                    <span>
+        </label>
+        <h6 class="max small">Grid Lines</h6>
+    </nav>
+    <nav class="row">
+        <label class="switch icon">
+            <input checked id="enable-pageBreaks" type="checkbox">
+            <span>
                         <i>close</i>
                         <i>done</i>
                     </span>
-                </label>
-                <h6 class="max small">Enable Page Breaks</h6>
-            </nav>
-            <nav class="row">
-                <label class="switch icon">
-                    <input type="checkbox" id="show-pageBreaks" checked>
-                    <span>
+        </label>
+        <h6 class="max small">Enable Page Breaks</h6>
+    </nav>
+    <nav class="row">
+        <label class="switch icon">
+            <input checked id="show-pageBreaks" type="checkbox">
+            <span>
                         <i>visibility_off</i>
                         <i>visibility</i>
                     </span>
-                </label>
-                <h6 class="max small">Page Breaks</h6>
-            </nav>
+        </label>
+        <h6 class="max small">Page Breaks</h6>
+    </nav>
+</nav>
+<main class="responsive">
+    <header>
+        <nav class="row top-margin">
+            <img class="logo" src="http://invi.go/images/logo.png">
+            <h4 class="left-align max" id="workorder-print-title">Workorder Printout</h4>
+            <button class="primary extra" id="workorder-printout-type">
+                <i>construction</i>
+                <span>Workorder</span>
+            </button>
         </nav>
-        <main class="responsive">
-            <header>
-                <nav class="row top-margin">
-                    <img class="logo" src="http://invi.go/images/logo.png">
-                    <h4 class="left-align max" id="workorder-print-title">Workorder Printout</h4>
-                    <button class="primary extra" id="workorder-printout-type">
-                        <i>construction</i>
-                        <span>Workorder</span>
-                    </button>
-                </nav>
-            </header>
-            <div class="small-width small-height absolute center middle" id="loading-indicator">
-                <div class="shape loading-indicator max rotate"></div>
+    </header>
+    <div class="small-width small-height absolute center middle" id="loading-indicator">
+        <div class="shape loading-indicator max rotate"></div>
+    </div>
+    <div id="workorder-container">
+        <div class="grid no-space">
+            <div class="s4 slot" data-swapy-slot="1" data-swapy-span="4"></div>
+            <div class="s4 slot" data-swapy-slot="2" data-swapy-span="4"></div>
+            <div class="s4 slot" data-swapy-slot="3" data-swapy-span="4"></div>
+            <div class="s8 slot" data-swapy-slot="4" data-swapy-span="6"></div>
+            <div class="s4 slot" data-swapy-slot="5" data-swapy-span="4">
+                <div data-swapy-item="1" id="qr-code-container"></div>
             </div>
-            <div id="workorder-container">
-                <div class="grid no-space">
-                    <div class="s4 slot" data-swapy-span="4" data-swapy-slot="1"></div>
-                    <div class="s4 slot" data-swapy-span="4" data-swapy-slot="2"></div>
-                    <div class="s4 slot" data-swapy-span="4" data-swapy-slot="3"></div>
-                    <div class="s8 slot" data-swapy-span="6" data-swapy-slot="4"></div>
-                    <div class="s4 slot" data-swapy-span="4" data-swapy-slot="5">
-                        <div id="qr-code-container" data-swapy-item="1"></div>
-                    </div>
-                    <div class="s4 slot" data-swapy-span="4" data-swapy-slot="6"></div>
-                    <div class="s8 slot" data-swapy-span="8" data-swapy-slot="7"></div>
-                    <div class="s12 slot" data-swapy-span="12" data-swapy-slot="page-break-23"></div>
-                    <div class="s12 slot" data-swapy-span="12" data-swapy-slot="10">
-                        <div id="nested-sheets-summary-container"
-                            data-swapy-item="2"></div>
-                    </div>
-                    <div class="s12 slot" data-swapy-span="12" data-swapy-slot="page-break-24"></div>
-                    <div class="s12 slot" data-swapy-span="12" data-swapy-slot="11">
-                        <div id="nested-sheets-container"
-                            data-swapy-item="3"></div>
-                    </div>
-                    <div class="s12 slot" data-swapy-span="12" data-swapy-slot="page-break-25"></div>
-                    <div class="s12 slot" data-swapy-span="12" data-swapy-slot="12">
-                        <div id="nested-sheets-parts-summary-container"
-                            data-swapy-item="4"></div>
-                    </div>
-                    <div class="s12 slot" data-swapy-span="12" data-swapy-slot="page-break-26"></div>
-                    <div class="s12 slot" data-swapy-span="12" data-swapy-slot="13">
-                        <div id="nested-sheets-parts-container"
-                            data-swapy-item="5"></div>
-                    </div>
-                    <div class="s4 slot" data-swapy-span="4" data-swapy-slot="17"></div>
-                    <div class="s4 slot" data-swapy-span="4" data-swapy-slot="18"></div>
-                    <div class="s4 slot" data-swapy-span="4" data-swapy-slot="19"></div>
-                </div>
+            <div class="s4 slot" data-swapy-slot="6" data-swapy-span="4"></div>
+            <div class="s8 slot" data-swapy-slot="7" data-swapy-span="8"></div>
+            <div class="s12 slot" data-swapy-slot="page-break-23" data-swapy-span="12"></div>
+            <div class="s12 slot" data-swapy-slot="10" data-swapy-span="12">
+                <div data-swapy-item="2"
+                     id="nested-sheets-summary-container"></div>
             </div>
-            <button class="absolute center hide-on-print" id="back-to-top">
-                <i>arrow_upward</i>
-                <span>Back to Top</span>
-            </button>
-            <button class="fixed right bottom margin medium-elevate extra square round hide-on-print" id="print-button" onclick="window.print()">
-                <i>print</i>
-            </button>
-            <div class="hide-on-print" style="height: 100px; z-index: -1;"></div>
-        </main>
-        <div id="workorder-error" class="snackbar error">Failed to load workorder</div>
-        <div id="workorder-loaded" class="snackbar green">Workorder loaded successfully</div>
-    </body>
+            <div class="s12 slot" data-swapy-slot="page-break-24" data-swapy-span="12"></div>
+            <div class="s12 slot" data-swapy-slot="11" data-swapy-span="12">
+                <div data-swapy-item="3"
+                     id="nested-sheets-container"></div>
+            </div>
+            <div class="s12 slot" data-swapy-slot="page-break-25" data-swapy-span="12"></div>
+            <div class="s12 slot" data-swapy-slot="12" data-swapy-span="12">
+                <div data-swapy-item="4"
+                     id="nested-sheets-parts-summary-container"></div>
+            </div>
+            <div class="s12 slot" data-swapy-slot="page-break-26" data-swapy-span="12"></div>
+            <div class="s12 slot" data-swapy-slot="13" data-swapy-span="12">
+                <div data-swapy-item="5"
+                     id="nested-sheets-parts-container"></div>
+            </div>
+            <div class="s4 slot" data-swapy-slot="17" data-swapy-span="4"></div>
+            <div class="s4 slot" data-swapy-slot="18" data-swapy-span="4"></div>
+            <div class="s4 slot" data-swapy-slot="19" data-swapy-span="4"></div>
+        </div>
+    </div>
+    <button class="absolute center hide-on-print" id="back-to-top">
+        <i>arrow_upward</i>
+        <span>Back to Top</span>
+    </button>
+    <button class="fixed right bottom margin medium-elevate extra square round hide-on-print" id="print-button"
+            onclick="window.print()">
+        <i>print</i>
+    </button>
+    <div class="hide-on-print" style="height: 100px; z-index: -1;"></div>
+</main>
+<div class="snackbar error" id="workorder-error">Failed to load workorder</div>
+<div class="snackbar green" id="workorder-loaded">Workorder loaded successfully</div>
+</body>
 </html>

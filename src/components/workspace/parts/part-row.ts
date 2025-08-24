@@ -3,7 +3,7 @@ import { WorkspaceRowCheckbox } from "@components/common/checkboxes/workspace-ro
 import { PartSelectionManager } from "@components/workspace/parts/part-selection-manager";
 import { Loading } from "@components/common/loading/loading";
 import { PartDataService } from "@components/workspace/parts/part-data.service";
-import { PartData } from "@components/workspace/parts/part-page";
+import { PartData } from "@components/workspace/parts/part-container";
 import { DialogComponent } from "@components/common/dialog/dialog-component";
 import { invertImages } from "@utils/theme";
 import { WorkspacePermissions } from "@core/auth/workspace-permissions";

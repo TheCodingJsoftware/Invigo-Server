@@ -1,75 +1,75 @@
 <!DOCTYPE html>
 <html lang="en">
 
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <meta http-equiv="X-UA-Compatible" content="ie=edge">
-        <meta name="google" content="notranslate">
-        <link rel="icon" href="/static/icon.png">
-        <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=yes" />
-        <title>Server Log</title>
-    </head>
+<head>
+    <meta charset="UTF-8">
+    <meta content="width=device-width, initial-scale=1" name="viewport">
+    <meta content="ie=edge" http-equiv="X-UA-Compatible">
+    <meta content="notranslate" name="google">
+    <link href="/static/icon.png" rel="icon">
+    <meta content="width=device-width,initial-scale=1,user-scalable=yes" name="viewport"/>
+    <title>Server Log</title>
+</head>
 
-    <body class="dark">
-        <header class="primary">
-            <nav>
-                <button class="circle transparent" onclick="goToMainUrl()">
-                    <i>arrow_back</i>
-                </button>
-                <h5 class="max">Server Log</h5>
-            </nav>
-        </header>
-        <main class="responsive">
-            <div class="grid">
-                <article class="s12 m12 l6 border round">
-                    <table class="border tiny-space">
-                        <thead>
-                            <tr>
-                                <th>#</th>
-                                <th>IP</th>
-                                <th>Client Name</th>
-                                <th>Version</th>
-                                <th>Latest Connection</th>
-                                <th>Connection Status</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for client_data in connected_clients %}
-                            <tr>
-                                <td>{{ client_data[0] }}</td>
-                                <td>{{ client_data[1] }}</td>
-                                <td>{{ client_data[2] }}</td>
-                                <td>{{ client_data[3] }}</td>
-                                <td>{{ client_data[4] }}</td>
-                                <td>{{ client_data[5] }}</td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </article>
-                <fieldset class="s12 m12 l6 round">
-                    <legend>Quick Search Filters</legend>
-                    <nav class="wrap no-space">
-                        {% for search_term in search_terms %}
-                        <button class="chip tiny-margin" id="quick-search">
-                            <span>{{search_term}}</span>
-                        </button>
-                        {% endfor %}
-                    </nav>
-                </fieldset>
-            </div>
-            <div class="field label prefix border round">
-                <i>search</i>
-                <input type="text" id="search">
-                <label>Search</label>
-            </div>
-            <article class="border round padding vertical no-wrap scroll">
-                {% for log in log_content %}
-                <code class="log-line no-margin no-line no-wrap no-padding transparent">{{ log }}</code>
+<body class="dark">
+<header class="primary">
+    <nav>
+        <button class="circle transparent" onclick="goToMainUrl()">
+            <i>arrow_back</i>
+        </button>
+        <h5 class="max">Server Log</h5>
+    </nav>
+</header>
+<main class="responsive">
+    <div class="grid">
+        <article class="s12 m12 l6 border round">
+            <table class="border tiny-space">
+                <thead>
+                <tr>
+                    <th>#</th>
+                    <th>IP</th>
+                    <th>Client Name</th>
+                    <th>Version</th>
+                    <th>Latest Connection</th>
+                    <th>Connection Status</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for client_data in connected_clients %}
+                <tr>
+                    <td>{{ client_data[0] }}</td>
+                    <td>{{ client_data[1] }}</td>
+                    <td>{{ client_data[2] }}</td>
+                    <td>{{ client_data[3] }}</td>
+                    <td>{{ client_data[4] }}</td>
+                    <td>{{ client_data[5] }}</td>
+                </tr>
                 {% endfor %}
-            </article>
-        </main>
-    </body>
+                </tbody>
+            </table>
+        </article>
+        <fieldset class="s12 m12 l6 round">
+            <legend>Quick Search Filters</legend>
+            <nav class="wrap no-space">
+                {% for search_term in search_terms %}
+                <button class="chip tiny-margin" id="quick-search">
+                    <span>{{search_term}}</span>
+                </button>
+                {% endfor %}
+            </nav>
+        </fieldset>
+    </div>
+    <div class="field label prefix border round">
+        <i>search</i>
+        <input id="search" type="text">
+        <label>Search</label>
+    </div>
+    <article class="border round padding vertical no-wrap scroll">
+        {% for log in log_content %}
+        <code class="log-line no-margin no-line no-wrap no-padding transparent">{{ log }}</code>
+        {% endfor %}
+    </article>
+</main>
+</body>
 
 </html>

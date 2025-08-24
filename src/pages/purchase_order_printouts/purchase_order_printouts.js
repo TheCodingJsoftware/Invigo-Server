@@ -1,6 +1,6 @@
 import "beercss"
 import "@utils/theme"
-import { getMetadata } from "@utils/get-metadata";
+import {getMetadata} from "@utils/get-metadata";
 
 document.addEventListener("DOMContentLoaded", async () => {
     const purchaseOrderTabs = Array.from(document.querySelectorAll('.tabs a'));

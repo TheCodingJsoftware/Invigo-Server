@@ -2,7 +2,7 @@ import {UserContext} from "@core/auth/user-context";
 import {WorkspaceRowCheckbox} from "@components/common/checkboxes/workspace-row-checkbox";
 import {PartRow} from "@components/workspace/parts/part-row";
 import {PartSelectionManager} from "@components/workspace/parts/part-selection-manager";
-import {PartData} from "@components/workspace/parts/part-page";
+import {PartData} from "@components/workspace/parts/part-container";
 
 export interface PartColumn {
     key: keyof PartData | 'actions' | 'icon' | 'checkbox' | 'thumbnail' | 'files';

@@ -1,54 +1,55 @@
 <!DOCTYPE html>
 <html lang="en">
 
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <meta http-equiv="X-UA-Compatible" content="ie=edge">
-        <meta name="google" content="notranslate">
-        <link rel="icon" href="/static/icon.png">
-        <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=yes" />
-        <title>Job Printouts</title>
-    </head>
+<head>
+    <meta charset="UTF-8">
+    <meta content="width=device-width, initial-scale=1" name="viewport">
+    <meta content="ie=edge" http-equiv="X-UA-Compatible">
+    <meta content="notranslate" name="google">
+    <link href="/static/icon.png" rel="icon">
+    <meta content="width=device-width,initial-scale=1,user-scalable=yes" name="viewport"/>
+    <title>Job Printouts</title>
+</head>
 
-    <body class="dark">
-        <header class="fixed primary">
-            <nav>
-                <button class="circle transparent" onclick="window.location.href='/';">
-                    <i>arrow_back</i>
-                </button>
-                <h5 class="max">Job Printouts</h5>
-            </nav>
-        </header>
-        <main class="responsive">
-            <nav class="tabbed primary-container">
-            {% for status in all_job_statuses %}
-                <a data-ui="#{{ status }}" data-color="{{JobColors[status.lower()]}}" class="{{ 'active' if loop.first else '' }}">{{ status.replace("_", " ").title() }}</a>
-            {% endfor %}
-            </nav>
-            {% for status in all_job_statuses %}
-                <div id="{{ status }}" class="page padding {{'active' if loop.first else ''}}">
-                    <article class="border round vertical scroll" style="max-height: calc(100vh - 256px) !important;">
-                        <ul class="list border">
-                            {% for job in all_jobs %}
-                                {% if job.status == status %}
-                                    <li>
-                                        <div class="max">
-                                            <h6 class="small">{{ job.job_data.name }}</h6>
-                                            <div>{{ job.job_data.order_number }}</div>
-                                        </div>
-                                        <button onclick="window.location.href='/jobs/view?id={{ job.id }}';">
-                                            <i>open_in_new</i>
-                                            <span>Open</span>
-                                        </button>
-                                    </li>
-                                {% endif %}
-                            {% endfor %}
-                        </ul>
-                    </article>
-                </div>
-            {% endfor %}
-        </main>
-    </body>
+<body class="dark">
+<header class="fixed primary">
+    <nav>
+        <button class="circle transparent" onclick="window.location.href='/';">
+            <i>arrow_back</i>
+        </button>
+        <h5 class="max">Job Printouts</h5>
+    </nav>
+</header>
+<main class="responsive">
+    <nav class="tabbed primary-container">
+        {% for status in all_job_statuses %}
+        <a class="{{ 'active' if loop.first else '' }}" data-color="{{JobColors[status.lower()]}}"
+           data-ui="#{{ status }}">{{ status.replace("_", " ").title() }}</a>
+        {% endfor %}
+    </nav>
+    {% for status in all_job_statuses %}
+    <div class="page padding {{'active' if loop.first else ''}}" id="{{ status }}">
+        <article class="border round vertical scroll" style="max-height: calc(100vh - 256px) !important;">
+            <ul class="list border">
+                {% for job in all_jobs %}
+                {% if job.status == status %}
+                <li>
+                    <div class="max">
+                        <h6 class="small">{{ job.job_data.name }}</h6>
+                        <div>{{ job.job_data.order_number }}</div>
+                    </div>
+                    <button onclick="window.location.href='/jobs/view?id={{ job.id }}';">
+                        <i>open_in_new</i>
+                        <span>Open</span>
+                    </button>
+                </li>
+                {% endif %}
+                {% endfor %}
+            </ul>
+        </article>
+    </div>
+    {% endfor %}
+</main>
+</body>
 
 </html>

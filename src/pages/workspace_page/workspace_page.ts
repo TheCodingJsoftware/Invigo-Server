@@ -5,7 +5,7 @@ import {FilterMenuButton} from "@components/common/buttons/filter-menu-button";
 import {SortMenuButton} from "@components/common/buttons/sort-menu-button";
 import {DialogComponent} from "@components/common/dialog/dialog-component";
 import {SearchInput} from "@components/common/input/search-input";
-import {PartPage} from "@components/workspace/parts/part-page";
+import {PartContainer} from "@components/workspace/parts/part-container";
 import {ViewSwitcherPanel} from "@components/workspace/views/switchers/view-switcher-panel";
 import {ViewBus, ViewChangePayload} from "@components/workspace/views/view-bus";
 import {AssemblyViewMode} from "@config/assembly-view-mode";
@@ -19,7 +19,7 @@ import {ViewSettingsManager} from "@core/settings/view-settings";
 import {WorkspaceSettings} from "@core/settings/workspace-settings";
 import {WorkspaceWebSocket} from "@core/websocket/workspace-websocket";
 import {WorkspaceFilter} from "@models/workspace-filter";
-import {loadAnimationStyleSheet, toggleTheme, loadTheme, invertImages} from "@utils/theme"
+import {invertImages, loadAnimationStyleSheet, loadTheme, toggleTheme} from "@utils/theme"
 import {DateRangeButton} from "@components/common/buttons/date-range-button";
 
 let pageLoaded = false;
@@ -27,11 +27,11 @@ let pageLoaded = false;
 
 class PageHost {
     readonly element: HTMLElement;
-    private partPage: PartPage;
+    private partPage: PartContainer;
 
     constructor() {
         this.element = document.createElement("section");
-        this.partPage = new PartPage();
+        this.partPage = new PartContainer();
     }
 
     initialize() {

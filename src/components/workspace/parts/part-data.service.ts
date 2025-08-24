@@ -1,4 +1,4 @@
-import {PartData} from "@components/workspace/parts/part-page";
+import {PartData} from "@components/workspace/parts/part-container";
 import {PartViewConfig} from "@config/part-view-mode";
 import {ViewSettingsManager} from "@core/settings/view-settings";
 import {SnackbarComponent} from "@components/common/snackbar/snackbar-component";

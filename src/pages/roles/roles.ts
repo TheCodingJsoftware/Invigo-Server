@@ -1,8 +1,8 @@
 import "beercss"
 import "@utils/theme"
-import {WorkspacePermissions, PermissionMap, extendPermissionMapWithTags} from "@core/auth/workspace-permissions";
-import { User } from "@core/auth/user";
-import { WorkspaceSettings } from "@core/settings/workspace-settings";
+import {extendPermissionMapWithTags, PermissionMap, WorkspacePermissions} from "@core/auth/workspace-permissions";
+import {User} from "@core/auth/user";
+import {WorkspaceSettings} from "@core/settings/workspace-settings";
 
 interface Role {
     id: number;
@@ -70,13 +70,13 @@ async function fetchRoles(): Promise<Role[]> {
 async function updateRole(role: Role): Promise<void> {
     await fetch("/api/roles", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {"Content-Type": "application/json"},
         body: JSON.stringify(role),
     });
 }
 
 async function deleteRole(role: Role): Promise<void> {
-    await fetch(`/api/roles?id=${role.id}`, { method: "DELETE" });
+    await fetch(`/api/roles?id=${role.id}`, {method: "DELETE"});
 }
 
 function renderRole(role: Role): HTMLElement {
@@ -178,7 +178,7 @@ async function loadRoles() {
 }
 
 document.getElementById("add-role")?.addEventListener("click", async () => {
-    const newRole: Role = { id: 0, name: "new", permissions: [] };
+    const newRole: Role = {id: 0, name: "new", permissions: []};
     await updateRole(newRole);
     await loadRoles();
 });

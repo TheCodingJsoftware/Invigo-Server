@@ -20,8 +20,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 
             const res = await fetch(`/api/users/${userId}`, {
                 method: "PUT",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ name, roles })
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({name, roles})
             });
             if (res.ok) {
                 ui("#user-updated", 1000);
@@ -38,8 +38,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 
             const res = await fetch(`/api/users/${userId}`, {
                 method: "PUT",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ password })
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({password})
             });
             if (res.ok) {
                 ui("#password-updated", 1000);

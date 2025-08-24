@@ -1,5 +1,5 @@
 import {DialogComponent} from "@components/common/dialog/dialog-component";
-import {PartData} from "@components/workspace/parts/part-page";
+import {PartData} from "@components/workspace/parts/part-container";
 import {WorkspacePermissions} from "@core/auth/workspace-permissions";
 import {UserContext} from "@core/auth/user-context";
 import {Helper as DxfHelper} from "dxf";

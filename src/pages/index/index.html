@@ -1,118 +1,120 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <meta http-equiv="X-UA-Compatible" content="ie=edge">
-        <meta name="google" content="notranslate">
-        <link rel="apple-touch-icon" sizes="57x57" href="/static/icons/apple-icon-57x57.png">
-        <link rel="apple-touch-icon" sizes="60x60" href="/static/icons/apple-icon-60x60.png">
-        <link rel="apple-touch-icon" sizes="72x72" href="/static/icons/apple-icon-72x72.png">
-        <link rel="apple-touch-icon" sizes="76x76" href="/static/icons/apple-icon-76x76.png">
-        <link rel="apple-touch-icon" sizes="114x114" href="/static/icons/apple-icon-114x114.png">
-        <link rel="apple-touch-icon" sizes="120x120" href="/static/icons/apple-icon-120x120.png">
-        <link rel="apple-touch-icon" sizes="144x144" href="/static/icons/apple-icon-144x144.png">
-        <link rel="apple-touch-icon" sizes="152x152" href="/static/icons/apple-icon-152x152.png">
-        <link rel="apple-touch-icon" sizes="180x180" href="/static/icons/apple-icon-180x180.png">
-        <link rel="icon" type="image/png" sizes="192x192"  href="/static/icons/android-icon-192x192.png">
-        <link rel="icon" type="image/png" sizes="32x32" href="/static/icons/favicon-32x32.png">
-        <link rel="icon" type="image/png" sizes="96x96" href="/static/icons/favicon-96x96.png">
-        <link rel="icon" type="image/png" sizes="16x16" href="/static/icons/favicon-16x16.png">
-        <link rel="icon" type="image/png" href="/static/icons/favicon-96x96.png" sizes="96x96" />
-        <link rel="icon" type="image/svg+xml" href="/static/icons/favicon.svg" />
-        <link rel="shortcut icon" href="/static/icons/favicon.ico" />
-        <link rel="manifest" href="/static/icons/manifest.json">
-        <meta name="msapplication-TileColor" content="#ffffff">
-        <meta name="msapplication-TileImage" content="/ms-icon-144x144.png">
-        <title>Invigo</title>
-        <meta property="og:title" content="Invigo" />
-        <meta property="og:description" content="Invigo Homepage." />
-    </head>
+<head>
+    <meta charset="UTF-8">
+    <meta content="width=device-width, initial-scale=1" name="viewport">
+    <meta content="ie=edge" http-equiv="X-UA-Compatible">
+    <meta content="notranslate" name="google">
+    <link href="/static/icons/apple-icon-57x57.png" rel="apple-touch-icon" sizes="57x57">
+    <link href="/static/icons/apple-icon-60x60.png" rel="apple-touch-icon" sizes="60x60">
+    <link href="/static/icons/apple-icon-72x72.png" rel="apple-touch-icon" sizes="72x72">
+    <link href="/static/icons/apple-icon-76x76.png" rel="apple-touch-icon" sizes="76x76">
+    <link href="/static/icons/apple-icon-114x114.png" rel="apple-touch-icon" sizes="114x114">
+    <link href="/static/icons/apple-icon-120x120.png" rel="apple-touch-icon" sizes="120x120">
+    <link href="/static/icons/apple-icon-144x144.png" rel="apple-touch-icon" sizes="144x144">
+    <link href="/static/icons/apple-icon-152x152.png" rel="apple-touch-icon" sizes="152x152">
+    <link href="/static/icons/apple-icon-180x180.png" rel="apple-touch-icon" sizes="180x180">
+    <link href="/static/icons/android-icon-192x192.png" rel="icon" sizes="192x192" type="image/png">
+    <link href="/static/icons/favicon-32x32.png" rel="icon" sizes="32x32" type="image/png">
+    <link href="/static/icons/favicon-96x96.png" rel="icon" sizes="96x96" type="image/png">
+    <link href="/static/icons/favicon-16x16.png" rel="icon" sizes="16x16" type="image/png">
+    <link href="/static/icons/favicon-96x96.png" rel="icon" sizes="96x96" type="image/png"/>
+    <link href="/static/icons/favicon.svg" rel="icon" type="image/svg+xml"/>
+    <link href="/static/icons/favicon.ico" rel="shortcut icon"/>
+    <link href="/static/icons/manifest.json" rel="manifest">
+    <meta content="#ffffff" name="msapplication-TileColor">
+    <meta content="/ms-icon-144x144.png" name="msapplication-TileImage">
+    <title>Invigo</title>
+    <meta content="Invigo" property="og:title"/>
+    <meta content="Invigo Homepage." property="og:description"/>
+</head>
 
-    <body class="dark">
-        <header class="fixed transparent left-align">
-            <button class="extra elevate extend circle">
-                <img class="responsive" src="/static/icon.png">
-                <span>Invigo</span>
-            </button>
-        </header>
-        <main class="responsive">
-            <div class="grid">
-                <button class="s6 m3 l3 left-align extra border" onclick="window.location.href='/login'">
-                    <i>login</i>
-                    <span>Login</span>
-                </button>
-                <button class="s6 m3 l3 left-align extra border" onclick="window.location.href='/roles'">
-                    <i>person</i>
-                    <span>Roles</span>
-                </button>
-                <button class="s6 m3 l3 left-align extra border" onclick="window.location.href='/users'">
-                    <i>person</i>
-                    <span>Users</span>
-                </button>
-                <button class="s6 m3 l3 left-align extra border" onclick="window.location.href='/register'">
-                    <i>person_add</i>
-                    <span>Register</span>
-                </button>
-                <button class="s6 m4 l4 left-align extra border" onclick="window.location.href='/inventory'">
-                    <i>inventory_2</i>
-                    <span>Inventory</span>
-                </button>
-                <button class="s6 m4 l4 left-align extra border" onclick="window.location.href='/add_cutoff_sheet'">
-                    <i>library_add</i>
-                    <span>Add Cutoff Sheet</span>
-                </button>
-                <button class="s6 m4 l4 left-align extra border" onclick="window.location.href='/sheet_qr_codes'">
-                    <i>qr_code</i>
-                    <span>Sheet QR Codes</span>
-                </button>
-                <button class="s6 m6 l6 left-align extra border" onclick="window.location.href='/production_planner'">
-                    <i>edit_calendar</i>
-                    <span>Production Planner</span>
-                </button>
-                <button class="s6 m6 l6 left-align extra border" onclick="window.location.href='/workspace'">
-                    <i>construction</i>
-                    <span>Workspace</span>
-                </button>
-                <button class="s6 m6 l6 left-align extra border" onclick="window.location.href='/workspace_dashboard'" disabled>
-                    <i>browse_activity</i>
-                    <span>Workspace Dashboard</span>
-                </button>
-                <button class="s6 m6 l6 left-align extra border" onclick="window.location.href='/workspace_archives_dashboard'" disabled>
-                    <i>work_history</i>
-                    <span>Workspace Archives</span>
-                </button>
-                <button class="s6 m4 l4 left-align extra border" onclick="window.location.href='/jobs'">
-                    <i>home_storage</i>
-                    <span>Job Printouts</span>
-                </button>
-                <button class="s6 m4 l4 left-align extra border" onclick="window.location.href='/purchase_orders'">
-                    <i>receipt_long</i>
-                    <span>Purchase Orders</span>
-                </button>
-                <button class="s6 m4 l4 left-align extra border" onclick="window.location.href='/workorders'">
-                    <i>checklist</i>
-                    <span>Workorders</span>
-                </button>
-                <button class="s6 m4 l3 left-align extra border" onclick="window.location.href='/way_back_machine'" disabled>
-                    <i>history</i>
-                    <span>Way Back Machine</span>
-                </button>
-                <button class="s6 m4 l3 left-align extra border" onclick="window.location.href='https://github.com/TheCodingJsoftware/Invigo/wiki'">
-                    <i>globe</i>
-                    <span>Wiki</span>
-                </button>
-                <button class="s6 m4 l3 left-align extra border" onclick="window.location.href='/server_log'">
-                    <i>article</i>
-                    <span>Server Log</span>
-                </button>
-                <button class="s6 m4 l3 left-align extra border" onclick="window.location.href='/logs'">
-                    <i>problem</i>
-                    <span>Logs</span>
-                </button>
-            </div>
-        </main>
-        <div id="welcome-message" class="snackbar success">Welcome to Invigo.</div>
-    </body>
+<body class="dark">
+<header class="fixed transparent left-align">
+    <button class="extra elevate extend circle">
+        <img class="responsive" src="/static/icon.png">
+        <span>Invigo</span>
+    </button>
+</header>
+<main class="responsive">
+    <div class="grid">
+        <button class="s6 m3 l3 left-align extra border" onclick="window.location.href='/login'">
+            <i>login</i>
+            <span>Login</span>
+        </button>
+        <button class="s6 m3 l3 left-align extra border" onclick="window.location.href='/roles'">
+            <i>person</i>
+            <span>Roles</span>
+        </button>
+        <button class="s6 m3 l3 left-align extra border" onclick="window.location.href='/users'">
+            <i>person</i>
+            <span>Users</span>
+        </button>
+        <button class="s6 m3 l3 left-align extra border" onclick="window.location.href='/register'">
+            <i>person_add</i>
+            <span>Register</span>
+        </button>
+        <button class="s6 m4 l4 left-align extra border" onclick="window.location.href='/inventory'">
+            <i>inventory_2</i>
+            <span>Inventory</span>
+        </button>
+        <button class="s6 m4 l4 left-align extra border" onclick="window.location.href='/add_cutoff_sheet'">
+            <i>library_add</i>
+            <span>Add Cutoff Sheet</span>
+        </button>
+        <button class="s6 m4 l4 left-align extra border" onclick="window.location.href='/sheet_qr_codes'">
+            <i>qr_code</i>
+            <span>Sheet QR Codes</span>
+        </button>
+        <button class="s6 m6 l6 left-align extra border" onclick="window.location.href='/production_planner'">
+            <i>edit_calendar</i>
+            <span>Production Planner</span>
+        </button>
+        <button class="s6 m6 l6 left-align extra border" onclick="window.location.href='/workspace'">
+            <i>construction</i>
+            <span>Workspace</span>
+        </button>
+        <button class="s6 m6 l6 left-align extra border" disabled onclick="window.location.href='/workspace_dashboard'">
+            <i>browse_activity</i>
+            <span>Workspace Dashboard</span>
+        </button>
+        <button class="s6 m6 l6 left-align extra border" disabled
+                onclick="window.location.href='/workspace_archives_dashboard'">
+            <i>work_history</i>
+            <span>Workspace Archives</span>
+        </button>
+        <button class="s6 m4 l4 left-align extra border" onclick="window.location.href='/jobs'">
+            <i>home_storage</i>
+            <span>Job Printouts</span>
+        </button>
+        <button class="s6 m4 l4 left-align extra border" onclick="window.location.href='/purchase_orders'">
+            <i>receipt_long</i>
+            <span>Purchase Orders</span>
+        </button>
+        <button class="s6 m4 l4 left-align extra border" onclick="window.location.href='/workorders'">
+            <i>checklist</i>
+            <span>Workorders</span>
+        </button>
+        <button class="s6 m4 l3 left-align extra border" disabled onclick="window.location.href='/way_back_machine'">
+            <i>history</i>
+            <span>Way Back Machine</span>
+        </button>
+        <button class="s6 m4 l3 left-align extra border"
+                onclick="window.location.href='https://github.com/TheCodingJsoftware/Invigo/wiki'">
+            <i>globe</i>
+            <span>Wiki</span>
+        </button>
+        <button class="s6 m4 l3 left-align extra border" onclick="window.location.href='/server_log'">
+            <i>article</i>
+            <span>Server Log</span>
+        </button>
+        <button class="s6 m4 l3 left-align extra border" onclick="window.location.href='/logs'">
+            <i>problem</i>
+            <span>Logs</span>
+        </button>
+    </div>
+</main>
+<div class="snackbar success" id="welcome-message">Welcome to Invigo.</div>
+</body>
 
 </html>

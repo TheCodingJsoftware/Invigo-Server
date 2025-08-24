@@ -1,53 +1,54 @@
 <!DOCTYPE html>
 <html lang="en">
 
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <meta http-equiv="X-UA-Compatible" content="ie=edge">
-        <meta name="google" content="notranslate">
-        <link rel="icon" href="/static/icon.png">
-        <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=yes" />
-        <title>Workorders</title>
-    </head>
+<head>
+    <meta charset="UTF-8">
+    <meta content="width=device-width, initial-scale=1" name="viewport">
+    <meta content="ie=edge" http-equiv="X-UA-Compatible">
+    <meta content="notranslate" name="google">
+    <link href="/static/icon.png" rel="icon">
+    <meta content="width=device-width,initial-scale=1,user-scalable=yes" name="viewport"/>
+    <title>Workorders</title>
+</head>
 
-    <body class="dark">
-        <header class="fixed primary">
-            <nav>
-                <button class="circle transparent" onclick="window.location.href='/';">
-                    <i>arrow_back</i>
-                </button>
-                <h5 class="max">Workorders</h5>
-            </nav>
-        </header>
-        <main class="responsive">
-            <article class="border round vertical scroll" style="max-height: calc(100vh - 116px) !important;">
-                <ul class="list border">
-                    {% for workorder in all_workorders %}
-                    <li>
-                        <div class="max">
-                            <h6 class="small"><b>Workorder</b> <i>tag</i>{{ workorder.id }}</h6>
-                            <nav class="row no-space wrap">
-                                {% for nest in workorder.nests %}
-                                <button class="border small-round extra tiny-margin nest-button" data-name="{{ nest.name }}" data-id="{{ workorder.id }}" data-image="{{ nest.image_path }}">
-                                    <img class="responsive" src="http://invi.go/images/{{ nest.image_path }}">
-                                    <div>{{ nest.name }}</div>
-                                    <div class="tooltip right">
-                                        <p>Sheet Count: {{ nest.sheet_count }}</p>
-                                    </div>
-                                </button>
-                                {% endfor %}
-                            </nav>
-                        </div>
-                        <button onclick="window.location.href='/workorders/view?id={{ workorder.id }}';">
-                            <i>open_in_new</i>
-                            <span>Open</span>
+<body class="dark">
+<header class="fixed primary">
+    <nav>
+        <button class="circle transparent" onclick="window.location.href='/';">
+            <i>arrow_back</i>
+        </button>
+        <h5 class="max">Workorders</h5>
+    </nav>
+</header>
+<main class="responsive">
+    <article class="border round vertical scroll" style="max-height: calc(100vh - 116px) !important;">
+        <ul class="list border">
+            {% for workorder in all_workorders %}
+            <li>
+                <div class="max">
+                    <h6 class="small"><b>Workorder</b> <i>tag</i>{{ workorder.id }}</h6>
+                    <nav class="row no-space wrap">
+                        {% for nest in workorder.nests %}
+                        <button class="border small-round extra tiny-margin nest-button" data-id="{{ workorder.id }}"
+                                data-image="{{ nest.image_path }}" data-name="{{ nest.name }}">
+                            <img class="responsive" src="http://invi.go/images/{{ nest.image_path }}">
+                            <div>{{ nest.name }}</div>
+                            <div class="tooltip right">
+                                <p>Sheet Count: {{ nest.sheet_count }}</p>
+                            </div>
                         </button>
-                    </li>
-                    {% endfor %}
-                </ul>
-            </article>
-        </main>
-    </body>
+                        {% endfor %}
+                    </nav>
+                </div>
+                <button onclick="window.location.href='/workorders/view?id={{ workorder.id }}';">
+                    <i>open_in_new</i>
+                    <span>Open</span>
+                </button>
+            </li>
+            {% endfor %}
+        </ul>
+    </article>
+</main>
+</body>
 
 </html>

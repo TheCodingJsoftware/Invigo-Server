@@ -1,19 +1,19 @@
 import "beercss"
 import "@static/css/printout.css"
 import "material-dynamic-colors";
-import { loadAnimationStyleSheet, toggleTheme, loadTheme, invertImages } from "@utils/theme"
-import { Effect } from "effect"
-import { PurchaseOrder } from "@models/purchase-order";
-import { POItemDict, PurchaseOrderData, PurchaseOrderStatus } from "@interfaces/purchase-order";
-import { BaseComponent } from "@interfaces/base-component";
-import { PURCHASE_ORDER_COLORS } from "@config/purchase-order-printout-config";
-import { Component } from "@models/component";
-import { Sheet } from "@models/sheet";
-import { PurchaseOrderDetails } from "@components/purchase-order-details";
-import { QRCodeComponent } from "@components/qr-code-component";
-import { PurchaseOrderTotalCost } from "@components/purchase-order-total-cost";
-import { createSwapy } from "swapy";
-import { EmailDialogComponent } from "@components/common/dialog/email-dialog";
+import {invertImages, loadAnimationStyleSheet, loadTheme, toggleTheme} from "@utils/theme"
+import {Effect} from "effect"
+import {PurchaseOrder} from "@models/purchase-order";
+import {POItemDict, PurchaseOrderData, PurchaseOrderStatus} from "@interfaces/purchase-order";
+import {BaseComponent} from "@interfaces/base-component";
+import {PURCHASE_ORDER_COLORS} from "@config/purchase-order-printout-config";
+import {Component} from "@models/component";
+import {Sheet} from "@models/sheet";
+import {PurchaseOrderDetails} from "@components/purchase-order-details";
+import {QRCodeComponent} from "@components/qr-code-component";
+import {PurchaseOrderTotalCost} from "@components/purchase-order-total-cost";
+import {createSwapy} from "swapy";
+import {EmailDialogComponent} from "@components/common/dialog/email-dialog";
 
 interface ColumnToggleOptions {
     columnName: string;
@@ -77,12 +77,12 @@ class ColumnToggler {
 }
 
 class ItemsTable implements BaseComponent {
+    purchaseOrder: PurchaseOrder;
+    element!: HTMLElement;
     private readonly components: Component[] = [];
     private readonly componentsOrderItems: POItemDict[] = [];
     private readonly sheets: Sheet[] = [];
     private readonly sheetOrderItems: POItemDict[] = [];
-    purchaseOrder: PurchaseOrder;
-    element!: HTMLElement;
 
     constructor(purchaseOrder: PurchaseOrder) {
         this.purchaseOrder = purchaseOrder;
@@ -174,7 +174,7 @@ class ItemsTable implements BaseComponent {
                     <td data-column="partNumber"></td>
                     <td>${this.getSheetOrderQuantity(sheet)} (${this.formatNumber(this.getSheetOrderQuantity(sheet) * ((sheet.length * sheet.width) / 144) * sheet.pounds_per_square_foot)} lbs)</td>
                     <td data-column="unitPrice">${this.formatPrice(sheet.price_per_pound, 3)}/lb</td>
-                    <td data-column="price">${this.formatPrice(sheet.price_per_pound * this.getSheetOrderQuantity(sheet) * ((sheet.length * sheet.width) / 144) * sheet.pounds_per_square_foot,3)}</td>
+                    <td data-column="price">${this.formatPrice(sheet.price_per_pound * this.getSheetOrderQuantity(sheet) * ((sheet.length * sheet.width) / 144) * sheet.pounds_per_square_foot, 3)}</td>
                 </tr>
                 `).join("")}
                 ${this.components.map(component => `
@@ -194,11 +194,11 @@ class ItemsTable implements BaseComponent {
     }
 
     formatNumber(value: number): string {
-        return value.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        return value.toLocaleString("en-US", {minimumFractionDigits: 2, maximumFractionDigits: 2});
     }
 
     formatPrice(price: number, decimals: number = 2): string {
-        return `$${price.toLocaleString("en-US", { minimumFractionDigits: decimals, maximumFractionDigits: decimals })}`;
+        return `$${price.toLocaleString("en-US", {minimumFractionDigits: decimals, maximumFractionDigits: decimals})}`;
     }
 
     public hide(): void {
@@ -212,26 +212,15 @@ class ItemsTable implements BaseComponent {
 
 class PurchaseOrderPrintout {
     purchaseOrderId: number;
-    private _dataEffect: Effect.Effect<any, Error> | null = null;
     public purchaseOrder!: PurchaseOrder;
     public container: HTMLDivElement;
+    private _dataEffect: Effect.Effect<any, Error> | null = null;
     private swapy: ReturnType<typeof createSwapy> | null = null;
     private totalCostComponent!: PurchaseOrderTotalCost;
 
     constructor(purchaseOrderId: number) {
         this.purchaseOrderId = purchaseOrderId;
         this.container = document.getElementById('purchase-order-container') as HTMLDivElement;
-    }
-
-    private loadDataEffect(): Effect.Effect<PurchaseOrderData, Error> {
-        return Effect.promise(async () => {
-            const response = await fetch(`/purchase_orders/get_purchase_order/${this.purchaseOrderId}`);
-            if (!response.ok) {
-                const msg = await response.text();
-                throw new Error(`Failed to fetch purchaseOrder data: ${msg}`);
-            }
-            return response.json();
-        });
     }
 
     public getDataEffect(): Effect.Effect<any, Error> {
@@ -277,20 +266,6 @@ class PurchaseOrderPrintout {
                 this.toggleLoadingIndicator(false);
             }),
         );
-    }
-
-    private initSwapy(): void {
-        this.swapy = createSwapy(this.container, {
-            animation: 'spring',
-            autoScrollOnDrag: true,
-            swapMode: 'drop',
-        });
-        this.swapy.enable(true);
-        this.swapy.onSwap((event) => {
-            document.querySelectorAll("expandable-section").forEach(el => {
-                (el as any).initialize();
-            });
-        });
     }
 
     updateSwapy(): void {
@@ -462,7 +437,7 @@ class PurchaseOrderPrintout {
 
                     wrapper.addEventListener("transitionend", () => {
                         wrapper.style.maxHeight = "none"; // reset to large value after animation
-                    }, { once: true });
+                    }, {once: true});
                 } else {
                     wrapper.style.maxHeight = wrapper.scrollHeight + "px"; // set current height
 
@@ -478,7 +453,7 @@ class PurchaseOrderPrintout {
                     wrapper.addEventListener("transitionend", () => {
                         // Collapse finished, ensure maxHeight stays at 0
                         wrapper.style.maxHeight = "0";
-                    }, { once: true });
+                    }, {once: true});
                 }
             });
         });
@@ -497,16 +472,6 @@ class PurchaseOrderPrintout {
         }
     }
 
-    private getPurchaseOrderType(): PurchaseOrderStatus {
-        const tabs = document.getElementById('purchase-order-type-tabs') as HTMLElement;
-        for (const button of Array.from(tabs.querySelectorAll('a'))) {
-            if (button.classList.contains('active')) {
-                return Number(button.dataset.target) as PurchaseOrderStatus;
-            }
-        }
-        return PurchaseOrderStatus.PURCHASE_ORDER;
-    }
-
     setActiveTab() {
         const tabs = document.getElementById('purchase-order-type-tabs') as HTMLElement;
         const tabButtons = Array.from(tabs.querySelectorAll('a'));
@@ -518,6 +483,83 @@ class PurchaseOrderPrintout {
                 button.classList.remove('active');
             }
         });
+    }
+
+    toggleCheckboxes() {
+        const checkboxes = [
+            document.getElementById('show-GST') as HTMLInputElement,
+            document.getElementById('show-PST') as HTMLInputElement,
+            document.getElementById('show-totalCost') as HTMLInputElement,
+        ];
+
+        const shouldCheck = this.getPurchaseOrderType() === PurchaseOrderStatus.QUOTE;
+
+        for (const checkbox of checkboxes) {
+            if (checkbox) {
+                checkbox.checked = shouldCheck;
+                checkbox.dispatchEvent(new Event('change'));
+            }
+        }
+    }
+
+    toggleTablePriceColumns() {
+        const tables = document.querySelectorAll("table");
+        tables.forEach(table => {
+            const headerCells = table.querySelectorAll('thead th') as NodeListOf<HTMLElement>;
+            const tableCells = table.querySelectorAll('tbody td') as NodeListOf<HTMLElement>;
+            const footerCells = table.querySelectorAll('tfoot th') as NodeListOf<HTMLElement>;
+
+            headerCells.forEach(th => {
+                if (th.dataset.column === "unitPrice" || th.dataset.column === "price") {
+                    th.classList.toggle("hidden", this.getPurchaseOrderType() === PurchaseOrderStatus.PURCHASE_ORDER);
+                }
+            });
+            tableCells.forEach(td => {
+                if (td.dataset.column === "unitPrice" || td.dataset.column === "price") {
+                    td.classList.toggle("hidden", this.getPurchaseOrderType() === PurchaseOrderStatus.PURCHASE_ORDER);
+                }
+            });
+            footerCells.forEach(th => {
+                if (th.dataset.column === "unitPrice" || th.dataset.column === "price") {
+                    th.classList.toggle("hidden", this.getPurchaseOrderType() === PurchaseOrderStatus.PURCHASE_ORDER);
+                }
+            });
+        });
+    }
+
+    private loadDataEffect(): Effect.Effect<PurchaseOrderData, Error> {
+        return Effect.promise(async () => {
+            const response = await fetch(`/purchase_orders/get_purchase_order/${this.purchaseOrderId}`);
+            if (!response.ok) {
+                const msg = await response.text();
+                throw new Error(`Failed to fetch purchaseOrder data: ${msg}`);
+            }
+            return response.json();
+        });
+    }
+
+    private initSwapy(): void {
+        this.swapy = createSwapy(this.container, {
+            animation: 'spring',
+            autoScrollOnDrag: true,
+            swapMode: 'drop',
+        });
+        this.swapy.enable(true);
+        this.swapy.onSwap((event) => {
+            document.querySelectorAll("expandable-section").forEach(el => {
+                (el as any).initialize();
+            });
+        });
+    }
+
+    private getPurchaseOrderType(): PurchaseOrderStatus {
+        const tabs = document.getElementById('purchase-order-type-tabs') as HTMLElement;
+        for (const button of Array.from(tabs.querySelectorAll('a'))) {
+            if (button.classList.contains('active')) {
+                return Number(button.dataset.target) as PurchaseOrderStatus;
+            }
+        }
+        return PurchaseOrderStatus.PURCHASE_ORDER;
     }
 
     private setUpTabs() {
@@ -548,49 +590,6 @@ class PurchaseOrderPrintout {
         // this.toggleTablePriceColumns();
         // this.toggleCheckboxes();
     }
-
-    toggleCheckboxes() {
-        const checkboxes = [
-            document.getElementById('show-GST') as HTMLInputElement,
-            document.getElementById('show-PST') as HTMLInputElement,
-            document.getElementById('show-totalCost') as HTMLInputElement,
-        ];
-
-        const shouldCheck = this.getPurchaseOrderType() === PurchaseOrderStatus.QUOTE;
-
-        for (const checkbox of checkboxes) {
-            if (checkbox) {
-                checkbox.checked = shouldCheck;
-                checkbox.dispatchEvent(new Event('change'));
-            }
-        }
-    }
-
-
-    toggleTablePriceColumns() {
-        const tables = document.querySelectorAll("table");
-        tables.forEach(table => {
-            const headerCells = table.querySelectorAll('thead th') as NodeListOf<HTMLElement>;
-            const tableCells = table.querySelectorAll('tbody td') as NodeListOf<HTMLElement>;
-            const footerCells = table.querySelectorAll('tfoot th') as NodeListOf<HTMLElement>;
-
-            headerCells.forEach(th => {
-                if (th.dataset.column === "unitPrice" || th.dataset.column === "price") {
-                    th.classList.toggle("hidden", this.getPurchaseOrderType() === PurchaseOrderStatus.PURCHASE_ORDER);
-                }
-            });
-            tableCells.forEach(td => {
-                if (td.dataset.column === "unitPrice" || td.dataset.column === "price") {
-                    td.classList.toggle("hidden", this.getPurchaseOrderType() === PurchaseOrderStatus.PURCHASE_ORDER);
-                }
-            });
-            footerCells.forEach(th => {
-                if (th.dataset.column === "unitPrice" || th.dataset.column === "price") {
-                    th.classList.toggle("hidden", this.getPurchaseOrderType() === PurchaseOrderStatus.PURCHASE_ORDER);
-                }
-            });
-        });
-    }
 }
 
 function getPurchaseOrderIdFromUrl(): number {
@@ -616,8 +615,8 @@ const getLocalStorageObject = (): Record<string, string> => {
 const generateBlob = async (endpoint: string): Promise<Blob | null> => {
     const res = await fetch(endpoint, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ localStorage: getLocalStorageObject() }),
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({localStorage: getLocalStorageObject()}),
     });
 
     if (!res.ok) {
@@ -629,7 +628,7 @@ const generateBlob = async (endpoint: string): Promise<Blob | null> => {
 const handleClipboardCopy = async (blob: Blob): Promise<boolean> => {
     try {
         await navigator.clipboard.write([
-            new ClipboardItem({ "image/png": blob }),
+            new ClipboardItem({"image/png": blob}),
         ]);
         return true;
     } catch (err) {

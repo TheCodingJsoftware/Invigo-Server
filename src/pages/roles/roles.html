@@ -3,34 +3,34 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <meta name="google" content="notranslate">
-    <link rel="icon" href="/static/icon.png">
-    <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=yes" />
+    <meta content="width=device-width, initial-scale=1" name="viewport">
+    <meta content="ie=edge" http-equiv="X-UA-Compatible">
+    <meta content="notranslate" name="google">
+    <link href="/static/icon.png" rel="icon">
+    <meta content="width=device-width,initial-scale=1,user-scalable=yes" name="viewport"/>
     <title>Manage Roles</title>
 </head>
 
 <body class="dark">
-    <header class="fixed primary">
-        <nav>
-            <button class="circle transparent" onclick="window.location.href='/'">
-                <i>arrow_back</i>
-            </button>
-            <h5 class="max">Manage Roles</h5>
-        </nav>
-    </header>
-    <main class="responsive">
-        {% if userCanEditRoles %}
-        <div id="roles-list" class="bottom-margin"></div>
-        <button id="add-role">
-            <i>add</i>
-            <span>Add Role</span>
+<header class="fixed primary">
+    <nav>
+        <button class="circle transparent" onclick="window.location.href='/'">
+            <i>arrow_back</i>
         </button>
-        {% else %}
-        <div id="not-allowed" class="snackbar top error active">You do not have permission to manage roles.</div>
-        {% endif %}
-    </main>
+        <h5 class="max">Manage Roles</h5>
+    </nav>
+</header>
+<main class="responsive">
+    {% if userCanEditRoles %}
+    <div class="bottom-margin" id="roles-list"></div>
+    <button id="add-role">
+        <i>add</i>
+        <span>Add Role</span>
+    </button>
+    {% else %}
+    <div class="snackbar top error active" id="not-allowed">You do not have permission to manage roles.</div>
+    {% endif %}
+</main>
 </body>
 
 </html>

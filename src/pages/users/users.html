@@ -1,75 +1,76 @@
 <!DOCTYPE html>
 <html lang="en">
 
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <meta http-equiv="X-UA-Compatible" content="ie=edge">
-        <meta name="google" content="notranslate">
-        <link rel="icon" href="/static/icon.png">
-        <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=yes" />
-        <title>Users</title>
-    </head>
+<head>
+    <meta charset="UTF-8">
+    <meta content="width=device-width, initial-scale=1" name="viewport">
+    <meta content="ie=edge" http-equiv="X-UA-Compatible">
+    <meta content="notranslate" name="google">
+    <link href="/static/icon.png" rel="icon">
+    <meta content="width=device-width,initial-scale=1,user-scalable=yes" name="viewport"/>
+    <title>Users</title>
+</head>
 
-    <body class="dark">
-        <header class="fixed primary">
-            <nav>
-                <button class="circle transparent" onclick="window.location.href='/'">
-                    <i>arrow_back</i>
-                </button>
-                <h5 class="max">Users</h5>
-            </nav>
-        </header>
-        <main class="responsive">
-            {% if canEditUsers %}
-            {% for user in users %}
-            <article class="border round grid" data-user-id="{{ user.id }}">
-                <div class="s12 field label border small-round">
-                    <input type="text" name="name" value="{{ user.name }}">
-                    <label>Username</label>
-                </div>
-                <fieldset class="s12 small-round">
-                    <legend>Roles</legend>
-                    {% for role in roles %}
-                    <label class="s12 checkbox">
-                        <input type="checkbox" name="role" value="{{ role.name }}" {% if role.name in user.roles %}checked{% endif %}>
-                        <span>{{ role.name }}</span>
-                    </label>
-                    {% endfor %}
-                </fieldset>
-                <nav class="s12 row">
-                    <div class="max field small-round label border">
-                        <input type="password" name="password">
-                        <label>Password</label>
-                        <span class="helper">Leave blank to keep current password. Press "Set" to set a new password.</span>
-                    </div>
-                    <button class="set-password">
-                        <i>done</i>
-                        <span>Set</span>
-                    </button>
-                </nav>
-                <nav class="s12 row top-margin right-align">
-                    <button class="s12 save-user">
-                        <i>save</i>
-                        <span>Save</span>
-                    </button>
-                    <button class="s12 delete-user error">
-                        <i>delete</i>
-                        <span>Delete</span>
-                    </button>
-                </nav>
-            </article>
+<body class="dark">
+<header class="fixed primary">
+    <nav>
+        <button class="circle transparent" onclick="window.location.href='/'">
+            <i>arrow_back</i>
+        </button>
+        <h5 class="max">Users</h5>
+    </nav>
+</header>
+<main class="responsive">
+    {% if canEditUsers %}
+    {% for user in users %}
+    <article class="border round grid" data-user-id="{{ user.id }}">
+        <div class="s12 field label border small-round">
+            <input name="name" type="text" value="{{ user.name }}">
+            <label>Username</label>
+        </div>
+        <fieldset class="s12 small-round">
+            <legend>Roles</legend>
+            {% for role in roles %}
+            <label class="s12 checkbox">
+                <input %} %}checked{% endif if in name="role" role.name type="checkbox" user.roles
+                       value="{{ role.name }}" {%>
+                <span>{{ role.name }}</span>
+            </label>
             {% endfor %}
-            {% else %}
-            <div id="not-allowed" class="snackbar top error active">You do not have permission to edit users.</div>
-            {% endif %}
-        </main>
-        <div id="user-updated" class="snackbar top green">User updated successfully.</div>
-        <div id="user-error" class="snackbar top error">User update failed.</div>
-        <div id="password-updated" class="snackbar top green">Password updated successfully.</div>
-        <div id="password-error" class="snackbar top error">Password update failed.</div>
-        <div id="user-deleted" class="snackbar top green">User deleted successfully.</div>
-        <div id="user-delete-failed" class="snackbar top error">Failed to delete user.</div>
-    </body>
+        </fieldset>
+        <nav class="s12 row">
+            <div class="max field small-round label border">
+                <input name="password" type="password">
+                <label>Password</label>
+                <span class="helper">Leave blank to keep current password. Press "Set" to set a new password.</span>
+            </div>
+            <button class="set-password">
+                <i>done</i>
+                <span>Set</span>
+            </button>
+        </nav>
+        <nav class="s12 row top-margin right-align">
+            <button class="s12 save-user">
+                <i>save</i>
+                <span>Save</span>
+            </button>
+            <button class="s12 delete-user error">
+                <i>delete</i>
+                <span>Delete</span>
+            </button>
+        </nav>
+    </article>
+    {% endfor %}
+    {% else %}
+    <div class="snackbar top error active" id="not-allowed">You do not have permission to edit users.</div>
+    {% endif %}
+</main>
+<div class="snackbar top green" id="user-updated">User updated successfully.</div>
+<div class="snackbar top error" id="user-error">User update failed.</div>
+<div class="snackbar top green" id="password-updated">Password updated successfully.</div>
+<div class="snackbar top error" id="password-error">Password update failed.</div>
+<div class="snackbar top green" id="user-deleted">User deleted successfully.</div>
+<div class="snackbar top error" id="user-delete-failed">Failed to delete user.</div>
+</body>
 
 </html>
