@@ -11,12 +11,16 @@ class AddCutoffSheetHandler(BaseHandler):
         cutoff_sheets: list[Sheet] = []
         for sheet_data in await self.sheets_inventory_db.get_cutoff_sheets():
             cutoff_sheets.append(Sheet(sheet_data, None))
+        sorted_sheets = sorted(
+            cutoff_sheets,
+            key=lambda s: (s.thickness, s.material, s.length, s.width),
+        )
         sheet_settings = SheetSettings()
         template = self.get_template("add_cutoff_sheet.html")
         rendered_template = template.render(
             thicknesses=sheet_settings.get_thicknesses(),
             materials=sheet_settings.get_materials(),
-            cutoff_sheets=cutoff_sheets,
+            cutoff_sheets=sorted_sheets,
         )
         self.set_header("Content-Type", "text/html")
         self.write(rendered_template)

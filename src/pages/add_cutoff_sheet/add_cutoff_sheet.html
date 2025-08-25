@@ -59,39 +59,31 @@
                     <label>Quantity</label>
                 </div>
                 <nav class="s12 right-align">
-                    <button class="round" disabled id="addButton" type="submit"><i>add</i>Add Cutoff</button>
+                    <button class="round" disabled id="addButton" type="submit">
+                        <i>add</i>
+                        <span>Add Cutoff</span>
+                    </button>
                 </nav>
             </form>
         </article>
-        <article class="border round">
-            <h4 class="center-align">Current Cutoff Sheets</h4>
-            <table class="sortable">
-                <thead>
-                <tr>
-                    <th>Thickness</th>
-                    <th>Material</th>
-                    <th>len x wid</th>
-                    <th>DEL</th>
-                </tr>
-                </thead>
-                <tbody>
+        <article class="border round no-padding">
+            <h5 class="center-align padding">Cutoff Sheets</h5>
+            <ul class="list border">
                 {% for sheet in cutoff_sheets %}
-                <tr>
-                    <td class="min"><p style="font-size: 9pt;">{{ sheet.thickness }}</p></td>
-                    <td class="min"><p style="font-size: 9pt;">{{ sheet.material }}</p></td>
-                    <td class="min"><p style="font-size: 9pt;">{{ sheet.get_sheet_dimension() }}</p></td>
-                    <td class="min">
-                        <form action="/delete_cutoff_sheet" method="post">
-                            <input name="sheet_id" type="hidden" value="{{ sheet.get_name() }}">
-                            <button class="square round error" type="submit">
-                                <i>delete_forever</i>
-                            </button>
-                        </form>
-                    </td>
-                </tr>
+                <li>
+                    <div class="max">
+                        <h6 class="small">{{ sheet.thickness }} {{ sheet.material }}</h6>
+                        <div>{{ sheet.get_sheet_dimension() }}</div>
+                    </div>
+                    <form action="/delete_cutoff_sheet" method="post">
+                        <input name="sheet_id" type="hidden" value="{{ sheet.get_name() }}">
+                        <button class="circle error" type="submit">
+                            <i>delete_forever</i>
+                        </button>
+                    </form>
+                </li>
                 {% endfor %}
-                </tbody>
-            </table>
+            </ul>
         </article>
     </div>
 </main>
