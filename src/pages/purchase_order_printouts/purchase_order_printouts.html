@@ -12,49 +12,59 @@
 </head>
 
 <body class="dark">
-<header class="fixed primary">
-    <nav>
+<nav class="top fixed primary small-padding">
+</nav>
+
+<nav class="left max left-align no-padding">
+    <nav class="top primary">
         <button class="circle transparent" onclick="window.location.href='/';">
             <i>arrow_back</i>
         </button>
-        <h5 class="max">Purchase Order Printouts</h5>
+        <h5 class="max">Purchase Orders</h5>
     </nav>
-</header>
+    <br>
+    {% for vendor in all_vendors %}
+    <a class="{{ 'active' if loop.first else '' }} left-margin" data-ui="#vendor-{{ vendor.id }}">
+        <i>store</i>
+        <span>{{ vendor.name }}</span>
+    </a>
+    {% endfor %}
+</nav>
+
 <main class="responsive">
-    <div>
-        <div class="tabs left-align scroll">
-            {% for vendor in all_vendors %}
-            <a class="{{ 'active' if loop.first else '' }}" data-ui="#vendor-{{ vendor.id }}">{{ vendor.name }}</a>
-            {% endfor %}
-        </div>
-    </div>
     {% for vendor in all_vendors %}
     <div class="page padding {{'active' if loop.first else ''}}" id="vendor-{{ vendor.id }}">
         {% if vendor.email or vendor.website or vendor.phone %}
-        <nav class="row center-align wrap">
+        <div class="grid center-align">
             {% if vendor.phone %}
-            <button class="border extra link" onclick="window.location.href='tel:{{ vendor.phone }}';">
+            <button class="border extra link s12 m6 l4" onclick="window.location.href='tel:{{ vendor.phone }}';">
                 <i>phone</i>
                 <span>{{ vendor.phone }}</span>
             </button>
             {% endif %}
             {% if vendor.email %}
-            <button class="border extra link" onclick="window.location.href='mailto:{{ vendor.email }}';">
+            <button class="border extra link s12 m6 l4" onclick="window.location.href='mailto:{{ vendor.email }}';">
                 <i>mail</i>
                 <span>{{ vendor.email }}</span>
             </button>
             {% endif %}
             {% if vendor.website %}
-            <button class="border extra link" onclick="window.open('{{ vendor.website }}', '_blank')">
+            <button class="border extra link s12 m12 l4" onclick="window.open('{{ vendor.website }}', '_blank')">
                 <i>globe</i>
-                <span , data-website="{{ vendor.website }}" id="website-name"></span>
+                <span data-website="{{ vendor.website }}" id="website-name"></span>
             </button>
             {% endif %}
-        </nav>
+        </div>
         {% endif %}
         {% if vendor.address %}
         <article class="border round">
-            <p>{{ vendor.address }}</p>
+            <nav class="row">
+                <p class="max top-align">{{ vendor.address }}</p>
+                <button class="border" onclick="window.open('https://www.google.com/maps/search/{{ vendor.address }}', '_blank')">
+                    <i>map</i>
+                    <span data-website="https://www.google.com/maps/search/{{ vendor.address }}">Google Maps</span>
+                </button>
+            </nav>
         </article>
         {% endif %}
         <article class="top-margin border round vertical scroll" style="max-height: calc(100vh - 400px) !important;">
