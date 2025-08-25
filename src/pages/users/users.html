@@ -32,9 +32,7 @@
             <legend>Roles</legend>
             {% for role in roles %}
             <label class="s12 checkbox">
-                <input %} %}checked{% endif if in name="role" role.name type="checkbox" user.roles
-                       value="{{ role.name }}" {%>
-                <span>{{ role.name }}</span>
+                <input type="checkbox" name="role" value="{{ role.name }}" {% if role.name in user.roles %}checked{% endif %}>                <span>{{ role.name }}</span>
             </label>
             {% endfor %}
         </fieldset>
