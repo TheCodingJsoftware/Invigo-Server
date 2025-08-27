@@ -4,7 +4,6 @@ import traceback
 from enum import Enum
 
 from handlers.base import BaseHandler
-from utils.database.view_db import ViewType
 
 
 class PartDataType(Enum):
@@ -19,12 +18,7 @@ class PartDataType(Enum):
 
 class WorkspaceLaserCutPartHandler(BaseHandler):
     async def get(self):
-        view = self.get_argument("view", "global")
-        job_id = (
-            int(self.get_argument("job_id", -1))
-            if view == ViewType.GROUPED_BY_JOB
-            else None
-        )
+        job_id = int(self.get_argument("job_id", -1))
         name = self.get_argument("name", "")
         flowtag = self.get_argument("flowtag", []).split(",")
         flowtag_index = self.get_argument("flowtag_index", -1)

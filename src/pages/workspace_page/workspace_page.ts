@@ -8,19 +8,17 @@ import {SearchInput} from "@components/common/input/search-input";
 import {PartContainer} from "@components/workspace/parts/part-container";
 import {ViewSwitcherPanel} from "@components/workspace/views/switchers/view-switcher-panel";
 import {ViewBus, ViewChangePayload} from "@components/workspace/views/view-bus";
-import {AssemblyViewMode} from "@config/assembly-view-mode";
 import {DataTypeSwitcherMode} from "@config/data-type-mode";
-import {JobViewMode} from "@config/job-view-mode";
-import {NestViewMode} from "@config/nest-view-mode";
-import {PartViewMode} from "@config/part-view-mode";
 import {UserContext} from '@core/auth/user-context';
 import {SessionSettingsManager} from "@core/settings/session-settings";
 import {ViewSettingsManager} from "@core/settings/view-settings";
 import {WorkspaceSettings} from "@core/settings/workspace-settings";
 import {WorkspaceWebSocket} from "@core/websocket/workspace-websocket";
-import {WorkspaceFilter} from "@models/workspace-filter";
+import {BooleanSettingKey, WorkspaceFilter} from "@models/workspace-filter";
 import {invertImages, loadAnimationStyleSheet, loadTheme, toggleTheme} from "@utils/theme"
 import {DateRangeButton} from "@components/common/buttons/date-range-button";
+import {SheetSettingsModel} from "@core/settings/sheet-settings-model";
+import {ToggleButton} from "@components/common/buttons/toggle-button";
 
 let pageLoaded = false;
 
@@ -49,46 +47,36 @@ class PageHost {
 
         switch (view.dataType) {
             case DataTypeSwitcherMode.Part:
-                this.renderPartPage(ViewSettingsManager.get().lastActivePartView);
+                this.renderPartPage();
                 break;
             case DataTypeSwitcherMode.Assembly:
-                this.renderAssemblyPage(ViewSettingsManager.get().lastActiveAssemblyView);
-                break;
-            case DataTypeSwitcherMode.Nest:
-                this.renderNestPage(ViewSettingsManager.get().lastActiveNestView);
+                this.renderAssemblyPage();
                 break;
             case DataTypeSwitcherMode.Job:
-                this.renderJobPage(ViewSettingsManager.get().lastActiveJobView);
+                this.renderJobPage();
                 break;
         }
         ViewSettingsManager.set({lastActiveDataType: view.dataType});
         SessionSettingsManager.set({
             lastActiveDataType: view.dataType,
-            lastActiveView: view.viewMode,
         });
     }
 
-    private async renderJobPage(mode: JobViewMode) {
+    private async renderJobPage() {
         const page = document.createElement("div");
-        page.textContent = `Job Page: ${mode}`;
+        page.textContent = `Job Page`;
         this.element.appendChild(page);
     }
 
-    private async renderPartPage(mode: PartViewMode) {
+    private async renderPartPage() {
         this.element.innerHTML = "";
         this.element.appendChild(this.partPage.element);
-        await this.partPage.load(mode);
+        await this.partPage.load();
     }
 
-    private renderAssemblyPage(mode: AssemblyViewMode) {
+    private renderAssemblyPage() {
         const page = document.createElement("div");
-        page.textContent = `Assembly Page: ${mode}`;
-        this.element.appendChild(page);
-    }
-
-    private renderNestPage(mode: NestViewMode) {
-        const page = document.createElement("div");
-        page.textContent = `Nest Page: ${mode}`;
+        page.textContent = `Assembly Page`;
         this.element.appendChild(page);
     }
 }
@@ -115,12 +103,13 @@ class WorkspacePage {
         });
         this.loadHeader();
         this.loadTopNav();
+        this.loadRightNav();
+        this.loadLeftNav();
         this.loadThemeSettings();
         this.registerSocketHandlers();
         pageLoaded = true;
         ViewBus.update({
             dataType: SessionSettingsManager.get().lastActiveDataType,
-            viewMode: SessionSettingsManager.get().lastActiveView
         });
     }
 
@@ -128,7 +117,6 @@ class WorkspacePage {
         // this.mainElement.innerHTML = "";
         ViewBus.update({
             dataType: SessionSettingsManager.get().lastActiveDataType,
-            viewMode: SessionSettingsManager.get().lastActiveView
         });
     }
 
@@ -147,17 +135,13 @@ class WorkspacePage {
 
     loadTopNav() {
         const nav = document.createElement("nav");
-        nav.classList.add("top", "row");
+        nav.className = "tiny-space fixed top transparent";
 
-        const homeButton = document.createElement("button");
-        homeButton.classList.add("square", "round", "extra");
-        const homeIcon = document.createElement("i");
-        homeIcon.innerText = "home";
-        homeButton.appendChild(homeIcon);
-        homeButton.onclick = () => window.location.href = "/";
+        const toolbar = document.createElement("nav");
+        toolbar.className = "toolbar medium-elevate blur"
 
         const headline = document.createElement("h6");
-        headline.classList.add("max", "left-align");
+        headline.className = "max left-align m l";
         headline.innerText = "Workspace";
 
         const themeToggleButton = document.createElement("button");
@@ -177,16 +161,6 @@ class WorkspacePage {
 
         const dateRangeButton = new DateRangeButton();
 
-        const profileButton = document.createElement("button");
-        profileButton.classList.add("border", "large", "circle");
-        profileButton.innerHTML = `
-            <i>person</i>
-        `
-        profileButton.onclick = () => this.showProfile();
-
-        nav.appendChild(homeButton);
-        2
-        nav.appendChild(headline);
         if (SearchInput.element) {
             SearchInput.onChange.connect(() => {
                 this.resyncState();
@@ -194,14 +168,97 @@ class WorkspacePage {
             SearchInput.onSearch.connect(() => {
                 this.resyncState();
             })
-            nav.appendChild(SearchInput.element);
+            toolbar.appendChild(SearchInput.element);
         }
-        nav.appendChild(dateRangeButton.button);
-        nav.appendChild(sortButton.button);
-        nav.appendChild(filterButton.button);
-        nav.appendChild(themeToggleButton);
-        nav.appendChild(profileButton);
+        nav.appendChild(toolbar);
+        toolbar.appendChild(dateRangeButton.button);
+        toolbar.appendChild(sortButton.button);
+        toolbar.appendChild(filterButton.button);
+        toolbar.appendChild(themeToggleButton);
 
+        document.body.appendChild(nav);
+    }
+
+    loadRightNav() {
+        const nav = document.createElement("nav");
+        nav.classList.add("right", "min");
+
+        const materialsFieldset = document.createElement("fieldset");
+        materialsFieldset.classList.add("surface-container", "small-round");
+        const materialsLegend = document.createElement("legend");
+        materialsLegend.innerText = "Materials";
+        materialsFieldset.appendChild(materialsLegend);
+
+        const materialsContainer = document.createElement("div");
+        materialsContainer.className = "grid no-space"
+
+        materialsFieldset.appendChild(materialsContainer);
+
+        for (const material of SheetSettingsModel.materials) {
+            const key = `show_material:${material}` as BooleanSettingKey;
+            // @ts-ignore
+            const checkbox = new ToggleButton(material, material, WorkspaceFilter[key]);
+            checkbox.element.classList.add("s12", "m12", "l12", "tiny-margin");
+
+            checkbox.onChange = (val: boolean) => {
+                // @ts-ignore
+                WorkspaceFilter[key] = val;
+                this.resyncState();
+            };
+
+            materialsContainer.appendChild(checkbox.element);
+        }
+
+
+        const thicknessFieldset = document.createElement("fieldset");
+        thicknessFieldset.classList.add("surface-container", "small-round");
+        const thicknessLegend = document.createElement("legend");
+        thicknessLegend.innerText = "Thicknesses";
+        thicknessFieldset.appendChild(thicknessLegend);
+        const thicknessContainer = document.createElement("div");
+        thicknessContainer.className = "grid no-space"
+        thicknessFieldset.appendChild(thicknessContainer);
+        for (const thickness of SheetSettingsModel.thicknesses) {
+            const key = `show_thickness:${thickness}` as BooleanSettingKey;
+            // @ts-ignore
+            const checkbox = new ToggleButton(thickness, thickness, WorkspaceFilter[key]);
+            checkbox.element.classList.add("s6", "m6", "l6", "tiny-margin");
+
+            checkbox.onChange = (val: boolean) => {
+                // @ts-ignore
+                WorkspaceFilter[key] = val;
+                this.resyncState();
+            };
+
+            thicknessContainer.appendChild(checkbox.element);
+        }
+
+        nav.appendChild(materialsFieldset);
+        nav.appendChild(thicknessFieldset);
+
+        document.body.appendChild(nav);
+    }
+
+    loadLeftNav() {
+        const nav = document.createElement("nav");
+        nav.classList.add("left", "min");
+        const homeButton = document.createElement("button");
+        homeButton.className = "square round extra";
+        const homeIcon = document.createElement("i");
+        homeIcon.innerText = "home";
+        homeButton.appendChild(homeIcon);
+        homeButton.onclick = () => window.location.href = "/";
+
+        const profileButton = document.createElement("button");
+        profileButton.classList.add("border", "large", "circle");
+        profileButton.innerHTML = `
+            <i>person</i>
+        `
+        profileButton.onclick = () => this.showProfile();
+
+
+        nav.appendChild(homeButton);
+        nav.appendChild(profileButton);
         document.body.appendChild(nav);
     }
 
@@ -209,27 +266,30 @@ class WorkspacePage {
         new DialogComponent({
                 id: "profile-dialog",
                 title: this.#user.name,
-                position: "right",
+                position: "left",
                 bodyContent: `
-                    <nav class = "row no-space wrap">
-                        ${this.#user.roles.map(role => `
-                        <button class="chip tiny-margin">
-                            <i>assignment_ind</i>
-                            <span>${role}</span>
-                        </button>
-                        `).join("")}
-                    </nav>
-                    <fieldset class="wrap small-round">
+                    <fieldset class="wrap small-round surface-container">
+                        <legend>Roles</legend>
+                        <nav class = "row no-space wrap">
+                            ${this.#user.roles.map(role => `
+                            <button class="chip tiny-margin">
+                                <i>assignment_ind</i>
+                                <span>${role}</span>
+                            </button>
+                            `).join("")}
+                        </nav>
+                    </fieldset>
+                    <fieldset class="wrap small-round surface-container">
                         <legend>Permissions</legend>
                             <ul class="list border">
                                 ${this.#user.permissions.map(permission => `
-                                    <li>
-                                        <div class="max">
-                                            <h6 class="small">${permission.label}</h6>
-                                            <div>${permission.description}</div>
-                                        </div>
-                                    </li>
-                                    `).join("")}
+                                <li>
+                                    <div class="max">
+                                        <h6 class="small">${permission.label}</h6>
+                                        <div>${permission.description}</div>
+                                    </div>
+                                </li>
+                                `).join("")}
                             </ul>
                     </fieldset>`,
             }
@@ -252,7 +312,7 @@ class WorkspacePage {
 document.addEventListener("DOMContentLoaded", async () => {
     loadTheme(localStorage.getItem("mode") || "dark");
     loadAnimationStyleSheet();
-
+    await SheetSettingsModel.init();
     await WorkspaceSettings.init();
     await UserContext.init();
 

@@ -7,14 +7,12 @@ import {JobViewMode} from "@config/job-view-mode";
 
 export type ViewChangePayload = {
     dataType: DataTypeSwitcherMode;
-    viewMode: AssemblyViewMode | PartViewMode | NestViewMode | JobViewMode;
 };
 
 export class ViewBus {
     private static listeners: Set<(view: ViewChangePayload) => void> = new Set();
     private static state: ViewChangePayload = {
         dataType: SessionSettingsManager.get().lastActiveDataType,
-        viewMode: SessionSettingsManager.get().lastActiveView,
     };
 
     static subscribe(cb: (view: ViewChangePayload) => void) {

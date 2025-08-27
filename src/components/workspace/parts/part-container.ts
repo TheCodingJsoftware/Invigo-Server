@@ -1,8 +1,6 @@
 import {LaserCutPartData} from "@interfaces/laser-cut-part";
-import {PartViewMode} from "@config/part-view-mode";
 import {PartDataService} from "@components/workspace/parts/part-data.service";
 import {WorkspaceWebSocket} from "@core/websocket/workspace-websocket";
-import {ViewSettingsManager} from "@core/settings/view-settings";
 import {Loading} from "@components/common/loading/loading";
 import {WorkspaceSort} from "@models/workspace-sort";
 import {WorkspaceFilter} from "@models/workspace-filter";
@@ -11,10 +9,16 @@ import {invertImages} from "@utils/theme";
 import {PartSelectionManager} from "@components/workspace/parts/part-selection-manager";
 import {PartsTable} from "@components/workspace/parts/parts-table";
 import {CookieSettingsManager} from "@core/settings/cookies";
+import {JobData} from "@interfaces/job";
+import {FileViewerDialog} from "@components/common/dialog/file-viewer-dialog";
+import {PartRow} from "@components/workspace/parts/part-row";
+import {AreYouSureDialog} from "@components/common/dialog/are-you-sure-dialog";
+import {SnackbarComponent} from "@components/common/snackbar/snackbar-component";
 
 export interface PartData {
     group_id: number;
-    job_id?: number;
+    job_id: number;
+    job_data: JobData;
     name: string;
     flowtag: string[];
     flowtag_index: number;
@@ -45,52 +49,139 @@ class JobElement {
     jobId: number;
     parts: PartData[];
     jobSettings: CookieSettingsManager<JobSettings>;
+    private jobCookieManager: CookieSettingsManager<JobData>;
 
     constructor(jobId: number, parts: PartData[]) {
         this.jobId = jobId;
         this.parts = parts;
+
         this.jobSettings = new CookieSettingsManager(`jobSettings:${this.jobId}`, {isCollapsed: false});
+        // @ts-ignore
+        this.jobCookieManager = new CookieSettingsManager(`jobData:${this.jobId}`, {}, {days: 1 / 24}); // 1 hour
 
         this.element = document.createElement("article");
         this.element.classList.add("round", "border");
 
         this.articleContent = document.createElement("div");
-        this.articleContent.classList.add(".article-content");
+        this.articleContent.classList.add("article-content");
     }
 
     async initialize() {
         this.element.appendChild(this.createArticleHeader());
         this.element.appendChild(this.articleContent);
+
         const partsTable = new PartsTable();
         await partsTable.loadData(this.parts);
         this.articleContent.appendChild(partsTable.table);
 
-        if (this.jobSettings.get()["isCollapsed"]) {
+        if (this.jobSettings.get().isCollapsed) {
             this.collapseArticleContent();
+        }
+
+        const jobData = await this.getJobDataCached();
+    }
+
+    // Stale-while-revalidate: use cache, refresh in background
+    async getJobDataCached(): Promise<JobData> {
+        const cached = this.jobCookieManager.get();
+        if (Object.keys(cached).length > 0) {
+            // Use cache immediately
+            this.refreshJobData(); // background refresh
+            return cached;
+        } else {
+            return this.refreshJobData();
+        }
+    }
+
+    // Fetch fresh data, update cache, and update UI
+    async refreshJobData(): Promise<JobData> {
+        try {
+            const response = await fetch(`/api/workspace/get/job/${this.jobId}`);
+            if (!response.ok) {
+                throw new Error(`Failed to fetch job data: ${response.statusText}`);
+            }
+
+            const data: JobData = await response.json();
+
+            this.jobCookieManager.set(data);
+
+            this.applyJobDataToUI(data);
+
+            return data;
+        } catch (err) {
+            console.error("Error fetching job data:", err);
+            return this.jobCookieManager.get(); // fallback to cache
+        }
+    }
+
+    // Update UI based on job data
+    applyJobDataToUI(data: JobData) {
+        const title = this.element.querySelector(`#job-${this.jobId}`) as HTMLElement;
+        if (title) {
+            title.textContent = data.job_data.name;
         }
     }
 
     private createArticleHeader(): HTMLElement {
-        const header = document.createElement("header");
-        header.classList.add("row", "middle-align");
+        const header = document.createElement("div");
+        header.classList.add("row");
 
         const title = document.createElement("h5");
+        title.id = `job-${this.jobId}`;
         title.classList.add("max");
-        title.textContent = `Job #${this.jobId}`;
 
-        const actions = document.createElement("div");
-        actions.classList.add("row");
+        const split = document.createElement("nav");
+        split.className = "group split small";
+
+        const markCompleteButton = document.createElement("button");
+        markCompleteButton.classList.add("left-round", "small");
+        markCompleteButton.innerHTML = `
+            <i>done_all</i>
+            <span>Mark Complete</span>
+        `.trim();
+        markCompleteButton.onclick = async () => {
+            const dialog = new AreYouSureDialog(
+                "Are you sure?",
+                "Are you sure you want to mark all parts in this job as complete?"
+            );
+
+            const confirmed = await dialog.show();
+            if (!confirmed) return; // user pressed No or Cancel
+
+            for (const part of this.parts) {
+                PartRow.incrementFlowtagIndex(part);
+            }
+
+            new SnackbarComponent({
+                message: "All parts marked complete!",
+                type: "green",
+                icon: "done_all"
+            });
+        }
+
+        // Open all files
+        const openFilesButton = document.createElement("button");
+        openFilesButton.classList.add("no-round", "small");
+        openFilesButton.innerHTML = `
+            <i>preview</i>
+            <span>Open Files</span>
+        `.trim();
+        openFilesButton.onclick = () => {
+            new FileViewerDialog(this.parts)
+        }
 
         // Add collapse/expand button
         const toggleButton = document.createElement("button");
-        toggleButton.classList.add("circle", "transparent", "toggle-button");
+        toggleButton.classList.add("right-round", "square", "small", "toggle-button");
         toggleButton.innerHTML = "<i>expand_less</i>";
         toggleButton.onclick = () => this.collapseArticleContent();
 
-        actions.appendChild(toggleButton);
+        split.appendChild(markCompleteButton);
+        split.appendChild(openFilesButton);
+        split.appendChild(toggleButton);
 
         header.appendChild(title);
-        header.appendChild(actions);
+        header.appendChild(split);
 
         return header;
     }
@@ -113,14 +204,7 @@ export class PartContainer {
         this.element = document.createElement("div");
 
         WorkspaceWebSocket.on("grouped_parts_job_view_changed", async (message) => {
-            console.log("Job view changed: ", message);
-            const currentView = ViewSettingsManager.get().lastActivePartView;
-            await this.load(currentView);
-        });
-        WorkspaceWebSocket.on("grouped_parts_global_view_changed", async (message) => {
-            console.log("Global view changed: ", message)
-            const currentView = ViewSettingsManager.get().lastActivePartView;
-            await this.load(currentView);
+            await this.load();
         });
 
         PartSelectionManager.onChange((rows) => {
@@ -128,7 +212,7 @@ export class PartContainer {
         });
     }
 
-    async load(viewMode: PartViewMode) {
+    async load() {
         Loading.show();
         let data: PartPageData = await PartDataService.getParts();
 
@@ -153,6 +237,19 @@ export class PartContainer {
                 return terms.every(t => hay.includes(t));
             });
         }
+
+        data = data.filter(p => {
+            const materialFilters = Object.entries(WorkspaceFilter.getManager().get())
+                .filter(([k, v]) => k.startsWith("show_material:") && v === true)
+                .map(([k]) => k.slice("show_material:".length));
+            if (materialFilters.length && !materialFilters.includes(p.meta_data?.material)) return false;
+
+            const thicknessFilters = Object.entries(WorkspaceFilter.getManager().get())
+                .filter(([k, v]) => k.startsWith("show_thickness:") && v === true)
+                .map(([k]) => k.slice("show_thickness:".length));
+            if (thicknessFilters.length && !thicknessFilters.includes(p.meta_data?.gauge)) return false;
+            return true;
+        });
 
         data.sort((a, b) => {
             const settings = WorkspaceSort.getManager().get();
@@ -188,12 +285,8 @@ export class PartContainer {
             return;
         }
 
-        if (viewMode == PartViewMode.Global) {
-            await this.loadGlobalTable(data);
-        }
-        if (viewMode == PartViewMode.Job) {
-            await this.loadJobTables(data);
-        }
+        await this.loadJobTables(data);
+
         Loading.hide();
         SearchInput.setLoading(false);
         SearchInput.setResultsCount(data.length);

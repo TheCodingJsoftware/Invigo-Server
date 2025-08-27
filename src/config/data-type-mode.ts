@@ -2,7 +2,6 @@ export enum DataTypeSwitcherMode {
     Job = "job",
     Assembly = "assembly",
     Part = "part",
-    Nest = "nest",
 }
 
 export const DataTypeSwitcherConfig: Record<DataTypeSwitcherMode, {
@@ -20,9 +19,5 @@ export const DataTypeSwitcherConfig: Record<DataTypeSwitcherMode, {
     [DataTypeSwitcherMode.Assembly]: {
         label: "Assemblies",
         icon: "inventory_2",
-    },
-    [DataTypeSwitcherMode.Nest]: {
-        label: "Nests",
-        icon: "window",
     },
 };

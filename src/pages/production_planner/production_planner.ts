@@ -4,8 +4,8 @@ import {Timeline, TimelineOptions} from "vis-timeline/esnext";
 import {DataSet} from "vis-data";
 import {DataGroup, DataItem} from "vis-timeline/declarations";
 import "@static/css/vis-timeline-graph2d.min.css";
-import {loadTheme} from "@utils/theme";
 import {SnackbarComponent} from "@components/common/snackbar/snackbar-component";
+import {loadTheme} from "@utils/theme";
 
 export interface ContactInfo {
     name: string;
@@ -47,31 +47,6 @@ export interface FlowtagTimeline {
     [tagName: string]: TimelineEntry;
 }
 
-export interface AssemblyTimeline {
-    [assemblyName: string]: TimelineEntry;
-}
-
-export interface PartTimeline {
-    [partName: string]: TimelineEntry;
-}
-
-export interface JobFlowtag {
-    id: number;
-    name: string;
-    type: number;
-    color: string;
-    ship_to: string;
-    PO_number: number;
-    ending_date: string;
-    contact_info: ContactInfo;
-    order_number: number;
-    business_info: BusinessInfo;
-    starting_date: string;
-    price_settings: PriceSettings;
-    flowtag_timeline: FlowtagTimeline;
-    moved_job_to_workspace: boolean;
-}
-
 export interface JobItems {
     id: number;
     name: string;
@@ -89,8 +64,33 @@ export interface JobItems {
         moved_job_to_workspace: boolean;
     }
     type: number;
-    assembly_timeline: AssemblyTimeline;
-    item_timeline: PartTimeline;
+}
+
+function getOnColor(hex: string) {
+    let mode = ui("mode");
+    hex = hex.replace(/^#/, "");
+    if (hex.length === 3) hex = hex.split("").map(c => c + c).join("");
+
+    const r = parseInt(hex.substr(0, 2), 16);
+    const g = parseInt(hex.substr(2, 2), 16);
+    const b = parseInt(hex.substr(4, 2), 16);
+
+    // Relative luminance (0 = dark, 1 = light)
+    const luminance = (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255;
+
+    // Auto detect mode if needed
+    if (mode === "auto") {
+        mode = luminance > 0.5 ? "light" : "dark";
+    }
+
+    // Material 3 style onPrimary selection
+    // Light mode: background light → use dark foreground
+    // Dark mode: background dark → use light foreground
+    if (mode === "light") {
+        return luminance < 0.45 ? "#FFFFFF" : "#000000"; // tweak threshold for better M3 feel
+    } else {
+        return luminance > 0.6 ? "#000000" : "#FFFFFF";
+    }
 }
 
 type WorkspaceFlowtagTimeline = Record<
@@ -110,10 +110,11 @@ function toISOStringSafe(date: string | Date | number | null | undefined): strin
     return (date instanceof Date ? date : new Date(date)).toISOString();
 }
 
-export function buildJobProcessTimelines(items: DataItem[]): JobTimelinePayload[] {
+function buildJobProcessTimelines(items: DataItem[]): JobTimelinePayload[] {
     const jobs: Record<number, JobTimelinePayload> = {};
 
     for (const {group, content, start, end} of items) {
+        console.log(items)
         const jobId = typeof group === "string" ? parseInt(group, 10) : group;
         if (!jobId) continue;
 
@@ -133,157 +134,23 @@ export function buildJobProcessTimelines(items: DataItem[]): JobTimelinePayload[
     return Object.values(jobs);
 }
 
-//
-// class JobProcessTimeline {
-//     private container: HTMLElement;
-//     private timeline: Timeline | null = null;
-//     private items: DataSet<DataItem>;
-//     private groups: DataSet<DataGroup>;
-//
-//     constructor(container: HTMLElement, options: TimelineOptions = {}) {
-//         this.container = container;
-//
-//         this.items = new DataSet<DataItem>([]);
-//         this.groups = new DataSet<DataGroup>([]);
-//
-//         function customOrder(a: any, b: any) {
-//             return a.id - b.id;
-//         }
-//
-//         const defaultOptions: TimelineOptions = {
-//             editable: true,
-//             order: customOrder,
-//             stack: true,
-//             showTooltips: true,
-//             multiselect: true,
-//             zoomable: true,
-//             verticalScroll: true,
-//             horizontalScroll: true,
-//             zoomKey: "ctrlKey",
-//             showCurrentTime: true,
-//             orientation: {
-//                 axis: "top",
-//                 item: "top",
-//             },
-//             groupOrder: (a: DataGroup, b: DataGroup) => (a.id as number) - (b.id as number), // group order by job id
-//             tooltipOnItemUpdateTime: {
-//                 template: (item: any) => {
-//                     const start = item.start
-//                         ? new Date(item.start).toLocaleString()
-//                         : "N/A";
-//                     const end = item.end ? new Date(item.end).toLocaleString() : "N/A";
-//                     return `<div>
-//                     <b>${item.content}</b><br/>
-//                     Start: ${start}<br/>
-//                     End: ${end}
-//                   </div>`;
-//                 },
-//             },
-//             onMoving: (item, callback) => {
-//                 console.log(item.group);
-//                 // If user tries to drag into another group, block it
-//                 changedJobIds.add(item.group as number)
-//                 if (item.group !== this.items.get(item.id)?.group) {
-//                     item.group = this.items.get(item.id)?.group; // reset to original
-//                 }
-//                 callback(item); // always call callback
-//             },
-//         };
-//
-//         const mergedOptions = {...defaultOptions, ...options};
-//
-//         this.timeline = new Timeline(this.container, [], mergedOptions);
-//         this.timeline.setOptions(mergedOptions);
-//         this.timeline.setGroups(this.groups);
-//         this.timeline.setItems(this.items);
-//         this.timeline.on("click", (event: any) => {
-//             // DataSet change events: add/update/remove
-//             if (event && event.items) {
-//                 event.items.forEach((itemId: string | number) => {
-//                     const item = this.items.get(itemId);
-//                     if (!item) return;
-//                     this.onItemChange(item);
-//                 });
-//             }
-//         });
-//     }
-//
-//     onItemChange(item: DataItem) {
-//         const jobId = typeof item.group === "string" ? parseInt(item.group, 10) : item.group;
-//         if (jobId) {
-//             changedJobIds.add(jobId);
-//         }
-//     }
-//
-//     public loadJobs(jobs: JobFlowtag[]) {
-//         this.items.clear();
-//         this.groups.clear();
-//
-//         jobs.forEach((job) => {
-//             const groupId = job.id;
-//             this.groups.add({
-//                 id: groupId,
-//                 content: job.name,
-//             });
-//
-//             // color class for items
-//             const colorClass = `job-color-${groupId}`;
-//
-//             Object.entries(job.flowtag_timeline || {}).forEach(
-//                 ([flowName, range], idx) => {
-//                     this.items.add({
-//                         id: `${groupId}-${idx}`,
-//                         group: groupId,
-//                         content: flowName,
-//                         start: new Date(range.starting_date).toISOString(),
-//                         end: new Date(range.ending_date).toISOString(),
-//                         title: flowName,
-//                         className: colorClass,
-//                     });
-//                 }
-//             );
-//
-//             // add dynamic CSS for job color
-//             if (!document.getElementById(`job-color-style-${groupId}`)) {
-//                 const style = document.createElement("style");
-//                 style.id = `job-color-style-${groupId}`;
-//                 style.innerHTML = `
-//                 .vis-item.${colorClass} {
-//                     background-color: ${job.color};
-//                     border-color: ${job.color};
-//                     color: black;
-//                 }
-//                 .vis-item.vis-selected.${colorClass} {
-//                     background-color: ${job.color};
-//                     border-color: ${job.color};
-//                     color: white;
-//                 }
-//             `;
-//                 document.head.appendChild(style);
-//             }
-//         });
-//     }
-//
-//
-//     public getItems(): DataItem[] {
-//         return this.items.get();
-//     }
-// }
+function getTimelineHeight(): number {
+    const header = document.querySelector("header");
+    const headerHeight = header ? header.offsetHeight : 0;
+    const padding = 20;
+    return window.innerHeight - headerHeight - padding;
+}
 
 class JobTimeline {
     private readonly container: HTMLElement;
     private readonly timeline: Timeline | null = null;
-    private readonly processes: DataSet<DataItem>;
     private readonly items: DataSet<DataItem>;
-    private readonly assemblies: DataSet<DataItem>;
     private readonly groups: DataSet<DataGroup>;
 
     constructor(container: HTMLElement, options: TimelineOptions = {}) {
         this.container = container;
 
-        this.processes = new DataSet<DataItem>([]);
         this.items = new DataSet<DataItem>([]);
-        this.assemblies = new DataSet<DataItem>([]);
         this.groups = new DataSet<DataGroup>([]);
 
         function customOrder(a: any, b: any) {
@@ -294,6 +161,7 @@ class JobTimeline {
             editable: true,
             order: customOrder,
             stack: true,
+            maxHeight: getTimelineHeight(),
             showTooltips: true,
             multiselect: true,
             zoomable: true,
@@ -327,6 +195,17 @@ class JobTimeline {
                 }
                 callback(item); // always call callback
             },
+            onMove: (item, callback) => {
+                if (item.group !== this.items.get(item.id)?.group) {
+                    item.group = this.items.get(item.id)?.group;
+                }
+
+                this.items.update(item as any);
+
+                changedJobIds.add(item.group as number);
+
+                callback(item);
+            }
         };
 
         const mergedOptions = {...defaultOptions, ...options};
@@ -345,6 +224,12 @@ class JobTimeline {
                 });
             }
         });
+
+        window.addEventListener("resize", () => {
+            if (this.timeline) {
+                this.timeline.setOptions({maxHeight: getTimelineHeight()});
+            }
+        });
     }
 
     onItemChange(item: DataItem) {
@@ -355,9 +240,7 @@ class JobTimeline {
     }
 
     public loadJobs(jobs: JobItems[]) {
-        this.processes.clear();
         this.items.clear();
-        this.assemblies.clear();
         this.groups.clear();
 
         jobs.forEach((job) => {
@@ -365,30 +248,16 @@ class JobTimeline {
 
             // Add top-level job group
             this.groups.add({
-                id: jobGroupId,
+                id: `J${jobGroupId}`,
                 content: job.name,
-                nestedGroups: [jobGroupId * 10 + 1, jobGroupId * 10 + 2, jobGroupId * 10 + 3], // three nested groups
+                nestedGroups: [jobGroupId], // one nested groups
             });
 
-            const processesGroupId = jobGroupId * 10 + 1;
+            const processesGroupId = jobGroupId;
             this.groups.add({
                 id: processesGroupId,
-                content: "Processes",
+                content: "",
             })
-
-            // Nested group for items
-            const itemsGroupId = jobGroupId * 10 + 2;
-            this.groups.add({
-                id: itemsGroupId,
-                content: "Items",
-            });
-
-            // Nested group for assemblies
-            const assembliesGroupId = jobGroupId * 10 + 3;
-            this.groups.add({
-                id: assembliesGroupId,
-                content: "Assemblies",
-            });
 
             const colorClass = `job-color-${jobGroupId}`;
 
@@ -400,34 +269,7 @@ class JobTimeline {
                     content: flowName,
                     start: new Date(range.starting_date).toISOString(),
                     end: new Date(range.ending_date).toISOString(),
-                    title: flowName,
-                    className: colorClass,
-                });
-            });
-
-
-            // Add item timeline
-            Object.entries(job.item_timeline || {}).forEach(([itemName, range], idx) => {
-                this.items.add({
-                    id: `item-${jobGroupId}-${idx}`,
-                    group: itemsGroupId,
-                    content: itemName,
-                    start: new Date(range.starting_date).toISOString(),
-                    end: new Date(range.ending_date).toISOString(),
-                    title: itemName,
-                    className: colorClass,
-                });
-            });
-
-            // Add assembly timeline
-            Object.entries(job.assembly_timeline || {}).forEach(([assemblyName, range], idx) => {
-                this.assemblies.add({
-                    id: `assembly-${jobGroupId}-${idx}`,
-                    group: assembliesGroupId,
-                    content: assemblyName,
-                    start: new Date(range.starting_date).toISOString(),
-                    end: new Date(range.ending_date).toISOString(),
-                    title: assemblyName,
+                    title: job.job_data.ship_to,
                     className: colorClass,
                 });
             });
@@ -436,18 +278,29 @@ class JobTimeline {
             if (!document.getElementById(`job-color-style-${jobGroupId}`)) {
                 const style = document.createElement("style");
                 style.id = `job-color-style-${jobGroupId}`;
+                const bgColor = job.job_data.color;
+                const textColor = getOnColor(bgColor);
+
                 style.innerHTML = `
-                .vis-item.${colorClass} {
-                    background-color: ${job.job_data.color};
-                    border-color: ${job.job_data.color};
-                    color: black;
-                }
-                .vis-item.vis-selected.${colorClass} {
-                    background-color: ${job.job_data.color};
-                    border-color: ${job.job_data.color};
-                    color: white;
-                }
-            `;
+                    .vis-item.${colorClass} {
+                        background-color: ${bgColor};
+                        border-color: ${bgColor};
+                        color: ${textColor};
+                        border-radius: 0.625rem;
+                        border: .0625rem solid var(--outline-variant);
+                    }
+                    .vis-item.vis-selected.${colorClass} {
+                        background-color: ${bgColor};
+                        color: ${textColor};
+                        border-radius: 0.625rem;
+                        outline: .125rem solid var(--primary);
+                        outline-offset: 0.25rem;
+                    }
+                    .vis-item.vis-item-overflow.vis-item-content.${colorClass} {
+                        background-color: red !important;
+                        color: ${textColor};
+                    }
+                `;
                 document.head.appendChild(style);
             }
         });
@@ -455,7 +308,7 @@ class JobTimeline {
         // Set the items and groups to the timeline
         if (this.timeline) {
             this.timeline.setGroups(this.groups);
-            this.timeline.setItems([...this.items.get(), ...this.assemblies.get()]);
+            this.timeline.setItems(this.items.get());
         }
     }
 
@@ -464,78 +317,6 @@ class JobTimeline {
         return this.items.get();
     }
 }
-
-// async function loadJobProcessTimeline() {
-//     const jobProcessSaveButton = document.getElementById("job-process-save-button") as HTMLButtonElement;
-//
-//     const container = document.getElementById("job-process-timeline");
-//     if (!container) {
-//         throw new Error("Missing #job-process-timeline in DOM");
-//     }
-//
-//     try {
-//         const res = await fetch("/api/production_planner/job/process/timeline");
-//         if (!res.ok) throw new Error("Failed to fetch jobs");
-//         const data = await res.json();
-//
-//         const jobs: JobFlowtag[] = Object.values(data);
-//
-//         const jobTimeline = new JobProcessTimeline(container);
-//         jobTimeline.loadJobs(jobs);
-//
-//         jobProcessSaveButton.addEventListener("click", async () => {
-//             const items = jobTimeline.getItems();
-//             const payload = buildJobProcessTimelines(items);
-//
-//             // Filter only changed jobs
-//             const filteredPayload = payload.filter(job => changedJobIds.has(job.id));
-//
-//             try {
-//                 const response = await fetch("/api/production_planner/job/process/timeline", {
-//                     method: "POST",
-//                     headers: {
-//                         "Content-Type": "application/json",
-//                     },
-//                     body: JSON.stringify(filteredPayload),
-//                 });
-//
-//                 if (!response.ok) {
-//                     const text = await response.text();
-//                     new SnackbarComponent({
-//                         id: "error",
-//                         type: "error",
-//                         message: `Failed to save timeline: ${response.status} ${text}`,
-//                         icon: "error",
-//                         duration: 1000,
-//                     })
-//                     throw new Error(`Failed to save timeline: ${response.status} ${text}`);
-//                 }
-//
-//                 const result = await response.json();
-//                 new SnackbarComponent({
-//                     id: "success",
-//                     type: "green",
-//                     message: "Timeline saved successfully",
-//                     icon: "check",
-//                     duration: 1000,
-//                 })
-//                 changedJobIds.clear();
-//             } catch (err) {
-//                 new SnackbarComponent({
-//                     id: "error",
-//                     type: "error",
-//                     message: `Error posting timeline: ${err}`,
-//                     icon: "error",
-//                     duration: 1000,
-//                 })
-//                 console.error("Error posting timeline:", err);
-//             }
-//         });
-//
-//     } catch (err) {
-//         console.error("Failed to load jobs:", err);
-//     }
-// }
 
 async function loadJobItemsTimeline() {
     const jobItemsTimelineSaveButton = document.getElementById("save-button") as HTMLButtonElement;
@@ -563,7 +344,6 @@ async function loadJobItemsTimeline() {
             const filteredPayload = payload.filter(job => changedJobIds.has(job.id));
 
             console.log(filteredPayload);
-            return
 
             try {
                 const response = await fetch("/api/production_planner/job/timeline", {
@@ -591,7 +371,7 @@ async function loadJobItemsTimeline() {
                     id: "success",
                     type: "green",
                     message: "Timeline saved successfully",
-                    icon: "check",
+                    icon: "save",
                     duration: 1000,
                 })
                 changedJobIds.clear();
@@ -613,7 +393,7 @@ async function loadJobItemsTimeline() {
 }
 
 document.addEventListener("DOMContentLoaded", async () => {
-    loadTheme("light");
+    loadTheme("dark");
     // Promise.all([loadJobProcessTimeline(), loadJobItemsTimeline()]);
     await loadJobItemsTimeline()
 });

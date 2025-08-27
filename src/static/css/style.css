@@ -222,13 +222,22 @@ button menu {
 }
 
 /* blinking red border when timing */
+.timer-btn {
+    color: var(--error) !important;
+}
+
 .timer-btn.timing {
-    border: .0625rem solid var(--error);
     animation: border-blink 1.5s infinite;
+}
+
+.timer-btn:not(.timing) {
+    border-color: transparent !important;
 }
 
 @keyframes border-blink {
     0% { border-color: var(--error); color: var(--error); }
-    50% { border-color: transparent; color: var(--error); }
+    25% { border-color: transparent; color: var(--error); }
+    50% { border-color: var(--error); color: var(--error); }
+    75% { border-color: transparent; color: var(--error); }
     100% { border-color: var(--error); color: var(--error); }
 }

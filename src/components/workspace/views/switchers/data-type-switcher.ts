@@ -22,9 +22,9 @@ export class DataTypeSwitcher {
         nav.id = "data-type-switcher";
 
         Object.values(DataTypeSwitcherMode).forEach(mode => {
-            if (!this.#user.can(WorkspacePermissions[mode])) {
-                return;
-            }
+            // if (!this.#user.can(WorkspacePermissions[mode])) {
+            //     return;
+            // }
             const button = document.createElement("a");
             button.dataset.target = mode;
             button.innerHTML = `

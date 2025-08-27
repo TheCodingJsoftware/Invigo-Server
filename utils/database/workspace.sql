@@ -26,8 +26,6 @@ CREATE TABLE IF NOT EXISTS nest_laser_cut_parts (
     job_id BIGINT NOT NULL REFERENCES jobs(id) ON DELETE CASCADE,
     nest_id INTEGER NOT NULL REFERENCES nests(id) ON DELETE CASCADE,
     name TEXT NOT NULL,
-    setup_time JSONB,
-    setup_time_seconds INTEGER,
     start_time TIMESTAMPTZ,
     end_time TIMESTAMPTZ,
     inventory_data JSONB,
@@ -51,8 +49,6 @@ CREATE TABLE IF NOT EXISTS assemblies (
     flowtag_index INTEGER NOT NULL DEFAULT 0,
     flowtag_status_index INTEGER NOT NULL DEFAULT 0,
     is_timing BOOLEAN NOT NULL DEFAULT false,
-    setup_time JSONB,
-    setup_time_seconds INTEGER,
     start_time TIMESTAMPTZ,
     end_time TIMESTAMPTZ,
     meta_data JSONB,
@@ -94,8 +90,6 @@ CREATE TABLE IF NOT EXISTS assembly_laser_cut_parts (
     recut BOOLEAN NOT NULL DEFAULT false,
     recoat BOOLEAN NOT NULL DEFAULT false,
     is_timing BOOLEAN NOT NULL DEFAULT false,
-    setup_time JSONB,
-    setup_time_seconds INTEGER,
     start_time TIMESTAMPTZ,
     end_time TIMESTAMPTZ,
     inventory_data JSONB,
@@ -213,50 +207,6 @@ GROUP BY
     ld.meta_data,
     ld.workspace_data;
 
-CREATE OR REPLACE VIEW view_grouped_laser_cut_parts_global AS
-WITH latest_data AS (
-    SELECT DISTINCT ON (name)
-        name,
-        meta_data::jsonb AS meta_data,
-        workspace_data::jsonb AS workspace_data
-    FROM assembly_laser_cut_parts
-    ORDER BY name, modified_at DESC
-)
-SELECT
-    MIN(w.id) AS group_id,
-    w.name,
-    w.flowtag,
-    w.flowtag_index,
-    w.flowtag_status_index,
-    w.recut,
-    w.recoat,
-    w.is_timing,
-    w.flowtag[w.flowtag_index + 1] AS current_flowtag,
-    (w.flowtag_index = cardinality(w.flowtag)) AS is_completed,
-    COUNT(*) AS quantity,
-    -- MIN(w.start_time) AS start_time,
-    -- MAX(w.end_time) AS end_time,
-    ld.meta_data::jsonb,
-    ld.workspace_data::jsonb,
-    MIN(w.created_at) AS created_at,
-    MAX(w.modified_at) AS modified_at
-FROM
-    assembly_laser_cut_parts w
-JOIN
-    latest_data ld ON ld.name = w.name
-GROUP BY
-    w.name,
-    w.flowtag,
-    w.flowtag_index,
-    w.flowtag_status_index,
-    w.recut,
-    w.recoat,
-    w.is_timing,
-    -- w.start_time,
-    -- w.end_time,
-    ld.meta_data,
-    ld.workspace_data;
-
 -- Notification function for laser cut parts view changes
 CREATE OR REPLACE FUNCTION notify_laser_cut_parts_view_change()
 RETURNS trigger AS $$
@@ -268,24 +218,6 @@ BEGIN
             'type', TG_OP,
             'table', TG_TABLE_NAME,
             'job_id', COALESCE(NEW.job_id, OLD.job_id),
-            'part_name', COALESCE(NEW.name, OLD.name),
-            'flowtag', COALESCE(NEW.flowtag, OLD.flowtag),
-            'flowtag_index', COALESCE(NEW.flowtag_index, OLD.flowtag_index),
-            'flowtag_status_index', COALESCE(NEW.flowtag_status_index, OLD.flowtag_status_index),
-            'recut', COALESCE(NEW.recut, OLD.recut),
-            'recoat', COALESCE(NEW.recoat, OLD.recoat),
-            'start_time', COALESCE(NEW.start_time, OLD.start_time),
-            'end_time', COALESCE(NEW.end_time, OLD.end_time),
-            'is_timing', COALESCE(NEW.is_timing, OLD.is_timing)
-        )::text
-    );
-
-    -- Notify for the global view
-    PERFORM pg_notify(
-        'view_grouped_laser_cut_parts_global',
-        json_build_object(
-            'type', TG_OP,
-            'table', TG_TABLE_NAME,
             'part_name', COALESCE(NEW.name, OLD.name),
             'flowtag', COALESCE(NEW.flowtag, OLD.flowtag),
             'flowtag_index', COALESCE(NEW.flowtag_index, OLD.flowtag_index),

@@ -13,10 +13,10 @@ export class ViewSwitcherPanel {
     readonly #user = Object.freeze(UserContext.getInstance().user);
 
     private dataTypeSwitcher = new DataTypeSwitcher();
-    private partViewSwitcher = new PartViewSwitcher();
-    private assemblyViewSwitcher = new AssemblyViewSwitcher();
-    private nestViewSwitcher = new NestViewSwitcher();
-    private jobViewSwitcher = new JobViewSwitcher();
+    // private partViewSwitcher = new PartViewSwitcher();
+    // private assemblyViewSwitcher = new AssemblyViewSwitcher();
+    // private nestViewSwitcher = new NestViewSwitcher();
+    // private jobViewSwitcher = new JobViewSwitcher();
 
     constructor() {
         this.element = document.createElement("div");
@@ -27,36 +27,36 @@ export class ViewSwitcherPanel {
             this.dataTypeSwitcher.initialize();
             this.element.appendChild(this.dataTypeSwitcher.element);
         }
-        if (this.#user.can(WorkspacePermissions.SwitchPartView)) {
-            this.partViewSwitcher.initialize();
-            this.element.appendChild(this.partViewSwitcher.element);
-        }
-        if (this.#user.can(WorkspacePermissions.SwitchAssemblyView)) {
-            this.assemblyViewSwitcher.initialize();
-            this.element.appendChild(this.assemblyViewSwitcher.element);
-        }
-        if (this.#user.can(WorkspacePermissions.SwitchNestView)) {
-            this.nestViewSwitcher.initialize();
-            this.element.appendChild(this.nestViewSwitcher.element);
-        }
-        if (this.#user.can(WorkspacePermissions.SwitchJobView)) {
-            this.jobViewSwitcher.initialize();
-            this.element.appendChild(this.jobViewSwitcher.element);
-        }
+        // if (this.#user.can(WorkspacePermissions.SwitchPartView)) {
+        //     this.partViewSwitcher.initialize();
+        //     this.element.appendChild(this.partViewSwitcher.element);
+        // }
+        // if (this.#user.can(WorkspacePermissions.SwitchAssemblyView)) {
+        //     this.assemblyViewSwitcher.initialize();
+        //     this.element.appendChild(this.assemblyViewSwitcher.element);
+        // }
+        // if (this.#user.can(WorkspacePermissions.SwitchNestView)) {
+        //     this.nestViewSwitcher.initialize();
+        //     this.element.appendChild(this.nestViewSwitcher.element);
+        // }
+        // if (this.#user.can(WorkspacePermissions.SwitchJobView)) {
+        //     this.jobViewSwitcher.initialize();
+        //     this.element.appendChild(this.jobViewSwitcher.element);
+        // }
 
         ViewBus.subscribe((view) => {
-            if (this.#user.can(WorkspacePermissions.SwitchPartView)) {
-                this.partViewSwitcher.element.style.display = view.dataType === DataTypeSwitcherMode.Part ? "block" : "none";
-            }
-            if (this.#user.can(WorkspacePermissions.SwitchAssemblyView)) {
-                this.assemblyViewSwitcher.element.style.display = view.dataType === DataTypeSwitcherMode.Assembly ? "block" : "none";
-            }
-            if (this.#user.can(WorkspacePermissions.SwitchNestView)) {
-                this.nestViewSwitcher.element.style.display = view.dataType === DataTypeSwitcherMode.Nest ? "block" : "none";
-            }
-            if (this.#user.can(WorkspacePermissions.SwitchJobView)) {
-                this.jobViewSwitcher.element.style.display = view.dataType === DataTypeSwitcherMode.Job ? "block" : "none";
-            }
+            // if (this.#user.can(WorkspacePermissions.SwitchPartView)) {
+            //     this.partViewSwitcher.element.style.display = view.dataType === DataTypeSwitcherMode.Part ? "block" : "none";
+            // }
+            // if (this.#user.can(WorkspacePermissions.SwitchAssemblyView)) {
+            //     this.assemblyViewSwitcher.element.style.display = view.dataType === DataTypeSwitcherMode.Assembly ? "block" : "none";
+            // }
+            // if (this.#user.can(WorkspacePermissions.SwitchNestView)) {
+            //     this.nestViewSwitcher.element.style.display = view.dataType === DataTypeSwitcherMode.Nest ? "block" : "none";
+            // }
+            // if (this.#user.can(WorkspacePermissions.SwitchJobView)) {
+            //     this.jobViewSwitcher.element.style.display = view.dataType === DataTypeSwitcherMode.Job ? "block" : "none";
+            // }
         });
     }
 }

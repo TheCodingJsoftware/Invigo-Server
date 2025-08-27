@@ -292,41 +292,7 @@ class WorkspaceDB(BaseWithDBPool):
                 for job in jobs:
                     job_id = job["id"]
                     job_dict = row_to_dict(job)
-
-                    # Fetch assemblies for this job
-                    assemblies_query = """
-                        SELECT id, name, start_time, end_time
-                        FROM assemblies
-                        WHERE job_id = $1
-                    """
-                    assemblies = await conn.fetch(assemblies_query, job_id)
-                    assembly_timeline = {}
-                    for a in assemblies:
-                        assembly_timeline[a["name"]] = {
-                            "starting_date": a["start_time"].isoformat() if a["start_time"] else None,
-                            "ending_date": a["end_time"].isoformat() if a["end_time"] else None,
-                        }
-
-                    # Fetch parts/items for this job
-                    parts_query = """
-                        SELECT group_id AS id, name, start_time, end_time
-                        FROM view_grouped_laser_cut_parts_by_job
-                        WHERE job_id = $1
-                    """
-                    parts = await conn.fetch(parts_query, job_id)
-                    item_timeline = {}
-                    for p in parts:
-                        item_timeline[p["name"]] = {
-                            "starting_date": p["start_time"].isoformat() if p["start_time"] else None,
-                            "ending_date": p["end_time"].isoformat() if p["end_time"] else None,
-                        }
-
-                    # Attach timelines
-                    job_dict["assembly_timeline"] = assembly_timeline
-                    job_dict["item_timeline"] = item_timeline
-
                     results[str(job_id)] = job_dict
-
                 return results
 
         except Exception as e:
@@ -338,10 +304,10 @@ class WorkspaceDB(BaseWithDBPool):
         async with self.db_pool.acquire() as conn:
             query = """
             UPDATE jobs
-            SET job_data = jsonb_set(job_data, '{flowtag_timeline}', $1::jsonb, true)
-            WHERE id = $2
+            SET job_data = jsonb_set(job_data, '{flowtag_timeline}', $2::jsonb, true)
+            WHERE id = $1
             """
-            await conn.execute(query, flowtag_timeline, job_id)
+            await conn.execute(query, job_id, flowtag_timeline)
         await self.update_part_flowtag_dates(job_id, flowtag_timeline)
 
     @ensure_connection

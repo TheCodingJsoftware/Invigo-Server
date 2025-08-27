@@ -22,9 +22,9 @@ export class AssemblyViewSwitcher {
         div.id = "assembly-view-switcher";
 
         Object.values(AssemblyViewMode).forEach(mode => {
-            if (!this.#user.can(WorkspacePermissions[mode])) {
-                return;
-            }
+            // if (!this.#user.can(WorkspacePermissions[mode])) {
+            //     return;
+            // }
             const button = document.createElement("a");
             button.dataset.target = mode;
             button.dataset.ui = AssemblyViewConfig[mode].dbView;
@@ -38,12 +38,12 @@ export class AssemblyViewSwitcher {
             div.appendChild(button);
         });
 
-        const savedView = ViewSettingsManager.get().lastActiveAssemblyView;
-        const savedButton = div.querySelector(`a[data-target="${savedView}"]`) as HTMLElement;
-        if (savedButton) {
-            savedButton.classList.add("active");
-            ViewBus.update({ viewMode: savedView });
-        }
+        // const savedView = ViewSettingsManager.get().lastActiveAssemblyView;
+        // const savedButton = div.querySelector(`a[data-target="${savedView}"]`) as HTMLElement;
+        // if (savedButton) {
+        //     savedButton.classList.add("active");
+        //     ViewBus.update({ viewMode: savedView });
+        // }
 
         this.element.appendChild(div);
         return this.element;
@@ -55,8 +55,8 @@ export class AssemblyViewSwitcher {
             button.classList.remove("active");
             if (button.dataset.target === mode) {
                 button.classList.add("active");
-                ViewSettingsManager.set({ lastActiveAssemblyView: mode });
-                ViewBus.update({ viewMode: mode });
+                // ViewSettingsManager.set({ lastActiveAssemblyView: mode });
+                // ViewBus.update({ viewMode: mode });
             }
         });
     }

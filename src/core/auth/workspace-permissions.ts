@@ -1,7 +1,6 @@
 import {AssemblyViewMode} from "@config/assembly-view-mode";
 import {DataTypeSwitcherMode} from "@config/data-type-mode";
 import {JobViewMode} from "@config/job-view-mode";
-import {NestViewMode} from "@config/nest-view-mode";
 import {PartViewMode} from "@config/part-view-mode";
 import {WorkspaceSettings} from "@core/settings/workspace-settings";
 
@@ -13,21 +12,6 @@ export type PermissionEntry = {
 
 export const PermissionTree = {
     Action: {
-        ViewJobs: {
-            value: "view_jobs",
-            label: "View Jobs",
-            description: "Allows viewing of all jobs in the system.",
-        },
-        EditJobs: {
-            value: "edit_jobs",
-            label: "Edit Jobs",
-            description: "Allows editing job details and configuration.",
-        },
-        DeleteJobs: {
-            value: "delete_jobs",
-            label: "Delete Jobs",
-            description: "Allows deletion of jobs.",
-        },
         AdvanceFlow: {
             value: "advance_flow",
             label: "Advance Flow",
@@ -106,12 +90,9 @@ export const PermissionTree = {
             label: "Part View",
             description: "Allows access to part data.",
         },
-        [DataTypeSwitcherMode.Nest]: {
-            value: "nest_view",
-            label: "Nest View",
-            description: "Allows access to nest data.",
-        },
     },
+
+    // The views are deprecated and will be removed in a future release.
 
     AssemblyView: {
         SwitchPartView: {
@@ -149,28 +130,6 @@ export const PermissionTree = {
         }
     },
 
-    NestView: {
-        SwitchNestView: {
-            value: "switch_nest_view",
-            label: "Switch Nest View",
-            description: "Allows switching between different nest view modes.",
-        },
-        [NestViewMode.Global]: {
-            value: "nest_global_view",
-            label: "Global Nest View",
-            description: "Allows viewing all nests across jobs.",
-        },
-        [NestViewMode.Job]: {
-            value: "nest_job_view",
-            label: "Job Nest View",
-            description: "Allows viewing nests grouped by job.",
-        },
-        [NestViewMode.Nest]: {
-            value: "nest_nest_view",
-            label: "Nest Details View",
-            description: "Allows viewing and editing individual nest details.",
-        },
-    },
     JobView: {
         SwitchJobView: {
             value: "switch_job_view",
@@ -188,10 +147,9 @@ export const PermissionTree = {
 export const WorkspacePermissions = {
     ...PermissionTree.Action,
     ...PermissionTree.DataType,
-    ...PermissionTree.AssemblyView,
-    ...PermissionTree.PartView,
-    ...PermissionTree.NestView,
-    ...PermissionTree.JobView,
+    // ...PermissionTree.AssemblyView,
+    // ...PermissionTree.PartView,
+    // ...PermissionTree.JobView,
 };
 
 export type FlatPermissionKey = keyof typeof WorkspacePermissions;

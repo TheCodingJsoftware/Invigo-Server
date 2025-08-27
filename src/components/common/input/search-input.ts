@@ -37,7 +37,7 @@ export class SearchInput {
         }
 
         this.element = document.createElement("div");
-        this.element.className = "field label prefix suffix round border absolute center";
+        this.element.className = "field label prefix suffix round border";
 
         this.progress = document.createElement("progress");
         this.progress.className = "circle";

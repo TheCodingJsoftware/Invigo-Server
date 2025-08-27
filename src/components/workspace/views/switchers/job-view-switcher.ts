@@ -22,9 +22,9 @@ export class JobViewSwitcher {
         div.classList.add("tabs", "center-align");
 
         Object.values(JobViewMode).forEach(mode => {
-            if (!this.#user.can(WorkspacePermissions[mode])) {
-                return;
-            }
+            // if (!this.#user.can(WorkspacePermissions[mode])) {
+            //     return;
+            // }
             const button = document.createElement("a");
             button.dataset.target = mode;
             button.dataset.ui = JobViewConfig[mode].dbView;
@@ -38,12 +38,12 @@ export class JobViewSwitcher {
             div.appendChild(button);
         });
 
-        const savedView = ViewSettingsManager.get().lastActiveJobView;
-        const savedButton = div.querySelector(`a[data-target="${savedView}"]`) as HTMLElement;
-        if (savedButton) {
-            savedButton.classList.add("active");
-            ViewBus.update({viewMode: savedView});
-        }
+        // const savedView = ViewSettingsManager.get().lastActiveJobView;
+        // const savedButton = div.querySelector(`a[data-target="${savedView}"]`) as HTMLElement;
+        // if (savedButton) {
+        //     savedButton.classList.add("active");
+        //     ViewBus.update({viewMode: savedView});
+        // }
 
         this.element.appendChild(div);
         return this.element;
@@ -55,8 +55,8 @@ export class JobViewSwitcher {
             button.classList.remove("active");
             if (button.dataset.target === mode) {
                 button.classList.add("active");
-                ViewSettingsManager.set({lastActiveJobView: mode});
-                ViewBus.update({viewMode: mode});
+                // ViewSettingsManager.set({lastActiveJobView: mode});
+                // ViewBus.update({viewMode: mode});
             }
         });
     }

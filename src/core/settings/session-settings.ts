@@ -7,15 +7,13 @@ import {JobViewMode} from "@config/job-view-mode";
 
 interface SessionSettings {
     lastActiveDataType: DataTypeSwitcherMode;
-    lastActiveView: AssemblyViewMode | PartViewMode | NestViewMode | JobViewMode;
 }
 
 const defaultSessionSettings: SessionSettings = {
     lastActiveDataType: DataTypeSwitcherMode.Part,
-    lastActiveView: AssemblyViewMode.Global,
 };
 
 export const SessionSettingsManager = new SettingsManager<SessionSettings>(
-    "session_settings",
+    "SessionSettings",
     defaultSessionSettings
 );

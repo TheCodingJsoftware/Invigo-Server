@@ -21,7 +21,7 @@ export enum PartDataType {
 }
 
 interface PartDataParams {
-    jobId?: number;
+    jobId: number;
     groupId: number;
     name: string;
     flowtag: string[];
@@ -44,10 +44,8 @@ interface RecutPartDataParams extends PartDataParams {
 export class PartDataService {
     private static buildFetchUrl(params: PartDataParams): string {
         const url = new URL('/api/workspace/laser_cut_part', window.location.origin);
-        url.searchParams.append('view', PartViewConfig[ViewSettingsManager.get().lastActivePartView].dbView);
 
-        if (params.jobId) url.searchParams.append('job_id', params.jobId.toString());
-
+        url.searchParams.append('job_id', params.jobId.toString());
         url.searchParams.append('name', params.name);
         url.searchParams.append('flowtag', params.flowtag.join(','));
         url.searchParams.append('flowtag_index', params.flowtagIndex.toString())
@@ -73,9 +71,9 @@ export class PartDataService {
         const workspaceFilter = WorkspaceFilter.getManager().get();
         const user = Object.freeze(UserContext.getInstance().user);
 
-        const currentView = ViewSettingsManager.get().lastActivePartView;
-        const dbView = PartViewConfig[currentView].dbView;
-        const url = new URL(`/api/workspace/view/parts/${dbView}`, window.location.origin);
+        // const currentView = ViewSettingsManager.get().lastActivePartView;
+        // const dbView = PartViewConfig[currentView].dbView;
+        const url = new URL(`/api/workspace/view/parts`, window.location.origin);
 
         url.searchParams.append("show_completed", String(Number(workspaceFilter.showCompleted)));
 
@@ -141,7 +139,6 @@ export class PartDataService {
                 'X-Client-Name': UserContext.getInstance().user.name
             },
             body: JSON.stringify({
-                view: PartViewConfig[ViewSettingsManager.get().lastActivePartView].dbView,
                 job_id: params.jobId,
                 group_id: params.groupId,
                 name: params.name,
@@ -174,7 +171,6 @@ export class PartDataService {
                 'X-Client-Name': UserContext.getInstance().user.name
             },
             body: JSON.stringify({
-                view: PartViewConfig[ViewSettingsManager.get().lastActivePartView].dbView,
                 job_id: params.jobId,
                 group_id: params.groupId,
                 name: params.name,
@@ -206,7 +202,6 @@ export class PartDataService {
                 'X-Client-Name': UserContext.getInstance().user.name
             },
             body: JSON.stringify({
-                view: PartViewConfig[ViewSettingsManager.get().lastActivePartView].dbView,
                 job_id: params.jobId,
                 group_id: params.groupId,
                 name: params.name,

@@ -43,11 +43,11 @@ export class TimerButton {
         this.element.classList.add("chip", "border", "circle", "timer-btn");
 
         // icon + label
-        this.icon.textContent = "play_arrow";
+        this.icon.textContent = "radio_button_checked";
 
         // tooltip
         this.tooltip.classList.add("tooltip");
-        this.tooltip.textContent = "0s";
+        this.tooltip.textContent = "Start Recording";
 
         this.element.appendChild(this.icon);
         this.element.appendChild(this.tooltip);
@@ -69,7 +69,7 @@ export class TimerButton {
     private stop() {
         this.isTimerStarted = false;
         this.startTime = null;
-        this.icon.textContent = "play_arrow";
+        this.icon.textContent = "radio_button_checked";
         this.element.classList.remove("timing");
 
         if (this.intervalId) {
@@ -80,7 +80,7 @@ export class TimerButton {
 
     private updateTooltip() {
         if (!this.startTime) {
-            this.tooltip.textContent = "0s";
+            this.tooltip.textContent = "Start Recording";
             return;
         }
         const elapsed = Math.floor((Date.now() - this.startTime) / 1000);

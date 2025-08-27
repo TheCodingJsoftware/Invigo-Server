@@ -37,7 +37,7 @@ export class PartsTable {
         {
             key: 'current_flowtag',
             label: 'Current Process',
-            render: (data) => data.is_completed ? "Part is Finished" : data.current_flowtag
+            render: (data) => data.is_completed ? "Done" : data.current_flowtag
         },
         {
             key: 'quantity',

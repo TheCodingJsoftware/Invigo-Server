@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "@material/material-color-utilities": "^0.3.0",
     "@toast-ui/editor": "^3.2.2",
     "beercss": "^3.11.33",
     "chart.js": "^4.5.0",

@@ -12,7 +12,7 @@ PART_VIEW_WHITELIST = {
 
 
 class PartViewDataHandler(BaseHandler):
-    async def get(self, db_view: str):
+    async def get(self):
         show_completed = int(self.get_argument("show_completed", "0"))
 
         tag_str = self.get_argument("tags", "")
@@ -20,12 +20,8 @@ class PartViewDataHandler(BaseHandler):
         start_date = self.get_argument("start_date", None)
         end_date = self.get_argument("end_date", None)
 
-        if db_view not in PART_VIEW_WHITELIST:
-            self.set_status(400)
-            self.finish({"error": "Invalid view"})
-            return
         try:
-            data = await self.view_db.get_grouped_parts_view(db_view, show_completed, viewable_tags, start_date, end_date)
+            data = await self.view_db.get_parts_view(show_completed, viewable_tags, start_date, end_date)
         except Exception as e:
             self.set_status(500)
             logging.error(f"Error getting grouped parts view: {e} {traceback.format_exc()}")

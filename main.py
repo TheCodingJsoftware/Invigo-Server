@@ -39,7 +39,6 @@ WORKSPACE_TABLE_CHANNELS = [
     "components",
     "nests",
     "view_grouped_laser_cut_parts_by_job",
-    "view_grouped_laser_cut_parts_global",
 ]
 
 
@@ -49,32 +48,6 @@ async def start_workspace_services():
         conn = await workspace_db.db_pool.acquire()
         for channel in WORKSPACE_TABLE_CHANNELS:
             await conn.add_listener(channel, workspace_notify_handler)
-
-
-def debounce_broadcast(channel: str, event: dict, delay: float = 0.1):
-    """Collect notifications and flush once after `delay` seconds."""
-    loop = IOLoop.current()
-    _notify_buffer[channel].append(event)
-
-    # If a flush is already scheduled, don't schedule another
-    if channel not in _notify_tasks:
-
-        def flush():
-            events = _notify_buffer.pop(channel, [])
-            _notify_tasks.pop(channel, None)
-
-            if events:
-                # Option A: send them aggregated
-                WebSocketWorkspaceHandler.broadcast(
-                    {
-                        "type": f"{channel}_batched",
-                        "events": events,
-                    }
-                )
-                # Option B: or just re-query fresh state once
-                # WebSocketWorkspaceHandler.broadcast({"type": f"{channel}_refresh"})
-
-        _notify_tasks[channel] = loop.call_later(delay, flush)
 
 
 async def workspace_notify_handler(conn, pid, channel, payload):
@@ -102,75 +75,16 @@ async def workspace_notify_handler(conn, pid, channel, payload):
         flowtag = msg.get("flowtag")
         flowtag_index = msg.get("flowtag_index")
 
-        if op == "INSERT":
-            WebSocketWorkspaceHandler.broadcast(
-                {
-                    "type": "grouped_parts_job_view_changed",
-                    "operation": "insert",
-                    "job_id": job_id,
-                    "part_name": part_name,
-                    "flowtag": flowtag,
-                    "flowtag_index": flowtag_index,
-                }
-            )
-        elif op == "UPDATE":
-            WebSocketWorkspaceHandler.broadcast(
-                {
-                    "type": "grouped_parts_job_view_changed",
-                    "operation": "update",
-                    "job_id": job_id,
-                    "part_name": part_name,
-                    "flowtag": flowtag,
-                    "flowtag_index": flowtag_index,
-                }
-            )
-        elif op == "DELETE":
-            WebSocketWorkspaceHandler.broadcast(
-                {
-                    "type": "grouped_parts_job_view_changed",
-                    "operation": "delete",
-                    "job_id": job_id,
-                    "part_name": part_name,
-                    "flowtag": flowtag,
-                    "flowtag_index": flowtag_index,
-                }
-            )
-    elif table == "view_grouped_laser_cut_parts_global":
-        # This notification means the global grouped view changed
-        part_name = msg.get("part_name")
-        flowtag = msg.get("flowtag")
-        flowtag_index = msg.get("flowtag_index")
-
-        if op == "INSERT":
-            WebSocketWorkspaceHandler.broadcast(
-                {
-                    "type": "grouped_parts_global_view_changed",
-                    "operation": "insert",
-                    "part_name": part_name,
-                    "flowtag": flowtag,
-                    "flowtag_index": flowtag_index,
-                }
-            )
-        elif op == "UPDATE":
-            WebSocketWorkspaceHandler.broadcast(
-                {
-                    "type": "grouped_parts_global_view_changed",
-                    "operation": "update",
-                    "part_name": part_name,
-                    "flowtag": flowtag,
-                    "flowtag_index": flowtag_index,
-                }
-            )
-        elif op == "DELETE":
-            WebSocketWorkspaceHandler.broadcast(
-                {
-                    "type": "grouped_parts_global_view_changed",
-                    "operation": "delete",
-                    "part_name": part_name,
-                    "flowtag": flowtag,
-                    "flowtag_index": flowtag_index,
-                }
-            )
+        WebSocketWorkspaceHandler.broadcast(
+            {
+                "type": "grouped_parts_job_view_changed",
+                "operation": op.lower(),
+                "job_id": job_id,
+                "part_name": part_name,
+                "flowtag": flowtag,
+                "flowtag_index": flowtag_index,
+            }
+        )
 
 
 setup_logging()

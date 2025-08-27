@@ -22,9 +22,9 @@ export class NestViewSwitcher {
         div.id = "nest-view-switcher";
 
         Object.values(NestViewMode).forEach(mode => {
-            if (!this.#user.can(WorkspacePermissions[mode])) {
-                return;
-            }
+            // if (!this.#user.can(WorkspacePermissions[mode])) {
+            //     return;
+            // }
             const button = document.createElement("a");
             button.dataset.target = mode;
             button.dataset.ui = NestViewConfig[mode].dbView;
@@ -38,12 +38,12 @@ export class NestViewSwitcher {
             div.appendChild(button);
         });
 
-        const savedView = ViewSettingsManager.get().lastActiveNestView;
-        const savedButton = div.querySelector(`a[data-target="${savedView}"]`) as HTMLElement;
-        if (savedButton) {
-            savedButton.classList.add("active");
-            ViewBus.update({viewMode: savedView});
-        }
+        // const savedView = ViewSettingsManager.get().lastActiveNestView;
+        // const savedButton = div.querySelector(`a[data-target="${savedView}"]`) as HTMLElement;
+        // if (savedButton) {
+        //     savedButton.classList.add("active");
+        //     ViewBus.update({viewMode: savedView});
+        // }
 
         this.element.appendChild(div);
         return this.element;
@@ -55,8 +55,8 @@ export class NestViewSwitcher {
             button.classList.remove("active");
             if (button.dataset.target === mode) {
                 button.classList.add("active");
-                ViewSettingsManager.set({lastActiveNestView: mode});
-                ViewBus.update({viewMode: mode});
+                // ViewSettingsManager.set({lastActiveNestView: mode});
+                // ViewBus.update({viewMode: mode});
             }
         });
     }

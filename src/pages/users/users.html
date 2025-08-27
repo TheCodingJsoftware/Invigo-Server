@@ -32,14 +32,14 @@
             <legend>Roles</legend>
             {% for role in roles %}
             <label class="s12 checkbox">
-                <input type="checkbox" name="role" value="{{ role.name }}" {% if role.name in user.roles %}checked{% endif %}>                <span>{{ role.name }}</span>
+                <input type="checkbox" name="role" value="{{ role.name }}" {% if role.name in user.roles %}checked{% endif %}><span>{{ role.name }}</span>
             </label>
             {% endfor %}
         </fieldset>
         <nav class="s12 row">
             <div class="max field small-round label border">
                 <input name="password" type="password">
-                <label>Password</label>
+                <label for="password">Password</label>
                 <span class="helper">Leave blank to keep current password. Press "Set" to set a new password.</span>
             </div>
             <button class="set-password">

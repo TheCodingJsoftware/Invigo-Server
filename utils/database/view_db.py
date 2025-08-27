@@ -13,11 +13,6 @@ from config.environments import Environment
 from utils.decorators.connection import BaseWithDBPool, ensure_connection
 
 
-class ViewType(Enum):
-    GROUPED_BY_JOB = "view_grouped_laser_cut_parts_by_job"
-    GROUPED_GLOBAL = "view_grouped_laser_cut_parts_global"
-
-
 class ViewDB(BaseWithDBPool):
     def __init__(self):
         self.db_pool: Pool | None = None
@@ -375,16 +370,11 @@ class ViewDB(BaseWithDBPool):
         return result
 
     @ensure_connection
-    async def get_grouped_parts_view(self, db_view: str, show_completed: int, viewable_tags: list[str], start_date: str | None, end_date: str | None) -> list[dict]:
+    async def get_parts_view(self, show_completed: int, viewable_tags: list[str], start_date: str | None, end_date: str | None) -> list[dict]:
         def parse_iso_date(date_str: str) -> datetime:
             # Handles "2025-08-30T05:00:00.000Z"
             return datetime.fromisoformat(date_str.replace("Z", "+00:00"))
 
-        if db_view not in {
-            "view_grouped_laser_cut_parts_by_job",
-            "view_grouped_laser_cut_parts_global",
-        }:
-            raise ValueError("Invalid view name")
         try:
             async with self.db_pool.acquire() as conn:
                 where_clauses = []
@@ -400,15 +390,15 @@ class ViewDB(BaseWithDBPool):
                         where_clauses.append("current_flowtag = ANY($1::text[])")
                     params.append(viewable_tags)
 
-                if start_date and end_date and db_view == "view_grouped_laser_cut_parts_by_job":
+                if start_date and end_date:
                     start_dt = parse_iso_date(start_date) if isinstance(start_date, str) else start_date
                     end_dt = parse_iso_date(end_date) if isinstance(end_date, str) else end_date
 
                     where_clauses.append(f"(start_time <= ${len(params) + 1} AND end_time >= ${len(params) + 2})")
                     params.extend([end_dt, start_dt])  # notice order: $end then $start
 
-                where_sql = " WHERE " + " AND ".join(where_clauses) if where_clauses else ""
-                query = f"SELECT * FROM {db_view}{where_sql}"
+                where_sql = "WHERE " + " AND ".join(where_clauses) if where_clauses else ""
+                query = f"SELECT * FROM view_grouped_laser_cut_parts_by_job {where_sql}"
                 rows = await conn.fetch(query, *params)
                 return [self.decode_json_fields(row) for row in rows]
         except Exception as e:

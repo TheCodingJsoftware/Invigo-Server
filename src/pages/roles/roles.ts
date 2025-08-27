@@ -3,6 +3,7 @@ import "@utils/theme"
 import {extendPermissionMapWithTags, PermissionMap, WorkspacePermissions} from "@core/auth/workspace-permissions";
 import {User} from "@core/auth/user";
 import {WorkspaceSettings} from "@core/settings/workspace-settings";
+import {PermissionToggleButton} from "@components/common/buttons/permission-toggle-button";
 
 interface Role {
     id: number;
@@ -10,56 +11,6 @@ interface Role {
     permissions: string[];
 }
 
-class PermissionToggle {
-    private readonly button: HTMLElement;
-    private readonly icon: HTMLElement;
-    private checked: boolean;
-
-    constructor(value: string, checked: boolean) {
-        const entry = PermissionMap[value];
-        this.checked = checked;
-
-        this.button = document.createElement("button");
-        this.button.className = "left-align chip round perm tiny-margin";
-        this.button.dataset.value = value;
-        this.button.setAttribute("role", "checkbox");
-        this.button.setAttribute("aria-checked", String(checked));
-
-        this.icon = document.createElement("i");
-        this.icon.textContent = checked ? "check_circle" : "circle";
-
-        const label = document.createElement("span");
-        label.textContent = entry.label;
-
-        const tooltip = document.createElement("div");
-        tooltip.className = "tooltip";
-        tooltip.textContent = entry.description;
-
-        this.button.append(this.icon, label, tooltip);
-        this.setChecked(checked);
-
-        this.button.addEventListener("click", () => this.setChecked(!this.checked));
-    }
-
-    get element(): HTMLElement {
-        return this.button;
-    }
-
-    get value(): string {
-        return this.button.dataset.value!;
-    }
-
-    isChecked(): boolean {
-        return this.checked;
-    }
-
-    setChecked(state: boolean): void {
-        this.checked = state;
-        this.button.classList.toggle("fill", state);
-        this.icon.textContent = state ? "check_circle" : "circle";
-        this.button.setAttribute("aria-checked", String(state));
-    }
-}
 
 async function fetchRoles(): Promise<Role[]> {
     const res = await fetch("/api/roles");
@@ -80,7 +31,7 @@ async function deleteRole(role: Role): Promise<void> {
 }
 
 function renderRole(role: Role): HTMLElement {
-    const toggles: PermissionToggle[] = [];
+    const toggles: PermissionToggleButton[] = [];
     const el = document.createElement("article");
     el.classList.add("border", "round", "grid");
 
@@ -98,28 +49,28 @@ function renderRole(role: Role): HTMLElement {
 
     // Fieldsets
     const generalFieldset = document.createElement("fieldset");
-    generalFieldset.className = "s12 m4 l4 permissions wrap small-round";
+    generalFieldset.className = "s12 m12 l4 permissions wrap small-round";
     generalFieldset.innerHTML = `<legend>General Permissions</legend>`;
     const generalNav = document.createElement("nav");
     generalNav.className = "grid no-space";
     generalFieldset.append(generalNav);
 
     const viewTagFieldset = document.createElement("fieldset");
-    viewTagFieldset.className = "s12 m4 l4 permissions wrap small-round";
+    viewTagFieldset.className = "s12 m6 l4 permissions wrap small-round";
     viewTagFieldset.innerHTML = `<legend>View Process Tags</legend>`;
     const viewNav = document.createElement("nav");
     viewNav.className = "grid no-space";
     viewTagFieldset.append(viewNav);
 
     const applyTagFieldset = document.createElement("fieldset");
-    applyTagFieldset.className = "s12 m4 l4 permissions wrap small-round";
+    applyTagFieldset.className = "s12 m6 l4 permissions wrap small-round";
     applyTagFieldset.innerHTML = `<legend>Apply Process Tags</legend>`;
     const applyNav = document.createElement("nav");
     applyNav.className = "grid no-space";
     applyTagFieldset.append(applyNav);
 
     Object.values(PermissionMap).forEach(p => {
-        const toggle = new PermissionToggle(p.value, role.permissions.includes(p.value));
+        const toggle = new PermissionToggleButton(p.value, role.permissions.includes(p.value));
         toggles.push(toggle);
 
         if (p.value.startsWith("view_tag:")) {
@@ -129,7 +80,7 @@ function renderRole(role: Role): HTMLElement {
             toggle.element.classList.add("s12");
             applyNav.appendChild(toggle.element);
         } else {
-            toggle.element.classList.add("s12", "m6", "l6");
+            toggle.element.classList.add("s12", "m4", "l4");
             generalNav.appendChild(toggle.element);
         }
     });

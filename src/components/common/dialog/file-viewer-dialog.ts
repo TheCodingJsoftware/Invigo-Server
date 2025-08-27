@@ -5,8 +5,8 @@ import {UserContext} from "@core/auth/user-context";
 import {Helper as DxfHelper} from "dxf";
 import * as pdfjsLib from "pdfjs-dist";
 import workerSrc from "pdfjs-dist/build/pdf.worker.mjs";
-import {getFileIcon} from "@components/common/buttons/file-button";
 import {invertImages} from "@utils/theme";
+import {InlineFileButton} from "@components/common/buttons/inline-file-button";
 
 (pdfjsLib as any).GlobalWorkerOptions.workerSrc = workerSrc as any;
 
@@ -140,15 +140,10 @@ export class FileViewerDialog extends DialogComponent {
         this.fileButtons.clear();
 
         for (const filePath of files) {
-            const btn = document.createElement("button");
-            btn.className = "border small-round responsive left-align";
-            btn.innerHTML = `
-                <i>${getFileIcon(this.extension(filePath))}</i>
-                <span>${this.filename(filePath)}</span>
-            `.trim();
-            btn.addEventListener("click", () => this.selectFile(filePath));
-            this.filesElement.appendChild(btn);
-            this.fileButtons.set(filePath, btn);
+            const inlineButton = new InlineFileButton(filePath);
+            inlineButton.element.addEventListener("click", () => this.selectFile(filePath));
+            this.filesElement.appendChild(inlineButton.element);
+            this.fileButtons.set(filePath, inlineButton.element);
         }
     }
 

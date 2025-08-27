@@ -11,13 +11,14 @@ interface DialogOptions {
     headerContent?: string;
     bodyContent?: string;
     footerContent?: string;
+    isModal?: boolean;
 }
 
 export class DialogComponent {
     protected readonly bodyElement: HTMLElement;
     private readonly dialog: HTMLDialogElement;
-    private options: Required<Omit<DialogOptions, "id" | "onClose" | "headerContent" | "bodyContent" | "footerContent">> &
-        Pick<DialogOptions, "id" | "onClose" | "headerContent" | "bodyContent" | "footerContent">;
+    private options: Required<Omit<DialogOptions, "id" | "onClose" | "headerContent" | "bodyContent" | "footerContent" | "isModal">> &
+        Pick<DialogOptions, "id" | "onClose" | "headerContent" | "bodyContent" | "footerContent" | "isModal">;
     private readonly headerElement: HTMLElement;
     private readonly footerElement: HTMLElement;
 
@@ -35,7 +36,8 @@ export class DialogComponent {
             autoRemove: options.autoRemove ?? true,
             headerContent: options.headerContent,
             bodyContent: options.bodyContent,
-            footerContent: options.footerContent
+            footerContent: options.footerContent,
+            isModal: options.isModal ?? false
         };
 
         this.dialog = document.createElement("dialog");
@@ -43,6 +45,7 @@ export class DialogComponent {
         if (this.options.id) this.dialog.id = this.options.id;
         if (this.options.position) this.dialog.classList.add(this.options.position);
         if (this.options.width) this.dialog.classList.add(this.options.width);
+        if (this.options.isModal) this.dialog.classList.add("modal");
 
         this.createDialogContent();
 

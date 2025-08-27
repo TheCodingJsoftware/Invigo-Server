@@ -1,12 +1,17 @@
 import {SettingsManager} from "@core/settings/settings";
 import {WorkspaceSettings} from "@core/settings/workspace-settings";
 import {UserContext} from "@core/auth/user-context";
+import {SheetSettingsModel} from "@core/settings/sheet-settings-model";
 
 export interface WorkspaceFilterDict {
     showCompleted: boolean;
     searchQuery: string;
 
     [key: `show_tag:${string}`]: boolean;
+
+    [key: `show_material:${string}`]: boolean;
+
+    [key: `show_thickness:${string}`]: boolean;
 }
 
 export type BooleanSettingKey = {
@@ -35,9 +40,13 @@ export class WorkspaceFilter {
         const allTags = Object.keys(WorkspaceSettings.tags);
         const viewableTags = allTags.filter(tag => user.canViewTag(tag));
 
+        const materials = SheetSettingsModel.materials;
+        const thicknesses = SheetSettingsModel.thicknesses;
         const keys: BooleanSettingKey[] = [
             "showCompleted",
-            ...viewableTags.map(tag => `show_tag:${tag}` as BooleanSettingKey)
+            ...viewableTags.map(tag => `show_tag:${tag}` as BooleanSettingKey),
+            ...materials.map(mat => `show_material:${mat}` as BooleanSettingKey),
+            ...thicknesses.map(th => `show_thickness:${th}` as BooleanSettingKey),
         ];
 
         const manager = WorkspaceFilter.manager;
