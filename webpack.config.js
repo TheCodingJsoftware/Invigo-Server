@@ -34,7 +34,7 @@ const htmlPlugins = Object.keys(entries).map(name => {
         return new HtmlWebpackPlugin({
             template: templatePath,
             filename: `html/${name}.html`,
-            chunks: [name],
+            chunks: [name, `vendors~${name}`],
             minify: isProduction,
         });
     }
@@ -124,18 +124,19 @@ module.exports = {
         ],
     },
     optimization: {
-        chunkIds: 'deterministic',
         splitChunks: {
-            name: false,
             chunks: 'all',
             cacheGroups: {
-                vendors: {
+                vendorsPerPage: {
                     test: /[\\/]node_modules[\\/]/,
-                    name: 'vendors',
+                    name(module, chunks) {
+                        return `vendors~${chunks[0].name}`;
+                    },
+                    chunks: 'async', // <- only load if the chunk is imported
                     enforce: true,
-                    reuseExistingChunk: true,
+                    reuseExistingChunk: false,
                 },
-            },
+            }
         },
     },
     plugins: [
