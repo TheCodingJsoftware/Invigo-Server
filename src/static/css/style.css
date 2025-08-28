@@ -2,6 +2,16 @@
     display: none !important;
 }
 
+:root {
+    --success-container: #D6FFD7;
+    --on-success-container: #199300;
+}
+
+body.dark {
+    --success-container: #199300;
+    --on-success-container: #D6FFD7;
+}
+
 .logo {
     width: 100px;
     height: auto;
@@ -19,6 +29,10 @@
 
 .green-font {
     color: #4caf50;
+}
+
+.red-font {
+    color: var(--error);
 }
 
 /* workspace_dashboard.html */
@@ -111,7 +125,7 @@
     width: 50%;
 }
 
-.qr-container>* {
+.qr-container > * {
     border: 1px dashed black;
     /* or any other color you prefer */
 }
@@ -143,10 +157,16 @@
     filter: invert(0.9);
 }
 
-/* wokrspace.html */
+/* workspace.html */
 
-.finsihed>td {
-    color: red !important;
+.rotate-0 {
+    transform: rotate(0deg);
+    transition: transform var(--speed3) ease;
+}
+
+.rotate-180 {
+    transform: rotate(180deg);
+    transition: transform var(--speed3) ease;
 }
 
 .table-checkbox {
@@ -166,6 +186,14 @@ tr.selected {
     background-color: var(--primary-container) !important;
 }
 
+tr.overdue {
+    background-color: var(--error-container);
+}
+
+tr.finished {
+    /*background-color: var(--success-container);*/
+}
+
 .fade-hidden {
     opacity: 0;
     pointer-events: none;
@@ -173,9 +201,8 @@ tr.selected {
 }
 
 .floating-part-menu {
-    transition:
-        opacity var(--speed3) ease,
-        transform var(--speed3) ease;
+    transition: opacity var(--speed3) ease,
+    transform var(--speed3) ease;
     opacity: 1;
     visibility: visible;
     pointer-events: auto;
@@ -197,8 +224,7 @@ tr.selected {
 }
 
 .floating-part-menu.dragging {
-    transition:
-        transform var(--speed1) !important;
+    transition: transform var(--speed1) !important;
 }
 
 .part-table-thumbnail {
@@ -235,9 +261,24 @@ button menu {
 }
 
 @keyframes border-blink {
-    0% { border-color: var(--error); color: var(--error); }
-    25% { border-color: transparent; color: var(--error); }
-    50% { border-color: var(--error); color: var(--error); }
-    75% { border-color: transparent; color: var(--error); }
-    100% { border-color: var(--error); color: var(--error); }
+    0% {
+        border-color: var(--error);
+        color: var(--error);
+    }
+    25% {
+        border-color: transparent;
+        color: var(--error);
+    }
+    50% {
+        border-color: var(--error);
+        color: var(--error);
+    }
+    75% {
+        border-color: transparent;
+        color: var(--error);
+    }
+    100% {
+        border-color: var(--error);
+        color: var(--error);
+    }
 }
