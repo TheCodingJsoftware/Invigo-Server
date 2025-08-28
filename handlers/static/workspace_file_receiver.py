@@ -36,7 +36,11 @@ class WorkspaceFileReceiverHandler(BaseHandler):
 
         self.set_header("Content-Type", content_type)
         self.set_header("Content-Disposition", f'{disposition}; filename="{file_name}"')
-        self.set_header("Cache-Control", "no-store")
+
+        if file_ext in ("PNG", "JPG", "JPEG", "PDF"):
+            self.set_header("Cache-Control", "public, max-age=86400")  # 1 day
+        else:
+            self.set_header("Cache-Control", "no-store")
 
         if os.path.exists(filepath):
             with open(filepath, "rb") as f:

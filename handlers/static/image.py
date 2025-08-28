@@ -1,3 +1,4 @@
+import hashlib
 import logging
 import os
 
@@ -21,16 +22,34 @@ class ImageHandler(BaseHandler):
             directory = os.path.join(Environment.DATA_PATH, "images")
             os.makedirs(directory, exist_ok=True)
             filepath = os.path.join(directory, image_name)
-            if not filepath.endswith(".png") and not filepath.endswith(".jpeg"):
+
+            # default fallback
+            if not filepath.endswith((".png", ".jpeg", ".jpg")):
                 filepath += ".jpeg"
-            if os.path.exists(filepath):
-                with open(filepath, "rb") as f:
-                    self.set_header("Content-Type", "image/jpeg")
-                    self.write(f.read())
-                logging.info(
-                    f'Sent "{image_name}" to {self.request.remote_ip}',
-                )
-            else:
+
+            if not os.path.exists(filepath):
                 self.set_status(404)
-        except FileNotFoundError:
-            self.set_status(404)
+                return
+
+            # compute etag
+            stat = os.stat(filepath)
+            etag = hashlib.md5(str(stat.st_mtime).encode()).hexdigest()
+
+            if self.request.headers.get("If-None-Match") == etag:
+                self.set_status(304)
+                return
+
+            ext = os.path.splitext(filepath)[1].lower()
+            content_type = "image/jpeg" if ext in [".jpeg", ".jpg"] else "image/png"
+
+            self.set_header("Content-Type", content_type)
+            self.set_header("Cache-Control", "public, max-age=2592000")  # 30 days
+            self.set_header("ETag", etag)
+
+            with open(filepath, "rb") as f:
+                self.write(f.read())
+
+            logging.info(f'Sent "{image_name}" to {self.request.remote_ip}')
+        except Exception as e:
+            logging.error(f"Error serving {image_name}: {e}")
+            self.set_status(500)
