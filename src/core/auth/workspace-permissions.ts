@@ -71,6 +71,11 @@ export const PermissionTree = {
             value: "can_toggle_timer",
             label: "Can Toggle Timer",
             description: "Allows being able to toggle the timer on and off.",
+        },
+        CanSeeProgressBar: {
+            value: "can_see_progress_bar",
+            label: "Can See Progress Bar",
+            description: "Allows being able to see the progress bar for current process.",
         }
 
     },
