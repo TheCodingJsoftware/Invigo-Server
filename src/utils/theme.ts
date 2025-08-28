@@ -1,5 +1,5 @@
 import '@static/css/style.css';
-import '@static/css/theme.css';
+import "material-dynamic-colors";
 
 export function triggerThemeTransition(duration = 500) {
     const html = document.documentElement;
@@ -29,22 +29,16 @@ function getPreferredTheme() {
 }
 
 export function loadTheme(overideMode?: string) {
-    if (overideMode) {
-        ui("mode", overideMode);
+    const mode = localStorage.getItem("mode");
+    if (mode) {
+        ui("mode", mode);
     } else {
         ui("mode", getPreferredTheme());
-
     }
-    // const mode = localStorage.getItem("mode");
-    // if (mode === "dark") {
-    //     ui("mode", "dark");
-    // } else {
-    //     ui("mode", "light");
-    // }
+    ui("theme", localStorage.getItem("theme") || "#006493");
 }
 
 export function toggleTheme() {
-    // triggerThemeTransition();
     const mode = ui("mode");
     if (mode === "dark") {
         ui("mode", "light");
@@ -57,7 +51,7 @@ export function toggleTheme() {
 
 export function invertImages() {
     let mode = ui("mode");
-    const images = document.querySelectorAll('img');
+    const images = document.querySelectorAll<HTMLImageElement>('img:not(.ignore-invert)');
     if (mode === "light") {
         for (let i = 0; i < images.length; i++) {
             images[i].style.filter = 'invert(0)';
