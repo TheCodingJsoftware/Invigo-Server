@@ -1,5 +1,4 @@
 import asyncio
-import logging
 import os
 import shutil
 import signal
@@ -15,7 +14,6 @@ from typing import Literal
 import msgspec
 import schedule
 import tornado
-import tornado.log
 from tornado.ioloop import IOLoop
 
 import config.variables as variables
