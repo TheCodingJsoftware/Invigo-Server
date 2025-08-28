@@ -2,13 +2,9 @@ import {DialogComponent} from "@components/common/dialog/dialog-component";
 import {PartData} from "@components/workspace/parts/part-container";
 import {WorkspacePermissions} from "@core/auth/workspace-permissions";
 import {UserContext} from "@core/auth/user-context";
-import {Helper as DxfHelper} from "dxf";
-import * as pdfjsLib from "pdfjs-dist";
-import workerSrc from "pdfjs-dist/build/pdf.worker.mjs";
 import {invertImages} from "@utils/theme";
 import {InlineFileButton} from "@components/common/buttons/inline-file-button";
 
-(pdfjsLib as any).GlobalWorkerOptions.workerSrc = workerSrc as any;
 
 export class FileViewerDialog extends DialogComponent {
     readonly parts: PartData[];
@@ -210,6 +206,10 @@ export class FileViewerDialog extends DialogComponent {
     }
 
     private async renderPdf(url: string) {
+        const pdfjsLib = await import("pdfjs-dist");
+        const workerSrc = await import("pdfjs-dist/build/pdf.worker.mjs");
+        (pdfjsLib as any).GlobalWorkerOptions.workerSrc = workerSrc.default;
+
         const scroller = document.createElement("div");
         scroller.classList.add("center-align")
         this.contentElement.appendChild(scroller);
@@ -249,6 +249,8 @@ export class FileViewerDialog extends DialogComponent {
     }
 
     private async renderDxf(url: string) {
+        const {Helper: DxfHelper} = await import("dxf");
+
         const wrap = document.createElement("div");
         wrap.classList.add("center-align", "middle")
         this.contentElement.appendChild(wrap);
