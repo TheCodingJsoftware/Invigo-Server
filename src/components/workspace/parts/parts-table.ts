@@ -5,7 +5,7 @@ import {PartSelectionManager} from "@components/workspace/parts/part-selection-m
 import {PartData} from "@components/workspace/parts/part-container";
 
 export interface PartColumn {
-    key: keyof PartData | 'actions' | 'icon' | 'checkbox' | 'thumbnail' | 'files';
+    key: keyof PartData | 'part' | 'actions' | 'icon' | 'checkbox' | 'thumbnail' | 'files';
     label: string;
     render: (data: PartData) => HTMLElement | string;
 }
@@ -25,19 +25,27 @@ export class PartsTable {
             render: () => ''
         },
         {
-            key: 'thumbnail',
-            label: 'Thumbnail',
-            render: (data) => `/images/${data.name}`
-        },
-        {
-            key: 'name',
-            label: 'Name',
-            render: (data) => data.name
+            key: 'part',
+            label: 'Part',
+            render: () => ''
         },
         {
             key: 'current_flowtag',
             label: 'Current Process',
-            render: (data) => data.is_completed ? "Done" : data.current_flowtag
+            render: (data) => {
+                let flowtag = data.current_flowtag;
+                if (data.is_completed) {
+                    flowtag = "Done";
+                } else if (data.recut) {
+                    flowtag = "Recutting";
+                } else if (data.recoat) {
+                    flowtag = "Recoating";
+                }
+                if (data.is_overdue) {
+                    flowtag = `${flowtag} (Overdue)`;
+                }
+                return flowtag;
+            }
         },
         {
             key: 'quantity',
@@ -57,7 +65,15 @@ export class PartsTable {
         {
             key: 'icon',
             label: '',
-            render: (data) => data.is_completed ? 'done_all' : 'avg_pace'
+            render: (data) => {
+                if (data.is_completed) {
+                    return "done_all"
+                } else if (data.is_overdue) {
+                    return "assignment_late"
+                } else {
+                    return "avg_pace"
+                }
+            }
         }
     ];
     private readonly BATCH_SIZE = 100;
