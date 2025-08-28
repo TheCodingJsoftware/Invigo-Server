@@ -1,22 +1,24 @@
-import { UserContext } from "@core/auth/user-context";
-import { WorkspaceRowCheckbox } from "@components/common/checkboxes/workspace-row-checkbox";
-import { PartSelectionManager } from "@components/workspace/parts/part-selection-manager";
-import { Loading } from "@components/common/loading/loading";
-import { PartDataService } from "@components/workspace/parts/part-data.service";
-import { PartData } from "@components/workspace/parts/part-container";
-import { DialogComponent } from "@components/common/dialog/dialog-component";
-import { invertImages } from "@utils/theme";
-import { WorkspacePermissions } from "@core/auth/workspace-permissions";
-import { WorkspaceSettings } from "@core/settings/workspace-settings";
-import { FlowtagStatusMenuButton } from "@components/common/buttons/flowtag-status-menu-button";
-import { IncrementFlowtagButton } from "@components/common/buttons/increment-flowtag-button";
-import { RecutButton } from "@components/common/buttons/recut-button";
-import { RecutDialog } from "@components/common/dialog/recut-dialog";
-import { SnackbarComponent } from "@components/common/snackbar/snackbar-component";
-import { PartColumn } from "@components/workspace/parts/parts-table";
-import { FileButton } from "@components/common/buttons/file-button";
-import { RecutFinishedButton } from "@components/common/buttons/recut-finished-button";
+import {UserContext} from "@core/auth/user-context";
+import {WorkspaceRowCheckbox} from "@components/common/checkboxes/workspace-row-checkbox";
+import {PartSelectionManager} from "@components/workspace/parts/part-selection-manager";
+import {Loading} from "@components/common/loading/loading";
+import {PartDataService} from "@components/workspace/parts/part-data.service";
+import {PartData} from "@components/workspace/parts/part-container";
+import {DialogComponent} from "@components/common/dialog/dialog-component";
+import {invertImages} from "@utils/theme";
+import {WorkspacePermissions} from "@core/auth/workspace-permissions";
+import {WorkspaceSettings} from "@core/settings/workspace-settings";
+import {FlowtagStatusMenuButton} from "@components/common/buttons/flowtag-status-menu-button";
+import {IncrementFlowtagButton} from "@components/common/buttons/increment-flowtag-button";
+import {RecutButton} from "@components/common/buttons/recut-button";
+import {RecutDialog} from "@components/common/dialog/recut-dialog";
+import {SnackbarComponent} from "@components/common/snackbar/snackbar-component";
+import {PartColumn} from "@components/workspace/parts/parts-table";
+import {FileButton} from "@components/common/buttons/file-button";
+import {RecutFinishedButton} from "@components/common/buttons/recut-finished-button";
 import {TimerButton} from "@components/common/buttons/timer-button";
+import {CurrentProcessButton} from "@components/common/buttons/current-process-button";
+import {PartButton} from "@components/common/buttons/part-button";
 
 export class PartRow {
     readonly element: HTMLTableRowElement;
@@ -56,25 +58,19 @@ export class PartRow {
             if (column.key === 'checkbox') {
                 td.classList.add("min");
                 td.appendChild(this.checkbox.dom);
-            } else if (column.key === 'thumbnail') {
-                const img = document.createElement("img");
-                img.classList.add("part-table-thumbnail", "small-round", "border");
-                img.loading = "lazy";
-                img.src = <string>column.render(data);
-                img.alt = data.name;
-                img.onclick = () => {
-                    new DialogComponent({
-                        title: data.name,
-                        bodyContent: `<img class="responsive small-round" src="${img.src}" alt="${img.alt}" />`,
-                    })
-                    invertImages();
-                }
+            } else if (column.key === 'part') {
+                const partButton = new PartButton(data);
                 td.classList.add("min");
-                td.appendChild(img);
+                td.appendChild(partButton.element);
             } else if (column.key === 'icon') {
                 const icon = document.createElement("i");
                 icon.innerHTML = <string>column.render(data);
-                icon.classList.add("green-font");
+                if (data.is_overdue) {
+                    icon.classList.add("red-font");
+                    this.element.classList.add("overdue");
+                } else if (data.is_completed) {
+                    icon.classList.add("green-font");
+                }
                 td.classList.add("min");
                 td.appendChild(icon);
             } else if (column.key === 'actions') {
@@ -83,17 +79,12 @@ export class PartRow {
             } else if (column.key === 'files') {
                 td.appendChild(PartRow.createFiles(data));
             } else if (column.key === "current_flowtag") {
-                var content = column.render(data);
-                if (data.recut) {
-                    content = "Recutting";
-                } else if (data.recoat) {
-                    content = "Recoating";
-                }
-                if (typeof content === 'string') {
-                    td.textContent = content;
-                }
+                var content = <string>column.render(data);
+                const currentProcessButton = new CurrentProcessButton(content, data);
+                td.appendChild(currentProcessButton.getElement());
             } else {
                 const content = column.render(data);
+                td.classList.add("center-align");
                 if (typeof content === 'string') {
                     td.textContent = content;
                 } else {
@@ -103,6 +94,7 @@ export class PartRow {
             this.element.appendChild(td);
         }
     }
+
 
     private onCheckboxChange(): void {
         if (this.checkbox.checked) {
@@ -121,7 +113,7 @@ export class PartRow {
     static createFiles(data: PartData): HTMLElement {
         const user = Object.freeze(UserContext.getInstance().user);
         const container = document.createElement("div");
-        container.classList.add("row");
+        container.classList.add("row", "wrap", "no-space");
 
         user.require(WorkspacePermissions.ViewBendingFiles, () => {
             data.workspace_data.bending_files.forEach((file) => {
@@ -150,10 +142,10 @@ export class PartRow {
 
     static createActions(data: PartData): HTMLElement {
         const user = Object.freeze(UserContext.getInstance().user);
-        const container = document.createElement("div");
-        container.classList.add("row");
+        const container = document.createElement("nav");
+        container.className = "row wrap tiny-space";
 
-        if (user.can(WorkspacePermissions.CanToggleTimer)){
+        if (user.can(WorkspacePermissions.CanToggleTimer)) {
             const timerButton = new TimerButton(data);
             if (data.is_timing) {
                 timerButton.toggle()
@@ -275,7 +267,11 @@ export class PartRow {
             });
         } catch (error) {
             console.error('Failed to mark as recut finished:', error);
-            new DialogComponent({title: "Error", bodyContent: "Failed to mark as recut finished.", width: "small-width"});
+            new DialogComponent({
+                title: "Error",
+                bodyContent: "Failed to mark as recut finished.",
+                width: "small-width"
+            });
         }
     }
 
@@ -374,4 +370,6 @@ export class PartRow {
             });
         }
     }
-} 11
+}
+
+11
