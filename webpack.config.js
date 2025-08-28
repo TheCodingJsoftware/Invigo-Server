@@ -8,6 +8,25 @@ const { GenerateSW } = require('workbox-webpack-plugin');
 const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
 const { PurgeCSSPlugin } = require('purgecss-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
+const CompressionPlugin = require('compression-webpack-plugin');
+const { EsbuildPlugin } = require('esbuild-loader');
+
+class NonBlockingCssPlugin {
+    apply(compiler) {
+        compiler.hooks.compilation.tap('NonBlockingCssPlugin', (compilation) => {
+            HtmlWebpackPlugin.getHooks(compilation).alterAssetTags.tap('NonBlockingCssPlugin', (data) => {
+                data.assetTags.styles = (data.assetTags.styles || []).map((tag) => {
+                    if (tag.tagName === 'link' && tag.attributes && tag.attributes.rel === 'stylesheet') {
+                        tag.attributes.media = 'print';
+                        tag.attributes.onload = "this.media='all'";
+                    }
+                    return tag;
+                });
+                return data;
+            });
+        });
+    }
+}
 
 const isProduction = process.env.NODE_ENV === 'production';
 const entries = {};
@@ -124,6 +143,13 @@ module.exports = {
         ],
     },
     optimization: {
+        minimize: isProduction,  // only minify in production
+        minimizer: [
+            new EsbuildPlugin({
+                target: 'ES2020',  // match your loader target
+                css: true,         // also minify CSS
+            }),
+        ],
         splitChunks: {
             chunks: 'all',
             cacheGroups: {
@@ -140,6 +166,21 @@ module.exports = {
         },
     },
     plugins: [
+        new CompressionPlugin({
+            filename: '[path][base].gz',      // generate .gz files
+            algorithm: 'gzip',
+            test: /\.(js|css|html|svg)$/,     // compress these file types
+            threshold: 10240,                  // only compress files >10 KB
+            minRatio: 0.8
+        }),
+        new CompressionPlugin({
+            filename: '[path][base].br',       // generate .br files
+            algorithm: 'brotliCompress',
+            test: /\.(js|css|html|svg)$/,
+            compressionOptions: { level: 11 },
+            threshold: 10240,
+            minRatio: 0.8
+        }),
         new PurgeCSSPlugin({
             paths: globAll.sync([
                 path.join(__dirname, 'src/**/*.{ts,tsx,js,jsx,html}'),
@@ -163,6 +204,7 @@ module.exports = {
             },
         }),
         ...htmlPlugins,
+        new NonBlockingCssPlugin(),
         // new GenerateSW({
         //     swDest: 'service-worker.js',
         //     clientsClaim: true,
