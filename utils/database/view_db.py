@@ -397,8 +397,11 @@ class ViewDB(BaseWithDBPool):
                     where_clauses.append(f"(start_time <= ${len(params) + 1} AND end_time >= ${len(params) + 2})")
                     params.extend([end_dt, start_dt])  # notice order: $end then $start
 
-                where_sql = "WHERE " + " AND ".join(where_clauses) if where_clauses else ""
-                query = f"SELECT * FROM view_grouped_laser_cut_parts_by_job {where_sql}"
+                where_sql = " AND ".join(where_clauses) if where_clauses else ""
+
+                overdue_sql = "end_time < NOW()"
+
+                query = f"SELECT * FROM view_grouped_laser_cut_parts_by_job WHERE {where_sql} OR {overdue_sql}"
                 rows = await conn.fetch(query, *params)
                 return [self.decode_json_fields(row) for row in rows]
         except Exception as e:
