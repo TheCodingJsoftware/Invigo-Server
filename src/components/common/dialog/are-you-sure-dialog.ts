@@ -1,7 +1,4 @@
 import {DialogComponent} from "@components/common/dialog/dialog-component";
-import {PartData} from "@components/workspace/parts/part-container";
-import {PartDataService} from "@components/workspace/parts/part-data.service";
-import {SnackbarComponent} from "../snackbar/snackbar-component";
 
 export class AreYouSureDialog extends DialogComponent {
     constructor(title: string = "Are you sure?", bodyContent: string) {
@@ -27,11 +24,6 @@ export class AreYouSureDialog extends DialogComponent {
                     </button>
                 </nav>`
         });
-        this.init();
-    }
-
-    private init() {
-        // Nothing needed here now
     }
 
     show(): Promise<boolean> {

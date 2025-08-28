@@ -9,7 +9,7 @@ export class FlowtagStatusMenuButton {
     constructor(data: PartData) {
         this.data = data;
         this.element = document.createElement("div");
-        this.element.classList.add("field", "label", "suffix", "border", "round");
+        this.element.classList.add("field", "label", "suffix", "border", "round", "blur");
         this.select = document.createElement("select");
         this.init();
     }

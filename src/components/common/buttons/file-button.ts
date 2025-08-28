@@ -25,7 +25,7 @@ export class FileButton {
     constructor(part: PartData, filePath: string) {
         this.part = part;
         this.element = document.createElement("button");
-        this.element.classList.add("file-button", "chip", "vertical");
+        this.element.className = "file-button small-round tiny-padding tiny-margin vertical"
         this.element.addEventListener("click", () => this.buttonPressed());
 
         this.filePath = filePath;
@@ -44,11 +44,11 @@ export class FileButton {
         this.tooltip.appendChild(this.previewHost);
 
         this.element.innerHTML = "";
-        const icon = document.createElement("i");
-        icon.textContent = getFileIcon(this.extension);
+        // const icon = document.createElement("i");
+        // icon.textContent = getFileIcon(this.extension);
         const ext = document.createElement("span");
         ext.textContent = String(this.extension);
-        this.element.appendChild(icon);
+        // this.element.appendChild(icon);
         this.element.appendChild(ext);
         this.element.appendChild(this.tooltip);
 

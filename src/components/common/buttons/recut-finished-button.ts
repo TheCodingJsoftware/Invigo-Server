@@ -11,7 +11,7 @@ export class RecutFinishedButton {
     }
 
     init() {
-        this.element.classList.add("chip", "border", "round");
+        this.element.className = "chip border round blur";
         this.element.innerHTML = `
             <i>redo</i>
             <span>Recut Complete</span>
