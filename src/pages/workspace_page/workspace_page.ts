@@ -1,6 +1,4 @@
 import "beercss";
-import '@static/css/style.css';
-import '@static/css/theme.css';
 import {FilterMenuButton} from "@components/common/buttons/filter-menu-button";
 import {SortMenuButton} from "@components/common/buttons/sort-menu-button";
 import {DialogComponent} from "@components/common/dialog/dialog-component";
@@ -19,6 +17,7 @@ import {invertImages, loadAnimationStyleSheet, loadTheme, toggleTheme} from "@ut
 import {DateRangeButton} from "@components/common/buttons/date-range-button";
 import {SheetSettingsModel} from "@core/settings/sheet-settings-model";
 import {ToggleButton} from "@components/common/buttons/toggle-button";
+import {AppearanceDialog} from "@components/common/dialog/appearance-dialog";
 
 let pageLoaded = false;
 
@@ -105,7 +104,6 @@ class WorkspacePage {
         this.loadTopNav();
         this.loadRightNav();
         this.loadLeftNav();
-        this.loadThemeSettings();
         this.registerSocketHandlers();
         pageLoaded = true;
         ViewBus.update({
@@ -144,10 +142,11 @@ class WorkspacePage {
         headline.className = "max left-align m l";
         headline.innerText = "Workspace";
 
-        const themeToggleButton = document.createElement("button");
-        themeToggleButton.id = "theme-toggle";
-        themeToggleButton.classList.add("circle", "transparent");
-        themeToggleButton.innerHTML = "<i>dark_mode</i>"
+        const themeButton = document.createElement("button");
+        themeButton.id = "theme-button";
+        themeButton.classList.add("circle", "transparent");
+        themeButton.innerHTML = "<i>palette</i>"
+        themeButton.onclick = () => this.themeDialog();
 
         const filterButton = new FilterMenuButton();
         filterButton.onToggle.connect(({key, value}) => {
@@ -174,7 +173,7 @@ class WorkspacePage {
         toolbar.appendChild(dateRangeButton.button);
         toolbar.appendChild(sortButton.button);
         toolbar.appendChild(filterButton.button);
-        toolbar.appendChild(themeToggleButton);
+        toolbar.appendChild(themeButton);
 
         document.body.appendChild(nav);
     }
@@ -262,6 +261,10 @@ class WorkspacePage {
         document.body.appendChild(nav);
     }
 
+    themeDialog() {
+        new AppearanceDialog();
+    }
+
     showProfile() {
         new DialogComponent({
                 id: "profile-dialog",
@@ -295,22 +298,9 @@ class WorkspacePage {
             }
         );
     }
-
-    loadThemeSettings() {
-        const toggleThemeButton = document.getElementById('theme-toggle') as HTMLButtonElement;
-        const toggleThemeIcon = toggleThemeButton.querySelector('i') as HTMLElement;
-        toggleThemeIcon.innerText = ui("mode") === "dark" ? "light_mode" : "dark_mode";
-
-        toggleThemeButton.addEventListener('click', () => {
-            toggleTheme();
-            invertImages();
-            toggleThemeIcon.innerText = ui("mode") === "dark" ? "light_mode" : "dark_mode";
-        });
-    }
 }
 
 document.addEventListener("DOMContentLoaded", async () => {
-    loadTheme(localStorage.getItem("mode") || "dark");
     loadAnimationStyleSheet();
     await SheetSettingsModel.init();
     await WorkspaceSettings.init();
