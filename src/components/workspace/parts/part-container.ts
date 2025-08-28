@@ -14,6 +14,8 @@ import {FileViewerDialog} from "@components/common/dialog/file-viewer-dialog";
 import {PartRow} from "@components/workspace/parts/part-row";
 import {AreYouSureDialog} from "@components/common/dialog/are-you-sure-dialog";
 import {SnackbarComponent} from "@components/common/snackbar/snackbar-component";
+import {WorkspaceDateRange} from "@models/workspace-date-range";
+import {TimelineEntry} from "../../../pages/production_planner/production_planner";
 
 export interface PartData {
     group_id: number;
@@ -35,6 +37,9 @@ export interface PartData {
     workspace_data: LaserCutPartData["workspace_data"];
     created_at: string;
     updated_at: string;
+    // This does not come from workspace db
+    is_overdue: boolean;
+    part_timeline: TimelineEntry;
 }
 
 type PartPageData = Array<PartData>;
@@ -63,12 +68,52 @@ class JobElement {
         this.element.classList.add("round", "border");
 
         this.articleContent = document.createElement("div");
-        this.articleContent.classList.add("article-content");
     }
 
     async initialize() {
         this.element.appendChild(this.createArticleHeader());
         this.element.appendChild(this.articleContent);
+
+        const jobData = await this.getJobDataCached();
+        const flowtagTimeline = jobData.job_data.flowtag_timeline;
+        const activeRange = WorkspaceDateRange.getActiveRange();
+
+        const filteredParts = this.parts.filter(part => {
+            const isCompleted = part.is_completed;
+            if (isCompleted) return true;
+
+            const flowtag = part.current_flowtag;
+            if (!flowtag) return false;
+
+            const timelineEntry = flowtagTimeline[flowtag];
+            if (!timelineEntry) return false;
+
+            const start = timelineEntry.starting_date ? new Date(timelineEntry.starting_date) : null;
+            const end = timelineEntry.ending_date ? new Date(timelineEntry.ending_date) : null;
+            if (!start || !end) return false;
+
+            // Determine overdue
+            const now = new Date();
+            const isOverdue = end < now;
+            part.is_overdue = isOverdue;
+            part.part_timeline = timelineEntry;
+
+            // If overdue, always include
+            if (isOverdue) return true;
+
+            // Otherwise, must be in active range
+            if (activeRange) {
+                const overlaps = start <= activeRange.end && end >= activeRange.start;
+                return overlaps;
+            }
+            return true;
+        });
+
+        this.parts = filteredParts;
+
+        if (this.parts.length === 0) {
+            return;
+        }
 
         const partsTable = new PartsTable();
         await partsTable.loadData(this.parts);
@@ -77,8 +122,6 @@ class JobElement {
         if (this.jobSettings.get().isCollapsed) {
             this.collapseArticleContent();
         }
-
-        const jobData = await this.getJobDataCached();
     }
 
     // Stale-while-revalidate: use cache, refresh in background
@@ -122,6 +165,14 @@ class JobElement {
         }
     }
 
+    private showEmptyMessage(message: string): void {
+        const empty = document.createElement("p");
+        empty.className = "center-align";
+        empty.textContent = message;
+
+        this.element.replaceChildren(empty);
+    }
+
     private createArticleHeader(): HTMLElement {
         const header = document.createElement("div");
         header.classList.add("row");
@@ -134,10 +185,9 @@ class JobElement {
         split.className = "group split small";
 
         const markCompleteButton = document.createElement("button");
-        markCompleteButton.classList.add("left-round", "small");
+        markCompleteButton.classList.add("left-round", "square", "small");
         markCompleteButton.innerHTML = `
             <i>done_all</i>
-            <span>Mark Complete</span>
         `.trim();
         markCompleteButton.onclick = async () => {
             const dialog = new AreYouSureDialog(
@@ -161,10 +211,9 @@ class JobElement {
 
         // Open all files
         const openFilesButton = document.createElement("button");
-        openFilesButton.classList.add("no-round", "small");
+        openFilesButton.classList.add("no-round", "square", "small");
         openFilesButton.innerHTML = `
             <i>preview</i>
-            <span>Open Files</span>
         `.trim();
         openFilesButton.onclick = () => {
             new FileViewerDialog(this.parts)
@@ -187,13 +236,14 @@ class JobElement {
     }
 
     private collapseArticleContent(collapse?: boolean) {
-        const toggleButton = this.element.querySelector(".toggle-button");
-        if (toggleButton) {
-            this.articleContent.classList.toggle('hidden');
-            const isCollapsed = this.articleContent.classList.contains('hidden')
-            toggleButton.querySelector('i')!.textContent = isCollapsed ? 'expand_more' : 'expand_less';
-            this.jobSettings.set({"isCollapsed": isCollapsed})
-        }
+        const toggleButton = this.element.querySelector(".toggle-button") as HTMLButtonElement;
+        const toggleButtonIcon = toggleButton.querySelector('i') as HTMLElement;
+        this.articleContent.classList.toggle('hidden');
+        const isCollapsed = this.articleContent.classList.contains('hidden')
+        toggleButtonIcon.classList.toggle("rotate-180", isCollapsed);
+        toggleButtonIcon.classList.toggle("rotate-0", !isCollapsed);
+
+        this.jobSettings.set({"isCollapsed": isCollapsed})
     }
 }
 
@@ -223,12 +273,12 @@ export class PartContainer {
                 const hay = [
                     p.name,
                     p.current_flowtag,
-                    p.meta_data?.material,
-                    p.meta_data?.gauge,
-                    p.meta_data?.part_dim,
+                    p.meta_data.material,
+                    p.meta_data.gauge,
+                    p.meta_data.part_dim,
                     String(p.quantity ?? ""),
-                    String(p.meta_data?.weight ?? ""),
-                    String(p.meta_data?.machine_time ?? ""),
+                    String(p.meta_data.weight ?? ""),
+                    String(p.meta_data.machine_time ?? ""),
                 ]
                     .filter(Boolean)
                     .join(" ")
@@ -326,6 +376,9 @@ export class PartContainer {
 
             const jobElement = new JobElement(jobId, parts);
             await jobElement.initialize();
+
+            if (jobElement.parts.length === 0) continue;
+            if (!jobElement.element.hasChildNodes()) continue;
 
             fragment.appendChild(jobElement.element);
         }
