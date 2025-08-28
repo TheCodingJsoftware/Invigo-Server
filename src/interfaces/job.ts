@@ -2,6 +2,7 @@ import {AssemblyData} from "@interfaces/assembly";
 import {NestData} from "@interfaces/nest";
 import {ContactInfoDict} from "./contact-info";
 import {BusinessInfoDict} from "./business-info";
+import {FlowtagTimeline} from "../pages/production_planner/production_planner";
 
 export interface JobData {
     job_data: JobMetaData;
@@ -20,17 +21,13 @@ export interface JobMetaData {
     ending_date: string;
     color: string;
     price_settings: JobPriceSettings;
-    flowtag_timeline: JobFlowtagTimelineData;
+    flowtag_timeline: FlowtagTimeline;
     moved_job_to_workspace: boolean;
     contact_info: ContactInfoDict;
     business_info: BusinessInfoDict
 }
 
 interface JobPriceSettings {
-    [key: string]: any;
-}
-
-interface JobFlowtagTimelineData {
     [key: string]: any;
 }
 
