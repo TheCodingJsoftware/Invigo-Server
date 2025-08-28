@@ -1,6 +1,8 @@
 import {DialogComponent} from "@components/common/dialog/dialog-component";
 import flatpickr from "flatpickr";
 import {WorkspaceDateRange, WorkspaceDateRangeDict} from "@models/workspace-date-range";
+import {ViewBus} from "@components/workspace/views/view-bus";
+import {SessionSettingsManager} from "@core/settings/session-settings";
 
 export class DateRangeDialog extends DialogComponent {
     private picker: any | null = null;
@@ -83,6 +85,9 @@ export class DateRangeDialog extends DialogComponent {
                 if (this.customRadio.checked && selectedDates.length === 2) {
                     this.saveCustom(selectedDates[0], selectedDates[1]);
                 }
+                ViewBus.update({
+                    dataType: SessionSettingsManager.get().lastActiveDataType,
+                });
             }
         });
 
