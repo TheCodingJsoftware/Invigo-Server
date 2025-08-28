@@ -7,14 +7,21 @@ export class WorkspaceRowCheckbox {
         this.element.classList.add("table-checkbox", "checkbox", "large");
 
         this.input = document.createElement("input");
+        this.input.id = `checkbox-${Math.random().toString(36).substring(2, 15)}`;
         this.input.type = "checkbox";
         this.input.checked = initialState;
+
+        const label = document.createElement("label");
+        label.classList.add("hidden");
+        label.textContent = "checkbox"
+        label.htmlFor = this.input.id;
 
         const span = document.createElement("span");
         span.innerText = text;
 
         this.element.appendChild(this.input);
         this.element.appendChild(span);
+        this.element.appendChild(label);
     }
 
     get checked(): boolean {

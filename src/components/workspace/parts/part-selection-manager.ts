@@ -149,7 +149,7 @@ export class PartSelectionManager {
 
     static viewSelectedFiles() {
         const selectedParts = this.getSelected().map(partRow => partRow.data);
-        const viewFilesDialog = new FileViewerDialog(selectedParts)
+        const viewFilesDialog = new FileViewerDialog("Viewer", selectedParts)
     }
 
     static clearSelection() {

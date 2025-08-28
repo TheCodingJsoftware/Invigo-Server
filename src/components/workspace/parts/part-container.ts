@@ -52,6 +52,7 @@ class JobElement {
     readonly element: HTMLElement;
     readonly articleContent: HTMLDivElement;
     jobId: number;
+    jobName?: string;
     parts: PartData[];
     jobSettings: CookieSettingsManager<JobSettings>;
     private jobCookieManager: CookieSettingsManager<JobData>;
@@ -126,6 +127,8 @@ class JobElement {
 
     // Stale-while-revalidate: use cache, refresh in background
     async getJobDataCached(): Promise<JobData> {
+        return this.refreshJobData();
+        // avoid cache because it messes up the timeline ui.
         const cached = this.jobCookieManager.get();
         if (Object.keys(cached).length > 0) {
             // Use cache immediately
@@ -161,6 +164,7 @@ class JobElement {
     applyJobDataToUI(data: JobData) {
         const title = this.element.querySelector(`#job-${this.jobId}`) as HTMLElement;
         if (title) {
+            this.jobName = data.job_data.name;
             title.textContent = data.job_data.name;
         }
     }
@@ -216,7 +220,7 @@ class JobElement {
             <i>preview</i>
         `.trim();
         openFilesButton.onclick = () => {
-            new FileViewerDialog(this.parts)
+            new FileViewerDialog(this.jobName, this.parts)
         }
 
         // Add collapse/expand button

@@ -21,10 +21,10 @@ export class FileViewerDialog extends DialogComponent {
     private selectedPart?: PartData;
     private selectedFile?: string;
 
-    constructor(parts: PartData[], filePath?: string) {
+    constructor(title: string = "Viewer", parts: PartData[], filePath?: string) {
         super({
             id: "file-viewer-dialog",
-            title: "Viewer",
+            title: title,
             position: "max",
             bodyContent: `
                 <div>
@@ -61,9 +61,9 @@ export class FileViewerDialog extends DialogComponent {
                 continue;
             }
             const button = document.createElement("button");
-            button.className = "extra small-round border tiny-margin";
+            button.className = "extra small-round tiny-margin blur";
             button.innerHTML = `
-                <img class="responsive" src="/${part.meta_data.image_index}">
+                <img class="responsive" src="/${part.meta_data.image_index}" alt="Thumbnail" height="48" width="48">
                 <span>${part.name}</span>
             `.trim();
             button.addEventListener("click", () => this.selectPart(part));

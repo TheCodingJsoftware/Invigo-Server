@@ -14,7 +14,7 @@ export class InlineFileButton {
 
     constructor(filePath: string) {
         this.element = document.createElement("button");
-        this.element.classList.add("inline-file-button", "chip", "vertical");
+        this.element.classList.add("inline-file-button", "small-round", "vertical", "blur");
 
         this.filePath = filePath;
         this.fileName = filePath.split(/[/\\]/).pop()!;

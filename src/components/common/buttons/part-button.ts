@@ -27,8 +27,10 @@ export class PartButton {
         this.image = document.createElement("img");
         this.image.className = "responsive";
         this.image.loading = "lazy";
+        this.image.width = 48
+        this.image.height = 48
         this.image.src = `/images/${this.part.name}`
-        this.image.alt = this.part.name;
+        this.image.alt = "Thumbnail";
 
         this.span = document.createElement("span");
         this.span.textContent = this.part.name;

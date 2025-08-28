@@ -11,6 +11,7 @@ export class FlowtagStatusMenuButton {
         this.element = document.createElement("div");
         this.element.classList.add("field", "label", "suffix", "border", "round", "blur");
         this.select = document.createElement("select");
+        this.select.id = `status-${Math.random().toString(36).substring(2, 15)}`;
         this.init();
     }
 
@@ -26,6 +27,7 @@ export class FlowtagStatusMenuButton {
 
         const label = document.createElement("label");
         label.textContent = "Status"
+        label.htmlFor = this.select.id;
         this.element.appendChild(label);
 
         const arrowDropDown = document.createElement("i");

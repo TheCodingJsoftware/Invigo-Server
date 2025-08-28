@@ -60,7 +60,7 @@ export class FileButton {
     }
 
     buttonPressed() {
-        const fileViewerDialog = new FileViewerDialog([this.part], this.filePath);
+        const fileViewerDialog = new FileViewerDialog(this.part.name, [this.part], this.filePath);
     }
 
     private async ensurePreview() {
