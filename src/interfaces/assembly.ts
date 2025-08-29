@@ -12,6 +12,7 @@ export interface PricesData {
 export interface MetaData {
     assembly_image: string;
     not_part_of_process: boolean;
+    has_serial_number: boolean;
     quantity: number;
     color: string;
 }
