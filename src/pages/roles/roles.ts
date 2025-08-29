@@ -80,7 +80,7 @@ function renderRole(role: Role): HTMLElement {
             toggle.element.classList.add("s12");
             applyNav.appendChild(toggle.element);
         } else {
-            toggle.element.classList.add("s12", "m4", "l4");
+            toggle.element.classList.add("s12");
             generalNav.appendChild(toggle.element);
         }
     });
