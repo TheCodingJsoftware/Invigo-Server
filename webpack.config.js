@@ -169,7 +169,7 @@ module.exports = {
         new CompressionPlugin({
             filename: '[path][base].gz',      // generate .gz files
             algorithm: 'gzip',
-            test: /\.(js|css|html|svg)$/,     // compress these file types
+            test: /\.(js|css|html|svg)$/,
             threshold: 10240,                  // only compress files >10 KB
             minRatio: 0.8
         }),
