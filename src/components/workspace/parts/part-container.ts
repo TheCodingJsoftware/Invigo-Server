@@ -16,6 +16,7 @@ import {AreYouSureDialog} from "@components/common/dialog/are-you-sure-dialog";
 import {SnackbarComponent} from "@components/common/snackbar/snackbar-component";
 import {WorkspaceDateRange} from "@models/workspace-date-range";
 import {TimelineEntry} from "../../../pages/production_planner/production_planner";
+import {applyScopedBeerTheme} from "@config/material-theme-cookie";
 
 export interface PartData {
     group_id: number;
@@ -160,12 +161,14 @@ class JobElement {
         }
     }
 
+
     // Update UI based on job data
-    applyJobDataToUI(data: JobData) {
+    async applyJobDataToUI(data: JobData) {
         const title = this.element.querySelector(`#job-${this.jobId}`) as HTMLElement;
         if (title) {
             this.jobName = data.job_data.name;
             title.textContent = data.job_data.name;
+            await applyScopedBeerTheme(this.element, data.job_data.color, `job-${this.jobId}`);
         }
     }
 
@@ -270,6 +273,10 @@ export class PartContainer {
         Loading.show();
         let data: PartPageData = await PartDataService.getParts();
 
+        const usedMaterials = Array.from(new Set(data.map(p => p.meta_data.material).filter(Boolean)));
+        const usedThicknesses = Array.from(new Set(data.map(p => p.meta_data.gauge).filter(Boolean)));
+        this.updateFilterVisibility(usedMaterials, usedThicknesses);
+
         const q = (WorkspaceFilter.searchQuery ?? "").trim().toLowerCase();
         if (q) {
             const terms = q.split(/\s+/).filter(Boolean);
@@ -340,7 +347,6 @@ export class PartContainer {
         }
 
         await this.loadJobTables(data);
-
         Loading.hide();
         SearchInput.setLoading(false);
         SearchInput.setResultsCount(data.length);
@@ -402,6 +408,29 @@ export class PartContainer {
             groups.get(jobId)!.push(part);
             return groups;
         }, new Map<number | null, PartData[]>());
+    }
+
+    updateFilterVisibility(usedMaterials: string[], usedThicknesses: string[]) {
+        const materialSet = new Set(usedMaterials);
+        const thicknessSet = new Set(usedThicknesses);
+
+        document.querySelectorAll<HTMLElement>("nav.right [data-filter-type='material']").forEach(el => {
+            const value = el.dataset.value!;
+            if (materialSet.has(value)) {
+                el.classList.remove("hidden");
+            } else {
+                el.classList.add("hidden");
+            }
+        });
+
+        document.querySelectorAll<HTMLElement>("nav.right [data-filter-type='thickness']").forEach(el => {
+            const value = el.dataset.value!;
+            if (thicknessSet.has(value)) {
+                el.classList.remove("hidden");
+            } else {
+                el.classList.add("hidden");
+            }
+        });
     }
 
     private showEmptyMessage(message: string): void {
