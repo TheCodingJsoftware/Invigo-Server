@@ -1,3 +1,4 @@
+import json
 import logging
 import time
 
@@ -25,7 +26,9 @@ class WorkspaceAddJobHandler(BaseHandler):
             t0 = time.perf_counter()
             print(f"Job creation: {time.perf_counter() - t0:.2f}s")
             t1 = time.perf_counter()
-            await self.workspace_db.add_job(data)
+            job_id = await self.workspace_db.add_job(data)
+            await self.workspace_db.update_part_flowtag_dates(job_id, json.dumps(data["job_data"].get("flowtag_timeline", {})))
+
             print(f"Job insertion: {time.perf_counter() - t1:.2f}s")
         except Exception as e:
             print(f"Error adding job: {e}")
