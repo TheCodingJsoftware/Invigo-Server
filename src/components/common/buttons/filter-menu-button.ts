@@ -33,8 +33,12 @@ export class FilterMenuButton {
         const settings = WorkspaceFilter.getManager().get();
         (Object.keys(settings) as BooleanSettingKey[]).forEach((key) => {
             if ((key as string) === "searchQuery") return;
+            if ((key as string).includes("material")) return;
+            if ((key as string).includes("thickness")) return;
 
             const li = document.createElement("li");
+            li.dataset.key = key as string;
+
             const active = (WorkspaceFilter as any)[key];
 
             const checkIcon = document.createElement("i");
