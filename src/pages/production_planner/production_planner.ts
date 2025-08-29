@@ -5,6 +5,7 @@ import {DataSet} from "vis-data";
 import {DataGroup, DataItem} from "vis-timeline/declarations";
 import "@static/css/vis-timeline-graph2d.min.css";
 import {SnackbarComponent} from "@components/common/snackbar/snackbar-component";
+import {extractCssVar, getCachedThemeCss} from "@config/material-theme-cookie";
 
 export interface ContactInfo {
     name: string;
@@ -65,7 +66,7 @@ export interface JobItems {
     type: number;
 }
 
-function getOnColor(hex: string): string {
+export function getOnColor(hex: string): string {
     let mode = ui("mode");
     hex = hex.replace(/^#/, "");
     if (hex.length === 3) hex = hex.split("").map(c => c + c).join("");
@@ -181,7 +182,13 @@ function getOnColor(hex: string): string {
 
 type WorkspaceFlowtagTimeline = Record<
     string,
-    { starting_date: string; ending_date: string }
+    {
+        starting_date: string;
+        ending_date: string;
+        // duration_dates: number;
+        // before_end_days: number;
+        // after_start_days: number;
+    }
 >;
 
 type JobTimelinePayload = {
@@ -325,11 +332,11 @@ class JobTimeline {
         }
     }
 
-    public loadJobs(jobs: JobItems[]) {
+    public async loadJobs(jobs: JobItems[]) {
         this.items.clear();
         this.groups.clear();
 
-        jobs.forEach((job) => {
+        jobs.forEach(async (job) => {
             const jobGroupId = job.id;
 
             // Add top-level job group
@@ -362,29 +369,54 @@ class JobTimeline {
 
             // Add dynamic CSS for job color
             if (!document.getElementById(`job-color-style-${jobGroupId}`)) {
+                const {light, dark} = await getCachedThemeCss(job.job_data.color);
+
+                const primaryLight = extractCssVar(light, "primary");
+                const primaryDark = extractCssVar(dark, "primary");
+
+                const onPrimaryLight = extractCssVar(light, "on-primary");
+                const onPrimaryDark = extractCssVar(dark, "on-primary");
+
                 const style = document.createElement("style");
                 style.id = `job-color-style-${jobGroupId}`;
-                const bgColor = job.job_data.color;
-                const textColor = getOnColor(bgColor);
 
                 style.innerHTML = `
-                    .vis-item.${colorClass} {
-                        background-color: ${bgColor};
-                        border-color: ${bgColor};
-                        color: ${textColor};
+                    body.light .vis-item.${colorClass} {
+                        background-color: ${primaryLight};
+                        border-color: ${primaryLight};
+                        color: ${onPrimaryLight};
                         border-radius: 0.625rem;
                         border: .0625rem solid var(--outline-variant);
                     }
-                    .vis-item.vis-selected.${colorClass} {
-                        background-color: ${bgColor};
-                        color: ${textColor};
+                    body.light .vis-item.vis-selected.${colorClass} {
+                        background-color: ${primaryLight};
+                        color: ${onPrimaryLight};
                         border-radius: 0.625rem;
-                        outline: .125rem solid ${bgColor};
+                        outline: .125rem solid ${primaryLight};
                         outline-offset: 0.25rem;
                     }
-                    .vis-item.vis-item-overflow.vis-item-content.${colorClass} {
+                    body.light .vis-item.vis-item-overflow.vis-item-content.${colorClass} {
                         background-color: red !important;
-                        color: ${textColor};
+                        color: ${onPrimaryLight};
+                    }
+                    
+                    body.dark .vis-item.${colorClass} {
+                        background-color: ${primaryDark};
+                        border-color: ${primaryDark};
+                        color: ${onPrimaryDark};
+                        border-radius: 0.625rem;
+                        border: .0625rem solid var(--outline-variant);
+                    }
+                    body.dark .vis-item.vis-selected.${colorClass} {
+                        background-color: ${primaryDark};
+                        color: ${onPrimaryDark};
+                        border-radius: 0.625rem;
+                        outline: .125rem solid ${primaryDark};
+                        outline-offset: 0.25rem;
+                    }
+                    body.dark .vis-item.vis-item-overflow.vis-item-content.${colorClass} {
+                        background-color: red !important;
+                        color: ${onPrimaryDark};
                     }
                 `;
                 document.head.appendChild(style);
@@ -479,7 +511,5 @@ async function loadJobItemsTimeline() {
 }
 
 document.addEventListener("DOMContentLoaded", async () => {
-    // loadTheme("dark");
-    // Promise.all([loadJobProcessTimeline(), loadJobItemsTimeline()]);
     await loadJobItemsTimeline()
 });
