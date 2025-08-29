@@ -13,7 +13,7 @@ import {ViewSettingsManager} from "@core/settings/view-settings";
 import {WorkspaceSettings} from "@core/settings/workspace-settings";
 import {WorkspaceWebSocket} from "@core/websocket/workspace-websocket";
 import {BooleanSettingKey, WorkspaceFilter} from "@models/workspace-filter";
-import {invertImages, loadAnimationStyleSheet, loadTheme, toggleTheme} from "@utils/theme"
+import {loadAnimationStyleSheet} from "@utils/theme"
 import {DateRangeButton} from "@components/common/buttons/date-range-button";
 import {SheetSettingsModel} from "@core/settings/sheet-settings-model";
 import {ToggleButton} from "@components/common/buttons/toggle-button";
@@ -146,7 +146,7 @@ class WorkspacePage {
         themeButton.id = "theme-button";
         themeButton.classList.add("circle", "transparent");
         themeButton.innerHTML = "<i>palette</i>"
-        themeButton.onclick = () => this.themeDialog();
+        themeButton.onclick = () => this.appearanceDialog();
 
         const filterButton = new FilterMenuButton();
         filterButton.onToggle.connect(({key, value}) => {
@@ -180,24 +180,25 @@ class WorkspacePage {
 
     loadRightNav() {
         const nav = document.createElement("nav");
-        nav.classList.add("right", "min");
-
-        const materialsFieldset = document.createElement("fieldset");
-        materialsFieldset.classList.add("surface-container", "small-round");
-        const materialsLegend = document.createElement("legend");
-        materialsLegend.innerText = "Materials";
-        materialsFieldset.appendChild(materialsLegend);
-
-        const materialsContainer = document.createElement("div");
-        materialsContainer.className = "grid no-space"
-
-        materialsFieldset.appendChild(materialsContainer);
+        nav.className = "right m l small-width no-space";
+        //
+        // const materialsFieldset = document.createElement("fieldset");
+        // materialsFieldset.classList.add("surface-container", "small-round", "small-width");
+        // const materialsLegend = document.createElement("legend");
+        // materialsLegend.innerText = "Materials";
+        // materialsFieldset.appendChild(materialsLegend);
+        //
+        // const materialsContainer = document.createElement("div");
+        // materialsContainer.className = "grid no-space"
+        //
+        // materialsFieldset.appendChild(materialsContainer);
 
         for (const material of SheetSettingsModel.materials) {
             const key = `show_material:${material}` as BooleanSettingKey;
             // @ts-ignore
             const checkbox = new ToggleButton(material, material, WorkspaceFilter[key]);
-            checkbox.element.classList.add("s12", "m12", "l12", "tiny-margin");
+            checkbox.element.classList.add("responsive", "no-margin", "hidden");
+            checkbox.element.dataset.filterType = "material";
 
             checkbox.onChange = (val: boolean) => {
                 // @ts-ignore
@@ -205,23 +206,27 @@ class WorkspacePage {
                 this.resyncState();
             };
 
-            materialsContainer.appendChild(checkbox.element);
+            nav.appendChild(checkbox.element);
         }
 
+        //
+        // const thicknessFieldset = document.createElement("fieldset");
+        // thicknessFieldset.classList.add("surface-container", "small-round", "small-width");
+        // const thicknessLegend = document.createElement("legend");
+        // thicknessLegend.innerText = "Thicknesses";
+        // thicknessFieldset.appendChild(thicknessLegend);
+        // const thicknessContainer = document.createElement("div");
+        // thicknessContainer.className = "grid no-space"
+        // thicknessFieldset.appendChild(thicknessContainer);
+        const spacer = document.createElement("br");
+        nav.appendChild(spacer);
 
-        const thicknessFieldset = document.createElement("fieldset");
-        thicknessFieldset.classList.add("surface-container", "small-round");
-        const thicknessLegend = document.createElement("legend");
-        thicknessLegend.innerText = "Thicknesses";
-        thicknessFieldset.appendChild(thicknessLegend);
-        const thicknessContainer = document.createElement("div");
-        thicknessContainer.className = "grid no-space"
-        thicknessFieldset.appendChild(thicknessContainer);
         for (const thickness of SheetSettingsModel.thicknesses) {
             const key = `show_thickness:${thickness}` as BooleanSettingKey;
             // @ts-ignore
             const checkbox = new ToggleButton(thickness, thickness, WorkspaceFilter[key]);
-            checkbox.element.classList.add("s6", "m6", "l6", "tiny-margin");
+            checkbox.element.classList.add("responsive", "hidden");
+            checkbox.element.dataset.filterType = "thickness";
 
             checkbox.onChange = (val: boolean) => {
                 // @ts-ignore
@@ -229,11 +234,11 @@ class WorkspacePage {
                 this.resyncState();
             };
 
-            thicknessContainer.appendChild(checkbox.element);
+            nav.appendChild(checkbox.element);
         }
 
-        nav.appendChild(materialsFieldset);
-        nav.appendChild(thicknessFieldset);
+        // nav.appendChild(materialsFieldset);
+        // nav.appendChild(thicknessFieldset);
 
         document.body.appendChild(nav);
     }
@@ -261,7 +266,7 @@ class WorkspacePage {
         document.body.appendChild(nav);
     }
 
-    themeDialog() {
+    appearanceDialog() {
         new AppearanceDialog();
     }
 

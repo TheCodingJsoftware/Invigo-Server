@@ -24,7 +24,7 @@ export function loadAnimationStyleSheet() {
     document.head.appendChild(style);
 }
 
-function getPreferredTheme() {
+export function getPreferredMode() {
     return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
 }
 
@@ -33,7 +33,7 @@ export function loadTheme(overideMode?: string) {
     if (mode) {
         ui("mode", mode);
     } else {
-        ui("mode", getPreferredTheme());
+        ui("mode", getPreferredMode());
     }
     ui("theme", localStorage.getItem("theme") || "#006493");
 }

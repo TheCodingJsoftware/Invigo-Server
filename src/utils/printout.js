@@ -1,6 +1,5 @@
 import "beercss"
 import "material-dynamic-colors";
-import '@static/css/theme.css';
 import '@static/css/printout.css';
 
 const checkboxConfig = {
