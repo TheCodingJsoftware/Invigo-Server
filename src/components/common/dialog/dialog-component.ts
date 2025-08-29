@@ -51,7 +51,7 @@ export class DialogComponent {
 
         this.dialog.addEventListener("close", () => {
             if (this.options.autoRemove) {
-                setTimeout(() => this.dialog.remove(), 1000);
+                setTimeout(() => this.dialog.remove(), 200);
             }
             this.options.onClose?.();
         });
@@ -72,7 +72,7 @@ export class DialogComponent {
     public close(): void {
         document.removeEventListener("keydown", this.handleEscape);
         ui(this.dialog);
-        setTimeout(() => this.dialog.remove(), 1000);
+        setTimeout(() => this.dialog.remove(), 200);
     }
 
     private createDialogContent(): void {

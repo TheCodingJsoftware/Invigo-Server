@@ -35,17 +35,17 @@ export class AppearanceDialog extends DialogComponent {
                 </div>
                 <div class="row wrap center-align">
                     <label class="radio vertical padding border round">
-                        <img class="ignore-invert" src="https://www.gstatic.com/pantheon/images/user_preferences/light-illustration.svg" width="200px"/>
+                        <img class="ignore-invert" src="/static/icons/light-illustration.svg" width="200px"/>
                         <input type="radio" name="radio-mode" id="light-theme" />
                         <span>Light</span>
                     </label>
                     <label class="radio vertical padding border round">
-                        <img class="ignore-invert" src="https://www.gstatic.com/pantheon/images/user_preferences/dark-illustration.svg" width="200px"/>
+                        <img class="ignore-invert" src="/static/icons/dark-illustration.svg" width="200px"/>
                         <input type="radio" name="radio-mode" id="dark-theme" />
                         <span>Dark</span>
                     </label>
                     <label class="radio vertical padding border round">
-                        <img class="ignore-invert" src="https://www.gstatic.com/pantheon/images/user_preferences/auto-illustration.svg" width="200px"/>
+                        <img class="ignore-invert" src="/static/icons/auto-illustration.svg" width="200px"/>
                         <input type="radio" name="radio-mode" id="same-as-device" />
                         <span>Automatic</span>
                     </label>

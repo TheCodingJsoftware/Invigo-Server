@@ -11,7 +11,7 @@ export class ToggleButton {
 
         this.button = document.createElement("button");
         this.button.type = "button";
-        this.button.className = "left-align chip round perm tiny-margin";
+        this.button.className = "left-align border small-round tiny-margin";
         this.button.dataset.value = value;
         this.button.setAttribute("role", "button");
         this.button.setAttribute("aria-pressed", String(checked));
@@ -52,7 +52,7 @@ export class ToggleButton {
 
     private updateUI(): void {
         this.button.classList.toggle("fill", this.checked);
-        this.icon.textContent = this.checked ? "check_circle" : "circle";
+        this.icon.textContent = this.checked ? "check_box" : "check_box_outline_blank";
         this.button.setAttribute("aria-pressed", String(this.checked));
     }
 }

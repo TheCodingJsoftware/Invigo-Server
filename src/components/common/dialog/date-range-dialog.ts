@@ -3,6 +3,7 @@ import flatpickr from "flatpickr";
 import {WorkspaceDateRange, WorkspaceDateRangeDict} from "@models/workspace-date-range";
 import {ViewBus} from "@components/workspace/views/view-bus";
 import {SessionSettingsManager} from "@core/settings/session-settings";
+import {getPreferredMode} from "@utils/theme";
 
 export class DateRangeDialog extends DialogComponent {
     private picker: any | null = null;
@@ -16,6 +17,7 @@ export class DateRangeDialog extends DialogComponent {
     private thisLastNextWeekRadio!: HTMLInputElement;
     private thisMonthRadio!: HTMLInputElement;
     private customRadio!: HTMLInputElement;
+    private hasLoadedDialog = false;
 
     constructor() {
         super({
@@ -60,7 +62,44 @@ export class DateRangeDialog extends DialogComponent {
                 </div>
             `
         });
-        this.init();
+        this.loadStylesheet();
+    }
+
+    private loadStylesheet() {
+        let mode = localStorage.getItem("mode") || "auto";
+        if (mode === "auto") {
+            mode = getPreferredMode();
+        }
+
+        const href = `https://npmcdn.com/flatpickr/dist/themes/${mode}.css`;
+        const existing = document.getElementById("flatpickr-theme") as HTMLLinkElement | null;
+
+        if (existing && existing.dataset.mode === mode) {
+            this.init();
+            return;
+        }
+
+        const link = document.createElement("link");
+        link.id = "flatpickr-theme-new";
+        link.rel = "stylesheet";
+        link.type = "text/css";
+        link.dataset.mode = mode;
+        link.href = href;
+
+        let fired = false;
+        const done = () => {
+            if (fired) return;
+            fired = true;
+            if (existing) existing.remove();
+            link.id = "flatpickr-theme";
+            this.init();
+        };
+
+        link.onload = done;
+        link.onerror = done;
+        document.head.appendChild(link);
+
+        setTimeout(done, 500);
     }
 
     private init() {
@@ -82,17 +121,20 @@ export class DateRangeDialog extends DialogComponent {
             inline: true,
             position: "auto center",
             onChange: (selectedDates) => {
-                if (this.customRadio.checked && selectedDates.length === 2) {
-                    this.saveCustom(selectedDates[0], selectedDates[1]);
+                if (this.hasLoadedDialog) {
+                    if (this.customRadio.checked && selectedDates.length === 2) {
+                        this.saveCustom(selectedDates[0], selectedDates[1]);
+                    }
+                    ViewBus.update({
+                        dataType: SessionSettingsManager.get().lastActiveDataType,
+                    });
                 }
-                ViewBus.update({
-                    dataType: SessionSettingsManager.get().lastActiveDataType,
-                });
             }
         });
 
         this.bindRadios();
         this.restoreState();
+        this.hasLoadedDialog = true;
     }
 
     private bindRadios() {

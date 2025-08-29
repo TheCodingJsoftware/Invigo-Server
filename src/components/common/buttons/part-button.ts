@@ -9,13 +9,14 @@ export class PartButton {
 
     private readonly image: HTMLImageElement;
     private readonly span: HTMLSpanElement;
+    private readonly helper: HTMLSpanElement;
     private readonly tooltip: HTMLDivElement;
 
     constructor(part: PartData) {
         this.part = part;
 
         this.element = document.createElement("button");
-        this.element.className = "part-button extra border small-round blur"
+        this.element.className = "part-button extra border small-round blur left-align"
         this.element.addEventListener("click", () => this.buttonPressed());
 
         this.tooltip = document.createElement("div");
@@ -35,9 +36,14 @@ export class PartButton {
         this.span = document.createElement("span");
         this.span.textContent = this.part.name;
 
+        this.helper = document.createElement("span");
+        this.helper.className = "row small-text";
+        this.helper.textContent = `${this.part.meta_data.gauge} ${this.part.meta_data.material}`;
+
         this.element.appendChild(this.image);
         this.element.appendChild(this.span);
-        this.element.appendChild(this.tooltip);
+        this.span.appendChild(this.helper);
+        // this.element.appendChild(this.tooltip);
     }
 
     buttonPressed() {
