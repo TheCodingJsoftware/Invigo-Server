@@ -38,7 +38,7 @@ export class ComponentGroup {
     }
 
     getPrice(): number {
-        return this.base_part.price;
+        return this.base_part.saved_price;
     }
 
     getNotes(): string {

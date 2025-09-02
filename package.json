@@ -11,6 +11,7 @@
     "effect": "^3.17.9",
     "flatpickr": "^4.6.13",
     "material-dynamic-colors": "^1.1.2",
+    "morphdom": "^2.7.7",
     "puppeteer": "^24.17.0",
     "qrcode": "^1.5.4",
     "swapy": "^1.0.5",

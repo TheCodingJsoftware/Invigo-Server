@@ -68,8 +68,11 @@ class PageHost {
     }
 
     private async renderPartPage() {
-        this.element.innerHTML = "";
-        this.element.appendChild(this.partPage.element);
+        if (!this.element.contains(this.partPage.element)) {
+            this.element.appendChild(this.partPage.element);
+        }
+
+        // morphdom will handle all the smart updates from here
         await this.partPage.load();
     }
 

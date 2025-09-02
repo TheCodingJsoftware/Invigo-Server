@@ -7,6 +7,7 @@ export class Component {
     part_name!: string;
     quantity!: number;
     price!: number;
+    saved_price!: number;
     use_exchange_rate!: boolean;
     priority!: number;
     shelf_number!: string;
@@ -22,6 +23,9 @@ export class Component {
 
     constructor(data: ComponentData) {
         Object.assign(this, data);
+        if (this.saved_price === undefined) {
+            this.saved_price = this.price;
+        }
         this.orders = data.orders.map(o => new Order(o));
     }
 

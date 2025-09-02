@@ -42,12 +42,20 @@ export class AssembliesSummary implements BaseComponent {
             <div class="content-wrapper" style="height: auto;">
                 <div class="small-padding hide-on-print">
                     <label class="checkbox">
-                        <input type="checkbox" id="show-assemblyPicture" checked>
+                        <input type="checkbox" id="show-assemblyPicture">
                         <span>Picture</span>
                     </label>
                     <label class="checkbox">
-                        <input type="checkbox" id="show-assemblyProcess" checked>
+                        <input type="checkbox" id="show-assemblyProcess">
                         <span>Assembly Process</span>
+                    </label>
+                    <label class="checkbox">
+                        <input type="checkbox" id="show-assemblyUnitPrice">
+                        <span>Unit Price</span>
+                    </label>
+                    <label class="checkbox">
+                        <input type="checkbox" id="show-assemblyPrice">
+                        <span>Price</span>
                     </label>
                 </div>
                 <div class="grid no-space" id="assemblies-grid-view">${this.generateAssemblyGrid()}</div>
@@ -68,7 +76,7 @@ export class AssembliesSummary implements BaseComponent {
         container.appendChild(this.build());
 
         const toggleAssemblyProcessCheckbox = this.element.querySelector("#show-assemblyProcess") as HTMLInputElement;
-        const storedStateAssemblyProcess = localStorage.getItem("show-assemblyProcess") ?? "true";
+        const storedStateAssemblyProcess = localStorage.getItem("show-assemblyProcess") || "true";
         toggleAssemblyProcessCheckbox.checked = storedStateAssemblyProcess === "true";
 
         this.toggleAssemblyProcessVisibility(false);
@@ -78,7 +86,7 @@ export class AssembliesSummary implements BaseComponent {
         });
 
         const toggleAssemblyPictureCheckbox = this.element.querySelector("#show-assemblyPicture") as HTMLInputElement;
-        const storedStateAssemblyPicture = localStorage.getItem("show-assemblyPicture") ?? "true";
+        const storedStateAssemblyPicture = localStorage.getItem("show-assemblyPicture") || "true";
         toggleAssemblyPictureCheckbox.checked = storedStateAssemblyPicture === "true";
 
         this.toggleAssemblyPictureVisibility(false);
@@ -86,6 +94,24 @@ export class AssembliesSummary implements BaseComponent {
         toggleAssemblyPictureCheckbox.addEventListener("change", () => {
             this.toggleAssemblyPictureVisibility();
         });
+
+        const toggleAssemblyUnitPriceCheckbox = this.element.querySelector("#show-assemblyUnitPrice") as HTMLInputElement;
+        const storedStateAssemblyUnitPrice = localStorage.getItem("show-assemblyUnitPrice") || "true";
+        toggleAssemblyUnitPriceCheckbox.checked = storedStateAssemblyUnitPrice === "true";
+        toggleAssemblyUnitPriceCheckbox.addEventListener("change", () => {
+            this.toggleAssemblyUnitPriceVisibility();
+        })
+
+        this.toggleAssemblyUnitPriceVisibility(false);
+
+        const toggleAssemblyPriceCheckbox = this.element.querySelector("#show-assemblyPrice") as HTMLInputElement;
+        const storedStateAssemblyPrice = localStorage.getItem("show-assemblyPrice") || "true";
+        toggleAssemblyPriceCheckbox.checked = storedStateAssemblyPrice === "true";
+        toggleAssemblyPriceCheckbox.addEventListener("change", () => {
+            this.toggleAssemblyPriceVisibility()
+        })
+
+        this.toggleAssemblyPriceVisibility(false);
 
         const gridCompactButton = this.element.querySelector('#grid-compact-button') as HTMLButtonElement;
         const gridModuleButton = this.element.querySelector('#grid-module-button') as HTMLButtonElement;
@@ -136,6 +162,10 @@ export class AssembliesSummary implements BaseComponent {
         return Promise.resolve();
     }
 
+    private formatPrice(price: number): string {
+        return `$${price.toLocaleString("en-US", {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+    }
+
     public hide(): void {
         this.element?.classList.add("hidden");
     }
@@ -167,6 +197,30 @@ export class AssembliesSummary implements BaseComponent {
 
         if (save) {
             localStorage.setItem("show-assemblyPicture", toggleAssemblyPictureCheckbox.checked.toString());
+        }
+    }
+
+    private toggleAssemblyUnitPriceVisibility(save: boolean = true) {
+        const toggleAssemblyUnitPriceCheckbox = this.element.querySelector("#show-assemblyUnitPrice") as HTMLInputElement;
+        const unitPriceDivs = this.element.querySelectorAll(".assembly-unit-price-div") as NodeListOf<HTMLElement>;
+        unitPriceDivs.forEach(div => {
+            div.classList.toggle("hidden", !toggleAssemblyUnitPriceCheckbox.checked);
+        });
+
+        if (save) {
+            localStorage.setItem("show-assemblyUnitPrice", toggleAssemblyUnitPriceCheckbox.checked.toString());
+        }
+    }
+
+    private toggleAssemblyPriceVisibility(save: boolean = true) {
+        const toggleAssemblyPriceCheckbox = this.element.querySelector("#show-assemblyPrice") as HTMLInputElement;
+        const priceDivs = this.element.querySelectorAll(".assembly-price-div") as NodeListOf<HTMLElement>;
+        priceDivs.forEach(div => {
+            div.classList.toggle("hidden", !toggleAssemblyPriceCheckbox.checked);
+        });
+
+        if (save) {
+            localStorage.setItem("show-assemblyPrice", toggleAssemblyPriceCheckbox.checked.toString());
         }
     }
 
@@ -206,7 +260,13 @@ export class AssembliesSummary implements BaseComponent {
                 <td class="assembly-process-div">
                     <div>${assembly.generateProcessTagString()}</div>   
                 </td>
-                <td class="left-align min"><span>× ${assembly.meta_data.quantity}</span></td>
+                <td class="assembly-unit-price-div">
+                    <div>${this.formatPrice(assembly.getUnitPrice())}</div>   
+                </td>
+                <td class="assembly-price-div">
+                    <div>${this.formatPrice(assembly.getPrice())}</div>   
+                </td>
+                <td class="left-align min">${assembly.meta_data.quantity}</td>
             </tr>
         `.trim())
             .join('\n');
@@ -218,6 +278,8 @@ export class AssembliesSummary implements BaseComponent {
                     <th class="assembly-picture-div"></th>
                     <th>Assembly</th>
                     <th class="assembly-process-div">Process</th>
+                    <th class="assembly-unit-price-div">Unit Price</th>
+                    <th class="assembly-price-div">Price</th>
                     <th class="center-align">Quantity</th>
                 </tr>
             </thead>

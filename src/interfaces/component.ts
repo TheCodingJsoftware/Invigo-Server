@@ -6,6 +6,7 @@ export interface ComponentData {
     part_name: string;
     quantity: number;
     price: number;
+    saved_price: number;
     use_exchange_rate: boolean;
     priority: number;
     shelf_number: string;

@@ -5,7 +5,6 @@ import {Loading} from "@components/common/loading/loading";
 import {PartDataService} from "@components/workspace/parts/part-data.service";
 import {PartData} from "@components/workspace/parts/part-container";
 import {DialogComponent} from "@components/common/dialog/dialog-component";
-import {invertImages} from "@utils/theme";
 import {WorkspacePermissions} from "@core/auth/workspace-permissions";
 import {WorkspaceSettings} from "@core/settings/workspace-settings";
 import {FlowtagStatusMenuButton} from "@components/common/buttons/flowtag-status-menu-button";
@@ -19,6 +18,7 @@ import {RecutFinishedButton} from "@components/common/buttons/recut-finished-but
 import {TimerButton} from "@components/common/buttons/timer-button";
 import {CurrentProcessButton} from "@components/common/buttons/current-process-button";
 import {PartButton} from "@components/common/buttons/part-button";
+import {DueButton} from "@components/common/buttons/due-button";
 
 export class PartRow {
     readonly element: HTMLTableRowElement;
@@ -30,6 +30,9 @@ export class PartRow {
     constructor(data: PartData, private readonly columns: PartColumn[]) {
         this.data = data;
         this.element = document.createElement("tr");
+        this.element.setAttribute('data-part-name', data.name);
+        this.element.setAttribute('data-job-id', String(data.job_id));
+        this.element.setAttribute('data-flowtag-index', String(data.flowtag_index));
 
         this.checkbox.onchange = () => this.onCheckboxChange();
         this.checkbox.checkbox.addEventListener("click", (ev) => {
@@ -40,7 +43,6 @@ export class PartRow {
             this.element.classList.add("hovering");
             this.checkbox.show();
         });
-
         this.element.addEventListener("mouseleave", () => {
             if (!this.checkbox.checked) {
                 this.element.classList.remove("hovering");
@@ -48,8 +50,12 @@ export class PartRow {
             }
         });
 
-        if (data.is_completed) {
-            this.element.classList.add("finished");
+        if (data.is_completed) this.element.classList.add("finished");
+    }
+
+    render() {
+        if (this.element.children.length > 0) {
+            return; // Already rendered and preserved
         }
 
         for (const column of this.columns) {
@@ -59,31 +65,53 @@ export class PartRow {
                 td.classList.add("min");
                 td.appendChild(this.checkbox.dom);
             } else if (column.key === 'part') {
-                const partButton = new PartButton(data);
+                const partButton = new PartButton(this.data);
                 td.classList.add("min");
                 td.appendChild(partButton.element);
             } else if (column.key === 'icon') {
                 const icon = document.createElement("i");
-                icon.innerHTML = <string>column.render(data);
-                if (data.is_overdue) {
+                icon.innerHTML = <string>column.render(this.data);
+                if (this.data.is_overdue) {
                     icon.classList.add("red-font");
                     this.element.classList.add("overdue");
-                } else if (data.is_completed) {
+                } else if (this.data.is_completed) {
                     icon.classList.add("green-font");
                 }
                 td.classList.add("min");
                 td.appendChild(icon);
             } else if (column.key === 'actions') {
-                td.appendChild(PartRow.createActions(data));
-
+                td.appendChild(PartRow.createActions(this.data));
             } else if (column.key === 'files') {
-                td.appendChild(PartRow.createFiles(data));
-            } else if (column.key === "current_flowtag") {
-                var content = <string>column.render(data);
-                const currentProcessButton = new CurrentProcessButton(content, data);
+                td.appendChild(PartRow.createFiles(this.data));
+            } else if (column.key === 'current_flowtag') {
+                const content = <string>column.render(this.data);
+                const currentProcessButton = new CurrentProcessButton(content, this.data);
                 td.appendChild(currentProcessButton.getElement());
+
+                if (!this.data.is_completed) {
+                    const dueDateButton = new DueButton(content, this.data);
+                    td.appendChild(dueDateButton.getElement());
+                }
+
+            } else if (column.key === 'recording') {
+
+                if (this.#user.can(WorkspacePermissions.CanToggleTimer)) {
+                    const timerButton = new TimerButton(this.data);
+                    if (this.data.is_timing) {
+                        timerButton.toggle()
+                    }
+                    timerButton.onclick((data) => {
+                        if (data.is_timing) {
+                            PartRow.stopTiming(data);
+                        } else {
+                            PartRow.startTiming(data);
+                        }
+                    });
+                    td.appendChild(timerButton.getElement());
+                }
+
             } else {
-                const content = column.render(data);
+                const content = column.render(this.data);
                 td.classList.add("center-align");
                 if (typeof content === 'string') {
                     td.textContent = content;
@@ -144,21 +172,6 @@ export class PartRow {
         const user = Object.freeze(UserContext.getInstance().user);
         const container = document.createElement("nav");
         container.className = "row wrap tiny-space";
-
-        if (user.can(WorkspacePermissions.CanToggleTimer)) {
-            const timerButton = new TimerButton(data);
-            if (data.is_timing) {
-                timerButton.toggle()
-            }
-            timerButton.onclick((data) => {
-                if (data.is_timing) {
-                    PartRow.stopTiming(data);
-                } else {
-                    PartRow.startTiming(data);
-                }
-            });
-            container.appendChild(timerButton.getElement());
-        }
 
         if (!data.is_completed && !data.recut && user.canApplyTag(data.current_flowtag) && user.can(WorkspacePermissions.AdvanceFlow)) {
             if (Object.keys(WorkspaceSettings.tags[data.current_flowtag].statuses).length > 1) {

@@ -10,7 +10,7 @@ export const CHECKBOX_CONFIG: Record<string, Record<string, boolean>> = {
         "notes": false,
         "component-notes": false,
         "price": true,
-        "unitPrice": true,
+        "unitPrice": false,
         "shelfNumber": false,
         "process": false,
         "paint": true,

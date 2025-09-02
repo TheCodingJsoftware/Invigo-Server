@@ -156,19 +156,22 @@ class GroupedLaserCutPartsTable {
     generatePartsTableFooter(): string {
         let totalPrice = 0;
         let totalQuantity = 0;
+        let totalUnitPrice = 0;
         for (const laserCutPart of this.laserCutParts) {
             totalPrice += laserCutPart.getTotalPrice();
+            totalUnitPrice += laserCutPart.getPrice();
             totalQuantity += laserCutPart.getTotalQuantity();
         }
         let partsTableFooter = `
             <tr>
                 <th data-column="assembly-laser-cut-part-partName"></th>
+                <th class="center-align" data-column="assembly-laser-cut-part-coating"></th>
                 <th class="center-align" data-column="assembly-laser-cut-part-material"></th>
                 <th class="center-align" data-column="assembly-laser-cut-part-process"></th>
                 <th class="center-align" data-column="assembly-laser-cut-part-notes"></th>
                 <th class="center-align" data-column="assembly-laser-cut-part-shelfNumber"></th>
                 <th class="center-align" data-column="assembly-laser-cut-part-quantity">${this.formatQuantity(totalQuantity)}</th>
-                <th class="center-align" data-column="assembly-laser-cut-part-unitPrice"></th>
+                <th class="center-align" data-column="assembly-laser-cut-part-unitPrice">${this.formatPrice(totalUnitPrice)}</th>
                 <th class="center-align" data-column="assembly-laser-cut-part-price">${this.formatPrice(totalPrice)}</th>
             </tr>`;
         return partsTableFooter.trim();
@@ -322,9 +325,11 @@ class GroupedComponentsTable {
 
     generatePartsTableFooter(): string {
         let totalPrice = 0;
+        let totalUnitPrice = 0;
         let totalQuantity = 0;
         for (const component of this.components) {
             totalPrice += component.getPrice() * component.getTotalQuantity();
+            totalUnitPrice += component.getPrice();
             totalQuantity += component.getTotalQuantity();
         }
         let partsTableFooter = `
@@ -334,7 +339,7 @@ class GroupedComponentsTable {
                 <th class="center-align" data-column="assembly-component-notes"></th>
                 <th class="center-align" data-column="assembly-component-shelfNumber"></th>
                 <th class="center-align" data-column="assembly-component-quantity">${this.formatQuantity(totalQuantity)}</th>
-                <th class="center-align" data-column="assembly-component-unitPrice"></th>
+                <th class="center-align" data-column="assembly-component-unitPrice">${this.formatPrice(totalUnitPrice)}</th>
                 <th class="center-align" data-column="assembly-component-price">${this.formatPrice(totalPrice)}</th>
             </tr>`;
         return partsTableFooter.trim();

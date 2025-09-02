@@ -178,6 +178,8 @@ export class NestedAssembliesPartsLayout implements BaseComponent {
                     <div>Assembly quantity: ${this.assembly.meta_data.quantity}</div>
                     <div>Process: ${this.assembly.generateProcessTagString()}</div>
                     <div>Paint: ${this.assembly.paint_data.paint_name}</div>
+                    <div>Price: ${this.formatPrice(this.assembly.getPrice())}</div>
+                    <div>Unit Price: ${this.formatPrice(this.assembly.getUnitPrice())}</div>
                 </div>
                 <button class="circle transparent hide-on-print" id="toggle-button">
                     <i class="rotate-180">expand_more</i>
@@ -202,6 +204,10 @@ export class NestedAssembliesPartsLayout implements BaseComponent {
         this.element.id = `assemblies-nested-assembly-parts-list-layout-${this.jobId}-${this.assembly.getSafeIdName()}`;
 
         return this.element;
+    }
+
+    private formatPrice(price: number): string {
+        return `$${price.toLocaleString("en-US", {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
     }
 
     generateLaserCutPartsComponent(): HTMLElement {

@@ -3,9 +3,10 @@ import {WorkspaceRowCheckbox} from "@components/common/checkboxes/workspace-row-
 import {PartRow} from "@components/workspace/parts/part-row";
 import {PartSelectionManager} from "@components/workspace/parts/part-selection-manager";
 import {PartData} from "@components/workspace/parts/part-container";
+import {LazyLoad} from "@utils/lazy-render";
 
 export interface PartColumn {
-    key: keyof PartData | 'part' | 'actions' | 'icon' | 'checkbox' | 'thumbnail' | 'files';
+    key: keyof PartData | 'part' | 'actions' | 'icon' | 'checkbox' | 'thumbnail' | 'files' | 'recording';
     label: string;
     render: (data: PartData) => HTMLElement | string;
 }
@@ -30,6 +31,16 @@ export class PartsTable {
             render: () => ''
         },
         {
+            key: 'files',
+            label: 'Files',
+            render: () => ''
+        },
+        {
+            key: 'quantity',
+            label: 'Quantity',
+            render: (data) => String(data.quantity)
+        },
+        {
             key: 'current_flowtag',
             label: 'Current Process',
             render: (data) => {
@@ -48,18 +59,13 @@ export class PartsTable {
             }
         },
         {
-            key: 'quantity',
-            label: 'Quantity',
-            render: (data) => String(data.quantity)
-        },
-        {
             key: 'actions',
             label: 'Actions',
             render: () => ''
         },
         {
-            key: 'files',
-            label: 'Files',
+            key: 'recording',
+            label: 'Record',
             render: () => ''
         },
         {
@@ -82,7 +88,7 @@ export class PartsTable {
 
     constructor() {
         this.table = document.createElement("table") as HTMLTableElement;
-        this.table.classList.add("border", "round");
+        this.table.classList.add("border", "round", "prats-table");
         this.thead = document.createElement("thead");
         this.tbody = document.createElement("tbody");
 
@@ -130,19 +136,26 @@ export class PartsTable {
 
     async renderBatch(data: PartData[], startIndex: number): Promise<void> {
         const endIndex = Math.min(startIndex + this.BATCH_SIZE, data.length);
+        const partRowLazy = new LazyLoad(
+            [],
+            (el) => {
+                const row = rowByEl.get(el);
+                if (row) row.render();
+            },
+            {rootMargin: "400px", threshold: 0}
+        );
+        const rowByEl = new WeakMap<Element, PartRow>();
 
         for (let i = startIndex; i < endIndex; i++) {
-            if (!(this.#user.canViewTag(data[i].current_flowtag) || data[i].is_completed)) {
-                continue;
-            }
+            if (!(this.#user.canViewTag(data[i].current_flowtag) || data[i].is_completed)) continue;
             const part = data[i];
             const key = `${part.group_id}-${part.name}`;
             const partRow = new PartRow(part, this.columns);
-            partRow.onCheckboxChanged = (row) => {
-                this.onRowCheckboxChanged(row);
-            };
+            partRow.onCheckboxChanged = (row) => this.onRowCheckboxChanged(row);
             this.rowMap.set(key, partRow);
             this.tbody.appendChild(partRow.element);
+            rowByEl.set(partRow.element, partRow);
+            partRowLazy.observe(partRow.element);
         }
 
         if (endIndex < data.length) {

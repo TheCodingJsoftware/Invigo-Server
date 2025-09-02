@@ -1,18 +1,42 @@
 import {IMaterialDynamicColorsThemeColor} from "material-dynamic-colors/src/cdn/interfaces"
-import {CookieSettingsManager} from "@core/settings/cookies";
 import materialDynamicColors from "material-dynamic-colors";
 
 type ThemeSlice = { light: string; dark: string };
 
-const THEME_COOKIE_PREFIX = "MaterialDynamicColorsThemeColor";
+export class SettingsManager<T extends Record<string, any>> {
+    constructor(private key: string, private defaults: T) {
+    }
+
+    get(): T {
+        const raw = localStorage.getItem(this.key);
+        if (!raw) {
+            return structuredClone(this.defaults);
+        }
+        try {
+            return {...this.defaults, ...JSON.parse(raw)};
+        } catch {
+            return structuredClone(this.defaults);
+        }
+    }
+
+    set(patch: Partial<T>) {
+        const current = this.get();
+        const next = {...current, ...patch};
+        localStorage.setItem(this.key, JSON.stringify(next));
+    }
+
+    reset() {
+        localStorage.setItem(this.key, JSON.stringify(this.defaults));
+    }
+}
+
+const THEME_STORAGE_PREFIX = "MaterialDynamicColorsThemeColor";
 const THEME_INDEX_KEY = "MaterialDynamicColorsThemeColorIndex";
 const MAX_THEMES = 50;
-const COOKIE_OPTS = {days: 7, path: "/", sameSite: "Lax" as const};
 
-const ThemeIndex = new CookieSettingsManager<{ order: string[] }>(
+const ThemeIndex = new SettingsManager<{ order: string[] }>(
     THEME_INDEX_KEY,
-    {order: []},
-    COOKIE_OPTS
+    {order: []}
 );
 
 const toCss = (vars: IMaterialDynamicColorsThemeColor) =>
@@ -44,13 +68,13 @@ const hexToRgba = (hex: string, a: number) => {
 export const extractCssVar = (css: string, name: string) =>
     new RegExp(`--${name}:\\s*([^;]+);`).exec(css)?.[1];
 
-const themeCookieKey = (color: string) => THEME_COOKIE_PREFIX + encodeURIComponent(color);
+const themeKey = (color: string) => THEME_STORAGE_PREFIX + encodeURIComponent(color);
 
-const themeCookie = (color: string) =>
-    new CookieSettingsManager<ThemeSlice>(themeCookieKey(color), {light: "", dark: ""}, COOKIE_OPTS);
+const themeStorage = (color: string) =>
+    new SettingsManager<ThemeSlice>(themeKey(color), {light: "", dark: ""});
 
-const deleteCookie = (key: string) => {
-    document.cookie = `${key}=; Expires=Thu, 01 Jan 1970 00:00:00 GMT; Path=/`;
+const evictTheme = (color: string) => {
+    localStorage.removeItem(themeKey(color));
 };
 
 const touchIndex = (color: string) => {
@@ -59,20 +83,20 @@ const touchIndex = (color: string) => {
     order.push(color);
     while (order.length > MAX_THEMES) {
         const evict = order.shift()!;
-        deleteCookie(themeCookieKey(evict));
+        evictTheme(evict);
     }
     ThemeIndex.set({order});
 };
 
 export async function getCachedThemeCss(color: string): Promise<ThemeSlice> {
-    const stored = themeCookie(color).get();
+    const stored = themeStorage(color).get();
     if (stored.light && stored.dark) {
         touchIndex(color);
         return stored;
     }
     const palette = await materialDynamicColors(color);
     const slice: ThemeSlice = {light: toCss(palette.light), dark: toCss(palette.dark)};
-    themeCookie(color).set(slice);
+    themeStorage(color).set(slice);
     touchIndex(color);
     return slice;
 }
@@ -81,7 +105,9 @@ export async function applyScopedBeerTheme(element: HTMLElement, color: string, 
     const {light, dark} = await getCachedThemeCss(color);
     element.setAttribute("data-beer-css-scope", scopeId);
     const styleEl = ensureStyle(`beer-css-scope-${scopeId}`);
-    styleEl.textContent = `body.light [data-beer-css-scope="${scopeId}"]{${light}}` + `body.dark [data-beer-css-scope="${scopeId}"]{${dark}}`;
+    styleEl.textContent =
+        `body.light [data-beer-css-scope="${scopeId}"]{${light}}` +
+        `body.dark [data-beer-css-scope="${scopeId}"]{${dark}}`;
     // const primary = (getMode() === "dark" ? extractCssVar(dark, "primary") : extractCssVar(light, "primary")) || "#000";
     // element.style.backgroundColor = hexToRgba(primary, 0.08);
 }

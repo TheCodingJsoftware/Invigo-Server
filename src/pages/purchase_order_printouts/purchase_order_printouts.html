@@ -60,9 +60,10 @@
         <article class="border round">
             <nav class="row">
                 <p class="max top-align">{{ vendor.address }}</p>
-                <button class="border" onclick="window.open('https://www.google.com/maps/search/{{ vendor.address }}', '_blank')">
+                <button class="border"
+                        onclick="window.open('https://www.google.com/maps/search/{{ vendor.address|urlencode }}', '_blank')">
                     <i>map</i>
-                    <span data-website="https://www.google.com/maps/search/{{ vendor.address }}">Google Maps</span>
+                    <span data-website="https://www.google.com/maps/search/{{ vendor.address|urlencode }}">Google Maps</span>
                 </button>
             </nav>
         </article>

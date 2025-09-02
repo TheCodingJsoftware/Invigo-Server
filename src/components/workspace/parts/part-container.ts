@@ -8,15 +8,9 @@ import {SearchInput} from "@components/common/input/search-input";
 import {invertImages} from "@utils/theme";
 import {PartSelectionManager} from "@components/workspace/parts/part-selection-manager";
 import {PartsTable} from "@components/workspace/parts/parts-table";
-import {CookieSettingsManager} from "@core/settings/cookies";
 import {JobData} from "@interfaces/job";
-import {FileViewerDialog} from "@components/common/dialog/file-viewer-dialog";
-import {PartRow} from "@components/workspace/parts/part-row";
-import {AreYouSureDialog} from "@components/common/dialog/are-you-sure-dialog";
-import {SnackbarComponent} from "@components/common/snackbar/snackbar-component";
-import {WorkspaceDateRange} from "@models/workspace-date-range";
 import {TimelineEntry} from "../../../pages/production_planner/production_planner";
-import {applyScopedBeerTheme} from "@config/material-theme-cookie";
+import {JobElement} from "@components/workspace/parts/job-element";
 
 export interface PartData {
     group_id: number;
@@ -45,215 +39,6 @@ export interface PartData {
 
 type PartPageData = Array<PartData>;
 
-interface JobSettings {
-    isCollapsed: boolean;
-}
-
-class JobElement {
-    readonly element: HTMLElement;
-    readonly articleContent: HTMLDivElement;
-    jobId: number;
-    jobName?: string;
-    parts: PartData[];
-    jobSettings: CookieSettingsManager<JobSettings>;
-    private jobCookieManager: CookieSettingsManager<JobData>;
-
-    constructor(jobId: number, parts: PartData[]) {
-        this.jobId = jobId;
-        this.parts = parts;
-
-        this.jobSettings = new CookieSettingsManager(`jobSettings:${this.jobId}`, {isCollapsed: false});
-        // @ts-ignore
-        this.jobCookieManager = new CookieSettingsManager(`jobData:${this.jobId}`, {}, {days: 1 / 24}); // 1 hour
-
-        this.element = document.createElement("article");
-        this.element.classList.add("round", "border");
-
-        this.articleContent = document.createElement("div");
-    }
-
-    async initialize() {
-        this.element.appendChild(this.createArticleHeader());
-        this.element.appendChild(this.articleContent);
-
-        const jobData = await this.getJobDataCached();
-        const flowtagTimeline = jobData.job_data.flowtag_timeline;
-        const activeRange = WorkspaceDateRange.getActiveRange();
-
-        const filteredParts = this.parts.filter(part => {
-            const isCompleted = part.is_completed;
-            if (isCompleted) return true;
-
-            const flowtag = part.current_flowtag;
-            if (!flowtag) return false;
-
-            const timelineEntry = flowtagTimeline[flowtag];
-            if (!timelineEntry) return false;
-
-            const start = timelineEntry.starting_date ? new Date(timelineEntry.starting_date) : null;
-            const end = timelineEntry.ending_date ? new Date(timelineEntry.ending_date) : null;
-            if (!start || !end) return false;
-
-            // Determine overdue
-            const now = new Date();
-            const isOverdue = end < now;
-            part.is_overdue = isOverdue;
-            part.part_timeline = timelineEntry;
-
-            // If overdue, always include
-            if (isOverdue) return true;
-
-            // Otherwise, must be in active range
-            if (activeRange) {
-                const overlaps = start <= activeRange.end && end >= activeRange.start;
-                return overlaps;
-            }
-            return true;
-        });
-
-        this.parts = filteredParts;
-
-        if (this.parts.length === 0) {
-            return;
-        }
-
-        const partsTable = new PartsTable();
-        await partsTable.loadData(this.parts);
-        this.articleContent.appendChild(partsTable.table);
-
-        if (this.jobSettings.get().isCollapsed) {
-            this.collapseArticleContent();
-        }
-    }
-
-    // Stale-while-revalidate: use cache, refresh in background
-    async getJobDataCached(): Promise<JobData> {
-        return this.refreshJobData();
-        // avoid cache because it messes up the timeline ui.
-        const cached = this.jobCookieManager.get();
-        if (Object.keys(cached).length > 0) {
-            // Use cache immediately
-            this.refreshJobData(); // background refresh
-            return cached;
-        } else {
-            return this.refreshJobData();
-        }
-    }
-
-    // Fetch fresh data, update cache, and update UI
-    async refreshJobData(): Promise<JobData> {
-        try {
-            const response = await fetch(`/api/workspace/get/job/${this.jobId}`);
-            if (!response.ok) {
-                throw new Error(`Failed to fetch job data: ${response.statusText}`);
-            }
-
-            const data: JobData = await response.json();
-
-            this.jobCookieManager.set(data);
-
-            this.applyJobDataToUI(data);
-
-            return data;
-        } catch (err) {
-            console.error("Error fetching job data:", err);
-            return this.jobCookieManager.get(); // fallback to cache
-        }
-    }
-
-
-    // Update UI based on job data
-    async applyJobDataToUI(data: JobData) {
-        const title = this.element.querySelector(`#job-${this.jobId}`) as HTMLElement;
-        if (title) {
-            this.jobName = data.job_data.name;
-            title.textContent = data.job_data.name;
-            await applyScopedBeerTheme(this.element, data.job_data.color, `job-${this.jobId}`);
-        }
-    }
-
-    private showEmptyMessage(message: string): void {
-        const empty = document.createElement("p");
-        empty.className = "center-align";
-        empty.textContent = message;
-
-        this.element.replaceChildren(empty);
-    }
-
-    private createArticleHeader(): HTMLElement {
-        const header = document.createElement("div");
-        header.classList.add("row");
-
-        const title = document.createElement("h5");
-        title.id = `job-${this.jobId}`;
-        title.classList.add("max");
-
-        const split = document.createElement("nav");
-        split.className = "group split small";
-
-        const markCompleteButton = document.createElement("button");
-        markCompleteButton.classList.add("left-round", "square", "small");
-        markCompleteButton.innerHTML = `
-            <i>done_all</i>
-        `.trim();
-        markCompleteButton.onclick = async () => {
-            const dialog = new AreYouSureDialog(
-                "Are you sure?",
-                "Are you sure you want to mark all parts in this job as complete?"
-            );
-
-            const confirmed = await dialog.show();
-            if (!confirmed) return; // user pressed No or Cancel
-
-            for (const part of this.parts) {
-                PartRow.incrementFlowtagIndex(part);
-            }
-
-            new SnackbarComponent({
-                message: "All parts marked complete!",
-                type: "green",
-                icon: "done_all"
-            });
-        }
-
-        // Open all files
-        const openFilesButton = document.createElement("button");
-        openFilesButton.classList.add("no-round", "square", "small");
-        openFilesButton.innerHTML = `
-            <i>preview</i>
-        `.trim();
-        openFilesButton.onclick = () => {
-            new FileViewerDialog(this.jobName, this.parts)
-        }
-
-        // Add collapse/expand button
-        const toggleButton = document.createElement("button");
-        toggleButton.classList.add("right-round", "square", "small", "toggle-button");
-        toggleButton.innerHTML = "<i>expand_less</i>";
-        toggleButton.onclick = () => this.collapseArticleContent();
-
-        split.appendChild(markCompleteButton);
-        split.appendChild(openFilesButton);
-        split.appendChild(toggleButton);
-
-        header.appendChild(title);
-        header.appendChild(split);
-
-        return header;
-    }
-
-    private collapseArticleContent(collapse?: boolean) {
-        const toggleButton = this.element.querySelector(".toggle-button") as HTMLButtonElement;
-        const toggleButtonIcon = toggleButton.querySelector('i') as HTMLElement;
-        this.articleContent.classList.toggle('hidden');
-        const isCollapsed = this.articleContent.classList.contains('hidden')
-        toggleButtonIcon.classList.toggle("rotate-180", isCollapsed);
-        toggleButtonIcon.classList.toggle("rotate-0", !isCollapsed);
-
-        this.jobSettings.set({"isCollapsed": isCollapsed})
-    }
-}
-
 export class PartContainer {
     readonly element: HTMLElement;
 
@@ -270,15 +55,26 @@ export class PartContainer {
     }
 
     async load() {
+        const t0 = performance.now();
         Loading.show();
-        let data: PartPageData = await PartDataService.getParts();
 
+        // fetch
+        const f0 = performance.now();
+        let data: PartPageData = await PartDataService.getParts();
+        const fetchMs = performance.now() - f0;
+
+        // filter visibility
+        const fv0 = performance.now();
         const usedMaterials = Array.from(new Set(data.map(p => p.meta_data.material).filter(Boolean)));
         const usedThicknesses = Array.from(new Set(data.map(p => p.meta_data.gauge).filter(Boolean)));
         this.updateFilterVisibility(usedMaterials, usedThicknesses);
+        const fvMs = performance.now() - fv0;
 
+        // search filter
+        let searchMs = 0;
         const q = (WorkspaceFilter.searchQuery ?? "").trim().toLowerCase();
         if (q) {
+            const s0 = performance.now();
             const terms = q.split(/\s+/).filter(Boolean);
             data = data.filter(p => {
                 const hay = [
@@ -290,15 +86,14 @@ export class PartContainer {
                     String(p.quantity ?? ""),
                     String(p.meta_data.weight ?? ""),
                     String(p.meta_data.machine_time ?? ""),
-                ]
-                    .filter(Boolean)
-                    .join(" ")
-                    .toLowerCase();
-
+                ].filter(Boolean).join(" ").toLowerCase();
                 return terms.every(t => hay.includes(t));
             });
+            searchMs = performance.now() - s0;
         }
 
+        // material/thickness filters
+        const f0b = performance.now();
         data = data.filter(p => {
             const materialFilters = Object.entries(WorkspaceFilter.getManager().get())
                 .filter(([k, v]) => k.startsWith("show_material:") && v === true)
@@ -309,12 +104,15 @@ export class PartContainer {
                 .filter(([k, v]) => k.startsWith("show_thickness:") && v === true)
                 .map(([k]) => k.slice("show_thickness:".length));
             if (thicknessFilters.length && !thicknessFilters.includes(p.meta_data?.gauge)) return false;
+
             return true;
         });
+        const filterMs = performance.now() - f0b;
 
+        // sort
+        const srt0 = performance.now();
         data.sort((a, b) => {
             const settings = WorkspaceSort.getManager().get();
-
             const comparisons: Array<[boolean, number]> = [
                 [settings.sortByName, a.name.localeCompare(b.name)],
                 [settings.sortByCurrentProcess, a.flowtag_index - b.flowtag_index],
@@ -329,27 +127,52 @@ export class PartContainer {
                 [settings.sortBySize, a.meta_data.part_dim.localeCompare(b.meta_data.part_dim)],
                 [settings.sortByMachineTime, a.meta_data.machine_time - b.meta_data.machine_time],
             ];
-
             for (const [enabled, result] of comparisons) {
                 if (enabled && result !== 0) {
                     return settings.reverse ? -result : result;
                 }
             }
-
             return 0;
         });
+        const sortMs = performance.now() - srt0;
+
         if (!data || data.length === 0) {
             this.showEmptyMessage("No parts available. All parts are completed or filtered.");
             Loading.hide();
             SearchInput.setLoading(false);
             SearchInput.setResultsCount(data.length);
+            console.log(JSON.stringify({
+                handler: "PartContainer.load",
+                parts: 0,
+                fetch_ms: +fetchMs.toFixed(3),
+                filterVisibility_ms: +fvMs.toFixed(3),
+                searchFilter_ms: +searchMs.toFixed(3),
+                filter_ms: +filterMs.toFixed(3),
+                sort_ms: +sortMs.toFixed(3),
+                total_ms: +(performance.now() - t0).toFixed(3)
+            }));
             return;
         }
 
+        const jt0 = performance.now();
         await this.loadJobTables(data);
+        const jtMs = performance.now() - jt0;
+
         Loading.hide();
         SearchInput.setLoading(false);
         SearchInput.setResultsCount(data.length);
+
+        console.log(JSON.stringify({
+            handler: "PartContainer.load",
+            parts: data.length,
+            fetch_ms: +fetchMs.toFixed(3),
+            filterVisibility_ms: +fvMs.toFixed(3),
+            searchFilter_ms: +searchMs.toFixed(3),
+            filter_ms: +filterMs.toFixed(3),
+            sort_ms: +sortMs.toFixed(3),
+            jobTables_ms: +jtMs.toFixed(3),
+            total_ms: +(performance.now() - t0).toFixed(3)
+        }));
     }
 
     private async loadGlobalTable(data: PartPageData) {
@@ -375,27 +198,46 @@ export class PartContainer {
     }
 
     private async loadJobTables(data: PartPageData) {
+        const t0 = performance.now();
         const fragment = document.createDocumentFragment();
         const groups = this.groupPartsByJob(data);
         const sortedJobIds = Array.from(groups.keys())
             .filter((id): id is number => id !== null)
             .sort((a, b) => a - b);
 
+        let jobCount = 0;
+        let jobTotalMs = 0;
         for (const jobId of sortedJobIds) {
             const parts = groups.get(jobId)!;
-
+            const j0 = performance.now();
             const jobElement = new JobElement(jobId, parts);
             await jobElement.initialize();
+            const jMs = performance.now() - j0;
+            jobTotalMs += jMs;
 
             if (jobElement.parts.length === 0) continue;
             if (!jobElement.element.hasChildNodes()) continue;
 
             fragment.appendChild(jobElement.element);
+            jobCount++;
+            console.log(JSON.stringify({
+                handler: "PartContainer.loadJobTables.job",
+                jobId,
+                parts: jobElement.parts.length,
+                ms: +jMs.toFixed(3)
+            }));
         }
 
         requestIdleCallback(() => {
             this.element.replaceChildren(fragment);
             invertImages();
+            console.log(JSON.stringify({
+                handler: "PartContainer.loadJobTables",
+                jobs: jobCount,
+                totalParts: data.length,
+                jobInit_ms: +jobTotalMs.toFixed(3),
+                total_ms: +(performance.now() - t0).toFixed(3)
+            }));
         });
     }
 

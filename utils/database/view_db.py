@@ -372,7 +372,6 @@ class ViewDB(BaseWithDBPool):
     @ensure_connection
     async def get_parts_view(self, show_completed: int, viewable_tags: list[str], start_date: str | None, end_date: str | None) -> list[dict]:
         def parse_iso_date(date_str: str) -> datetime:
-            # Handles "2025-08-30T05:00:00.000Z"
             return datetime.fromisoformat(date_str.replace("Z", "+00:00"))
 
         try:
@@ -390,18 +389,23 @@ class ViewDB(BaseWithDBPool):
                         where_clauses.append("current_flowtag = ANY($1::text[])")
                     params.append(viewable_tags)
 
+                # Date filtering logic: overdue items ignore date filters
                 if start_date and end_date:
                     start_dt = parse_iso_date(start_date) if isinstance(start_date, str) else start_date
                     end_dt = parse_iso_date(end_date) if isinstance(end_date, str) else end_date
 
-                    where_clauses.append(f"(start_time <= ${len(params) + 1} AND end_time >= ${len(params) + 2})")
-                    params.extend([end_dt, start_dt])  # notice order: $end then $start
+                    # Show items that are EITHER:
+                    # 1. Overdue (ignore date range completely), OR
+                    # 2. Not overdue but within the date range
+                    date_condition = f"(is_overdue = true OR (is_overdue = false AND start_time <= ${len(params) + 1} AND end_time >= ${len(params) + 2}))"
+                    where_clauses.append(date_condition)
+                    params.extend([end_dt, start_dt])
 
                 where_sql = " AND ".join(where_clauses) if where_clauses else ""
+                query = f"SELECT * FROM view_grouped_laser_cut_parts_by_job"
+                if where_sql:
+                    query += f" WHERE {where_sql}"
 
-                overdue_sql = "end_time < NOW()"
-
-                query = f"SELECT * FROM view_grouped_laser_cut_parts_by_job WHERE {where_sql} OR {overdue_sql}"
                 rows = await conn.fetch(query, *params)
                 return [self.decode_json_fields(row) for row in rows]
         except Exception as e:

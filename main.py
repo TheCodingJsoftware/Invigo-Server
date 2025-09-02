@@ -57,6 +57,7 @@ async def workspace_notify_handler(conn, pid, channel, payload):
     job_id = msg.get("job_id")
     part_id = msg.get("id")
     delta = msg.get("delta")
+    part_name = msg.get("part_name")
 
     if table == "jobs":
         if op == "INSERT":
@@ -68,8 +69,6 @@ async def workspace_notify_handler(conn, pid, channel, payload):
         elif op == "DELETE":
             WebSocketWorkspaceHandler.broadcast({"type": "job_deleted", "job_id": job_id})
     elif table == "view_grouped_laser_cut_parts_by_job":
-        # This notification means the grouped view for a specific job changed
-        part_name = msg.get("part_name")
         flowtag = msg.get("flowtag")
         flowtag_index = msg.get("flowtag_index")
 

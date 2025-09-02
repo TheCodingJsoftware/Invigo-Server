@@ -168,8 +168,10 @@ export class AssemblyLaserCutPartsTable {
 
     generatePartsTableFooter(): string {
         let totalPrice = 0;
+        let totalUnitPrice = 0;
         for (const laserCutPart of this.laserCutParts) {
             totalPrice += laserCutPart.prices.price * laserCutPart.inventory_data.quantity * this.assembly.meta_data.quantity;
+            totalUnitPrice += laserCutPart.prices.price * laserCutPart.inventory_data.quantity;
         }
         let partsTableFooter = `
             <tr>
@@ -181,7 +183,7 @@ export class AssemblyLaserCutPartsTable {
                 <th class="center-align" data-column="assembly-laser-cut-part-shelfNumber"></th>
                 <th class="center-align" data-column="assembly-laser-cut-part-unitQuantity"></th>
                 <th class="center-align" data-column="assembly-laser-cut-part-quantity"></th>
-                <th class="center-align" data-column="assembly-laser-cut-part-unitPrice"></th>
+                <th class="center-align" data-column="assembly-laser-cut-part-unitPrice">${this.formatPrice(totalUnitPrice)}</th>
                 <th class="center-align" data-column="assembly-laser-cut-part-price">${this.formatPrice(totalPrice)}</th>
             </tr>`;
         return partsTableFooter.trim();
@@ -317,7 +319,7 @@ export class AssemblyComponentsTable {
             const shelfNumber = component.shelf_number;
             const unitQuantity = component.quantity;
             const quantity = unitQuantity * this.assembly.meta_data.quantity;
-            const unitPrice = component.price;
+            const unitPrice = component.saved_price;
             const price = unitPrice * quantity;
             partsTable += `
             <tr>
@@ -342,8 +344,10 @@ export class AssemblyComponentsTable {
 
     generatePartsTableFooter(): string {
         let totalPrice = 0;
+        let totalUnitPrice = 0;
         for (const component of this.components) {
-            totalPrice += component.price * component.quantity * this.assembly.meta_data.quantity;
+            totalPrice += component.saved_price * component.quantity * this.assembly.meta_data.quantity;
+            totalUnitPrice += component.saved_price * component.quantity;
         }
         let partsTableFooter = `
             <tr>
@@ -353,7 +357,7 @@ export class AssemblyComponentsTable {
                 <th class="center-align" data-column="assembly-component-shelfNumber"></th>
                 <th class="center-align" data-column="assembly-component-unitQuantity"></th>
                 <th class="center-align" data-column="assembly-component-quantity"></th>
-                <th class="center-align" data-column="assembly-component-unitPrice"></th>
+                <th class="center-align" data-column="assembly-component-unitPrice">${this.formatPrice(totalUnitPrice)}</th>
                 <th class="center-align" data-column="assembly-component-price">${this.formatPrice(totalPrice)}</th>
             </tr>`;
         return partsTableFooter.trim();
@@ -390,6 +394,8 @@ export class AssembliesPartsList implements BaseComponent {
                     <div>Assembly quantity: ${this.assembly.meta_data.quantity}</div>
                     <div>Process: ${this.assembly.generateProcessTagString()}</div>
                     <div>Paint: ${this.assembly.paint_data.paint_name}</div>
+                    <div>Price: ${this.formatPrice(this.assembly.getPrice())}</div>
+                    <div>Unit Price: ${this.formatPrice(this.assembly.getUnitPrice())}</div>
                 </div>
                 <button class="circle transparent hide-on-print" id="toggle-button">
                     <i class="rotate-180">expand_more</i>
@@ -411,6 +417,10 @@ export class AssembliesPartsList implements BaseComponent {
         this.element.id = `assembly-parts-list-layout-${this.jobId}-${this.assembly.getSafeIdName()}`;
 
         return this.element;
+    }
+
+    private formatPrice(price: number): string {
+        return `$${price.toLocaleString("en-US", {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
     }
 
     generateLaserCutPartsComponent(): HTMLElement {

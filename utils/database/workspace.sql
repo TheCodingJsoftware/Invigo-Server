@@ -104,6 +104,14 @@ CREATE TABLE IF NOT EXISTS assembly_laser_cut_parts (
     modified_at TIMESTAMPTZ DEFAULT now()
 );
 
+CREATE INDEX IF NOT EXISTS idx_laser_parts_flowtag_composite ON assembly_laser_cut_parts (flowtag_index, ((flowtag[flowtag_index + 1])), job_id, name, start_time, end_time);
+
+CREATE INDEX IF NOT EXISTS idx_laser_parts_name_modified ON assembly_laser_cut_parts (name, modified_at DESC);
+
+CREATE INDEX IF NOT EXISTS idx_parts_overdue_incomplete ON assembly_laser_cut_parts (end_time, flowtag_index, job_id, name) WHERE flowtag_index <> cardinality(flowtag);
+
+CREATE INDEX IF NOT EXISTS idx_assembly_parts_end_time ON assembly_laser_cut_parts (end_time) WHERE end_time IS NOT NULL;
+
 CREATE TABLE IF NOT EXISTS part_status_timeline (
     id BIGSERIAL PRIMARY KEY,
     name TEXT NOT NULL,
@@ -162,15 +170,7 @@ UPDATE
 -- Notification Trigger for laser cut parts
 -- Auto-updated grouping view per job
 CREATE OR REPLACE VIEW view_grouped_laser_cut_parts_by_job AS
-WITH latest_data AS (
-    SELECT DISTINCT ON (name)
-        name,
-        meta_data::jsonb AS meta_data,
-        workspace_data::jsonb AS workspace_data
-    FROM assembly_laser_cut_parts
-    ORDER BY name, modified_at DESC
-)
-SELECT
+    SELECT
     MIN(w.id) AS group_id,
     w.job_id,
     w.name,
@@ -185,27 +185,15 @@ SELECT
     COUNT(*) AS quantity,
     MIN(w.start_time) AS start_time,
     MAX(w.end_time) AS end_time,
-    ld.meta_data::jsonb,
-    ld.workspace_data::jsonb,
+    (MAX(w.end_time) < NOW()) AS is_overdue,
+    (SELECT meta_data::jsonb FROM assembly_laser_cut_parts WHERE name = w.name ORDER BY modified_at DESC LIMIT 1) AS meta_data,
+    (SELECT workspace_data::jsonb FROM assembly_laser_cut_parts WHERE name = w.name ORDER BY modified_at DESC LIMIT 1) AS workspace_data,
     MIN(w.created_at) AS created_at,
     MAX(w.modified_at) AS modified_at
-FROM
-    assembly_laser_cut_parts w
-JOIN
-    latest_data ld ON ld.name = w.name
-GROUP BY
-    w.job_id,
-    w.name,
-    w.flowtag,
-    w.flowtag_index,
-    w.flowtag_status_index,
-    w.recut,
-    w.recoat,
-    w.is_timing,
-    w.start_time,
-    w.end_time,
-    ld.meta_data,
-    ld.workspace_data;
+    FROM assembly_laser_cut_parts w
+    GROUP BY w.job_id, w.name, w.flowtag, w.flowtag_index,
+            w.flowtag_status_index, w.recut, w.recoat,
+            w.is_timing, w.start_time, w.end_time;
 
 -- Notification function for laser cut parts view changes
 CREATE OR REPLACE FUNCTION notify_laser_cut_parts_view_change()

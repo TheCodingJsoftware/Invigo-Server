@@ -70,6 +70,28 @@ export class Assembly {
         return allParts;
     }
 
+    getUnitPrice(): number {
+        let total = 0;
+        for (const laserCutPart of this.laser_cut_parts) {
+            total += laserCutPart.prices.price;
+        }
+        for (const component of this.components) {
+            total += component.price;
+        }
+        return total;
+    }
+
+    getPrice(): number {
+        let total = 0
+        for (const laserCutPart of this.laser_cut_parts) {
+            total += laserCutPart.prices.price * laserCutPart.inventory_data.quantity * this.meta_data.quantity;
+        }
+        for (const component of this.components) {
+            total += component.price * component.quantity * this.meta_data.quantity;
+        }
+        return total;
+    }
+
     getAllComponents(): Component[] {
         let allParts = this.components;
         for (const assembly of this.sub_assemblies) {

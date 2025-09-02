@@ -33,7 +33,7 @@ export class FileButton {
         this.extension = (filePath.match(/[^.]+$/)?.[0] ?? "").toUpperCase();
 
         this.tooltip = document.createElement("div");
-        this.tooltip.className = "tooltip max left";
+        this.tooltip.className = "tooltip max right";
 
         const nameEl = document.createElement("div");
         nameEl.textContent = this.fileName;

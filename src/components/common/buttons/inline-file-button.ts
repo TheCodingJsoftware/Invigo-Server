@@ -1,6 +1,4 @@
-import {PartData} from "@components/workspace/parts/part-container";
 import {Ext, Previewer} from "@utils/preview-cache";
-import {FileViewerDialog} from "@components/common/dialog/file-viewer-dialog";
 import {invertImages} from "@utils/theme";
 
 export class InlineFileButton {
