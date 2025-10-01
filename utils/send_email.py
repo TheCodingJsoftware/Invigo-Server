@@ -44,7 +44,7 @@ def send(subject: str, body: str, recipients: list[str], attachment: bytes | Non
 def send_purchase_order_email(
     sender_email: str,
     encrypted_password: str,
-    recipients: str,
+    recipients: str | list[str],
     subject: str,
     body: str,
     attachment: bytes | None = None,
@@ -78,7 +78,12 @@ def send_purchase_order_email(
     server.starttls()
     server.ehlo()
     server.login(sender_email, password)
-    server.sendmail(sender_email, recipients, msg.as_string())
+    recipients_list = recipients if isinstance(recipients, list) else [recipients]
+    cc_list = [cc] if cc else []
+    all_recipients = recipients_list + cc_list
+
+    server.sendmail(sender_email, all_recipients, msg.as_string())
+
     logging.info(f'Email sent to "{recipients}"')
 
 
