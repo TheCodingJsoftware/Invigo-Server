@@ -107,6 +107,7 @@ class GroupedLaserCutPartsTable {
     generatePartsTableHeader(): string {
         let partsTableHeader = `
             <tr>
+                <th data-column="assembly-laser-cut-part-partPicture"></th>
                 <th data-column="assembly-laser-cut-part-partName">Part Name</th>
                 <th class="center-align" data-column="assembly-laser-cut-part-coating">Coating</th>
                 <th class="center-align" data-column="assembly-laser-cut-part-material">Material</th>
@@ -133,11 +134,11 @@ class GroupedLaserCutPartsTable {
             const price = laserCutPart.getTotalPrice();
             partsTable += `
             <tr>
-                <td class="min" data-column="assembly-laser-cut-part-partName">
-                    <div class="row">
-                        <img class="square extra small-round" src="http://invi.go/images/${laserCutPart.getImagePath()}">
-                        <span class="wrap no-line">${laserCutPart.name}</span>
-                    </div>
+                <td data-column="assembly-laser-cut-part-partPicture">
+                    <img class="square extra small-round" src="http://invi.go/images/${laserCutPart.getImagePath()}">
+                </td>
+                <td data-column="assembly-laser-cut-part-partName">
+                    <span>${laserCutPart.name}</span>
                 </td>
                 <td class="center-align" data-column="assembly-laser-cut-part-coating">${coating}</td>
                 <td class="center-align" data-column="assembly-laser-cut-part-material">${material}</td>
@@ -164,6 +165,7 @@ class GroupedLaserCutPartsTable {
         }
         let partsTableFooter = `
             <tr>
+                <th data-column="assembly-laser-cut-part-partPicture"></th>
                 <th data-column="assembly-laser-cut-part-partName"></th>
                 <th class="center-align" data-column="assembly-laser-cut-part-coating"></th>
                 <th class="center-align" data-column="assembly-laser-cut-part-material"></th>
@@ -284,6 +286,7 @@ class GroupedComponentsTable {
     generatePartsTableHeader(): string {
         let partsTableHeader = `
             <tr>
+                <th data-column="assembly-component-partPicture"></th>
                 <th data-column="assembly-component-partName">Part Name</th>
                 <th class="center-align" data-column="assembly-component-partNumber">Part Number</th>
                 <th class="center-align" data-column="assembly-component-notes">Notes</th>
@@ -305,11 +308,11 @@ class GroupedComponentsTable {
             const price = unitPrice * quantity;
             partsTable += `
             <tr>
+                <td data-column="assembly-component-partPicture">
+                    <img class="square extra small-round" src="http://invi.go/images/${component.getImagePath()}">
+                </td>
                 <td data-column="assembly-component-partName">
-                    <div class="row">
-                        <img class="square extra small-round" src="http://invi.go/images/${component.getImagePath()}">
-                        <span class="wrap no-line">${component.name}</span>
-                    </div>
+                    <span>${component.name}</span>
                 </td>
                 <td class="center-align" data-column="assembly-component-partNumber">${component.getPartNumber()}</td>
                 <td class="left-align" data-column="assembly-component-notes">${notes}</td>
@@ -334,6 +337,7 @@ class GroupedComponentsTable {
         }
         let partsTableFooter = `
             <tr>
+                <th data-column="assembly-component-partPicture"></th>
                 <th data-column="assembly-component-partName"></th>
                 <th class="center-align" data-column="assembly-component-partNumber"></th>
                 <th class="center-align" data-column="assembly-component-notes"></th>

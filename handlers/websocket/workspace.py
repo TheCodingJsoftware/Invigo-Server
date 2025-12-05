@@ -1,3 +1,5 @@
+import json
+
 import msgspec
 from tornado.websocket import WebSocketHandler
 
@@ -7,6 +9,14 @@ class WebSocketWorkspaceHandler(WebSocketHandler):
 
     def open(self, *args: str, **kwargs: str):
         WebSocketWorkspaceHandler.clients.add(self)
+
+    def on_message(self, message):
+        try:
+            data = json.loads(message)
+        except Exception:
+            return
+        if data.get("type") == "ping":
+            self.write_message({"type": "pong"})
 
     def on_close(self):
         WebSocketWorkspaceHandler.clients.remove(self)

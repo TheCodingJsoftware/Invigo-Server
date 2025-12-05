@@ -1,7 +1,7 @@
-import {BaseComponent} from "@interfaces/base-component";
-import {LaserCutPartGroup} from "@models/laser-cut-part-group";
-import {Nest} from "@models/nest";
-import {naturalCompare} from "@utils/natural-sort";
+import { BaseComponent } from "@interfaces/base-component";
+import { LaserCutPartGroup } from "@models/laser-cut-part-group";
+import { Nest } from "@models/nest";
+import { naturalCompare } from "@utils/natural-sort";
 
 
 export class NestedPartsSummary implements BaseComponent {
@@ -144,6 +144,7 @@ export class NestedPartsSummary implements BaseComponent {
         partsTableFooter = `
         <tr>
             <th data-column="nest-part-partName"></th>
+            <th class="center-align" data-column="nest-part-nest-name"></th>
             <th class="center-align" data-column="nest-part-material"></th>
             <th class="center-align" data-column="nest-part-process"></th>
             <th class="center-align" data-column="nest-part-notes"></th>
@@ -192,6 +193,6 @@ export class NestedPartsSummary implements BaseComponent {
     }
 
     private formatPrice(price: number): string {
-        return `$${price.toLocaleString("en-US", {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+        return `$${price.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
     }
 }

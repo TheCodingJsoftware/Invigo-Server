@@ -1,5 +1,5 @@
-import {JobMetaData} from "@interfaces/job";
-import {LaserCutPartData} from "@interfaces/laser-cut-part";
+import { JobMetaData } from "@interfaces/job";
+import { LaserCutPartData } from "@interfaces/laser-cut-part";
 
 interface PartData {
     id: number;
@@ -46,6 +46,7 @@ export interface GroupedPartsChangeData {
 type Listener<T extends WorkspaceMessage> = (data: T) => void;
 
 type WorkspaceMessage =
+    | { type: "pong" }
     | { type: "job_created"; job: WorkspaceJobData }
     | { type: "job_updated"; job: WorkspaceJobData }
     | { type: "job_deleted"; job_id: number }
@@ -64,12 +65,28 @@ export class WorkspaceWebSocket {
     static reconnectHandlers: (() => void)[] = [];
     private static buffer: Partial<Record<WorkspaceMessage["type"], any[]>> = {};
     private static timers: Partial<Record<WorkspaceMessage["type"], number>> = {};
+    private static heartbeatTimer: number | null = null;
 
 
     static connect() {
         this.socket = new WebSocket(`ws://${location.host}/ws/workspace`);
+
+        this.socket.onopen = () => {
+            // Start sending heartbeats every 25s
+            this.heartbeatTimer = window.setInterval(() => {
+                if (this.socket.readyState === WebSocket.OPEN) {
+                    this.socket.send(JSON.stringify({ type: "ping" }));
+                }
+            }, 25000);
+        };
+
         this.socket.onmessage = (event) => {
             const message: WorkspaceMessage = JSON.parse(event.data);
+
+            if (message.type === "pong") {
+                // optional: handle server pong
+                return;
+            }
 
             if (
                 message.type === "grouped_parts_job_view_changed" ||
@@ -82,6 +99,10 @@ export class WorkspaceWebSocket {
         };
 
         this.socket.onclose = () => {
+            if (this.heartbeatTimer) {
+                clearInterval(this.heartbeatTimer);
+                this.heartbeatTimer = null;
+            }
             setTimeout(() => {
                 this.connect();
                 this.reconnectHandlers.forEach((fn) => fn());
@@ -106,7 +127,7 @@ export class WorkspaceWebSocket {
 
                 // Fire one synthetic batched event
                 this.listeners[type]?.forEach((cb) =>
-                    cb({type: `${type}_batched`, events: batch} as any)
+                    cb({ type: `${type}_batched`, events: batch } as any)
                 );
             }, delay);
         }

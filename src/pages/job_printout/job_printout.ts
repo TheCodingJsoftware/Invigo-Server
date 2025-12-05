@@ -1,27 +1,28 @@
 import "beercss"
 import "@static/css/printout.css"
 import "material-dynamic-colors";
-import {AssembliesParts} from "@components/assemblies-parts";
-import {AssembliesSummary} from "@components/assemblies-summary";
-import {JobDetails} from "@components/job-details";
-import {NestedParts} from "@components/nested-parts";
-import {NestedPartsSummary} from "@components/nested-parts-summary";
-import {NestedSheets} from "@components/nested-sheets";
-import {NestedSheetsSummary} from "@components/nested-sheets-summary";
-import {NetWeight} from "@components/net-weight";
-import {PageBreak} from "@components/page-break";
-import {QRCodeComponent} from "@components/qr-code-component";
-import {TotalCost} from "@components/total-cost";
-import {CHECKBOX_CONFIG} from "@config/checkbox-config";
-import {JOB_COLORS, JobType} from "@config/job-printout-config";
-import {BaseComponent} from "@interfaces/base-component";
-import {JobData} from "@interfaces/job";
-import {Job} from "@models/job";
-import {invertImages, loadAnimationStyleSheet, loadTheme, toggleTheme} from "@utils/theme"
-import {Effect} from "effect"
-import {createSwapy} from 'swapy'
+import { AssembliesParts } from "@components/assemblies-parts";
+import { AssembliesSummary } from "@components/assemblies-summary";
+import { JobDetails } from "@components/job-details";
+import { NestedParts } from "@components/nested-parts";
+import { NestedPartsSummary } from "@components/nested-parts-summary";
+import { NestedSheets } from "@components/nested-sheets";
+import { NestedSheetsSummary } from "@components/nested-sheets-summary";
+import { NetWeight } from "@components/net-weight";
+import { PageBreak } from "@components/page-break";
+import { QRCodeComponent } from "@components/qr-code-component";
+import { TotalCost } from "@components/total-cost";
+import { CHECKBOX_CONFIG } from "@config/checkbox-config";
+import { JOB_COLORS, JobType } from "@config/job-printout-config";
+import { BaseComponent } from "@interfaces/base-component";
+import { JobData } from "@interfaces/job";
+import { Job } from "@models/job";
+import { invertImages, loadAnimationStyleSheet, loadTheme, toggleTheme } from "@utils/theme"
+import { Effect } from "effect"
+import { createSwapy } from 'swapy'
 import flatpickr from "flatpickr";
-import {Instance as FlatpickrInstance} from "flatpickr/dist/types/instance";
+import { Instance as FlatpickrInstance } from "flatpickr/dist/types/instance";
+import { DIV_ID_CONFIG } from "@config/job-printout-id-config";
 
 require("flatpickr/dist/themes/dark.css");
 
@@ -56,6 +57,7 @@ class JobPrintout {
                 this.handleBrokenImages();
                 this.registerAllExpandableArticles();
                 this.registerAllTableCheckboxes();
+                this.updateDivsVisibilityByJobType();
                 this.initSwapy();
 
                 const dateShipped_fp = flatpickr("#date-shipped", {
@@ -254,7 +256,7 @@ class JobPrintout {
 
                     wrapper.addEventListener("transitionend", () => {
                         wrapper.style.maxHeight = "none"; // reset to large value after animation
-                    }, {once: true});
+                    }, { once: true });
                 } else {
                     wrapper.style.maxHeight = wrapper.scrollHeight + "px"; // set current height
 
@@ -270,7 +272,7 @@ class JobPrintout {
                     wrapper.addEventListener("transitionend", () => {
                         // Collapse finished, ensure maxHeight stays at 0
                         wrapper.style.maxHeight = "0";
-                    }, {once: true});
+                    }, { once: true });
                 }
             });
         });
@@ -384,7 +386,7 @@ class JobPrintout {
                             observer.disconnect();
                         }
                     });
-                }, {threshold: 0.5});
+                }, { threshold: 0.5 });
 
                 observer.observe(section.element);
             });
@@ -566,7 +568,7 @@ class JobPrintout {
         this.changeCheckboxes(jobType);
         this.changeJobPrintoutType(jobType);
         this.updateJobTypeCheckboxes();
-
+        this.updateDivsVisibilityByJobType();
     }
 
     private updateJobTypeCheckboxes() {
@@ -594,6 +596,25 @@ class JobPrintout {
             }
 
             checkbox.dispatchEvent(new Event('change'));
+        }
+    }
+
+    private updateDivsVisibilityByJobType() {
+        const divConfig = DIV_ID_CONFIG[this.getJobType().toLowerCase() as keyof typeof DIV_ID_CONFIG];
+        console.log(this.getJobType(), divConfig);
+
+        for (const [divId, shouldShow] of Object.entries(divConfig)) {
+            const divs = document.querySelectorAll(`#${divId}`);
+            if (divs.length === 0) {
+                continue;
+            }
+            for (const div of divs) {
+                if (shouldShow) {
+                    div.classList.remove('hidden');
+                } else {
+                    div.classList.add('hidden');
+                }
+            }
         }
     }
 
@@ -705,8 +726,8 @@ const getLocalStorageObject = (): Record<string, string> => {
 const generateBlob = async (endpoint: string): Promise<Blob | null> => {
     const res = await fetch(endpoint, {
         method: "POST",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({localStorage: getLocalStorageObject()}),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ localStorage: getLocalStorageObject() }),
     });
 
     if (!res.ok) {

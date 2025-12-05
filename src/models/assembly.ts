@@ -7,9 +7,9 @@ import {
     PrimerData,
     WorkspaceData
 } from "@interfaces/assembly";
-import {Component} from "@models/component";
-import {LaserCutPart} from "@models/laser-cut-part";
-import {naturalCompare} from "@utils/natural-sort";
+import { Component } from "@models/component";
+import { LaserCutPart } from "@models/laser-cut-part";
+import { naturalCompare } from "@utils/natural-sort";
 
 
 export class Assembly {
@@ -73,23 +73,16 @@ export class Assembly {
     getUnitPrice(): number {
         let total = 0;
         for (const laserCutPart of this.laser_cut_parts) {
-            total += laserCutPart.prices.price;
+            total += laserCutPart.prices.price * laserCutPart.inventory_data.quantity;
         }
         for (const component of this.components) {
-            total += component.price;
+            total += component.saved_price * component.quantity;
         }
         return total;
     }
 
     getPrice(): number {
-        let total = 0
-        for (const laserCutPart of this.laser_cut_parts) {
-            total += laserCutPart.prices.price * laserCutPart.inventory_data.quantity * this.meta_data.quantity;
-        }
-        for (const component of this.components) {
-            total += component.price * component.quantity * this.meta_data.quantity;
-        }
-        return total;
+        return this.getUnitPrice() * this.meta_data.quantity;
     }
 
     getAllComponents(): Component[] {

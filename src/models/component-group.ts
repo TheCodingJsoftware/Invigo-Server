@@ -1,7 +1,7 @@
-import {ComponentGroupData} from "@interfaces/component-group";
-import {naturalCompare} from "@utils/natural-sort";
+import { ComponentGroupData } from "@interfaces/component-group";
+import { naturalCompare } from "@utils/natural-sort";
 
-import {Component} from "./component";
+import { Component } from "./component";
 
 export class ComponentGroup {
     name: string;
@@ -38,7 +38,7 @@ export class ComponentGroup {
     }
 
     getPrice(): number {
-        return this.base_part.saved_price;
+        return this.base_part.price;
     }
 
     getNotes(): string {

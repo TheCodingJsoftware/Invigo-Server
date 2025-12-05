@@ -280,8 +280,8 @@ class LaserCutPartsInventoryDB(BaseWithDBPool):
 
         if laser_cut_part_id != -1:
             part_data = await self.get_laser_cut_part_no_cache(laser_cut_part_id)
-            current_part_quantity = part_data.get("quantity", 0)
-            new_part_quantity = new_part_data.get("quantity", 0)
+            current_part_quantity = part_data.get("inventory_data", {}).get("quantity", 0)
+            new_part_quantity = new_part_data.get("inventory_data", {}).get("quantity", 0)
 
             if operation == "ADD":
                 new_quantity = new_part_quantity + current_part_quantity
@@ -290,7 +290,7 @@ class LaserCutPartsInventoryDB(BaseWithDBPool):
             else:
                 raise ValueError(f"Invalid operation: {operation}")
 
-            part_data["quantity"] = new_quantity
+            part_data["inventory_data"]["quantity"] = new_quantity
 
             # The part exists — update it (with history tracking)
             await self.update_laser_cut_part(

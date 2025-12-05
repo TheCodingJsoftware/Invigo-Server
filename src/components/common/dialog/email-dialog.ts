@@ -1,5 +1,5 @@
-import {DialogComponent} from "@components/common/dialog/dialog-component";
-import {PurchaseOrder} from "@models/purchase-order";
+import { DialogComponent } from "@components/common/dialog/dialog-component";
+import { PurchaseOrder } from "@models/purchase-order";
 
 let Editor: typeof import('@toast-ui/editor').Editor;
 let Viewer: typeof import('@toast-ui/editor/dist/toastui-editor-viewer').default;
@@ -123,7 +123,7 @@ export class EmailDialogComponent extends DialogComponent {
 
                 const res = await fetch("/api/email-purchase-order", {
                     method: "POST",
-                    headers: {"Content-Type": "application/json"},
+                    headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
                         to, cc, subject, body, pageUrl,
                         localStorage: storageObj,

@@ -146,10 +146,7 @@ def copy_server_log_file():
 
 
 def make_app():
-    return tornado.web.Application(
-        route_map.routes,
-        cookie_secret=Environment.COOKIE_SECRET,
-    )
+    return tornado.web.Application(route_map.routes, cookie_secret=Environment.COOKIE_SECRET, websocket_ping_interval=25, websocket_ping_timeout=25)
 
 
 def shutdown():

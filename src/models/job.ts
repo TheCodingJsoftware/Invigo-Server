@@ -1,14 +1,15 @@
-import {JobData, JobMetaData, JobStatus} from "@interfaces/job";
-import {Assembly} from "@models/assembly";
-import {Nest} from "@models/nest";
-import {naturalCompare} from "@utils/natural-sort";
+import { JobData, JobMetaData, JobPriceSettings, JobStatus } from "@interfaces/job";
+import { Assembly } from "@models/assembly";
+import { Nest } from "@models/nest";
+import { naturalCompare } from "@utils/natural-sort";
 
-import {Component} from "@models/component";
-import {ComponentGroup} from "@models/component-group";
-import {LaserCutPart} from "@models/laser-cut-part";
-import {LaserCutPartGroup} from "@models/laser-cut-part-group";
-import {ContactInfoDict} from "@interfaces/contact-info";
-import {BusinessInfoDict} from "@interfaces/business-info";
+import { Component } from "@models/component";
+import { ComponentGroup } from "@models/component-group";
+import { LaserCutPart } from "@models/laser-cut-part";
+import { LaserCutPartGroup } from "@models/laser-cut-part-group";
+import { ContactInfoDict } from "@interfaces/contact-info";
+import { BusinessInfoDict } from "@interfaces/business-info";
+import { calculateOverhead } from "@utils/calculations";
 
 export class JobMeta {
     id!: number;
@@ -20,7 +21,7 @@ export class JobMeta {
     starting_date!: string;
     ending_date!: string;
     color!: string;
-    price_settings!: Record<string, any>;
+    price_settings!: JobPriceSettings;
     flowtag_timeline!: Record<string, any>;
     moved_job_to_workspace!: boolean;
     contact_info!: ContactInfoDict;
@@ -43,7 +44,7 @@ export class JobMeta {
     }
 
     toJSON(): JobMetaData {
-        return {...this};
+        return { ...this };
     }
 }
 
@@ -77,7 +78,7 @@ export class Job {
         let total = 0;
         for (const assembly of this.getAllAssemblies()) {
             for (const component of assembly.components) {
-                total += component.price * component.quantity * assembly.meta_data.quantity;
+                total += component.saved_price * component.quantity * assembly.meta_data.quantity;
             }
         }
         return total;

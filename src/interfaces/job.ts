@@ -1,8 +1,8 @@
-import {AssemblyData} from "@interfaces/assembly";
-import {NestData} from "@interfaces/nest";
-import {ContactInfoDict} from "./contact-info";
-import {BusinessInfoDict} from "./business-info";
-import {FlowtagTimeline} from "../pages/production_planner/production_planner";
+import { AssemblyData } from "@interfaces/assembly";
+import { NestData } from "@interfaces/nest";
+import { ContactInfoDict } from "./contact-info";
+import { BusinessInfoDict } from "./business-info";
+import { FlowtagTimeline } from "../pages/production_planner/production_planner";
 
 export interface JobData {
     job_data: JobMetaData;
@@ -27,8 +27,16 @@ export interface JobMetaData {
     business_info: BusinessInfoDict
 }
 
-interface JobPriceSettings {
-    [key: string]: any;
+export interface JobPriceSettings {
+    components_use_overhead: boolean;
+    components_use_profit_margin: boolean;
+    cost_for_laser: number;
+    item_overhead: number;
+    item_profit_margin: number;
+    match_item_cogs_to_sheet: boolean;
+    mil_thickness: number;
+    sheet_overhead: number;
+    sheet_profit_margin: number;
 }
 
 export enum JobStatus {
@@ -52,4 +60,4 @@ enum JobColorClass {
     ARCHIVE = "archive"
 }
 
-export {};
+export { };

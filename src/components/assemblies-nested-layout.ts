@@ -1,7 +1,7 @@
-import {BaseComponent} from "@interfaces/base-component";
-import {Assembly} from "@models/assembly";
+import { BaseComponent } from "@interfaces/base-component";
+import { Assembly } from "@models/assembly";
 
-import {AssemblyComponentsTable, AssemblyLaserCutPartsTable} from "./assemblies-parts-list";
+import { AssemblyComponentsTable, AssemblyLaserCutPartsTable } from "./assemblies-parts-list";
 
 class AssemblyLaserCutPartsComponent {
     assembly: Assembly;
@@ -178,8 +178,8 @@ export class NestedAssembliesPartsLayout implements BaseComponent {
                     <div>Assembly quantity: ${this.assembly.meta_data.quantity}</div>
                     <div>Process: ${this.assembly.generateProcessTagString()}</div>
                     <div>Paint: ${this.assembly.paint_data.paint_name}</div>
-                    <div>Price: ${this.formatPrice(this.assembly.getPrice())}</div>
-                    <div>Unit Price: ${this.formatPrice(this.assembly.getUnitPrice())}</div>
+                    <div id="assembly-price">Price: ${this.formatPrice(this.assembly.getPrice())}</div>
+                    <div id="assembly-unit-price">Unit Price: ${this.formatPrice(this.assembly.getUnitPrice())}</div>
                 </div>
                 <button class="circle transparent hide-on-print" id="toggle-button">
                     <i class="rotate-180">expand_more</i>
@@ -207,7 +207,7 @@ export class NestedAssembliesPartsLayout implements BaseComponent {
     }
 
     private formatPrice(price: number): string {
-        return `$${price.toLocaleString("en-US", {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+        return `$${price.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
     }
 
     generateLaserCutPartsComponent(): HTMLElement {

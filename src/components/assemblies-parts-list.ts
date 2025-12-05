@@ -1,7 +1,7 @@
-import {BaseComponent} from "@interfaces/base-component";
-import {Assembly} from "@models/assembly";
-import {Component} from "@models/component";
-import {LaserCutPart} from "@models/laser-cut-part";
+import { BaseComponent } from "@interfaces/base-component";
+import { Assembly } from "@models/assembly";
+import { Component } from "@models/component";
+import { LaserCutPart } from "@models/laser-cut-part";
 
 class AssemblyLaserCutPartsComponent {
     assembly: Assembly;
@@ -117,6 +117,7 @@ export class AssemblyLaserCutPartsTable {
     generatePartsTableHeader(): string {
         let partsTableHeader = `
             <tr>
+                <th data-column="assembly-laser-cut-part-partPicture"></th>
                 <th data-column="assembly-laser-cut-part-partName">Part Name</th>
                 <th class="center-align" data-column="assembly-laser-cut-part-coating">Coating</th>
                 <th class="center-align" data-column="assembly-laser-cut-part-material">Material</th>
@@ -145,11 +146,11 @@ export class AssemblyLaserCutPartsTable {
             const price = unitPrice * quantity;
             partsTable += `
             <tr>
-                <td class="min" data-column="assembly-laser-cut-part-partName">
-                    <div class="row">
-                        <img class="square extra small-round" src="http://invi.go/images/${laserCutPart.meta_data.image_index}">
-                        <span class="wrap no-line">${laserCutPart.name}</span>
-                    </div>
+                <td data-column="assembly-laser-cut-part-partPicture">
+                    <img class="square extra small-round" src="http://invi.go/images/${laserCutPart.meta_data.image_index}">
+                </td>
+                <td data-column="assembly-laser-cut-part-partName">
+                    <span class="wrap no-line">${laserCutPart.name}</span>
                 </td>
                 <td class="center-align" data-column="assembly-laser-cut-part-coating">${coating}</td>
                 <td class="center-align" data-column="assembly-laser-cut-part-material">${material}</td>
@@ -175,6 +176,7 @@ export class AssemblyLaserCutPartsTable {
         }
         let partsTableFooter = `
             <tr>
+                <th data-column="assembly-laser-cut-part-partPicture"></th>
                 <th data-column="assembly-laser-cut-part-partName"></th>
                 <th class="center-align" data-column="assembly-laser-cut-part-coating"></th>
                 <th class="center-align" data-column="assembly-laser-cut-part-material"></th>
@@ -190,7 +192,7 @@ export class AssemblyLaserCutPartsTable {
     }
 
     private formatPrice(price: number): string {
-        return `$${price.toLocaleString("en-US", {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+        return `$${price.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
     }
 }
 
@@ -300,6 +302,7 @@ export class AssemblyComponentsTable {
     generatePartsTableHeader(): string {
         let partsTableHeader = `
             <tr>
+                <th data-column="assembly-component-partPicture"></th>
                 <th data-column="assembly-component-partName">Part Name</th>
                 <th class="center-align" data-column="assembly-component-partNumber">Part Number</th>
                 <th class="center-align" data-column="assembly-component-notes">Notes</th>
@@ -323,11 +326,11 @@ export class AssemblyComponentsTable {
             const price = unitPrice * quantity;
             partsTable += `
             <tr>
+                <td data-column="assembly-component-partPicture">
+                    <img class="square extra small-round" src="/images/${component.image_path}">
+                </td>
                 <td data-column="assembly-component-partName">
-                    <div class="row">
-                        <img class="square extra small-round" src="http://invi.go/images/${component.image_path}">
-                        <span class="wrap no-line">${component.part_name}</span>
-                    </div>
+                    <span>${component.part_name}</span>
                 </td>
                 <td class="center-align" data-column="assembly-component-partNumber">${component.part_number}</td>
                 <td class="left-align" data-column="assembly-component-notes">${notes}</td>
@@ -347,10 +350,11 @@ export class AssemblyComponentsTable {
         let totalUnitPrice = 0;
         for (const component of this.components) {
             totalPrice += component.saved_price * component.quantity * this.assembly.meta_data.quantity;
-            totalUnitPrice += component.saved_price * component.quantity;
+            totalUnitPrice += component.saved_price;
         }
         let partsTableFooter = `
             <tr>
+                <th data-column="assembly-component-partPicture"></th>
                 <th data-column="assembly-component-partName"></th>
                 <th class="center-align" data-column="assembly-component-partNumber"></th>
                 <th class="center-align" data-column="assembly-component-notes"></th>
@@ -364,7 +368,7 @@ export class AssemblyComponentsTable {
     }
 
     private formatPrice(price: number): string {
-        return `$${price.toLocaleString("en-US", {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+        return `$${price.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
     }
 }
 
@@ -394,8 +398,8 @@ export class AssembliesPartsList implements BaseComponent {
                     <div>Assembly quantity: ${this.assembly.meta_data.quantity}</div>
                     <div>Process: ${this.assembly.generateProcessTagString()}</div>
                     <div>Paint: ${this.assembly.paint_data.paint_name}</div>
-                    <div>Price: ${this.formatPrice(this.assembly.getPrice())}</div>
-                    <div>Unit Price: ${this.formatPrice(this.assembly.getUnitPrice())}</div>
+                    <div id="assembly-price">Price: ${this.formatPrice(this.assembly.getPrice())}</div>
+                    <div id="assembly-unit-price">Unit Price: ${this.formatPrice(this.assembly.getUnitPrice())}</div>
                 </div>
                 <button class="circle transparent hide-on-print" id="toggle-button">
                     <i class="rotate-180">expand_more</i>
@@ -420,7 +424,7 @@ export class AssembliesPartsList implements BaseComponent {
     }
 
     private formatPrice(price: number): string {
-        return `$${price.toLocaleString("en-US", {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+        return `$${price.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
     }
 
     generateLaserCutPartsComponent(): HTMLElement {

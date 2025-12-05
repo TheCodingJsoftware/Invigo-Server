@@ -1,9 +1,9 @@
-import {BaseComponent} from "@interfaces/base-component";
-import {Job} from "@models/job";
+import { BaseComponent } from "@interfaces/base-component";
+import { Job } from "@models/job";
 
-import {AssembliesGroupedPartsList} from "./assemblies-grouped-parts-list-layout";
-import {NestedAssembliesPartsLayout} from "./assemblies-nested-layout";
-import {AssembliesPartsList} from "./assemblies-parts-list";
+import { AssembliesGroupedPartsList } from "./assemblies-grouped-parts-list-layout";
+import { NestedAssembliesPartsLayout } from "./assemblies-nested-layout";
+import { AssembliesPartsList } from "./assemblies-parts-list";
 
 export class AssembliesParts implements BaseComponent {
     job: Job;
@@ -24,7 +24,7 @@ export class AssembliesParts implements BaseComponent {
     public build(): HTMLElement {
         const template = document.createElement("template");
         template.innerHTML = `
-        <article class="round border page-break-inside">
+        <article class="round border">
             <nav class="hide-on-print">
                 <div class="handle" data-swapy-handle><i>drag_indicator</i></div>
                 <h4 class="max">Assemblies Parts</h4>

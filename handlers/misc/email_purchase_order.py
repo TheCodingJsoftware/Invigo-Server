@@ -1,5 +1,4 @@
 import asyncio
-import base64
 import json
 import logging
 import os
@@ -24,13 +23,27 @@ class EmailPurchaseOrderHandler(BaseHandler):
         sender_email = data["senderEmail"]
         encrypted_password = data["encryptedPassword"]
 
-        encoded = base64.urlsafe_b64encode(json.dumps(local_storage).encode()).decode()
-        tmp_fd, tmp_path = tempfile.mkstemp(suffix=".pdf")
-        os.close(tmp_fd)
+        pdf_fd, pdf_path = tempfile.mkstemp(suffix=".pdf")
+        os.close(pdf_fd)
+
+        ls_fd, ls_path = tempfile.mkstemp(suffix=".json")
+        try:
+            with os.fdopen(ls_fd, "w") as f:
+                f.write(json.dumps(local_storage))
+        except Exception:
+            os.close(ls_fd)
+            os.remove(pdf_path)
+            raise
 
         try:
             proc = await asyncio.create_subprocess_exec(
-                "node", "scripts/generate-pdf.js", page_url, tmp_path, encoded, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
+                "node",
+                "scripts/generate-pdf.js",
+                page_url,
+                pdf_path,
+                ls_path,
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.PIPE,
             )
             stdout, stderr = await proc.communicate()
 
@@ -39,7 +52,7 @@ class EmailPurchaseOrderHandler(BaseHandler):
                 self.write("PDF generation failed:\n" + stderr.decode())
                 return
 
-            with open(tmp_path, "rb") as f:
+            with open(pdf_path, "rb") as f:
                 pdf_data = f.read()
 
             send_purchase_order_email(
@@ -60,4 +73,11 @@ class EmailPurchaseOrderHandler(BaseHandler):
             self.set_status(500)
             self.write(f"Email send failed: {e}")
         finally:
-            os.remove(tmp_path)
+            try:
+                os.remove(pdf_path)
+            except Exception:
+                pass
+            try:
+                os.remove(ls_path)
+            except Exception:
+                pass
