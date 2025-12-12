@@ -63,6 +63,10 @@ export class NestedPartsSummary implements BaseComponent {
                         <input type="checkbox" id="show-nest-part-price" checked>
                         <span>Price</span>
                     </label>
+                    <label class="s12 m4 l3 checkbox">
+                        <input type="checkbox" id="show-nest-part-weight" checked>
+                        <span>Weight</span>
+                    </label>
                 </div>
                 <table class="border tiny-space">
                     <thead>
@@ -70,6 +74,7 @@ export class NestedPartsSummary implements BaseComponent {
                             <th data-column="nest-part-partName">Part Name</th>
                             <th data-column="nest-name">Nest Name / Part Number</th>
                             <th class="center-align" data-column="nest-part-material">Material</th>
+                            <th class="center-align" data-column="nest-part-weight">Weight</th>
                             <th class="center-align" data-column="nest-part-process">Process</th>
                             <th class="center-align" data-column="nest-part-notes">Notes</th>
                             <th class="center-align" data-column="nest-part-shelfNumber">Shelf #</th>
@@ -98,6 +103,7 @@ export class NestedPartsSummary implements BaseComponent {
         for (const group of this.getAllGroupedLaserCutParts()) {
             const nestNameNumber = group.getNestNamePartNumber();
             const material = group.getMaterial();
+            const weight = group.getWeight();
             const process = group.getProcess();
             const notes = group.getNotes();
             const shelfNumber = group.getShelfNumber();
@@ -116,6 +122,7 @@ export class NestedPartsSummary implements BaseComponent {
                         ${nestNameNumber}
                 </td>
                 <td class="center-align" data-column="nest-part-material">${material}</td>
+                <td class="center-align" data-column="nest-part-weight">${this.formatWeight(weight)}</td>
                 <td class="center-align" data-column="nest-part-process">${process}</td>
                 <td class="left-align" data-column="nest-part-notes">${notes}</td>
                 <td class="center-align" data-column="nest-part-shelfNumber">${shelfNumber}</td>
@@ -132,11 +139,14 @@ export class NestedPartsSummary implements BaseComponent {
         let partsTableFooter = "";
         let totalQuantity = 0;
         let totalPrice = 0;
+        let totalWeight = 0;
         for (const nest of this.nests) {
             for (const laserCutPart of nest.laser_cut_parts) {
                 const unitQuantity = laserCutPart.inventory_data.quantity;
                 const quantity = unitQuantity;
                 const price = laserCutPart.prices.price * unitQuantity;
+                const weight = laserCutPart.meta_data.weight * unitQuantity;
+                totalWeight += weight;
                 totalQuantity += quantity;
                 totalPrice += price;
             }
@@ -146,6 +156,7 @@ export class NestedPartsSummary implements BaseComponent {
             <th data-column="nest-part-partName"></th>
             <th class="center-align" data-column="nest-part-nest-name"></th>
             <th class="center-align" data-column="nest-part-material"></th>
+            <th class="center-align" data-column="nest-part-weight">${this.formatWeight(totalWeight)}</th>
             <th class="center-align" data-column="nest-part-process"></th>
             <th class="center-align" data-column="nest-part-notes"></th>
             <th class="center-align" data-column="nest-part-shelfNumber"></th>
@@ -194,5 +205,13 @@ export class NestedPartsSummary implements BaseComponent {
 
     private formatPrice(price: number): string {
         return `$${price.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    }
+
+    private formatQuantity(quantity: number): string {
+        return quantity.toLocaleString("en-US", { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+    }
+
+    private formatWeight(weight: number): string {
+        return `${weight.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} lbs`;
     }
 }

@@ -1,8 +1,8 @@
-import {BaseComponent} from "@interfaces/base-component";
-import {LaserCutPart} from "@models/laser-cut-part";
-import {LaserCutPartGroup} from "@models/laser-cut-part-group";
-import {Nest} from "@models/nest";
-import {naturalCompare} from "@utils/natural-sort";
+import { BaseComponent } from "@interfaces/base-component";
+import { LaserCutPart } from "@models/laser-cut-part";
+import { LaserCutPartGroup } from "@models/laser-cut-part-group";
+import { Nest } from "@models/nest";
+import { naturalCompare } from "@utils/natural-sort";
 
 
 export class NestedParts implements BaseComponent {
@@ -64,6 +64,10 @@ export class NestedParts implements BaseComponent {
                         <input type="checkbox" id="show-nest-part-price" checked>
                         <span>Price</span>
                     </label>
+                    <label class="s12 m4 l3 checkbox">
+                        <input type="checkbox" id="show-nest-part-weight" checked>
+                        <span>Weight</span>
+                    </label>
                 </div>
                 ${this.generatePartsTable()}
             </div>
@@ -95,6 +99,7 @@ export class NestedParts implements BaseComponent {
                                 <tr>
                                     <th data-column="nest-part-partName">Part Name / Number</th>
                                     <th class="center-align" data-column="nest-part-material">Material</th>
+                                    <th class="center-align" data-column="nest-part-weight">Weight</th>
                                     <th class="center-align" data-column="nest-part-process">Process</th>
                                     <th class="center-align" data-column="nest-part-notes">Notes</th>
                                     <th class="center-align" data-column="nest-part-shelfNumber">Shelf #</th>
@@ -129,6 +134,7 @@ export class NestedParts implements BaseComponent {
             const unitQuantity = laserCutPart.inventory_data.quantity;
             const quantity = unitQuantity;
             const unitPrice = laserCutPart.prices.price;
+            const weight = laserCutPart.meta_data.weight * unitQuantity;
             const price = unitPrice * unitQuantity;
             nestSummaryTable += `
             <tr>
@@ -142,6 +148,7 @@ export class NestedParts implements BaseComponent {
                     </div>
                 </td>
                 <td class="center-align" data-column="nest-part-material">${material}</td>
+                <td class="center-align" data-column="nest-part-weight">${this.formatWeight(weight)}</td>
                 <td class="center-align" data-column="nest-part-process">${process}</td>
                 <td class="left-align" data-column="nest-part-notes">${notes}</td>
                 <td class="center-align" data-column="nest-part-shelfNumber">${shelfNumber}</td>
@@ -160,10 +167,13 @@ export class NestedParts implements BaseComponent {
         let totalQuantity = 0;
         let totalUnitQuantity = 0;
         let totalPrice = 0;
+        let totalWeight = 0;
         for (const laserCutPart of nest.laser_cut_parts) {
             const unitQuantity = laserCutPart.inventory_data.quantity;
             const quantity = unitQuantity;
             const price = laserCutPart.prices.price * unitQuantity;
+            const weight = laserCutPart.meta_data.weight * unitQuantity;
+            totalWeight += weight;
             totalQuantity += quantity;
             totalUnitQuantity += unitQuantity;
             totalPrice += price;
@@ -172,6 +182,7 @@ export class NestedParts implements BaseComponent {
         <tr>
             <th data-column="nest-part-partName"></th>
             <th class="center-align" data-column="nest-part-material"></th>
+            <th class="center-align" data-column="nest-part-weight">${this.formatWeight(totalWeight)}</th>
             <th class="center-align" data-column="nest-part-process"></th>
             <th class="center-align" data-column="nest-part-notes"></th>
             <th class="center-align" data-column="nest-part-shelfNumber"></th>
@@ -215,7 +226,15 @@ export class NestedParts implements BaseComponent {
     }
 
     private formatPrice(price: number): string {
-        return `$${price.toLocaleString("en-US", {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+        return `$${price.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    }
+
+    private formatQuantity(quantity: number): string {
+        return quantity.toLocaleString("en-US", { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+    }
+
+    private formatWeight(weight: number): string {
+        return `${weight.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} lbs`;
     }
 
     private getAllParts(): LaserCutPart[] {
