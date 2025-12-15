@@ -69,6 +69,7 @@ from handlers.logs.logs import LogsHandler
 from handlers.logs.server_log import ServerLogsHandler
 from handlers.misc.commands import CommandHandler
 from handlers.misc.email_purchase_order import EmailPurchaseOrderHandler
+from handlers.misc.email_sent import EmailSentHandler
 from handlers.misc.inventory_page import InventoryHandler
 from handlers.misc.inventory_tables_page import InventoryTablesHandler
 from handlers.misc.pdf import GeneratePDFHandler
@@ -346,6 +347,7 @@ api_routes = [
     route(r"/api/generate-pdf", GeneratePDFHandler),
     route(r"/api/generate-png", GeneratePNGHandler),
     route(r"/api/email-purchase-order", EmailPurchaseOrderHandler),
+    route(r"/api/email-sent/([0-9]+)", EmailSentHandler),
 ]
 
 static_routes = [

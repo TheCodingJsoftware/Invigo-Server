@@ -134,10 +134,15 @@ export class EmailDialogComponent extends DialogComponent {
 
                 if (!res.ok) {
                     ui("#email-send-failed", 2000);
-                } else {
-                    ui("#email-sent", 2000);
-                    this.close();
+                    return;
                 }
+
+                await fetch(`/api/email-sent/${this.purchaseOrder.id}`, {
+                    method: "POST",
+                });
+
+                ui("#email-sent", 2000);
+                this.close();
             });
 
         } catch (err) {

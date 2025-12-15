@@ -72,9 +72,7 @@ class PurchaseOrdersDB(BaseWithDBPool):
         self.cache[key] = (value, datetime.now())
 
     def _invalidate_cache(self, key_startswith):
-        self.cache = {
-            k: v for k, v in self.cache.items() if not k.startswith(key_startswith)
-        }
+        self.cache = {k: v for k, v in self.cache.items() if not k.startswith(key_startswith)}
 
     def start_background_cache_worker(self):
         async def background_purchase_order():
@@ -83,9 +81,7 @@ class PurchaseOrdersDB(BaseWithDBPool):
                     await self._warm_cache()
                 except Exception as e:
                     logging.warning(f"[CacheWorker] Error warming cache: {e}")
-                await asyncio.sleep(
-                    Environment.WORKSPACE_BACKGROUND_CACHE_WARM_UP_INTERVAL
-                )
+                await asyncio.sleep(Environment.WORKSPACE_BACKGROUND_CACHE_WARM_UP_INTERVAL)
 
         if self._background_task is None:
             self._background_task = asyncio.create_task(background_purchase_order())
@@ -98,25 +94,16 @@ class PurchaseOrdersDB(BaseWithDBPool):
             purchase_order_ids = list(self._cache_refresh_queue)
             self._cache_refresh_queue.clear()
         else:
-            purchase_order_ids = [
-                purchase_order["id"]
-                for purchase_order in await self.get_all_purchase_orders(
-                    include_data=True
-                )
-            ]
+            purchase_order_ids = [purchase_order["id"] for purchase_order in await self.get_all_purchase_orders(include_data=True)]
 
         for purchase_order_id in purchase_order_ids:
             purchase_order = await self.get_purchase_order_by_id(purchase_order_id)
             if purchase_order:
-                self._set_cache(
-                    f"purchase_order_{purchase_order_id}_full", purchase_order
-                )
+                self._set_cache(f"purchase_order_{purchase_order_id}_full", purchase_order)
 
     @ensure_connection
     async def get_all_purchase_orders(self, include_data: bool = False):
-        cache_key = (
-            "all_purchase_orders_data" if include_data else "all_purchase_orders"
-        )
+        cache_key = "all_purchase_orders_data" if include_data else "all_purchase_orders"
 
         cached = self._get_cache(cache_key)
         if cached:
@@ -130,9 +117,7 @@ class PurchaseOrdersDB(BaseWithDBPool):
         purchase_orders = []
         for row in rows:
             po_dict = dict(row)
-            po_dict["purchase_order_data"] = msgspec.json.decode(
-                po_dict["purchase_order_data"]
-            )
+            po_dict["purchase_order_data"] = msgspec.json.decode(po_dict["purchase_order_data"])
             po_dict["purchase_order_data"]["id"] = po_dict["id"]
             if not include_data:
                 po_dict["purchase_order_data"]["components"] = []
@@ -143,9 +128,7 @@ class PurchaseOrdersDB(BaseWithDBPool):
         return purchase_orders
 
     @ensure_connection
-    async def get_purchase_order_id_by_name(
-        self, purchase_order_name: str
-    ) -> int | None:
+    async def get_purchase_order_id_by_name(self, purchase_order_name: str) -> int | None:
         query = f"""
         SELECT id FROM {self.TABLE_NAME}
         WHERE name = $1
@@ -157,9 +140,7 @@ class PurchaseOrdersDB(BaseWithDBPool):
     @ensure_connection
     async def get_purchase_order_by_id(self, purchase_order_id: int | str):
         if isinstance(purchase_order_id, str):
-            purchase_order_id = await self.get_purchase_order_id_by_name(
-                purchase_order_id
-            )
+            purchase_order_id = await self.get_purchase_order_id_by_name(purchase_order_id)
             if purchase_order_id is None:
                 return None
 
@@ -180,46 +161,28 @@ class PurchaseOrdersDB(BaseWithDBPool):
             return None
 
         po_dict = dict(row)
-        po_dict["purchase_order_data"] = msgspec.json.decode(
-            po_dict["purchase_order_data"]
-        )
+        po_dict["purchase_order_data"] = msgspec.json.decode(po_dict["purchase_order_data"])
 
         self._set_cache(cache_key, po_dict)
         return po_dict
 
     @ensure_connection
-    async def save_purchase_order(
-        self, purchase_order_id: int | str, new_data: dict, modified_by: str = "system"
-    ):
+    async def save_purchase_order(self, purchase_order_id: int | str, new_data: dict, modified_by: str = "system"):
         if isinstance(purchase_order_id, str):
-            purchase_order_id = await self.get_purchase_order_id_by_name(
-                purchase_order_id
-            )
+            purchase_order_id = await self.get_purchase_order_id_by_name(purchase_order_id)
 
         purchase_order_does_not_exist = False
 
         async with self.db_pool.acquire() as conn:
             async with conn.transaction():
-                current_row = await conn.fetchrow(
-                    f"SELECT * FROM {self.TABLE_NAME} WHERE id = $1", purchase_order_id
-                )
+                current_row = await conn.fetchrow(f"SELECT * FROM {self.TABLE_NAME} WHERE id = $1", purchase_order_id)
 
                 if current_row is None:
                     purchase_order_does_not_exist = True
                 else:
                     # Insert history in background
-                    task = asyncio.create_task(
-                        self.purchase_orders_history_db.insert_history_purchase_order(
-                            purchase_order_id, new_data, modified_by
-                        )
-                    )
-                    task.add_done_callback(
-                        lambda t: logging.error(
-                            "Unhandled task error", exc_info=t.exception()
-                        )
-                        if t.exception()
-                        else None
-                    )
+                    task = asyncio.create_task(self.purchase_orders_history_db.insert_history_purchase_order(purchase_order_id, new_data, modified_by))
+                    task.add_done_callback(lambda t: logging.error("Unhandled task error", exc_info=t.exception()) if t.exception() else None)
 
                     meta_data = new_data.get("meta_data", {})
                     vendor = meta_data.get("vendor", {})
@@ -245,14 +208,10 @@ class PurchaseOrdersDB(BaseWithDBPool):
                     )
 
         if purchase_order_does_not_exist:
-            logging.info(
-                f"[SavePurchaseOrder] ID {purchase_order_id} not found. Creating new."
-            )
+            logging.info(f"[SavePurchaseOrder] ID {purchase_order_id} not found. Creating new.")
             new_id = await self.add_purchase_order(new_data)
             # Optional: add immediate history record after add
-            await self.purchase_orders_history_db.insert_history_purchase_order(
-                new_id, new_data, modified_by
-            )
+            await self.purchase_orders_history_db.insert_history_purchase_order(new_id, new_data, modified_by)
             return new_id
 
         self._invalidate_cache(f"purchase_order_{purchase_order_id}")
@@ -288,11 +247,53 @@ class PurchaseOrdersDB(BaseWithDBPool):
         return purchase_order_id
 
     @ensure_connection
+    async def mark_purchase_order_email_sent(
+        self,
+        purchase_order_id: int,
+        modified_by: str = "system",
+    ):
+        async with self.db_pool.acquire() as conn:
+            async with conn.transaction():
+                row = await conn.fetchrow(
+                    f"""
+                    SELECT purchase_order_data
+                    FROM {self.TABLE_NAME}
+                    WHERE id = $1
+                    """,
+                    purchase_order_id,
+                )
+
+                if not row:
+                    return False
+
+                po_data = msgspec.json.decode(row["purchase_order_data"])
+
+                meta = po_data.setdefault("meta_data", {})
+                meta["email_sent_at"] = datetime.utcnow().isoformat()
+
+                # history
+                asyncio.create_task(self.purchase_orders_history_db.insert_history_purchase_order(purchase_order_id, po_data, modified_by))
+
+                await conn.execute(
+                    f"""
+                    UPDATE {self.TABLE_NAME}
+                    SET
+                        purchase_order_data = $2,
+                        updated_at = CURRENT_TIMESTAMP
+                    WHERE id = $1
+                    """,
+                    purchase_order_id,
+                    json.dumps(po_data),
+                )
+
+        self._invalidate_cache(f"purchase_order_{purchase_order_id}")
+        self._invalidate_cache("all_purchase_orders")
+        return True
+
+    @ensure_connection
     async def delete_purchase_order(self, purchase_order_id: int):
         if isinstance(purchase_order_id, str):
-            purchase_order_id = await self.get_purchase_order_id_by_name(
-                purchase_order_id
-            )
+            purchase_order_id = await self.get_purchase_order_id_by_name(purchase_order_id)
         query = f"DELETE FROM {self.TABLE_NAME} WHERE id = $1"
         async with self.db_pool.acquire() as conn:
             await conn.execute(query, purchase_order_id)

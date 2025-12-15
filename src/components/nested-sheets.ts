@@ -1,5 +1,5 @@
-import {BaseComponent} from "@interfaces/base-component";
-import {Nest} from "@models/nest";
+import { BaseComponent } from "@interfaces/base-component";
+import { Nest } from "@models/nest";
 import QRCode from 'qrcode';
 
 export class NestedSheets implements BaseComponent {
@@ -194,7 +194,8 @@ export class NestedSheets implements BaseComponent {
         const sheetCount = nest.sheet_count;
         const cuttingTime = nest.sheet_cut_time;
         const nestCutTime = nest.sheet_cut_time * nest.sheet_count;
-        const totalParts = nest.laser_cut_parts.reduce((total, part) => total + part.inventory_data.quantity * nest.sheet_count, 0);
+        const totalParts = nest.laser_cut_parts.reduce((total, part) => total + part.inventory_data.quantity, 0);
+        const totalWeight = nest.laser_cut_parts.reduce((total, part) => total + part.meta_data.weight * part.inventory_data.quantity, 0);
         return `
         <div class="s6">
             <article class="nest no-padding border round">
@@ -206,6 +207,7 @@ export class NestedSheets implements BaseComponent {
                     </nav>
                     <div>${nest.sheet.name}</div>
                     <div>Total Parts: ${totalParts}</div>
+                    <div>Total Weight: ${this.formatWeight(totalWeight)}</div>
                     <div>Sheet Cut Time: ${this.formatDuration(cuttingTime)}</div>
                     <div>Nest Cut Time: ${this.formatDuration(nestCutTime)}</div>
                 </div>
@@ -230,5 +232,9 @@ export class NestedSheets implements BaseComponent {
         const pad = (n: number) => n.toString().padStart(2, "0");
 
         return `${pad(h)}h ${pad(m)}m ${pad(s)}s`;
+    }
+
+    private formatWeight(weight: number): string {
+        return `${weight.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} lbs`;
     }
 }
