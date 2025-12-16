@@ -188,8 +188,8 @@ export class PartSelectionManager {
         let targetX: number, targetY: number;
 
         if (pos) {
-            targetX = pos.x + baseX + 8;
-            targetY = pos.y + baseY + 8;
+            targetX = pos.x + baseX + 25;
+            targetY = pos.y + baseY - 80;
         } else {
             const last = rows[rows.length - 1];
             const rect = last.checkbox.dom.getBoundingClientRect();
