@@ -223,6 +223,21 @@ class WorkordersDB(BaseWithDBPool):
         self._invalidate_cache("all_workorders")
         self._invalidate_cache(f"workorder_{workorder_id}_")
 
+    def _extract_parts_with_quantity(self, workorder: dict) -> list[dict]:
+        result = []
+
+        for nest in workorder.get("nests", []):
+            for part in nest.get("laser_cut_parts", []):
+                qty = part.get("inventory_data", {}).get("quantity", 1)
+                result.append(
+                    {
+                        "name": part["name"],
+                        "qty": int(qty),
+                    }
+                )
+
+        return result
+
     async def close(self):
         if self.db_pool:
             await self.db_pool.close()

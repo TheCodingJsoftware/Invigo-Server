@@ -1,18 +1,18 @@
 import "beercss"
 import "@static/css/printout.css"
 import "material-dynamic-colors";
-import {NestedParts} from "@components/nested-parts";
-import {NestedPartsSummary} from "@components/nested-parts-summary";
-import {NestedSheets} from "@components/nested-sheets";
-import {NestedSheetsSummary} from "@components/nested-sheets-summary";
-import {PageBreak} from "@components/page-break";
-import {QRCodeComponent} from "@components/qr-code-component";
-import {BaseComponent} from "@interfaces/base-component";
-import {WorkorderData} from "@interfaces/workorder";
-import {Workorder} from "@models/workorder";
-import {invertImages, loadAnimationStyleSheet, loadTheme, toggleTheme} from "@utils/theme"
-import {Effect} from "effect"
-import {createSwapy} from 'swapy'
+import { NestedParts } from "@components/nested-parts";
+import { NestedPartsSummary } from "@components/nested-parts-summary";
+import { NestedSheets } from "@components/nested-sheets";
+import { NestedSheetsSummary } from "@components/nested-sheets-summary";
+import { PageBreak } from "@components/page-break";
+import { QRCodeComponent } from "@components/qr-code-component";
+import { BaseComponent } from "@interfaces/base-component";
+import { WorkorderData } from "@interfaces/workorder";
+import { Workorder } from "@models/workorder";
+import { invertImages, loadAnimationStyleSheet, loadTheme, toggleTheme } from "@utils/theme"
+import { Effect } from "effect"
+import { createSwapy } from 'swapy'
 
 class WorkorderPrintout {
     workorderID: number;
@@ -221,7 +221,7 @@ class WorkorderPrintout {
 
                     wrapper.addEventListener("transitionend", () => {
                         wrapper.style.maxHeight = "none"; // reset to large value after animation
-                    }, {once: true});
+                    }, { once: true });
                 } else {
                     wrapper.style.maxHeight = wrapper.scrollHeight + "px"; // set current height
 
@@ -237,7 +237,7 @@ class WorkorderPrintout {
                     wrapper.addEventListener("transitionend", () => {
                         // Collapse finished, ensure maxHeight stays at 0
                         wrapper.style.maxHeight = "0";
-                    }, {once: true});
+                    }, { once: true });
                 }
             });
         });
@@ -270,7 +270,7 @@ class WorkorderPrintout {
 
     private async setUpSections(): Promise<void> {
         const sections: Record<string, BaseComponent> = {
-            qrCode: new QRCodeComponent(window.location.href),
+            qrCode: new QRCodeComponent(window.location.origin + `/api/workorder/mark_complete/${this.workorderID}`, 'Scan to Complete Workorder'),
             pageBreak3: new PageBreak(this.workorderID, 23),
             nestSummary: new NestedSheetsSummary(this.workorderID, this.workorder.nests),
             pageBreak4: new PageBreak(this.workorderID, 24),
@@ -327,7 +327,7 @@ class WorkorderPrintout {
                             observer.disconnect();
                         }
                     });
-                }, {threshold: 0.5});
+                }, { threshold: 0.5 });
 
                 observer.observe(section.element);
             });

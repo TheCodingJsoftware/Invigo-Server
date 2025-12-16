@@ -3,6 +3,7 @@
     "@material/material-color-utilities": "^0.3.0",
     "@toast-ui/editor": "^3.2.2",
     "beercss": "^3.12.13",
+    "canvas-confetti": "^1.9.4",
     "chart.js": "^4.5.1",
     "chartjs-adapter-date-fns": "^3.0.0",
     "chartjs-chart-matrix": "^3.0.0",
@@ -19,6 +20,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",
+    "@types/canvas-confetti": "^1.9.0",
     "@types/dxf": "^4.6.10",
     "@types/pdfmake": "^0.2.12",
     "@types/qrcode": "^1.5.6",

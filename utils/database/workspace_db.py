@@ -103,8 +103,6 @@ class WorkspaceDB(BaseWithDBPool):
                                     "flowtag": assembly["workspace_data"]["flowtag"]["tags"],
                                     "flowtag_index": 0,
                                     "flowtag_status_index": 0,
-                                    "setup_time": "{}",
-                                    "setup_time_seconds": 0,
                                     "start_time": None,
                                     "end_time": None,
                                     "meta_data": json.dumps(assembly.get("meta_data")),
@@ -132,8 +130,6 @@ class WorkspaceDB(BaseWithDBPool):
                                             "flowtag_status_index": 0,
                                             "recut": False,
                                             "recoat": False,
-                                            "setup_time": "{}",
-                                            "setup_time_seconds": 0,
                                             "start_time": None,
                                             "end_time": None,
                                             "inventory_data": json.dumps(part.get("inventory_data")),
@@ -182,8 +178,6 @@ class WorkspaceDB(BaseWithDBPool):
                                         "job_id": job_id,
                                         "nest_id": nest_id,
                                         "name": part["name"],
-                                        "setup_time": "{}",
-                                        "setup_time_seconds": 0,
                                         "start_time": None,
                                         "end_time": None,
                                         "inventory_data": json.dumps(part.get("inventory_data")),
@@ -377,3 +371,62 @@ class WorkspaceDB(BaseWithDBPool):
                 WHERE id = $1
             """
             await conn.executemany(update_query, updates)
+
+    @ensure_connection
+    async def mark_workorder_parts_complete(
+        self,
+        parts: list[dict],
+        changed_by: str,
+    ) -> dict:
+        overflow = []
+        total_advanced = 0
+
+        advance_sql = """
+        WITH rows_to_advance AS (
+            SELECT id
+            FROM assembly_laser_cut_parts
+            WHERE name = $1
+              AND flowtag_index = 1
+            ORDER BY id
+            LIMIT $2
+        )
+        UPDATE assembly_laser_cut_parts p
+        SET
+            flowtag_index = flowtag_index + 1,
+            flowtag_status_index = 0,
+            is_timing = false,
+            changed_by = $3,
+            modified_at = now()
+        FROM rows_to_advance r
+        WHERE p.id = r.id
+        RETURNING p.id;
+        """
+
+        async with self.db_pool.acquire() as conn:
+            async with conn.transaction():
+                for part in parts:
+                    rows = await conn.fetch(
+                        advance_sql,
+                        part["name"],
+                        part["qty"],
+                        changed_by,
+                    )
+
+                    advanced = len(rows)
+                    total_advanced += advanced
+
+                    if advanced < part["qty"]:
+                        overflow.append(
+                            {
+                                "name": part["name"],
+                                "requested": part["qty"],
+                                "advanced": advanced,
+                                "overflow": part["qty"] - advanced,
+                            }
+                        )
+
+        return {
+            "status": "ok",
+            "advanced_total": total_advanced,
+            "overflow": overflow,
+        }

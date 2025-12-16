@@ -1,12 +1,14 @@
-import {PanelComponent} from '@interfaces/panel-component';
+import { PanelComponent } from '@interfaces/panel-component';
 import QRCode from 'qrcode';
 
 export class QRCodeComponent implements PanelComponent {
     url: string;
     element!: HTMLElement;
+    description?: string;
 
-    constructor(url: string) {
+    constructor(url: string, description?: string) {
         this.url = encodeURI(url);
+        this.description = description;
     }
 
     public async build(): Promise<HTMLElement> {
@@ -18,6 +20,7 @@ export class QRCodeComponent implements PanelComponent {
                 <h4 class="max">QR Code</h4>
             </nav>
             <div class="qr-code center-align middle-align"></div>
+            ${this.description ? `<h6 class="center-align">${this.description}</h6>` : ''}
         </article>
         `.trim(); // Trim leading whitespace
 

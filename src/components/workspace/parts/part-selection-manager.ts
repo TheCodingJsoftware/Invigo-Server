@@ -1,8 +1,8 @@
-import {RecutDialog} from "@components/common/dialog/recut-dialog";
-import {FileViewerDialog} from "@components/common/dialog/file-viewer-dialog";
-import {PartRow} from "@components/workspace/parts/part-row";
-import {UserContext} from "@core/auth/user-context";
-import {WorkspacePermissions} from "@core/auth/workspace-permissions";
+import { RecutDialog } from "@components/common/dialog/recut-dialog";
+import { FileViewerDialog } from "@components/common/dialog/file-viewer-dialog";
+import { PartRow } from "@components/workspace/parts/part-row";
+import { UserContext } from "@core/auth/user-context";
+import { WorkspacePermissions } from "@core/auth/workspace-permissions";
 
 export class PartSelectionManager {
     private static element: HTMLElement;
@@ -41,7 +41,7 @@ export class PartSelectionManager {
             <span>Mark Complete</span>
         `.trim();
 
-        if (!user.can(WorkspacePermissions.AdvanceFlow)){
+        if (!user.can(WorkspacePermissions.AdvanceFlow)) {
             completeButton.classList.add("hidden");
         }
 
@@ -65,7 +65,7 @@ export class PartSelectionManager {
             <span>Stop Timing</span>
         `.trim();
 
-        if (!user.can(WorkspacePermissions.CanToggleTimer)){
+        if (!user.can(WorkspacePermissions.CanToggleTimer)) {
             startTimingButton.classList.add("hidden");
             stopTimingButton.classList.add("hidden");
         }
@@ -88,7 +88,7 @@ export class PartSelectionManager {
             <span>Recut</span>
         `.trim();
 
-        if (!user.can(WorkspacePermissions.CanRequestRecut)){
+        if (!user.can(WorkspacePermissions.CanRequestRecut)) {
             recutButton.classList.add("hidden");
         }
 

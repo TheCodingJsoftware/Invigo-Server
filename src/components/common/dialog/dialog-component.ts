@@ -70,9 +70,16 @@ export class DialogComponent {
     }
 
     public close(): void {
+        window.removeEventListener("resize", this.handleResize);
         document.removeEventListener("keydown", this.handleEscape);
-        ui(this.dialog);
-        setTimeout(() => this.dialog.remove(), 200);
+
+        ui(this.dialog)
+
+        if (this.options.autoRemove) {
+            setTimeout(() => this.dialog.remove(), 200);
+        }
+
+        this.options.onClose?.();
     }
 
     private createDialogContent(): void {
@@ -140,7 +147,17 @@ export class DialogComponent {
     private handleEscape = (e: KeyboardEvent) => {
         if (e.key === "Escape") {
             e.preventDefault();
-            this.close();
+            if (this.dialog.open) {
+                this.dialog.close();
+            }
+        }
+    };
+
+    public handleResize = () => {
+        if (window.innerWidth < 600) {
+            this.dialog.classList.add("max");
+        } else {
+            this.dialog.classList.remove("max");
         }
     };
 }

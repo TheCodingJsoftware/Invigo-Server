@@ -72,6 +72,7 @@ from handlers.misc.email_purchase_order import EmailPurchaseOrderHandler
 from handlers.misc.email_sent import EmailSentHandler
 from handlers.misc.inventory_page import InventoryHandler
 from handlers.misc.inventory_tables_page import InventoryTablesHandler
+from handlers.misc.message_handler import MessageHandler
 from handlers.misc.pdf import GeneratePDFHandler
 from handlers.misc.png import GeneratePNGHandler
 from handlers.misc.qr_code_page import QRCodePageHandler
@@ -123,6 +124,7 @@ from handlers.websocket.workspace import WebSocketWorkspaceHandler
 from handlers.workorder.delete_workorder import DeleteWorkorderHandler
 from handlers.workorder.get_all_workorders import GetAllWorkordersHandler
 from handlers.workorder.get_workorder import GetWorkorderHandler
+from handlers.workorder.mark_complete import WorkorderMarkComplete
 from handlers.workorder.save_workorder import SaveWorkorderHandler
 from handlers.workorder.workorder_printouts import WorkordersPageHandler
 from handlers.workspace.add_job import WorkspaceAddJobHandler
@@ -176,6 +178,7 @@ page_routes = [
         template_name="wayback_machine.html",
     ),
     route(r"/logs", LogsHandler),
+    route(r"/message", MessageHandler),
     route(r"/server_log", ServerLogsHandler),
     route(r"/jobs", JobsPageHandler),
     route(r"/jobs/view", PageHandler, template_name="job_printout.html"),
@@ -322,6 +325,7 @@ api_routes = [
     route(r"/workorders/get_all", GetAllWorkordersHandler),
     route(r"/workorders/get/(.*)", GetWorkorderHandler),
     route(r"/workorders/delete/(.*)", DeleteWorkorderHandler),
+    route(r"/api/workorder/mark_complete/([0-9]+)", WorkorderMarkComplete),
     # Purchase Orders
     route(r"/purchase_orders/save", SavePurchaseOrderHandler),
     route(r"/purchase_orders/get_all", GetAllPurchaseOrdersHandler),
