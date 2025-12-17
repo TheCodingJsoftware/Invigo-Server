@@ -8,6 +8,7 @@ venv/
 .idea/
 *.code-workspace
 node_modules/
+.fleet/
 
 # Git
 .git/
@@ -21,6 +22,7 @@ __pycache__/
 .pytest_cache/
 .coverage
 .tox/
+.ruff_cache/
 
 # Build artifacts
 build/

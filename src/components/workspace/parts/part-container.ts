@@ -1,16 +1,16 @@
-import {LaserCutPartData} from "@interfaces/laser-cut-part";
-import {PartDataService} from "@components/workspace/parts/part-data.service";
-import {WorkspaceWebSocket} from "@core/websocket/workspace-websocket";
-import {Loading} from "@components/common/loading/loading";
-import {WorkspaceSort} from "@models/workspace-sort";
-import {WorkspaceFilter} from "@models/workspace-filter";
-import {SearchInput} from "@components/common/input/search-input";
-import {invertImages} from "@utils/theme";
-import {PartSelectionManager} from "@components/workspace/parts/part-selection-manager";
-import {PartsTable} from "@components/workspace/parts/parts-table";
-import {JobData} from "@interfaces/job";
-import {TimelineEntry} from "../../../pages/production_planner/production_planner";
-import {JobElement} from "@components/workspace/parts/job-element";
+import { LaserCutPartData } from "@interfaces/laser-cut-part";
+import { PartDataService } from "@components/workspace/parts/part-data.service";
+import { WorkspaceWebSocket } from "@core/websocket/workspace-websocket";
+import { Loading } from "@components/common/loading/loading";
+import { WorkspaceSort } from "@models/workspace-sort";
+import { WorkspaceFilter } from "@models/workspace-filter";
+import { SearchInput } from "@components/common/input/search-input";
+import { invertImages } from "@utils/theme";
+import { PartSelectionManager } from "@components/workspace/parts/part-selection-manager";
+import { PartsTable } from "@components/workspace/parts/parts-table";
+import { JobData } from "@interfaces/job";
+import { TimelineEntry } from "../../../pages/production_planner/production_planner";
+import { JobElement } from "@components/workspace/parts/job-element";
 
 export interface PartData {
     group_id: number;

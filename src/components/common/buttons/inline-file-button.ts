@@ -1,5 +1,5 @@
-import {Ext, Previewer} from "@utils/preview-cache";
-import {invertImages} from "@utils/theme";
+import { Ext, Previewer } from "@utils/preview-cache";
+import { invertImages } from "@utils/theme";
 
 export class InlineFileButton {
     readonly element: HTMLButtonElement;
@@ -12,7 +12,7 @@ export class InlineFileButton {
 
     constructor(filePath: string) {
         this.element = document.createElement("button");
-        this.element.classList.add("inline-file-button", "small-round", "vertical", "blur");
+        this.element.classList.add("inline-file-button", "small-round", "vertical", "border");
 
         this.filePath = filePath;
         this.fileName = filePath.split(/[/\\]/).pop()!;

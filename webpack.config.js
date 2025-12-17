@@ -90,7 +90,7 @@ module.exports = {
     },
 
     resolve: {
-        extensions: ['.ts', '.tsx', '.js', '.jsx', '.json'],
+        extensions: ['.ts', '.tsx', '.js', '.mjs', '.jsx', '.json'],
         alias: {
             '@interfaces': path.resolve(__dirname, 'src/interfaces'),
             '@components': path.resolve(__dirname, 'src/components'),

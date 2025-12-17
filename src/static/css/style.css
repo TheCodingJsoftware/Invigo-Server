@@ -36,6 +36,36 @@ body.dark {
 }
 
 /* workspace_dashboard.html */
+#content {
+    position: relative;
+    overflow: hidden;
+}
+
+.zoom-stage {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.zoom-target {
+    transform-origin: center center;
+    will-change: transform;
+    transition: transform var(--speed3) ease-out;
+}
+
+.panning .zoom-target {
+    cursor: grabbing;
+}
+
+.panning {
+    cursor: grabbing;
+}
+
+svg {
+    shape-rendering: geometricPrecision;
+}
 
 .job-details[open] summary i::before {
     content: 'expand_less';
@@ -125,7 +155,7 @@ body.dark {
     width: 50%;
 }
 
-.qr-container > * {
+.qr-container>* {
     border: 1px dashed black;
     /* or any other color you prefer */
 }
@@ -202,7 +232,7 @@ tr.finished {
 
 .floating-part-menu {
     transition: opacity var(--speed3) ease,
-    transform var(--speed3) ease;
+        transform var(--speed3) ease;
     opacity: 1;
     visibility: visible;
     pointer-events: auto;
@@ -265,18 +295,22 @@ button menu {
         border-color: var(--error);
         color: var(--error);
     }
+
     25% {
         border-color: transparent;
         color: var(--error);
     }
+
     50% {
         border-color: var(--error);
         color: var(--error);
     }
+
     75% {
         border-color: transparent;
         color: var(--error);
     }
+
     100% {
         border-color: var(--error);
         color: var(--error);

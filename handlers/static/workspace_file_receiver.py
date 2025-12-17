@@ -1,4 +1,3 @@
-import logging
 import os
 from urllib.parse import unquote
 
@@ -38,15 +37,12 @@ class WorkspaceFileReceiverHandler(BaseHandler):
         self.set_header("Content-Disposition", f'{disposition}; filename="{file_name}"')
 
         if file_ext in ("PNG", "JPG", "JPEG", "PDF"):
-            self.set_header("Cache-Control", "public, max-age=86400")  # 1 day
+            self.set_header("Cache-Control", "public, max-age=60")  # 60 seconds
         else:
             self.set_header("Cache-Control", "no-store")
 
         if os.path.exists(filepath):
             with open(filepath, "rb") as f:
                 self.write(f.read())
-            logging.info(
-                f'Sent "{file_name}" to {self.request.remote_ip}',
-            )
-        else:
-            self.set_status(404)
+
+        self.finish()

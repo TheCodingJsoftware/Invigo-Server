@@ -1,3 +1,9 @@
+import * as pdfjsLib from "pdfjs-dist";
+import pdfWorkerUrl from "pdfjs-dist/build/pdf.worker.mjs";
+
+(pdfjsLib as any).GlobalWorkerOptions.workerPort =
+    new Worker(pdfWorkerUrl, { type: "module" });
+
 type Ext = "PDF" | "DXF" | "PNG" | "JPG" | "JPEG" | "WEBP" | string;
 
 const MAX_W = 256;
@@ -77,15 +83,12 @@ class PreviewCache {
     }
 
     private async renderPdfThumb(url: string): Promise<HTMLElement> {
-        const pdfjsLib = await import("pdfjs-dist");
-        const workerSrc = await import("pdfjs-dist/build/pdf.worker.mjs");
-
-        (pdfjsLib as any).GlobalWorkerOptions.workerSrc = workerSrc.default;
-
         const wrap = document.createElement("div");
         wrap.classList.add("center-align");
 
-        const loadingTask = (pdfjsLib as any).getDocument({url});
+        const loadingTask = (pdfjsLib as any).getDocument(url);
+        console.log(loadingTask);
+
         const pdf = await loadingTask.promise;
 
         if (!pdf.numPages || pdf.numPages < 1) {
@@ -93,17 +96,19 @@ class PreviewCache {
             msg.textContent = "No pages in PDF.";
             wrap.appendChild(msg);
             return wrap;
+        } else {
+            console.log(`PDF loaded with ${pdf.numPages} pages`);
         }
 
         const page = await pdf.getPage(1);
-        const vp1 = page.getViewport({scale: 1});
+        const vp1 = page.getViewport({ scale: 1 });
         const scale = Math.max(0.1, Math.min(2, MAX_W / vp1.width));
-        const viewport = page.getViewport({scale});
+        const viewport = page.getViewport({ scale });
 
         const dpr = Math.max(1, window.devicePixelRatio || 1);
 
         const canvas = document.createElement("canvas");
-        const ctx = canvas.getContext("2d", {alpha: false})!;
+        const ctx = canvas.getContext("2d", { alpha: false })!;
         canvas.width = Math.ceil(viewport.width * dpr);
         canvas.height = Math.ceil(viewport.height * dpr);
 
@@ -112,7 +117,7 @@ class PreviewCache {
         ctx.fillStyle = "#ffffff";
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        await page.render({canvasContext: ctx, viewport, transform, background: "#ffffff"}).promise;
+        await page.render({ canvasContext: ctx, viewport, transform, background: "#ffffff" }).promise;
 
         const blob: Blob | null = await new Promise(resolve => canvas.toBlob(resolve, "image/png", 0.92));
         const img = document.createElement("img");
@@ -182,11 +187,11 @@ class PreviewCache {
     // }
 
     private async renderDxfThumb(url: string): Promise<HTMLElement> {
-        const {Helper: DxfHelper} = await import("dxf");
+        const { Helper: DxfHelper } = await import("dxf");
         const wrap = document.createElement("div");
         wrap.classList.add("center-align");
 
-        const text = await fetch(url, {cache: "force-cache"}).then(r => r.text());
+        const text = await fetch(url, { cache: "force-cache" }).then(r => r.text());
         const helper = new DxfHelper(text);
         const svgMarkup: string = helper.toSVG();
         wrap.innerHTML = svgMarkup;
@@ -235,4 +240,4 @@ class PreviewCache {
 }
 
 export const Previewer = PreviewCache.instance;
-export {buildUrl, Ext};
+export { buildUrl, Ext };

@@ -1,13 +1,13 @@
-import {SettingsManager} from "@core/settings/settings";
-import {JobData} from "@interfaces/job";
-import {WorkspaceDateRange} from "@models/workspace-date-range";
-import {PartsTable} from "@components/workspace/parts/parts-table";
-import {applyScopedBeerTheme} from "@config/material-theme-cookie";
-import {AreYouSureDialog} from "@components/common/dialog/are-you-sure-dialog";
-import {PartRow} from "@components/workspace/parts/part-row";
-import {SnackbarComponent} from "@components/common/snackbar/snackbar-component";
-import {FileViewerDialog} from "@components/common/dialog/file-viewer-dialog";
-import {PartData} from "@components/workspace/parts/part-container";
+import { SettingsManager } from "@core/settings/settings";
+import { JobData } from "@interfaces/job";
+import { WorkspaceDateRange } from "@models/workspace-date-range";
+import { PartsTable } from "@components/workspace/parts/parts-table";
+import { applyScopedBeerTheme } from "@config/material-theme-cookie";
+import { AreYouSureDialog } from "@components/common/dialog/are-you-sure-dialog";
+import { PartRow } from "@components/workspace/parts/part-row";
+import { SnackbarComponent } from "@components/common/snackbar/snackbar-component";
+import { FileViewerDialog } from "@components/common/dialog/file-viewer-dialog";
+import { PartData } from "@components/workspace/parts/part-container";
 import morphdom from "morphdom"
 
 interface JobSettings {
@@ -27,7 +27,7 @@ export class JobElement {
         this.jobId = jobId;
         this.parts = parts;
 
-        this.jobSettings = new SettingsManager(`JobSettings:${this.jobId}`, {isCollapsed: false});
+        this.jobSettings = new SettingsManager(`JobSettings:${this.jobId}`, { isCollapsed: false });
         this.jobDataStore = new SettingsManager<{ data?: JobData; ts?: number }>(`JobData:${this.jobId}`, {});
 
         this.element = document.createElement("article");
@@ -92,7 +92,7 @@ export class JobElement {
 
         if (oldTable) {
             // Diff & patch existing table in place
-            morphdom(oldTable, newTable, {childrenOnly: false});
+            morphdom(oldTable, newTable, { childrenOnly: false });
         } else {
             // First mount
             this.articleContent.appendChild(newTable);
@@ -137,7 +137,7 @@ export class JobElement {
 
             const data: JobData = await response.json();
 
-            this.jobDataStore.set({data, ts: Date.now()});
+            this.jobDataStore.set({ data, ts: Date.now() });
 
             this.applyJobDataToUI(data);
 
@@ -183,6 +183,9 @@ export class JobElement {
         markCompleteButton.classList.add("left-round", "square", "small");
         markCompleteButton.innerHTML = `
             <i>done_all</i>
+            <div class="tooltip">
+                <span>Mark Complete</span>
+            </div>
         `.trim();
         markCompleteButton.onclick = async () => {
             const dialog = new AreYouSureDialog(
@@ -209,6 +212,9 @@ export class JobElement {
         openFilesButton.classList.add("no-round", "square", "small");
         openFilesButton.innerHTML = `
             <i>preview</i>
+            <div class="tooltip">
+                <span>Open Files</span>
+            </div>
         `.trim();
         openFilesButton.onclick = () => {
             new FileViewerDialog(this.jobName, this.parts)
@@ -217,7 +223,7 @@ export class JobElement {
         // Add collapse/expand button
         const toggleButton = document.createElement("button");
         toggleButton.classList.add("right-round", "square", "small", "toggle-button");
-        toggleButton.innerHTML = "<i>expand_less</i>";
+        toggleButton.innerHTML = "<i>expand_less</i><div class='tooltip'>Expand/Collapse</div>";
         toggleButton.onclick = () => this.collapseArticleContent();
 
         split.appendChild(markCompleteButton);
@@ -238,6 +244,6 @@ export class JobElement {
         toggleButtonIcon.classList.toggle("rotate-180", isCollapsed);
         toggleButtonIcon.classList.toggle("rotate-0", !isCollapsed);
 
-        this.jobSettings.set({"isCollapsed": isCollapsed})
+        this.jobSettings.set({ "isCollapsed": isCollapsed })
     }
 }

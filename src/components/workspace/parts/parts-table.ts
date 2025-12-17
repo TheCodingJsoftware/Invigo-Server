@@ -1,9 +1,9 @@
-import {UserContext} from "@core/auth/user-context";
-import {WorkspaceRowCheckbox} from "@components/common/checkboxes/workspace-row-checkbox";
-import {PartRow} from "@components/workspace/parts/part-row";
-import {PartSelectionManager} from "@components/workspace/parts/part-selection-manager";
-import {PartData} from "@components/workspace/parts/part-container";
-import {LazyLoad} from "@utils/lazy-render";
+import { UserContext } from "@core/auth/user-context";
+import { WorkspaceRowCheckbox } from "@components/common/checkboxes/workspace-row-checkbox";
+import { PartRow } from "@components/workspace/parts/part-row";
+import { PartSelectionManager } from "@components/workspace/parts/part-selection-manager";
+import { PartData } from "@components/workspace/parts/part-container";
+import { LazyLoad } from "@utils/lazy-render";
 
 export interface PartColumn {
     key: keyof PartData | 'part' | 'actions' | 'icon' | 'checkbox' | 'thumbnail' | 'files' | 'recording';
@@ -142,7 +142,7 @@ export class PartsTable {
                 const row = rowByEl.get(el);
                 if (row) row.render();
             },
-            {rootMargin: "400px", threshold: 0}
+            { rootMargin: "400px", threshold: 0 }
         );
         const rowByEl = new WeakMap<Element, PartRow>();
 

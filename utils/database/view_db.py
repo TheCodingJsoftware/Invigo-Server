@@ -237,32 +237,47 @@ class ViewDB(BaseWithDBPool):
         changed_by: str,
         job_id: int | None = None,
     ) -> None:
-        where_clauses = [
-            "name = $2",
-            "flowtag = $3::text[]",
-            "flowtag_index = $4",
-            "flowtag_status_index = $5",
-            "recut = false",
-        ]
-        params = [
-            True,  # $1 recut flag
-            name,  # $2
-            flowtag,  # $3
-            flowtag_index,  # $4
-            flowtag_status_index,  # $5
-            recut_quantity,  # $6 limit
-            changed_by,  # $7
-        ]
+        where_clauses: list[str] = []
+        params: list = []
+        i = 1
 
+        # SET values
+        recut_param = i
+        params.append(True)
+        i += 1
+
+        # WHERE clauses (built in order)
         if job_id is not None:
-            where_clauses.insert(0, "job_id = $2")
-            params.insert(1, job_id)
-            # need to shift the rest of the placeholders in the WHERE
-            where_clauses = [clause.replace("$2", "$3").replace("$3", "$4").replace("$4", "$5").replace("$5", "$6") for clause in where_clauses]
-            # and bump limit placeholder
-            limit_placeholder = "$7"
-        else:
-            limit_placeholder = "$6"
+            where_clauses.append(f"job_id = ${i}")
+            params.append(job_id)
+            i += 1
+
+        where_clauses.append(f"name = ${i}")
+        params.append(name)
+        i += 1
+
+        where_clauses.append(f"flowtag = ${i}::text[]")
+        params.append(flowtag)
+        i += 1
+
+        where_clauses.append(f"flowtag_index = ${i}")
+        params.append(flowtag_index)
+        i += 1
+
+        where_clauses.append(f"flowtag_status_index = ${i}")
+        params.append(flowtag_status_index)
+        i += 1
+
+        where_clauses.append("recut = false")
+
+        # LIMIT
+        limit_placeholder = f"${i}"
+        params.append(recut_quantity)
+        i += 1
+
+        # changed_by
+        changed_by_placeholder = f"${i}"
+        params.append(changed_by)
 
         update_query = f"""
         WITH rows_to_update AS (
@@ -273,11 +288,11 @@ class ViewDB(BaseWithDBPool):
         )
         UPDATE assembly_laser_cut_parts AS w
         SET
-            recut = $1,
+            recut = ${recut_param},
             flowtag_index = 0,
             flowtag_status_index = 0,
             is_timing = false,
-            changed_by = $7,
+            changed_by = {changed_by_placeholder},
             modified_at = NOW()
         FROM rows_to_update r
         WHERE w.id = r.id
@@ -286,15 +301,18 @@ class ViewDB(BaseWithDBPool):
 
         insert_query = """
         INSERT INTO recut_laser_cut_parts
-            (name, flowtag, recut_reason, inventory_data, meta_data, prices, paint_data, primer_data, powder_data, workspace_data, changed_by)
+            (name, flowtag, recut_reason, inventory_data, meta_data, prices,
+            paint_data, primer_data, powder_data, workspace_data, changed_by)
         VALUES
             ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11);
         """
-
         try:
             async with self.db_pool.acquire() as conn:
                 async with conn.transaction():
                     updated_parts = await conn.fetch(update_query, *params)
+
+                    if not updated_parts:
+                        return
 
                     await conn.executemany(
                         insert_query,

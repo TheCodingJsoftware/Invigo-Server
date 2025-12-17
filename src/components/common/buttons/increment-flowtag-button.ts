@@ -1,5 +1,5 @@
-import {PartData} from "@components/workspace/parts/part-container";
-import {WorkspaceSettings} from "@core/settings/workspace-settings";
+import { PartData } from "@components/workspace/parts/part-container";
+import { WorkspaceSettings } from "@core/settings/workspace-settings";
 
 export class IncrementFlowtagButton {
     private readonly data: PartData;
@@ -8,6 +8,7 @@ export class IncrementFlowtagButton {
     constructor(data: PartData) {
         this.data = data;
         this.element = document.createElement("button");
+        this.element.classList.add("chip", "primary", "round");
         this.init();
     }
 
