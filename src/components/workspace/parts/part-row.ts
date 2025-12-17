@@ -1,24 +1,24 @@
-import {UserContext} from "@core/auth/user-context";
-import {WorkspaceRowCheckbox} from "@components/common/checkboxes/workspace-row-checkbox";
-import {PartSelectionManager} from "@components/workspace/parts/part-selection-manager";
-import {Loading} from "@components/common/loading/loading";
-import {PartDataService} from "@components/workspace/parts/part-data.service";
-import {PartData} from "@components/workspace/parts/part-container";
-import {DialogComponent} from "@components/common/dialog/dialog-component";
-import {WorkspacePermissions} from "@core/auth/workspace-permissions";
-import {WorkspaceSettings} from "@core/settings/workspace-settings";
-import {FlowtagStatusMenuButton} from "@components/common/buttons/flowtag-status-menu-button";
-import {IncrementFlowtagButton} from "@components/common/buttons/increment-flowtag-button";
-import {RecutButton} from "@components/common/buttons/recut-button";
-import {RecutDialog} from "@components/common/dialog/recut-dialog";
-import {SnackbarComponent} from "@components/common/snackbar/snackbar-component";
-import {PartColumn} from "@components/workspace/parts/parts-table";
-import {FileButton} from "@components/common/buttons/file-button";
-import {RecutFinishedButton} from "@components/common/buttons/recut-finished-button";
-import {TimerButton} from "@components/common/buttons/timer-button";
-import {CurrentProcessButton} from "@components/common/buttons/current-process-button";
-import {PartButton} from "@components/common/buttons/part-button";
-import {DueButton} from "@components/common/buttons/due-button";
+import { UserContext } from "@core/auth/user-context";
+import { WorkspaceRowCheckbox } from "@components/common/checkboxes/workspace-row-checkbox";
+import { PartSelectionManager } from "@components/workspace/parts/part-selection-manager";
+import { Loading } from "@components/common/loading/loading";
+import { PartDataService } from "@components/workspace/parts/part-data.service";
+import { PartData } from "@components/workspace/parts/part-container";
+import { DialogComponent } from "@components/common/dialog/dialog-component";
+import { WorkspacePermissions } from "@core/auth/workspace-permissions";
+import { WorkspaceSettings } from "@core/settings/workspace-settings";
+import { FlowtagStatusMenuButton } from "@components/common/buttons/flowtag-status-menu-button";
+import { IncrementFlowtagButton } from "@components/common/buttons/increment-flowtag-button";
+import { RecutButton } from "@components/common/buttons/recut-button";
+import { RecutDialog } from "@components/common/dialog/recut-dialog";
+import { SnackbarComponent } from "@components/common/snackbar/snackbar-component";
+import { PartColumn } from "@components/workspace/parts/parts-table";
+import { FileButton } from "@components/common/buttons/file-button";
+import { RecutFinishedButton } from "@components/common/buttons/recut-finished-button";
+import { TimerButton } from "@components/common/buttons/timer-button";
+import { CurrentProcessButton } from "@components/common/buttons/current-process-button";
+import { PartButton } from "@components/common/buttons/part-button";
+import { DueButton } from "@components/common/buttons/due-button";
 
 export class PartRow {
     readonly element: HTMLTableRowElement;
@@ -67,7 +67,7 @@ export class PartRow {
             } else if (column.key === 'part') {
                 const partButton = new PartButton(this.data);
                 td.classList.add("min");
-                td.appendChild(partButton.element);
+                td.appendChild(partButton.button);
             } else if (column.key === 'icon') {
                 const icon = document.createElement("i");
                 icon.innerHTML = <string>column.render(this.data);
@@ -223,7 +223,7 @@ export class PartRow {
             });
         } catch (error) {
             console.error('Failed to start timing:', error);
-            new DialogComponent({title: "Error", bodyContent: "Failed to start timing.", width: "small-width"})
+            new DialogComponent({ title: "Error", bodyContent: "Failed to start timing.", width: "small-width" })
         }
     }
 
@@ -250,7 +250,7 @@ export class PartRow {
             });
         } catch (error) {
             console.error('Failed to stop timing:', error);
-            new DialogComponent({title: "Error", bodyContent: "Failed to stop timing.", width: "small-width"})
+            new DialogComponent({ title: "Error", bodyContent: "Failed to stop timing.", width: "small-width" })
         }
     }
 

@@ -8,17 +8,16 @@ import { NestedSheetsSummary } from "@components/nested-sheets-summary";
 import { PageBreak } from "@components/page-break";
 import { QRCodeComponent } from "@components/qr-code-component";
 import { BaseComponent } from "@interfaces/base-component";
-import { WorkorderData } from "@interfaces/workorder";
 import { Workorder } from "@models/workorder";
 import { invertImages, loadAnimationStyleSheet, loadTheme, toggleTheme } from "@utils/theme"
-import { Effect } from "effect"
 import { createSwapy } from 'swapy'
+import { WorkorderData } from "@interfaces/workorder";
 
 class WorkorderPrintout {
     workorderID: number;
     public workorder!: Workorder;
     public container: HTMLDivElement;
-    private _dataEffect: Effect.Effect<any, Error> | null = null;
+    private _dataPromise: Promise<WorkorderData> | null = null;
     private swapy: ReturnType<typeof createSwapy> | null = null;
 
     constructor(workorderID: number) {
@@ -26,30 +25,42 @@ class WorkorderPrintout {
         this.container = document.getElementById('workorder-container') as HTMLDivElement;
     }
 
-    public getDataEffect(): Effect.Effect<any, Error> {
-        if (!this._dataEffect) {
-            this._dataEffect = this.loadDataEffect();
+    public getData(): Promise<WorkorderData> {
+        if (!this._dataPromise) {
+            this._dataPromise = this.loadData();
         }
-        return this._dataEffect;
+        return this._dataPromise;
     }
 
-    public initialize(): Effect.Effect<void, Error> {
-        return this.getDataEffect().pipe(
-            Effect.map((data) => {
-                this.workorder = new Workorder(data);
+    public async initialize(): Promise<void> {
+        try {
+            const data = await this.getData();
 
-                this.setUpSections();
-                this.setupCheckboxes();
-                this.handleBrokenImages();
-                this.registerAllExpandableArticles();
-                this.registerAllTableCheckboxes();
-                this.initSwapy();
+            this.workorder = new Workorder(data);
 
-                invertImages();
+            this.setUpSections();
+            this.setupCheckboxes();
+            this.handleBrokenImages();
+            this.registerAllExpandableArticles();
+            this.registerAllTableCheckboxes();
+            this.initSwapy();
 
-                this.toggleLoadingIndicator(false);
-            }),
-        );
+            invertImages();
+        } finally {
+            this.toggleLoadingIndicator(false);
+        }
+    }
+
+    private async loadData(): Promise<Workorder> {
+        const response = await fetch(`/workorders/get/${this.workorderID}`);
+
+        if (!response.ok) {
+            throw new Error(
+                `Failed to fetch workorder data: ${await response.text()}`
+            );
+        }
+
+        return response.json();
     }
 
     updateSwapy(): void {
@@ -243,17 +254,6 @@ class WorkorderPrintout {
         });
     }
 
-    private loadDataEffect(): Effect.Effect<WorkorderData, Error> {
-        return Effect.promise(async () => {
-            const response = await fetch(`/workorders/get/${this.workorderID}`);
-            if (!response.ok) {
-                const msg = await response.text();
-                throw new Error(`Failed to fetch workorder data: ${msg}`);
-            }
-            return response.json();
-        });
-    }
-
     private initSwapy(): void {
         this.swapy = createSwapy(this.container, {
             animation: 'spring',
@@ -270,7 +270,7 @@ class WorkorderPrintout {
 
     private async setUpSections(): Promise<void> {
         const sections: Record<string, BaseComponent> = {
-            qrCode: new QRCodeComponent(window.location.origin + `/api/workorder/mark_complete/${this.workorderID}`, 'Scan to Complete Workorder'),
+            qrCode: new QRCodeComponent(window.location.origin + `/workorder/update?id=${this.workorderID}`, 'Scan to Complete Workorder'),
             pageBreak3: new PageBreak(this.workorderID, 23),
             nestSummary: new NestedSheetsSummary(this.workorderID, this.workorder.nests),
             pageBreak4: new PageBreak(this.workorderID, 24),
@@ -430,18 +430,19 @@ function getWorkorderIDFromUrl(): number {
 
 document.addEventListener("DOMContentLoaded", () => {
     loadTheme();
-    ui("theme", "#9ecaff");
     loadAnimationStyleSheet();
 
     const workorderId = getWorkorderIDFromUrl();
     const workorderPrintout = new WorkorderPrintout(workorderId);
 
-    Effect.runPromise(workorderPrintout.initialize()).catch((err) => {
-        console.error("Failed to load workorder data:", err);
-        ui("#workorder-error", -1)
-    }).finally(() => {
-        ui("#workorder-loaded", 1000)
-    });
+    workorderPrintout.initialize()
+        .catch(err => {
+            console.error("Failed to load workorder data:", err);
+            ui("#workorder-error", -1);
+        })
+        .finally(() => {
+            ui("#workorder-loaded", 1000);
+        });
 
     // const addRowButton = document.getElementById('add-row-button') as HTMLButtonElement;
     // const addPageBreakButton = document.getElementById('add-page-break-button') as HTMLButtonElement;

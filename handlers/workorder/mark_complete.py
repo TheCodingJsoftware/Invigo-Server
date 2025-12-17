@@ -22,3 +22,21 @@ class WorkorderMarkComplete(BaseHandler):
         except Exception as e:
             params = urlencode({"title": "Error", "message": f"Failed to mark workorder {workorder_id} as complete: {str(e)}", "type": "error"})
             self.redirect(f"/message?{params}")
+
+    async def post(self, workorder_id: str):
+        workorder_id = int(workorder_id)
+
+        workorder = await self.workorders_db.get_workorder_by_id(workorder_id)
+        if not workorder:
+            self.set_status(404)
+            self.write({"error": "Workorder not found"})
+            return
+
+        parts = self.workorders_db._extract_parts_with_quantity(workorder)
+
+        await self.workspace_db.mark_workorder_parts_complete(
+            parts=parts,
+            changed_by=self.current_user,
+        )
+
+        self.write({"ok": True, "workorder_id": workorder_id})

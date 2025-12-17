@@ -1,4 +1,4 @@
-import {DialogComponent} from "@components/common/dialog/dialog-component";
+import { DialogComponent } from "@components/common/dialog/dialog-component";
 
 export class AreYouSureDialog extends DialogComponent {
     constructor(title: string = "Are you sure?", bodyContent: string) {
@@ -10,15 +10,11 @@ export class AreYouSureDialog extends DialogComponent {
             bodyContent: `<div>${bodyContent}</div>`,
             footerContent: `
                 <nav class="row top-margin right-align">
-                    <button class="transparent link" id="yes">
+                    <button id="confirm" autofocus>
                         <i>check</i>
-                        <span>Yes</span>
+                        <span>Confirm</span>
                     </button>
-                    <button class="transparent link border" id="no">
-                        <i>cancel</i>
-                        <span>No</span>
-                    </button>
-                    <button id="cancel">
+                    <button id="cancel" class="transparent link">
                         <i>cancel</i>
                         <span>Cancel</span>
                     </button>
@@ -27,25 +23,23 @@ export class AreYouSureDialog extends DialogComponent {
     }
 
     show(): Promise<boolean> {
-        return new Promise((resolve) => {
-            const yesButton = this.element.querySelector("#yes") as HTMLButtonElement;
-            const noButton = this.element.querySelector("#no") as HTMLButtonElement;
-            const cancelButton = this.element.querySelector("#cancel") as HTMLButtonElement;
+        return new Promise(resolve => {
+            const confirm = this.element.querySelector("#confirm")!;
+            const cancel = this.element.querySelector("#cancel")!;
 
-            const cleanUp = () => {
-                yesButton.removeEventListener("click", onYes);
-                noButton.removeEventListener("click", onNo);
-                cancelButton.removeEventListener("click", onCancel);
-                this.close(); // assuming DialogComponent has a close() method
+            const close = (value: boolean) => {
+                this.close();
+                resolve(value);
             };
 
-            const onYes = () => { cleanUp(); resolve(true); };
-            const onNo = () => { cleanUp(); resolve(false); };
-            const onCancel = () => { cleanUp(); resolve(false); };
+            confirm.addEventListener("click", () => close(true));
+            cancel.addEventListener("click", () => close(false));
 
-            yesButton.addEventListener("click", onYes);
-            noButton.addEventListener("click", onNo);
-            cancelButton.addEventListener("click", onCancel);
+            this.element.addEventListener("keydown", e => {
+                if (e.key === "Escape") close(false);
+                if (e.key === "Enter") close(true);
+            });
         });
     }
+
 }

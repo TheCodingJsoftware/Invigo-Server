@@ -184,6 +184,7 @@ page_routes = [
     route(r"/jobs/view", PageHandler, template_name="job_printout.html"),
     route(r"/workorders", WorkordersPageHandler),
     route(r"/workorders/view", PageHandler, template_name="workorder_printout.html"),
+    route(r"/workorders/update", PageHandler, template_name="workorder_update.html"),
     route(r"/purchase_orders", PurchaseOrdersPageHandler),
     route(
         r"/purchase_orders/view",

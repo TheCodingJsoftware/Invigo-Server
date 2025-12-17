@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+
+    <head>
+        <meta charset="UTF-8">
+        <meta content="width=device-width, initial-scale=1" name="viewport">
+        <meta content="ie=edge" http-equiv="X-UA-Compatible">
+        <meta content="notranslate" name="google">
+        <link href="/static/icon.png" rel="icon">
+        <meta content="width=device-width,initial-scale=1,user-scalable=yes" name="viewport" />
+        <title>Workorder {{workorder_id}}</title>
+    </head>
+
+    <header class="fixed primary">
+        <nav class="row">
+            <button class="circle transparent" onclick="window.location.href='/workorders'">
+                <i>arrow_back</i>
+            </button>
+            <h5 id="workorder-header" class="max">
+                Workorder
+            </h5>
+        </nav>
+    </header>
+
+    <body class="dark">
+        <main class="responsive">
+            <div class="small-width small-height absolute center middle" id="loading-indicator">
+                <div class="shape loading-indicator max rotate"></div>
+            </div>
+            <div id="workorder-container" class="grid"></div>
+        </main>
+        <button class="fixed bottom right extra margin medium-elevate" id="done-all-button">
+            <i>done_all</i>
+            <span>Done All</span>
+        </button>
+    </body>
+
+</html>
