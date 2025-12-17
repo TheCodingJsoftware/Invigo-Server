@@ -18,7 +18,6 @@ import { BaseComponent } from "@interfaces/base-component";
 import { JobData } from "@interfaces/job";
 import { Job } from "@models/job";
 import { invertImages, loadAnimationStyleSheet, loadTheme, toggleTheme } from "@utils/theme"
-import { Effect } from "effect"
 import { createSwapy } from 'swapy'
 import flatpickr from "flatpickr";
 import { Instance as FlatpickrInstance } from "flatpickr/dist/types/instance";
@@ -30,7 +29,7 @@ class JobPrintout {
     jobID: number;
     public job!: Job;
     public container: HTMLDivElement;
-    private _dataEffect: Effect.Effect<any, Error> | null = null;
+    private _dataPromise: Promise<JobData> | null = null;
     private swapy: ReturnType<typeof createSwapy> | null = null;
 
     constructor(jobID: number) {
@@ -38,55 +37,62 @@ class JobPrintout {
         this.container = document.getElementById('job-container') as HTMLDivElement;
     }
 
-    public getDataEffect(): Effect.Effect<any, Error> {
-        if (!this._dataEffect) {
-            this._dataEffect = this.loadDataEffect();
+    public async initialize(): Promise<void> {
+        const data = await this.getData();
+
+        this.job = new Job(data);
+
+        this.loadJobTypeFromStorage();
+        this.setUpTabs();
+        await this.setUpSections();
+        this.setupCheckboxes();
+        this.handleBrokenImages();
+        this.registerAllExpandableArticles();
+        this.registerAllTableCheckboxes();
+        this.updateDivsVisibilityByJobType();
+        this.initSwapy();
+
+        const dateShipped_fp = flatpickr("#date-shipped", {
+            enableTime: true,
+            altFormat: "F j, Y",
+            dateFormat: "Y-m-d h:i K"
+        }) as FlatpickrInstance;
+
+        const dateExpected_fp = flatpickr("#date-expected", {
+            enableTime: true,
+            altFormat: "F j, Y",
+            dateFormat: "Y-m-d h:i K"
+        }) as FlatpickrInstance;
+
+        dateShipped_fp.setDate(this.job.job_data.ship_to);
+        dateExpected_fp.setDate(this.job.job_data.ending_date);
+
+        invertImages();
+
+        document.title = this.job.job_data.name;
+        document.getElementById("job-title")!.textContent = this.job.job_data.name;
+        document.getElementById("job-print-title")!.textContent = this.job.job_data.name;
+
+        this.changeCheckboxes(this.getJobType());
+        this.toggleLoadingIndicator(false);
+    }
+
+    private getData(): Promise<JobData> {
+        if (!this._dataPromise) {
+            this._dataPromise = this.loadData();
         }
-        return this._dataEffect;
+        return this._dataPromise;
     }
 
-    public initialize(): Effect.Effect<void, Error> {
-        return this.getDataEffect().pipe(
-            Effect.map((data) => {
-                this.job = new Job(data);
-
-                this.loadJobTypeFromStorage();
-                this.setUpTabs();
-                this.setUpSections();
-                this.setupCheckboxes();
-                this.handleBrokenImages();
-                this.registerAllExpandableArticles();
-                this.registerAllTableCheckboxes();
-                this.updateDivsVisibilityByJobType();
-                this.initSwapy();
-
-                const dateShipped_fp = flatpickr("#date-shipped", {
-                    enableTime: true,
-                    altFormat: "F j, Y",
-                    dateFormat: "Y-m-d h:i K"
-                }) as FlatpickrInstance;
-                const dateExpected_fp = flatpickr("#date-expected", {
-                    enableTime: true,
-                    altFormat: "F j, Y",
-                    dateFormat: "Y-m-d h:i K"
-                }) as FlatpickrInstance;
-
-                dateShipped_fp.setDate(this.job.job_data.ship_to);
-                dateExpected_fp.setDate(this.job.job_data.ending_date);
-
-                invertImages();
-
-                document.title = this.job.job_data.name;
-                document.getElementById("job-title")!.textContent = this.job.job_data.name;
-                document.getElementById("job-print-title")!.textContent = this.job.job_data.name;
-
-                this.changeCheckboxes(this.getJobType());
-
-                this.toggleLoadingIndicator(false);
-            }),
-        );
+    private async loadData(): Promise<JobData> {
+        const response = await fetch(`/jobs/get_job/${this.jobID}`);
+        if (!response.ok) {
+            throw new Error(
+                `Failed to fetch job data: ${await response.text()}`
+            );
+        }
+        return response.json();
     }
-
     updateSwapy(): void {
         if (!this.swapy) {
             return;
@@ -287,17 +293,6 @@ class JobPrintout {
             } else {
                 button.classList.remove('active');
             }
-        });
-    }
-
-    private loadDataEffect(): Effect.Effect<JobData, Error> {
-        return Effect.promise(async () => {
-            const response = await fetch(`/jobs/get_job/${this.jobID}`);
-            if (!response.ok) {
-                const msg = await response.text();
-                throw new Error(`Failed to fetch job data: ${msg}`);
-            }
-            return response.json();
         });
     }
 
@@ -745,11 +740,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // const swapyGrid = new SwapyGrid(jobPrintout.container.querySelector('.grid') as HTMLDivElement);
 
-    Effect.runPromise(jobPrintout.initialize()).catch((err) => {
+    jobPrintout.initialize().catch(err => {
         console.error("Failed to load job data:", err);
-        ui("#job-error", -1)
+        ui("#job-error", -1);
     }).finally(() => {
-        ui("#job-loaded", 1000)
+        ui("#job-loaded", 1000);
     });
 
     // const addRowButton = document.getElementById('add-row-button') as HTMLButtonElement;

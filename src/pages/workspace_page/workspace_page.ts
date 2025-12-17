@@ -1,23 +1,23 @@
 import "beercss";
-import {FilterMenuButton} from "@components/common/buttons/filter-menu-button";
-import {SortMenuButton} from "@components/common/buttons/sort-menu-button";
-import {DialogComponent} from "@components/common/dialog/dialog-component";
-import {SearchInput} from "@components/common/input/search-input";
-import {PartContainer} from "@components/workspace/parts/part-container";
-import {ViewSwitcherPanel} from "@components/workspace/views/switchers/view-switcher-panel";
-import {ViewBus, ViewChangePayload} from "@components/workspace/views/view-bus";
-import {DataTypeSwitcherMode} from "@config/data-type-mode";
-import {UserContext} from '@core/auth/user-context';
-import {SessionSettingsManager} from "@core/settings/session-settings";
-import {ViewSettingsManager} from "@core/settings/view-settings";
-import {WorkspaceSettings} from "@core/settings/workspace-settings";
-import {WorkspaceWebSocket} from "@core/websocket/workspace-websocket";
-import {BooleanSettingKey, WorkspaceFilter} from "@models/workspace-filter";
-import {loadAnimationStyleSheet} from "@utils/theme"
-import {DateRangeButton} from "@components/common/buttons/date-range-button";
-import {SheetSettingsModel} from "@core/settings/sheet-settings-model";
-import {ToggleButton} from "@components/common/buttons/toggle-button";
-import {AppearanceDialog} from "@components/common/dialog/appearance-dialog";
+import { FilterMenuButton } from "@components/common/buttons/filter-menu-button";
+import { SortMenuButton } from "@components/common/buttons/sort-menu-button";
+import { DialogComponent } from "@components/common/dialog/dialog-component";
+import { SearchInput } from "@components/common/input/search-input";
+import { PartContainer } from "@components/workspace/parts/part-container";
+import { ViewSwitcherPanel } from "@components/workspace/views/switchers/view-switcher-panel";
+import { ViewBus, ViewChangePayload } from "@components/workspace/views/view-bus";
+import { DataTypeSwitcherMode } from "@config/data-type-mode";
+import { UserContext } from '@core/auth/user-context';
+import { SessionSettingsManager } from "@core/settings/session-settings";
+import { ViewSettingsManager } from "@core/settings/view-settings";
+import { WorkspaceSettings } from "@core/settings/workspace-settings";
+import { WorkspaceWebSocket } from "@core/websocket/workspace-websocket";
+import { BooleanSettingKey, WorkspaceFilter } from "@models/workspace-filter";
+import { loadAnimationStyleSheet } from "@utils/theme"
+import { DateRangeButton } from "@components/common/buttons/date-range-button";
+import { SheetSettingsModel } from "@core/settings/sheet-settings-model";
+import { ToggleButton } from "@components/common/buttons/toggle-button";
+import { AppearanceDialog } from "@components/common/dialog/appearance-dialog";
 
 let pageLoaded = false;
 
@@ -55,7 +55,7 @@ class PageHost {
                 this.renderJobPage();
                 break;
         }
-        ViewSettingsManager.set({lastActiveDataType: view.dataType});
+        ViewSettingsManager.set({ lastActiveDataType: view.dataType });
         SessionSettingsManager.set({
             lastActiveDataType: view.dataType,
         });
@@ -152,12 +152,12 @@ class WorkspacePage {
         themeButton.onclick = () => this.appearanceDialog();
 
         const filterButton = new FilterMenuButton();
-        filterButton.onToggle.connect(({key, value}) => {
+        filterButton.onToggle.connect(({ key, value }) => {
             this.resyncState();
         })
 
         const sortButton = new SortMenuButton();
-        sortButton.onToggle.connect(({key, value}) => {
+        sortButton.onToggle.connect(({ key, value }) => {
             this.resyncState();
         });
 
@@ -275,10 +275,10 @@ class WorkspacePage {
 
     showProfile() {
         new DialogComponent({
-                id: "profile-dialog",
-                title: this.#user.name,
-                position: "left",
-                bodyContent: `
+            id: "profile-dialog",
+            title: this.#user.name,
+            position: "left",
+            bodyContent: `
                     <fieldset class="wrap small-round surface-container">
                         <legend>Roles</legend>
                         <nav class = "row no-space wrap">
@@ -303,7 +303,7 @@ class WorkspacePage {
                                 `).join("")}
                             </ul>
                     </fieldset>`,
-            }
+        }
         );
     }
 }

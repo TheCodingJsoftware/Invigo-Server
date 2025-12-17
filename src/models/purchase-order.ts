@@ -1,7 +1,36 @@
-import {MetaData, POItemDict, PurchaseOrderData} from "@interfaces/purchase-order";
-import {Component} from "@models/component";
-import {Sheet} from "@models/sheet";
-import {Effect} from "effect"
+import { MetaData, POItemDict, PurchaseOrderData } from "@interfaces/purchase-order";
+import { Component } from "@models/component";
+import { Sheet } from "@models/sheet";
+
+async function fetchWithRetry<T>(
+    url: string,
+    {
+        retries = 3,
+        timeoutMs = 10_000,
+    }: { retries?: number; timeoutMs?: number } = {}
+): Promise<T> {
+    for (let attempt = 0; attempt <= retries; attempt++) {
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), timeoutMs);
+
+        try {
+            const response = await fetch(url, { signal: controller.signal });
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${await response.text()}`);
+            }
+            return await response.json();
+        } catch (err) {
+            if (attempt === retries) {
+                throw err;
+            }
+        } finally {
+            clearTimeout(timeout);
+        }
+    }
+
+    // Unreachable, but TS needs it
+    throw new Error("fetchWithRetry failed unexpectedly");
+}
 
 export class PurchaseOrder {
     id: number = -1;
@@ -20,79 +49,70 @@ export class PurchaseOrder {
     async loadAll(data: any): Promise<void> {
         this.loadData(data);
 
-        const componentsPromise = this.loadComponents();
-        const sheetsPromise = this.loadSheets();
-
-        await Promise.all([componentsPromise, sheetsPromise]);
+        await Promise.all([
+            this.loadComponents(),
+            this.loadSheets(),
+        ]);
     }
 
     loadData(data: any): void {
         const purchaseOrderData = data.purchase_order_data as PurchaseOrderData;
+
         this.id = purchaseOrderData.id ?? -1;
         this.meta_data.loadData(purchaseOrderData.meta_data);
 
-        this.components_order_data = [];
-        for (const compData of purchaseOrderData.components ?? []) {
-            this.components_order_data.push(compData);
-        }
-
-        this.sheets_order_data = [];
-        for (const sheetData of purchaseOrderData.sheets ?? []) {
-            this.sheets_order_data.push(sheetData);
-        }
+        this.components_order_data = [...(purchaseOrderData.components ?? [])];
+        this.sheets_order_data = [...(purchaseOrderData.sheets ?? [])];
     }
 
     async loadComponents(): Promise<void> {
-        const effects = this.components_order_data.map(item => {
-            const url = `/components_inventory/get_component/${item.id}`;
-            return Effect.tryPromise(() =>
-                fetch(url).then(res => res.json()).then(data => new Component(data))
-            ).pipe(
-                Effect.retry({times: 3}),
-                Effect.timeout("10 seconds")
-            );
-        });
-
-        const all = Effect.all(effects);
-
         try {
-            this.components = await Effect.runPromise(all);
+            this.components = await Promise.all(
+                this.components_order_data.map(async item => {
+                    const url = `/components_inventory/get_component/${item.id}`;
+                    const data = await fetchWithRetry<any>(url);
+                    return new Component(data);
+                })
+            );
         } catch (error) {
             console.error("Failed to load components:", error);
+            throw error;
         }
     }
 
     async loadSheets(): Promise<void> {
-        const effects = this.sheets_order_data.map(item => {
-            const url = `/sheets_inventory/get_sheet/${item.id}`;
-            return Effect.tryPromise(() =>
-                fetch(url).then(res => res.json()).then(data => new Sheet(data))
-            ).pipe(
-                Effect.retry({times: 3}),
-                Effect.timeout("10 seconds")
-            );
-        });
-
-        const all = Effect.all(effects);
-
         try {
-            this.sheets = await Effect.runPromise(all);
+            this.sheets = await Promise.all(
+                this.sheets_order_data.map(async item => {
+                    const url = `/sheets_inventory/get_sheet/${item.id}`;
+                    const data = await fetchWithRetry<any>(url);
+                    return new Sheet(data);
+                })
+            );
         } catch (error) {
             console.error("Failed to load sheets:", error);
+            throw error;
         }
     }
 
     getComponentsCost(): number {
         return this.components.reduce((total, component) => {
-            const order_quantity = this.getComponentQuantityToOrder(component);
-            return total + (component.price * order_quantity);
+            const qty = this.getComponentQuantityToOrder(component);
+            return total + component.price * qty;
         }, 0);
     }
 
     getSheetsCost(): number {
         return this.sheets.reduce((total, sheet) => {
-            const order_quantity = this.getSheetQuantityToOrder(sheet);
-            return total + (sheet.price_per_pound * order_quantity * ((sheet.length * sheet.width) / 144) * sheet.pounds_per_square_foot);
+            const qty = this.getSheetQuantityToOrder(sheet);
+            const areaFt2 = (sheet.length * sheet.width) / 144;
+            return (
+                total +
+                sheet.price_per_pound *
+                qty *
+                areaFt2 *
+                sheet.pounds_per_square_foot
+            );
         }, 0);
     }
 
@@ -105,7 +125,10 @@ export class PurchaseOrder {
         if (item) {
             item.order_quantity = quantity;
         } else {
-            this.components_order_data.push({id: component.id, order_quantity: quantity});
+            this.components_order_data.push({
+                id: component.id,
+                order_quantity: quantity,
+            });
         }
     }
 
@@ -114,16 +137,25 @@ export class PurchaseOrder {
         if (item) {
             item.order_quantity = quantity;
         } else {
-            this.sheets_order_data.push({id: sheet.id, order_quantity: quantity});
+            this.sheets_order_data.push({
+                id: sheet.id,
+                order_quantity: quantity,
+            });
         }
     }
 
     getComponentQuantityToOrder(component: Component): number {
-        return this.components_order_data.find(i => i.id === component.id)?.order_quantity ?? 0;
+        return (
+            this.components_order_data.find(i => i.id === component.id)
+                ?.order_quantity ?? 0
+        );
     }
 
     getSheetQuantityToOrder(sheet: Sheet): number {
-        return this.sheets_order_data.find(i => i.id === sheet.id)?.order_quantity ?? 0;
+        return (
+            this.sheets_order_data.find(i => i.id === sheet.id)
+                ?.order_quantity ?? 0
+        );
     }
 
     toDict(): PurchaseOrderData {

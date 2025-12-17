@@ -2,7 +2,6 @@ import "beercss"
 import "@static/css/printout.css"
 import "material-dynamic-colors";
 import { invertImages, loadAnimationStyleSheet, loadTheme, toggleTheme } from "@utils/theme"
-import { Effect } from "effect"
 import { PurchaseOrder } from "@models/purchase-order";
 import { POItemDict, PurchaseOrderData, PurchaseOrderStatus } from "@interfaces/purchase-order";
 import { BaseComponent } from "@interfaces/base-component";
@@ -214,7 +213,7 @@ class PurchaseOrderPrintout {
     purchaseOrderId: number;
     public purchaseOrder!: PurchaseOrder;
     public container: HTMLDivElement;
-    private _dataEffect: Effect.Effect<any, Error> | null = null;
+    private _dataPromise: Promise<PurchaseOrderData> | null = null;
     private swapy: ReturnType<typeof createSwapy> | null = null;
     private totalCostComponent!: PurchaseOrderTotalCost;
 
@@ -223,51 +222,72 @@ class PurchaseOrderPrintout {
         this.container = document.getElementById('purchase-order-container') as HTMLDivElement;
     }
 
-    public getDataEffect(): Effect.Effect<any, Error> {
-        if (!this._dataEffect) {
-            this._dataEffect = this.loadDataEffect();
+    public async initialize(): Promise<void> {
+        const data = await this.getData();
+
+        this.purchaseOrder = new PurchaseOrder();
+        await this.purchaseOrder.loadAll(data);
+
+        await this.setUpSections();
+        this.setUpTabs();
+        this.setActiveTab();
+        this.purchaseOrderTypeChanged();
+        this.registerAllExpandableArticles();
+        this.initSwapy();
+
+        invertImages();
+
+        document.title = this.purchaseOrder.getName();
+        document.getElementById("purchase-order-title")!.textContent =
+            this.purchaseOrder.getName();
+
+        document.getElementById("business-name")!.textContent =
+            this.purchaseOrder.meta_data.business_info.name;
+
+        document.getElementById("business-address")!.innerHTML =
+            this.purchaseOrder.meta_data.business_info.address.replace(/\n/g, "<br>");
+
+        document.getElementById("purchase-order-number")!.textContent =
+            this.purchaseOrder.meta_data.purchase_order_number.toString();
+
+        document.getElementById("purchase-order-date")!.textContent =
+            new Date().toLocaleDateString("en-US", {
+                year: "numeric",
+                month: "long",
+                day: "numeric",
+            });
+
+        const partNumberToggler = new ColumnToggler({
+            columnName: "partNumber",
+            defaultVisible: true,
+            storageKey: "show-partNumber",
+        });
+        partNumberToggler.initialize();
+
+        this.totalCostComponent.updateTotalPrice();
+        this.toggleLoadingIndicator(false);
+    }
+
+    private getData(): Promise<PurchaseOrderData> {
+        if (!this._dataPromise) {
+            this._dataPromise = this.loadData();
         }
-        return this._dataEffect;
+        return this._dataPromise;
     }
 
-    public initialize(): Effect.Effect<void, Error> {
-        return this.getDataEffect().pipe(
-            Effect.map(async (data) => {
-                this.purchaseOrder = new PurchaseOrder();
-                await this.purchaseOrder.loadAll(data);
-                await this.setUpSections();
-                this.setUpTabs();
-                this.setActiveTab();
-                this.purchaseOrderTypeChanged();
-                this.registerAllExpandableArticles();
-                this.initSwapy();
-
-                invertImages();
-
-                document.title = this.purchaseOrder.getName();
-                document.getElementById("purchase-order-title")!.textContent = this.purchaseOrder.getName();
-                document.getElementById("business-name")!.textContent = this.purchaseOrder.meta_data.business_info.name;
-                document.getElementById("business-address")!.innerHTML = this.purchaseOrder.meta_data.business_info.address.replace(/\n/g, "<br>");
-                document.getElementById("purchase-order-number")!.textContent = this.purchaseOrder.meta_data.purchase_order_number.toString();
-                document.getElementById("purchase-order-date")!.textContent = new Date(Date.now()).toLocaleDateString("en-US", {
-                    year: "numeric",
-                    month: "long",
-                    day: "numeric"
-                });
-
-                const priceToggler = new ColumnToggler({
-                    columnName: "partNumber",
-                    defaultVisible: true,
-                    storageKey: "show-partNumber" // optional custom storage key
-                });
-                priceToggler.initialize();
-
-                this.totalCostComponent.updateTotalPrice();
-                this.toggleLoadingIndicator(false);
-            }),
+    private async loadData(): Promise<PurchaseOrderData> {
+        const response = await fetch(
+            `/purchase_orders/get_purchase_order/${this.purchaseOrderId}`
         );
-    }
 
+        if (!response.ok) {
+            throw new Error(
+                `Failed to fetch purchase order data: ${await response.text()}`
+            );
+        }
+
+        return response.json();
+    }
     updateSwapy(): void {
         if (!this.swapy) {
             return;
@@ -527,17 +547,6 @@ class PurchaseOrderPrintout {
         });
     }
 
-    private loadDataEffect(): Effect.Effect<PurchaseOrderData, Error> {
-        return Effect.promise(async () => {
-            const response = await fetch(`/purchase_orders/get_purchase_order/${this.purchaseOrderId}`);
-            if (!response.ok) {
-                const msg = await response.text();
-                throw new Error(`Failed to fetch purchaseOrder data: ${msg}`);
-            }
-            return response.json();
-        });
-    }
-
     private initSwapy(): void {
         this.swapy = createSwapy(this.container, {
             animation: 'spring',
@@ -666,12 +675,13 @@ document.addEventListener("DOMContentLoaded", () => {
     const purchaseOrderId = getPurchaseOrderIdFromUrl();
     const purchaseOrderPrintout = new PurchaseOrderPrintout(purchaseOrderId);
 
-    Effect.runPromise(purchaseOrderPrintout.initialize()).catch((err) => {
+    purchaseOrderPrintout.initialize().catch(err => {
         console.error("Failed to load purchase order data:", err);
-        ui("#purchase-order-error", -1)
+        ui("#purchase-order-error", -1);
     }).finally(() => {
-        ui("#purchase-order-loaded", 1000)
+        ui("#purchase-order-loaded", 1000);
     });
+
 
     const toggleThemeButton = document.getElementById('theme-toggle') as HTMLButtonElement;
     const toggleThemeIcon = toggleThemeButton.querySelector('i') as HTMLElement;
