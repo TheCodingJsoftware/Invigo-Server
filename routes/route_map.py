@@ -25,6 +25,7 @@ from handlers.components_inventory.update_component import UpdateComponentHandle
 from handlers.components_inventory.update_components import UpdateComponentsHandler
 from handlers.emails.send_email import SendEmailHandler
 from handlers.emails.send_error_report import SendErrorReportHandler
+from handlers.health import HealthHandler
 from handlers.history.get_component_orders_history import (
     GetComponentOrdersHistoryHandler,
 )
@@ -79,6 +80,7 @@ from handlers.misc.qr_code_page import QRCodePageHandler
 from handlers.order_number.get_order_number import GetOrderNumberHandler
 from handlers.order_number.set_order_number import SetOrderNumberHandler
 from handlers.page import PageHandler
+from handlers.ping import PingHandler
 from handlers.production_planner.file_uploader import ProductionPlannerFileUploadHandler
 from handlers.production_planner.job_timeline_handler import JobTimelineHandler
 from handlers.purchase_orders.delete_purchase_order import DeletePurchaseOrderHandler
@@ -146,6 +148,8 @@ from routes.route import route
 
 page_routes = [
     route(r"/", PageHandler, name="index", template_name="index.html"),
+    route(r"/ping", PingHandler),
+    route(r"/health", HealthHandler),
     route(r"/way_back_machine", WayBackMachineHandler),
     route(
         r"/workspace_dashboard",
