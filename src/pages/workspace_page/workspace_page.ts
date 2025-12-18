@@ -107,7 +107,6 @@ class WorkspacePage {
         this.loadTopNav();
         this.loadRightNav();
         this.loadLeftNav();
-        this.registerSocketHandlers();
         pageLoaded = true;
         ViewBus.update({
             dataType: SessionSettingsManager.get().lastActiveDataType,
@@ -115,16 +114,9 @@ class WorkspacePage {
     }
 
     resyncState() {
-        // this.mainElement.innerHTML = "";
         ViewBus.update({
             dataType: SessionSettingsManager.get().lastActiveDataType,
         });
-    }
-
-    registerSocketHandlers() {
-        // WorkspaceWebSocket.on("job_created", ({ job }) => this.addJob(job));
-        // WorkspaceWebSocket.on("job_updated", ({ job }) => this.updateJob(job));
-        // WorkspaceWebSocket.on("job_deleted", ({ job_id }) => this.removeJob(job_id));
     }
 
     loadHeader() {

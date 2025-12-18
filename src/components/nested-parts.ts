@@ -93,7 +93,7 @@ export class NestedParts implements BaseComponent {
                         </button>
                     </nav>
                     <div class="content-wrapper" style="height: auto;">
-                        <img class="responsive round" src="http://invi.go/images/${nest.image_path}" class="responsive">
+                        <img class="responsive round" src="/images/${nest.image_path}" class="responsive">
                         <table class="border tiny-space">
                             <thead>
                                 <tr>
@@ -140,7 +140,7 @@ export class NestedParts implements BaseComponent {
             <tr>
                 <td class="min" data-column="nest-part-partName">
                     <div class="row">
-                        <img class="square extra small-round" src="http://invi.go/images/${laserCutPart.meta_data.image_index}">
+                        <img class="square extra small-round" src="/images/${laserCutPart.meta_data.image_index}">
                         <div class="vertical">
                             <span class="wrap no-line">${laserCutPart.name}</span>
                             <span><i>tag</i> ${partNumber}</span>

@@ -1,36 +1,36 @@
 <!DOCTYPE html>
 <html lang="en">
 
-<head>
-    <meta charset="UTF-8">
-    <meta content="width=device-width, initial-scale=1" name="viewport">
-    <meta content="ie=edge" http-equiv="X-UA-Compatible">
-    <meta content="notranslate" name="google">
-    <link href="/static/icon.png" rel="icon">
-    <meta content="width=device-width,initial-scale=1,user-scalable=yes" name="viewport"/>
-    <title>Manage Roles</title>
-</head>
+    <head>
+        <meta charset="UTF-8">
+        <meta content="width=device-width, initial-scale=1" name="viewport">
+        <meta content="ie=edge" http-equiv="X-UA-Compatible">
+        <meta content="notranslate" name="google">
+        <link href="/static/icon.png" rel="icon">
+        <meta content="width=device-width,initial-scale=1,user-scalable=yes" name="viewport" />
+        <title>Manage Roles</title>
+    </head>
 
-<body class="dark">
-<header class="fixed primary">
-    <nav>
-        <button class="circle transparent" onclick="window.location.href='/'">
-            <i>arrow_back</i>
+    <body class="dark">
+        <header class="fixed primary">
+            <nav>
+                <button class="circle transparent" onclick="window.location.href='/'">
+                    <i>arrow_back</i>
+                </button>
+                <h5 class="max">Manage Roles</h5>
+            </nav>
+        </header>
+        <main class="responsive">
+            {% if userCanEditRoles %}
+            <div class="margin" id="roles-list"></div>
+            {% else %}
+            <div class="snackbar top error active" id="not-allowed">You do not have permission to manage roles.</div>
+            {% endif %}
+        </main>
+        <button class="fixed bottom right margin medium-elevate" id="add-role">
+            <i>add</i>
+            <span>Add Role</span>
         </button>
-        <h5 class="max">Manage Roles</h5>
-    </nav>
-</header>
-<main class="responsive">
-    {% if userCanEditRoles %}
-    <div class="bottom-margin" id="roles-list"></div>
-    <button id="add-role">
-        <i>add</i>
-        <span>Add Role</span>
-    </button>
-    {% else %}
-    <div class="snackbar top error active" id="not-allowed">You do not have permission to manage roles.</div>
-    {% endif %}
-</main>
-</body>
+    </body>
 
 </html>

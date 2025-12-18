@@ -1,7 +1,7 @@
-import {DialogComponent} from "@components/common/dialog/dialog-component";
-import {PartData} from "@components/workspace/parts/part-container";
-import {PartDataService} from "@components/workspace/parts/part-data.service";
-import {SnackbarComponent} from "../snackbar/snackbar-component";
+import { DialogComponent } from "@components/common/dialog/dialog-component";
+import { PartData } from "@components/workspace/parts/part-container";
+import { PartDataService } from "@components/workspace/parts/part-data.service";
+import { SnackbarComponent } from "../snackbar/snackbar-component";
 
 export class RecutDialog extends DialogComponent {
     parts: PartData[];
@@ -16,13 +16,13 @@ export class RecutDialog extends DialogComponent {
             bodyContent: `
                 <div class="grid center-align">
                     <div class="s12 field label border round">
-                        <input type="number" id="recut-count" value="0">
+                        <input type="number" id="recut-count" value="1">
                         <label>Recut Count</label>
                     </div>
-                    <div class="s12 field textarea label border small-round extra">
+                    <div class="s12 field label border small-round">
                         <textarea id="recut-reason"></textarea>
                         <label>Description</label>
-                        <span class="helper">Give a detailed description as to why this needs to be recut.</span>
+                        <output>Give a detailed description as to why this needs to be recut.</output>
                     </div>
                 </div>
             `,
@@ -31,7 +31,7 @@ export class RecutDialog extends DialogComponent {
                     <span class="italic max">Recutting a part sends it back to ${parts[0].flowtag[0]}.</span>
                     <button type="button" id="send-recut" disabled>
                         <i>send</i>
-                        <span>Request Recut</span>
+                        <span>Recut</span>
                     </button>
                 </nav>`
         });

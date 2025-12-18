@@ -270,7 +270,7 @@ class WorkorderPrintout {
 
     private async setUpSections(): Promise<void> {
         const sections: Record<string, BaseComponent> = {
-            qrCode: new QRCodeComponent(window.location.origin + `/workorder/update?id=${this.workorderID}`, 'Scan to Complete Workorder'),
+            qrCode: new QRCodeComponent(window.location.origin + `/workorders/update?id=${this.workorderID}`, 'Scan to Complete Workorder'),
             pageBreak3: new PageBreak(this.workorderID, 23),
             nestSummary: new NestedSheetsSummary(this.workorderID, this.workorder.nests),
             pageBreak4: new PageBreak(this.workorderID, 24),
@@ -433,6 +433,10 @@ document.addEventListener("DOMContentLoaded", () => {
     loadAnimationStyleSheet();
 
     const workorderId = getWorkorderIDFromUrl();
+
+    document.title = `Workorder Printout #${workorderId}`;
+    document.querySelector("#workorder-header")!.textContent = `Workorder Printout #${workorderId}`;
+
     const workorderPrintout = new WorkorderPrintout(workorderId);
 
     workorderPrintout.initialize()

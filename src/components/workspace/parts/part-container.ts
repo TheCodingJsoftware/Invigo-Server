@@ -230,7 +230,9 @@ export class PartContainer {
 
         requestIdleCallback(() => {
             this.element.replaceChildren(fragment);
-            invertImages();
+            setTimeout(() => {
+                invertImages();
+            }, 100);
             console.log(JSON.stringify({
                 handler: "PartContainer.loadJobTables",
                 jobs: jobCount,

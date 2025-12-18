@@ -33,6 +33,12 @@ export class PartButton {
         this.image.src = `/images/${this.part.name}`
         this.image.alt = "Thumbnail";
 
+        if (ui("mode") === "light") {
+            this.image.style.filter = 'invert(0)';
+        } else {
+            this.image.style.filter = 'invert(0.9)';
+        }
+
         this.span = document.createElement("span");
         this.span.textContent = this.part.name;
 
@@ -43,12 +49,9 @@ export class PartButton {
         this.button.appendChild(this.image);
         this.button.appendChild(this.span);
         this.span.appendChild(this.helper);
-        // this.element.appendChild(this.tooltip);
     }
 
     buttonPressed() {
-        // const fileViewerDialog = new FileViewerDialog([this.part], this.filePath);
-
         new DialogComponent({
             title: this.part.name,
             bodyContent: `<img class="responsive small-round" src="${this.image.src}" alt="${this.image.alt}" />`,

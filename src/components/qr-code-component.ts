@@ -15,9 +15,12 @@ export class QRCodeComponent implements PanelComponent {
         const template = document.createElement("template");
         template.innerHTML = `
         <article class="round border no-padding page-break-inside">
-            <nav class="hide-on-print left-padding top-padding">
+            <nav class="hide-on-print left-padding top-padding right-padding">
                 <div class="handle" data-swapy-handle><i>drag_indicator</i></div>
                 <h4 class="max">QR Code</h4>
+                <a class="circle link transparent" href="${this.url}" target="_blank">
+                    <i>open_in_new</i>
+                </a>
             </nav>
             <div class="qr-code center-align middle-align"></div>
             ${this.description ? `<h6 class="center-align">${this.description}</h6>` : ''}

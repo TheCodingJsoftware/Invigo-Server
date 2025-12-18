@@ -276,7 +276,7 @@ export class FileViewerDialog extends DialogComponent {
         const notes = part.meta_data.notes?.trim();
 
         this.partInfoElement.innerHTML = `
-        <table class="tiny-gap">
+        <table>
             <tbody>
                 ${rows.join("")}
             </tbody>
@@ -353,7 +353,7 @@ export class FileViewerDialog extends DialogComponent {
             const container = document.createElement("div");
             container.className = "center-align middle";
             const img = document.createElement("img");
-            img.classList.add("responsive", "round");
+            img.classList.add("responsive");
             img.src = `/images/${name}`;
             img.style.maxWidth = "50%";
             img.style.maxHeight = "50%";

@@ -147,7 +147,7 @@ export class AssemblyLaserCutPartsTable {
             partsTable += `
             <tr>
                 <td data-column="assembly-laser-cut-part-partPicture">
-                    <img class="square extra small-round" src="http://invi.go/images/${laserCutPart.meta_data.image_index}">
+                    <img class="square extra small-round" src="/images/${laserCutPart.meta_data.image_index}">
                 </td>
                 <td data-column="assembly-laser-cut-part-partName">
                     <span class="wrap no-line">${laserCutPart.name}</span>
@@ -392,7 +392,7 @@ export class AssembliesPartsList implements BaseComponent {
         template.innerHTML = `
         <article class="round border page-break-inside">
             <nav class="row tiny-padding top-align">
-                <img src="http://invi.go/image/${this.assembly.meta_data.assembly_image}" class="round border" style="height: 150px; width: auto;">
+                <img src="/images/${this.assembly.meta_data.assembly_image}" class="round border" style="height: 150px; width: auto;">
                 <div class="max">
                     <h6>${this.assembly.name}</h6>
                     <div>Assembly quantity: ${this.assembly.meta_data.quantity}</div>

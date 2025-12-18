@@ -68,7 +68,7 @@ export class NestedSheets implements BaseComponent {
         return `
         <div class="s12">
             <article class="nest no-padding border round">
-                <img class="responsive small top-round nest-image" src="http://invi.go/image/${nest.image_path}" class="responsive">
+                <img class="responsive small top-round nest-image" src="/images/${nest.image_path}" class="responsive">
                 <div class="padding">
                     <nav class="row">
                         <h6 class="max">${nest.name}</h6>
@@ -99,7 +99,7 @@ export class NestedSheets implements BaseComponent {
                     </td>
                     <td class="max">
                         <nav class="row tiny-padding">
-                            <img src="http://invi.go/image/${nest.image_path}" class="round border nest-image-list">
+                            <img src="/images/${nest.image_path}" class="round border nest-image-list">
                             <div class="max">
                                 <h6>${nest.name}</h6>
                                 <div>${nest.sheet.name}</div>
@@ -199,7 +199,7 @@ export class NestedSheets implements BaseComponent {
         return `
         <div class="s6">
             <article class="nest no-padding border round">
-                <img class="responsive small top-round nest-image" src="http://invi.go/image/${nest.image_path}" class="responsive">
+                <img class="responsive small top-round nest-image" src="/images/${nest.image_path}" class="responsive">
                 <div class="padding">
                     <nav class="row">
                         <div class="max bold large-text">${nest.name}</div>

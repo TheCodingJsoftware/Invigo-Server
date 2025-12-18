@@ -1,7 +1,7 @@
-import {BaseComponent} from "@interfaces/base-component";
-import {ComponentGroup} from "@models/component-group";
-import {Job} from "@models/job";
-import {LaserCutPartGroup} from "@models/laser-cut-part-group";
+import { BaseComponent } from "@interfaces/base-component";
+import { ComponentGroup } from "@models/component-group";
+import { Job } from "@models/job";
+import { LaserCutPartGroup } from "@models/laser-cut-part-group";
 
 
 class GroupedLaserCutParts {
@@ -135,7 +135,7 @@ class GroupedLaserCutPartsTable {
             partsTable += `
             <tr>
                 <td data-column="assembly-laser-cut-part-partPicture">
-                    <img class="square extra small-round" src="http://invi.go/images/${laserCutPart.getImagePath()}">
+                    <img class="square extra small-round" src="/images/${laserCutPart.getImagePath()}">
                 </td>
                 <td data-column="assembly-laser-cut-part-partName">
                     <span>${laserCutPart.name}</span>
@@ -180,11 +180,11 @@ class GroupedLaserCutPartsTable {
     }
 
     private formatQuantity(quantity: number): string {
-        return quantity.toLocaleString("en-US", {minimumFractionDigits: 0, maximumFractionDigits: 0});
+        return quantity.toLocaleString("en-US", { minimumFractionDigits: 0, maximumFractionDigits: 0 });
     }
 
     private formatPrice(price: number): string {
-        return `$${price.toLocaleString("en-US", {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+        return `$${price.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
     }
 }
 
@@ -309,7 +309,7 @@ class GroupedComponentsTable {
             partsTable += `
             <tr>
                 <td data-column="assembly-component-partPicture">
-                    <img class="square extra small-round" src="http://invi.go/images/${component.getImagePath()}">
+                    <img class="square extra small-round" src="/images/${component.getImagePath()}">
                 </td>
                 <td data-column="assembly-component-partName">
                     <span>${component.name}</span>
@@ -350,11 +350,11 @@ class GroupedComponentsTable {
     }
 
     private formatQuantity(quantity: number): string {
-        return quantity.toLocaleString("en-US", {minimumFractionDigits: 0, maximumFractionDigits: 0});
+        return quantity.toLocaleString("en-US", { minimumFractionDigits: 0, maximumFractionDigits: 0 });
     }
 
     private formatPrice(price: number): string {
-        return `$${price.toLocaleString("en-US", {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+        return `$${price.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
     }
 }
 

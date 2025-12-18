@@ -172,7 +172,7 @@ export class NestedAssembliesPartsLayout implements BaseComponent {
         template.innerHTML = `
         <article class="round border">
             <nav class="row tiny-padding top-align">
-                <img src="http://invi.go/image/${this.assembly.meta_data.assembly_image}" class="round border" style="height: 150px; width: auto;">
+                <img src="/images/${this.assembly.meta_data.assembly_image}" class="round border" style="height: 150px; width: auto;">
                 <div class="max">
                     <h6>${this.assembly.name}</h6>
                     <div>Assembly quantity: ${this.assembly.meta_data.quantity}</div>

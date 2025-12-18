@@ -1,6 +1,6 @@
-import {BaseComponent} from "@interfaces/base-component";
-import {Assembly} from "@models/assembly";
-import {Job} from "@models/job";
+import { BaseComponent } from "@interfaces/base-component";
+import { Assembly } from "@models/assembly";
+import { Job } from "@models/job";
 
 export class AssembliesSummary implements BaseComponent {
     job: Job;
@@ -163,7 +163,7 @@ export class AssembliesSummary implements BaseComponent {
     }
 
     private formatPrice(price: number): string {
-        return `$${price.toLocaleString("en-US", {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+        return `$${price.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
     }
 
     public hide(): void {
@@ -231,7 +231,7 @@ export class AssembliesSummary implements BaseComponent {
                 <article class="assembly no-padding border round">
                     <img
                         class="responsive top-round assembly-image assembly-picture-div"
-                        src="http://invi.go/image/${assembly.meta_data.assembly_image}">
+                        src="/images/${assembly.meta_data.assembly_image}">
                     <div class="padding">
                         <nav class="row wrap">
                             <div class="bold large-text max">${assembly.name}</div>
@@ -252,7 +252,7 @@ export class AssembliesSummary implements BaseComponent {
                 <td class="assembly-picture-div min assembly-image-list tiny-padding">
                     <img
                         class="extra square small-round border"
-                        src="http://invi.go/image/${assembly.meta_data.assembly_image}">
+                        src="/images/${assembly.meta_data.assembly_image}">
                 </td>
                 <td>
                     <p class="no-margin">${assembly.name}</p>

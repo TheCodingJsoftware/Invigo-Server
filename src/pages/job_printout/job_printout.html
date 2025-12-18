@@ -1,308 +1,308 @@
 <!DOCTYPE html>
 <html lang="en">
 
-<head>
-    <meta charset="UTF-8">
-    <meta content="width=device-width, initial-scale=1" name="viewport">
-    <meta content="ie=edge" http-equiv="X-UA-Compatible">
-    <meta content="notranslate" name="google">
-    <link href="/static/icon.png" rel="icon">
-    <meta content="width=device-width,initial-scale=1,user-scalable=yes" name="viewport"/>
-    <title></title>
-</head>
+    <head>
+        <meta charset="UTF-8">
+        <meta content="width=device-width, initial-scale=1" name="viewport">
+        <meta content="ie=edge" http-equiv="X-UA-Compatible">
+        <meta content="notranslate" name="google">
+        <link href="/static/icon.png" rel="icon">
+        <meta content="width=device-width,initial-scale=1,user-scalable=yes" name="viewport" />
+        <title></title>
+    </head>
 
-<body class="dark">
-<header class="fixed transparent center-align hide-on-print">
-    <div class="margin">
-        <nav class="toolbar primary elevate min">
-            <button class="circle transparent" onclick="window.location.href='/jobs'">
-                <i>home</i>
+    <body class="dark">
+        <header class="fixed transparent center-align hide-on-print">
+            <div class="margin">
+                <nav class="toolbar primary elevate min">
+                    <button class="circle transparent" onclick="window.location.href='/jobs'">
+                        <i>home</i>
+                    </button>
+                    <h4 id="job-title">Job Printout</h4>
+                    <button class="circle transparent" id="download-pdf">
+                        <i>download</i>
+                    </button>
+                    <button class="circle transparent" id="print-button" onclick="window.print()">
+                        <i>print</i>
+                    </button>
+                    <button class="circle transparent" id="theme-toggle">
+                        <i>light_mode</i>
+                    </button>
+                </nav>
+            </div>
+        </header>
+        <span class="absolute top right tiny-padding" id="today-date" style="z-index: 999;"></span>
+        <nav class="left max hide-on-print">
+            <nav class="row">
+                <label class="switch icon">
+                    <input checked id="show-qrCode" type="checkbox">
+                    <span>
+                        <i>visibility_off</i>
+                        <i>visibility</i>
+                    </span>
+                </label>
+                <h6 class="max small">QR Code</h6>
+                <button class="chip link transparent view-button" id="view-qrCode">
+                    <span>Go</span>
+                </button>
+            </nav>
+            <nav class="row">
+                <label class="switch icon">
+                    <input checked id="show-jobDetails" type="checkbox">
+                    <span>
+                        <i>visibility_off</i>
+                        <i>visibility</i>
+                    </span>
+                </label>
+                <h6 class="max small">Job Details</h6>
+                <button class="chip link transparent view-button" id="view-jobDetails">
+                    <span>Go</span>
+                </button>
+            </nav>
+            <nav class="row">
+                <label class="switch icon">
+                    <input checked id="show-assembliesSummary" type="checkbox">
+                    <span>
+                        <i>visibility_off</i>
+                        <i>visibility</i>
+                    </span>
+                </label>
+                <h6 class="max small">Assemblies Summary</h6>
+                <button class="chip link transparent view-button" id="view-assembliesSummary">
+                    <span>Go</span>
+                </button>
+            </nav>
+            <nav class="row">
+                <label class="switch icon">
+                    <input checked id="show-nestSummary" type="checkbox">
+                    <span>
+                        <i>visibility_off</i>
+                        <i>visibility</i>
+                    </span>
+                </label>
+                <h6 class="max small">Sheets Summary</h6>
+                <button class="chip link transparent view-button" id="view-nestSummary">
+                    <span>Go</span>
+                </button>
+            </nav>
+            <nav class="row">
+                <label class="switch icon">
+                    <input checked id="show-nestedPartsSummary" type="checkbox">
+                    <span>
+                        <i>visibility_off</i>
+                        <i>visibility</i>
+                    </span>
+                </label>
+                <h6 class="max small">Nested Parts Summary</h6>
+                <button class="chip link transparent view-button" id="view-nestedPartsSummary">
+                    <span>Go</span>
+                </button>
+            </nav>
+            <nav class="row">
+                <label class="switch icon">
+                    <input checked id="show-nestedSheets" type="checkbox">
+                    <span>
+                        <i>visibility_off</i>
+                        <i>visibility</i>
+                    </span>
+                </label>
+                <h6 class="max small">Nested Sheets</h6>
+                <button class="chip link transparent view-button" id="view-nestedSheets">
+                    <span>Go</span>
+                </button>
+            </nav>
+            <nav class="row">
+                <label class="switch icon">
+                    <input checked id="show-nestedParts" type="checkbox">
+                    <span>
+                        <i>visibility_off</i>
+                        <i>visibility</i>
+                    </span>
+                </label>
+                <h6 class="max small">Nested Sheets Parts</h6>
+                <button class="chip link transparent view-button" id="view-nestedParts">
+                    <span>Go</span>
+                </button>
+            </nav>
+            <nav class="row">
+                <label class="switch icon">
+                    <input checked id="show-assembliesParts" type="checkbox">
+                    <span>
+                        <i>visibility_off</i>
+                        <i>visibility</i>
+                    </span>
+                </label>
+                <h6 class="max small">Assemblies Parts</h6>
+                <button class="chip link transparent view-button" id="view-assembliesParts">
+                    <span>Go</span>
+                </button>
+            </nav>
+            <nav class="row">
+                <label class="switch icon">
+                    <input checked id="show-totalCost" type="checkbox">
+                    <span>
+                        <i>visibility_off</i>
+                        <i>visibility</i>
+                    </span>
+                </label>
+                <h6 class="max small">Total Cost</h6>
+                <button class="chip link transparent view-button" id="view-totalCost">
+                    <span>Go</span>
+                </button>
+            </nav>
+            <nav class="row">
+                <label class="switch icon">
+                    <input checked id="show-netWeight" type="checkbox">
+                    <span>
+                        <i>visibility_off</i>
+                        <i>visibility</i>
+                    </span>
+                </label>
+                <h6 class="max small">Net Weight</h6>
+                <button class="chip link transparent view-button" id="view-netWeight">
+                    <span>Go</span>
+                </button>
+            </nav>
+            <nav class="row">
+                <label class="switch icon">
+                    <input checked id="show-gridLines" type="checkbox">
+                    <span>
+                        <i>visibility_off</i>
+                        <i>visibility</i>
+                    </span>
+                </label>
+                <h6 class="max small">Grid Lines</h6>
+            </nav>
+            <nav class="row">
+                <label class="switch icon">
+                    <input checked id="enable-pageBreaks" type="checkbox">
+                    <span>
+                        <i>close</i>
+                        <i>done</i>
+                    </span>
+                </label>
+                <h6 class="max small">Enable Page Breaks</h6>
+            </nav>
+            <nav class="row">
+                <label class="switch icon">
+                    <input checked id="show-pageBreaks" type="checkbox">
+                    <span>
+                        <i>visibility_off</i>
+                        <i>visibility</i>
+                    </span>
+                </label>
+                <h6 class="max small">Page Breaks</h6>
+            </nav>
+        </nav>
+        <main class="responsive">
+            <div class="small-width small-height absolute center middle" id="loading-indicator">
+                <div class="shape loading-indicator max rotate"></div>
+            </div>
+            <nav class="tabbed primary-container large-width center bottom-margin hide-on-print" id="job-type-tabs">
+                <a data-target="quote">
+                    <i>request_quote</i>
+                    <span>Quote</span>
+                </a>
+                <a data-target="workorder">
+                    <i>construction</i>
+                    <span>Workorder</span>
+                </a>
+                <a data-target="packingslip">
+                    <i>receipt_long</i>
+                    <span>Packing Slip</span>
+                </a>
+            </nav>
+            <header class="show-on-print">
+                <nav class="row top-margin">
+                    <img class="logo" src="/images/logo.png">
+                    <div id="business-info">
+                        <p class="wrap no-line bold no-margin" id="business-name"></p>
+                        <p class="wrap no-line no-margin" id="business-address"></p>
+                    </div>
+                    <h4 class="left-align max" id="job-print-title">Job Printout</h4>
+                    <button class="primary extra" id="job-printout-type">
+                        <i></i>
+                        <span></span>
+                    </button>
+                </nav>
+            </header>
+            <div id="job-container">
+                <div class="grid no-space">
+                    <div class="s4 slot" data-swapy-slot="1" data-swapy-span="4"></div>
+                    <div class="s4 slot" data-swapy-slot="2" data-swapy-span="4"></div>
+                    <div class="s4 slot" data-swapy-slot="3" data-swapy-span="4"></div>
+                    <div class="s8 slot" data-swapy-slot="4" data-swapy-span="6"></div>
+                    <div class="s4 slot" data-swapy-slot="5" data-swapy-span="4">
+                        <div data-swapy-item="1" id="qr-code-container"></div>
+                    </div>
+                    <div class="s4 slot" data-swapy-slot="6" data-swapy-span="4"></div>
+                    <div class="s8 slot" data-swapy-slot="7" data-swapy-span="8"></div>
+                    <div class="s12 slot" data-swapy-slot="8" data-swapy-span="12">
+                        <div data-swapy-item="2"
+                            id="job-details-container"></div>
+                    </div>
+                    <div class="s12 slot" data-swapy-slot="page-break-22" data-swapy-span="12"></div>
+                    <div class="s12 slot" data-swapy-slot="9" data-swapy-span="12">
+                        <div data-swapy-item="3"
+                            id="assemblies-summary-layout"></div>
+                    </div>
+                    <div class="s12 slot" data-swapy-slot="page-break-23" data-swapy-span="12"></div>
+                    <div class="s12 slot" data-swapy-slot="10" data-swapy-span="12">
+                        <div data-swapy-item="4"
+                            id="nested-sheets-summary-container"></div>
+                    </div>
+                    <div class="s12 slot" data-swapy-slot="page-break-24" data-swapy-span="12"></div>
+                    <div class="s12 slot" data-swapy-slot="11" data-swapy-span="12">
+                        <div data-swapy-item="5"
+                            id="nested-sheets-parts-summary-container"></div>
+                    </div>
+                    <div class="s12 slot" data-swapy-slot="page-break-25" data-swapy-span="12"></div>
+                    <div class="s12 slot" data-swapy-slot="12" data-swapy-span="12">
+                        <div data-swapy-item="6"
+                            id="nested-sheets-container"></div>
+                    </div>
+                    <div class="s12 slot" data-swapy-slot="page-break-26" data-swapy-span="12"></div>
+                    <div class="s12 slot" data-swapy-slot="13" data-swapy-span="12">
+                        <div data-swapy-item="7"
+                            id="nested-sheets-parts-container"></div>
+                    </div>
+                    <div class="s12 slot" data-swapy-slot="page-break-27" data-swapy-span="12"></div>
+                    <div class="s12 slot" data-swapy-slot="14" data-swapy-span="12">
+                        <div data-swapy-item="8"
+                            id="parts-layout-container"></div>
+                    </div>
+                    <div class="s6 slot" data-swapy-slot="15" data-swapy-span="6">
+                        <div data-swapy-item="9"
+                            id="net-weight-container"></div>
+                    </div>
+                    <div class="s6 slot" data-swapy-slot="16" data-swapy-span="6">
+                        <div data-swapy-item="10"
+                            id="total-cost-container"></div>
+                    </div>
+                    <div class="s4 slot" data-swapy-slot="17" data-swapy-span="4"></div>
+                    <div class="s4 slot" data-swapy-slot="18" data-swapy-span="4"></div>
+                    <div class="s4 slot" data-swapy-slot="19" data-swapy-span="4"></div>
+                </div>
+            </div>
+            <button class="hide-on-print hidden" id="add-row-button">
+                <i>add</i>
+                <span>Add Row</span>
             </button>
-            <h4 id="job-title">Job Printout</h4>
-            <button class="circle transparent" id="download-pdf">
-                <i>download</i>
+            <button class="hide-on-print hidden" id="add-page-break-button">
+                <i>add</i>
+                <span>Add Page Break</span>
             </button>
-            <button class="circle transparent" id="print-button" onclick="window.print()">
+            <button class="absolute center hide-on-print" id="back-to-top">
+                <i>arrow_upward</i>
+                <span>Back to Top</span>
+            </button>
+            <button class="fixed right bottom margin medium-elevate extra square round hide-on-print" id="print-button"
+                onclick="window.print()">
                 <i>print</i>
             </button>
-            <button class="circle transparent" id="theme-toggle">
-                <i>light_mode</i>
-            </button>
-        </nav>
-    </div>
-</header>
-<span class="absolute top right tiny-padding" id="today-date" style="z-index: 999;"></span>
-<nav class="left max hide-on-print">
-    <nav class="row">
-        <label class="switch icon">
-            <input checked id="show-qrCode" type="checkbox">
-            <span>
-                <i>visibility_off</i>
-                <i>visibility</i>
-            </span>
-        </label>
-        <h6 class="max small">QR Code</h6>
-        <button class="chip link transparent view-button" id="view-qrCode">
-            <span>Go</span>
-        </button>
-    </nav>
-    <nav class="row">
-        <label class="switch icon">
-            <input checked id="show-jobDetails" type="checkbox">
-            <span>
-                <i>visibility_off</i>
-                <i>visibility</i>
-            </span>
-        </label>
-        <h6 class="max small">Job Details</h6>
-        <button class="chip link transparent view-button" id="view-jobDetails">
-            <span>Go</span>
-        </button>
-    </nav>
-    <nav class="row">
-        <label class="switch icon">
-            <input checked id="show-assembliesSummary" type="checkbox">
-            <span>
-                <i>visibility_off</i>
-                <i>visibility</i>
-            </span>
-        </label>
-        <h6 class="max small">Assemblies Summary</h6>
-        <button class="chip link transparent view-button" id="view-assembliesSummary">
-            <span>Go</span>
-        </button>
-    </nav>
-    <nav class="row">
-        <label class="switch icon">
-            <input checked id="show-nestSummary" type="checkbox">
-            <span>
-                <i>visibility_off</i>
-                <i>visibility</i>
-            </span>
-        </label>
-        <h6 class="max small">Sheets Summary</h6>
-        <button class="chip link transparent view-button" id="view-nestSummary">
-            <span>Go</span>
-        </button>
-    </nav>
-    <nav class="row">
-        <label class="switch icon">
-            <input checked id="show-nestedPartsSummary" type="checkbox">
-            <span>
-                <i>visibility_off</i>
-                <i>visibility</i>
-            </span>
-        </label>
-        <h6 class="max small">Nested Parts Summary</h6>
-        <button class="chip link transparent view-button" id="view-nestedPartsSummary">
-            <span>Go</span>
-        </button>
-    </nav>
-    <nav class="row">
-        <label class="switch icon">
-            <input checked id="show-nestedSheets" type="checkbox">
-            <span>
-                <i>visibility_off</i>
-                <i>visibility</i>
-            </span>
-        </label>
-        <h6 class="max small">Nested Sheets</h6>
-        <button class="chip link transparent view-button" id="view-nestedSheets">
-            <span>Go</span>
-        </button>
-    </nav>
-    <nav class="row">
-        <label class="switch icon">
-            <input checked id="show-nestedParts" type="checkbox">
-            <span>
-                <i>visibility_off</i>
-                <i>visibility</i>
-            </span>
-        </label>
-        <h6 class="max small">Nested Sheets Parts</h6>
-        <button class="chip link transparent view-button" id="view-nestedParts">
-            <span>Go</span>
-        </button>
-    </nav>
-    <nav class="row">
-        <label class="switch icon">
-            <input checked id="show-assembliesParts" type="checkbox">
-            <span>
-                <i>visibility_off</i>
-                <i>visibility</i>
-            </span>
-        </label>
-        <h6 class="max small">Assemblies Parts</h6>
-        <button class="chip link transparent view-button" id="view-assembliesParts">
-            <span>Go</span>
-        </button>
-    </nav>
-    <nav class="row">
-        <label class="switch icon">
-            <input checked id="show-totalCost" type="checkbox">
-            <span>
-                <i>visibility_off</i>
-                <i>visibility</i>
-            </span>
-        </label>
-        <h6 class="max small">Total Cost</h6>
-        <button class="chip link transparent view-button" id="view-totalCost">
-            <span>Go</span>
-        </button>
-    </nav>
-    <nav class="row">
-        <label class="switch icon">
-            <input checked id="show-netWeight" type="checkbox">
-            <span>
-                <i>visibility_off</i>
-                <i>visibility</i>
-            </span>
-        </label>
-        <h6 class="max small">Net Weight</h6>
-        <button class="chip link transparent view-button" id="view-netWeight">
-            <span>Go</span>
-        </button>
-    </nav>
-    <nav class="row">
-        <label class="switch icon">
-            <input checked id="show-gridLines" type="checkbox">
-            <span>
-                <i>visibility_off</i>
-                <i>visibility</i>
-            </span>
-        </label>
-        <h6 class="max small">Grid Lines</h6>
-    </nav>
-    <nav class="row">
-        <label class="switch icon">
-            <input checked id="enable-pageBreaks" type="checkbox">
-            <span>
-                <i>close</i>
-                <i>done</i>
-            </span>
-        </label>
-        <h6 class="max small">Enable Page Breaks</h6>
-    </nav>
-    <nav class="row">
-        <label class="switch icon">
-            <input checked id="show-pageBreaks" type="checkbox">
-            <span>
-                <i>visibility_off</i>
-                <i>visibility</i>
-            </span>
-        </label>
-        <h6 class="max small">Page Breaks</h6>
-    </nav>
-</nav>
-<main class="responsive">
-    <div class="small-width small-height absolute center middle" id="loading-indicator">
-        <div class="shape loading-indicator max rotate"></div>
-    </div>
-    <nav class="tabbed primary-container large-width center bottom-margin hide-on-print" id="job-type-tabs">
-        <a data-target="quote">
-            <i>request_quote</i>
-            <span>Quote</span>
-        </a>
-        <a data-target="workorder">
-            <i>construction</i>
-            <span>Workorder</span>
-        </a>
-        <a data-target="packingslip">
-            <i>receipt_long</i>
-            <span>Packing Slip</span>
-        </a>
-    </nav>
-    <header class="show-on-print">
-        <nav class="row top-margin">
-            <img class="logo" src="http://invi.go/images/logo.png">
-            <div id="business-info">
-                <p class="wrap no-line bold no-margin" id="business-name"></p>
-                <p class="wrap no-line no-margin" id="business-address"></p>
-            </div>
-            <h4 class="left-align max" id="job-print-title">Job Printout</h4>
-            <button class="primary extra" id="job-printout-type">
-                <i></i>
-                <span></span>
-            </button>
-        </nav>
-    </header>
-    <div id="job-container">
-        <div class="grid no-space">
-            <div class="s4 slot" data-swapy-slot="1" data-swapy-span="4"></div>
-            <div class="s4 slot" data-swapy-slot="2" data-swapy-span="4"></div>
-            <div class="s4 slot" data-swapy-slot="3" data-swapy-span="4"></div>
-            <div class="s8 slot" data-swapy-slot="4" data-swapy-span="6"></div>
-            <div class="s4 slot" data-swapy-slot="5" data-swapy-span="4">
-                <div data-swapy-item="1" id="qr-code-container"></div>
-            </div>
-            <div class="s4 slot" data-swapy-slot="6" data-swapy-span="4"></div>
-            <div class="s8 slot" data-swapy-slot="7" data-swapy-span="8"></div>
-            <div class="s12 slot" data-swapy-slot="8" data-swapy-span="12">
-                <div data-swapy-item="2"
-                     id="job-details-container"></div>
-            </div>
-            <div class="s12 slot" data-swapy-slot="page-break-22" data-swapy-span="12"></div>
-            <div class="s12 slot" data-swapy-slot="9" data-swapy-span="12">
-                <div data-swapy-item="3"
-                     id="assemblies-summary-layout"></div>
-            </div>
-            <div class="s12 slot" data-swapy-slot="page-break-23" data-swapy-span="12"></div>
-            <div class="s12 slot" data-swapy-slot="10" data-swapy-span="12">
-                <div data-swapy-item="4"
-                     id="nested-sheets-summary-container"></div>
-            </div>
-            <div class="s12 slot" data-swapy-slot="page-break-24" data-swapy-span="12"></div>
-            <div class="s12 slot" data-swapy-slot="11" data-swapy-span="12">
-                <div data-swapy-item="5"
-                     id="nested-sheets-parts-summary-container"></div>
-            </div>
-            <div class="s12 slot" data-swapy-slot="page-break-25" data-swapy-span="12"></div>
-            <div class="s12 slot" data-swapy-slot="12" data-swapy-span="12">
-                <div data-swapy-item="6"
-                     id="nested-sheets-container"></div>
-            </div>
-            <div class="s12 slot" data-swapy-slot="page-break-26" data-swapy-span="12"></div>
-            <div class="s12 slot" data-swapy-slot="13" data-swapy-span="12">
-                <div data-swapy-item="7"
-                     id="nested-sheets-parts-container"></div>
-            </div>
-            <div class="s12 slot" data-swapy-slot="page-break-27" data-swapy-span="12"></div>
-            <div class="s12 slot" data-swapy-slot="14" data-swapy-span="12">
-                <div data-swapy-item="8"
-                     id="parts-layout-container"></div>
-            </div>
-            <div class="s6 slot" data-swapy-slot="15" data-swapy-span="6">
-                <div data-swapy-item="9"
-                     id="net-weight-container"></div>
-            </div>
-            <div class="s6 slot" data-swapy-slot="16" data-swapy-span="6">
-                <div data-swapy-item="10"
-                     id="total-cost-container"></div>
-            </div>
-            <div class="s4 slot" data-swapy-slot="17" data-swapy-span="4"></div>
-            <div class="s4 slot" data-swapy-slot="18" data-swapy-span="4"></div>
-            <div class="s4 slot" data-swapy-slot="19" data-swapy-span="4"></div>
-        </div>
-    </div>
-    <button class="hide-on-print hidden" id="add-row-button">
-        <i>add</i>
-        <span>Add Row</span>
-    </button>
-    <button class="hide-on-print hidden" id="add-page-break-button">
-        <i>add</i>
-        <span>Add Page Break</span>
-    </button>
-    <button class="absolute center hide-on-print" id="back-to-top">
-        <i>arrow_upward</i>
-        <span>Back to Top</span>
-    </button>
-    <button class="fixed right bottom margin medium-elevate extra square round hide-on-print" id="print-button"
-            onclick="window.print()">
-        <i>print</i>
-    </button>
-    <div class="hide-on-print" style="height: 100px; z-index: -1;"></div>
-</main>
-<div class="snackbar error" id="job-error">Failed to load job</div>
-<div class="snackbar green" id="job-loaded">Job loaded successfully</div>
-</body>
+            <div class="hide-on-print" style="height: 100px; z-index: -1;"></div>
+        </main>
+        <div class="snackbar error" id="job-error">Failed to load job</div>
+        <div class="snackbar green" id="job-loaded">Job loaded successfully</div>
+    </body>
 </html>

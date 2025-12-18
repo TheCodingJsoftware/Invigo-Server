@@ -11,8 +11,8 @@ document.getElementById("register-form")?.addEventListener("submit", async (e) =
 
     const res = await fetch("/api/users", {
         method: "POST",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({name, password, roles}),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, password, roles }),
         credentials: "include",
     });
 
