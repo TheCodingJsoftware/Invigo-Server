@@ -288,7 +288,7 @@ class WorkspacePage {
                                 ${this.#user.permissions.map(permission => `
                                 <li>
                                     <div class="max">
-                                        <h6 class="small">${permission.label}</h6>
+                                        <span class="bold">${permission.label}</span>
                                         <div>${permission.description}</div>
                                     </div>
                                 </li>

@@ -114,7 +114,7 @@ export class WorkspaceWebSocket {
         this.reconnectHandlers.push(handler);
     }
 
-    private static enqueue<T extends WorkspaceMessage>(msg: T, delay = 200) {
+    private static enqueue<T extends WorkspaceMessage>(msg: T, delay = 300) {
         const type = msg.type;
         if (!this.buffer[type]) this.buffer[type] = [];
         this.buffer[type]!.push(msg);
