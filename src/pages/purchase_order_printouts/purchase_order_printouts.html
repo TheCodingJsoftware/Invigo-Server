@@ -1,95 +1,102 @@
 <!DOCTYPE html>
 <html lang="en">
 
-<head>
-    <meta charset="UTF-8">
-    <meta content="width=device-width, initial-scale=1" name="viewport">
-    <meta content="ie=edge" http-equiv="X-UA-Compatible">
-    <meta content="notranslate" name="google">
-    <link href="/static/icon.png" rel="icon">
-    <meta content="width=device-width,initial-scale=1,user-scalable=yes" name="viewport"/>
-    <title>Purchase Order Printouts</title>
-</head>
+    <head>
+        <meta charset="UTF-8">
+        <meta content="width=device-width, initial-scale=1" name="viewport">
+        <meta content="ie=edge" http-equiv="X-UA-Compatible">
+        <meta content="notranslate" name="google">
+        <link href="/static/icon.png" rel="icon">
+        <meta content="width=device-width,initial-scale=1,user-scalable=yes" name="viewport" />
+        <title>Purchase Order Printouts</title>
+    </head>
 
-<body class="dark">
-<nav class="top fixed primary small-padding">
-</nav>
+    <body class="dark">
+        <nav class="top fixed primary small-padding">
+        </nav>
 
-<nav class="left max left-align no-padding">
-    <nav class="top primary">
-        <button class="circle transparent" onclick="window.location.href='/';">
-            <i>arrow_back</i>
-        </button>
-        <h5 class="max">Purchase Orders</h5>
-    </nav>
-    <br>
-    {% for vendor in all_vendors %}
-    <a class="{{ 'active' if loop.first else '' }} left-margin" data-ui="#vendor-{{ vendor.id }}">
-        <i>store</i>
-        <span>{{ vendor.name }}</span>
-    </a>
-    {% endfor %}
-</nav>
-
-<main class="responsive">
-    {% for vendor in all_vendors %}
-    <div class="page padding {{'active' if loop.first else ''}}" id="vendor-{{ vendor.id }}">
-        {% if vendor.email or vendor.website or vendor.phone %}
-        <div class="grid center-align">
-            {% if vendor.phone %}
-            <button class="border extra link s12 m6 l4" onclick="window.location.href='tel:{{ vendor.phone }}';">
-                <i>phone</i>
-                <span>{{ vendor.phone }}</span>
-            </button>
-            {% endif %}
-            {% if vendor.email %}
-            <button class="border extra link s12 m6 l4" onclick="window.location.href='mailto:{{ vendor.email }}';">
-                <i>mail</i>
-                <span>{{ vendor.email }}</span>
-            </button>
-            {% endif %}
-            {% if vendor.website %}
-            <button class="border extra link s12 m12 l4" onclick="window.open('{{ vendor.website }}', '_blank')">
-                <i>globe</i>
-                <span data-website="{{ vendor.website }}" id="website-name"></span>
-            </button>
-            {% endif %}
-        </div>
-        {% endif %}
-        {% if vendor.address %}
-        <article class="border round">
-            <nav class="row">
-                <p class="max top-align">{{ vendor.address }}</p>
-                <button class="border"
-                        onclick="window.open('https://www.google.com/maps/search/{{ vendor.address|urlencode }}', '_blank')">
-                    <i>map</i>
-                    <span data-website="https://www.google.com/maps/search/{{ vendor.address|urlencode }}">Google Maps</span>
+        <nav class="left max left-align no-padding scroll">
+            <nav class="top primary">
+                <button class="circle transparent" onclick="window.location.href='/';">
+                    <i>arrow_back</i>
                 </button>
+                <h5 class="max">Purchase Orders</h5>
             </nav>
-        </article>
-        {% endif %}
-        <article class="top-margin border round vertical scroll" style="max-height: calc(100vh - 400px) !important;">
-            <ul class="list border">
-                {% for purchase_order in all_purchase_orders %}
-                {% if purchase_order.purchase_order_data.meta_data.vendor.id == vendor.id %}
-                <li>
-                    <div class="max">
-                        <h6 class="small"><b>PO</b> {{
-                            purchase_order.purchase_order_data.meta_data.purchase_order_number }}</h6>
-                        <div>{{purchase_order.purchase_order_data.meta_data.order_date}}</div>
-                    </div>
-                    <button onclick="window.location.href='/purchase_orders/view?id={{ purchase_order.purchase_order_data.id }}';">
-                        <i>open_in_new</i>
-                        <span>Open</span>
+            <div class="small-padding"></div>
+            {% for vendor in all_vendors %}
+            <a class="{{ 'active' if loop.first else '' }} left-margin left-align" data-ui="#vendor-{{ vendor.id }}" style="width: 90%;">
+                <i>store</i>
+                <span>{{ vendor.name }}</span>
+            </a>
+            {% endfor %}
+        </nav>
+
+        <main class="responsive">
+            {% for vendor in all_vendors %}
+            <div class="page padding {{'active' if loop.first else ''}}" id="vendor-{{ vendor.id }}">
+                {% if vendor.email or vendor.website or vendor.phone %}
+                <div class="grid center-align">
+                    {% if vendor.phone %}
+                    <button class="border left-align link s12 m6 l4" onclick="window.location.href='tel:{{ vendor.phone }}';">
+                        <i>phone</i>
+                        <span>{{ vendor.phone }}</span>
                     </button>
-                </li>
+                    {% endif %}
+                    {% if vendor.email %}
+                    <button class="border left-align link s12 m6 l4" onclick="window.location.href='mailto:{{ vendor.email }}';">
+                        <i>mail</i>
+                        <span>{{ vendor.email }}</span>
+                    </button>
+                    {% endif %}
+                    {% if vendor.website %}
+                    <button class="border left-align link s12 m12 l4" onclick="window.open('{{ vendor.website }}', '_blank')">
+                        <i>globe</i>
+                        <span data-website="{{ vendor.website }}" id="website-name"></span>
+                    </button>
+                    {% endif %}
+                </div>
                 {% endif %}
-                {% endfor %}
-            </ul>
-        </article>
-    </div>
-    {% endfor %}
-</main>
-</body>
+                {% if vendor.address %}
+                <article class="border round">
+                    <nav class="row">
+                        <p class="max">{{ vendor.address }}</p>
+                        <button class="border"
+                            onclick="window.open('https://www.google.com/maps/search/{{ vendor.address|urlencode }}', '_blank')">
+                            <i>map</i>
+                            <span data-website="https://www.google.com/maps/search/{{ vendor.address|urlencode }}">Google Maps</span>
+                        </button>
+                    </nav>
+                </article>
+                {% endif %}
+                <article class="top-margin border round vertical scroll" style="max-height: calc(100vh - 400px) !important;">
+                    <ul class="list border">
+                        {% for purchase_order in all_purchase_orders %}
+                        {% if purchase_order.purchase_order_data.meta_data.vendor.id == vendor.id %}
+                        <li>
+                            <div class="max">
+                                <h6 class="small">
+                                    {% if purchase_order.purchase_order_data.meta_data.status == 0 %}
+                                    <span class="bold">Purchase Order</span>
+                                    {% elif purchase_order.purchase_order_data.meta_data.status == 1 %}
+                                    <span class="bold">Quote</span>
+                                    {% elif purchase_order.purchase_order_data.meta_data.status == 2 %}
+                                    <span class="bold">Release Order</span>
+                                    {% endif %}
+                                    #{{ purchase_order.purchase_order_data.meta_data.purchase_order_number }}</h6>
+                                <div>{{purchase_order.purchase_order_data.meta_data.order_date}}</div>
+                            </div>
+                            <button onclick="window.location.href='/purchase_orders/view?id={{ purchase_order.purchase_order_data.id }}';">
+                                <i>open_in_new</i>
+                                <span>Open</span>
+                            </button>
+                        </li>
+                        {% endif %}
+                        {% endfor %}
+                    </ul>
+                </article>
+            </div>
+            {% endfor %}
+        </main>
+    </body>
 
 </html>
