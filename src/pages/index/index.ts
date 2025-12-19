@@ -1,21 +1,59 @@
-import "beercss"
-import "@utils/theme"
-import {AppearanceDialog} from "@components/common/dialog/appearance-dialog";
+import "beercss";
+import "@utils/theme";
+import { AppearanceDialog } from "@components/common/dialog/appearance-dialog";
+import { UserContext } from "@core/auth/user-context";
+import { PermissionMap } from "@core/auth/workspace-permissions";
 
-//  if ('serviceWorker' in navigator) {
-//      navigator.serviceWorker.register('/service-worker.js');
-//  }
+// ----------------------------------
+// Permission UI handling
+// ----------------------------------
+
+function hideProtectedElements(): void {
+    document
+        .querySelectorAll<HTMLElement>("[data-auth]")
+        .forEach(el => {
+            el.style.display = "none";
+        });
+}
+
+function applyPermissions(): void {
+    const user = UserContext.getInstance().user;
+
+    document
+        .querySelectorAll<HTMLElement>("[data-auth]")
+        .forEach(el => {
+            const permKey = el.dataset.permission;
+            if (!permKey) return;
+
+            const permission = PermissionMap[permKey];
+            if (!permission) return;
+
+            if (user.can(permission)) {
+                el.style.display = "";
+            }
+        });
+}
+
+// ----------------------------------
+// Bootstrap
+// ----------------------------------
 
 document.addEventListener("DOMContentLoaded", async () => {
-    const themeButtnon = document.getElementById("theme-button") as HTMLButtonElement;
-    themeButtnon.onclick = () => {new AppearanceDialog()};
+    hideProtectedElements();
 
-    await fetch("/api/protected", {credentials: "include"}).then(async (res) => {
-        if (res.ok) {
-            const user = await res.json();
-            const welcomeMessage = document.getElementById("welcome-message") as HTMLElement;
-            welcomeMessage.innerText = `Welcome back, ${user.name}!`;
-            ui("#welcome-message", 2000);
+    const themeButton = document.getElementById("theme-button") as HTMLButtonElement;
+    themeButton.onclick = () => new AppearanceDialog();
+
+    await UserContext.init();
+
+    applyPermissions();
+
+    const user = UserContext.getInstance().user;
+    if (user.id !== 0) {
+        const welcome = document.getElementById("welcome-message");
+        if (welcome) {
+            welcome.textContent = `Welcome back, ${user.name}!`;
+            ui(welcome, 2000);
         }
-    });
+    }
 });

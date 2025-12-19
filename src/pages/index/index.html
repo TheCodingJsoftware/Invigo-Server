@@ -65,83 +65,210 @@
             </button>
         </header>
         <main class="responsive">
-            <div class="grid">
-                <button class="s6 m3 l3 left-align border extra" onclick="window.location.href='/login'">
-                    <i>login</i>
-                    <span>Login</span>
-                </button>
-                <button class="s6 m3 l3 left-align border extra" onclick="window.location.href='/roles'">
-                    <i>assignment_ind</i>
-                    <span>Roles</span>
-                </button>
-                <button class="s6 m3 l3 left-align border extra" onclick="window.location.href='/users'">
-                    <i>groups</i>
-                    <span>Users</span>
-                </button>
-                <button class="s6 m3 l3 left-align border extra" onclick="window.location.href='/register'">
-                    <i>person_add</i>
-                    <span>Register</span>
-                </button>
-                <button class="s6 m4 l4 left-align border extra" onclick="window.location.href='/inventory'">
-                    <i>inventory_2</i>
-                    <span>Inventory</span>
-                </button>
-                <button class="s6 m4 l4 left-align border extra" onclick="window.location.href='/add_cutoff_sheet'">
-                    <i>library_add</i>
-                    <span>Add Cutoff Sheet</span>
-                </button>
-                <button class="s6 m4 l4 left-align border extra" onclick="window.location.href='/sheet_qr_codes'">
-                    <i>qr_code</i>
-                    <span>Sheet QR Codes</span>
-                </button>
-                <button class="s6 m6 l6 left-align border extra" onclick="window.location.href='/production_planner'">
-                    <i>edit_calendar</i>
-                    <span>Production Planner</span>
-                </button>
-                <button class="s6 m6 l6 left-align border extra" onclick="window.location.href='/workspace'">
-                    <i>construction</i>
-                    <span>Workspace</span>
-                </button>
-                <button class="s6 m6 l6 left-align border extra" disabled onclick="window.location.href='/workspace_dashboard'">
-                    <i>browse_activity</i>
-                    <span>Workspace Dashboard</span>
-                </button>
-                <button class="s6 m6 l6 left-align border extra" disabled
-                    onclick="window.location.href='/workspace_archives_dashboard'">
-                    <i>work_history</i>
-                    <span>Workspace Archives</span>
-                </button>
-                <button class="s6 m4 l4 left-align border extra" onclick="window.location.href='/jobs'">
-                    <i>home_storage</i>
-                    <span>Job Printouts</span>
-                </button>
-                <button class="s6 m4 l4 left-align border extra" onclick="window.location.href='/purchase_orders'">
-                    <i>receipt_long</i>
-                    <span>Purchase Orders</span>
-                </button>
-                <button class="s6 m4 l4 left-align border extra" onclick="window.location.href='/workorders'">
-                    <i>checklist</i>
-                    <span>Workorders</span>
-                </button>
-                <button class="s6 m4 l3 left-align border extra" disabled onclick="window.location.href='/way_back_machine'">
-                    <i>history</i>
-                    <span>Way Back Machine</span>
-                </button>
-                <button class="s6 m4 l3 left-align border extra"
-                    onclick="window.location.href='https://github.com/TheCodingJsoftware/Invigo/wiki'">
-                    <i>globe</i>
-                    <span>Wiki</span>
-                </button>
-                <button class="s6 m4 l3 left-align border extra" onclick="window.location.href='/server_log'">
-                    <i>article</i>
-                    <span>Server Log</span>
-                </button>
-                <button class="s6 m4 l3 left-align border extra" onclick="window.location.href='/logs'">
-                    <i>problem</i>
-                    <span>Logs</span>
-                </button>
-            </div>
+
+            <!-- ACCOUNT / ACCESS -->
+            <article class="round">
+                <h6 class>Access</h6>
+                <div class="grid">
+
+                    <button class="extra border s12 m6 l4 left-align"
+                        data-guest
+                        onclick="window.location.href='/login'">
+                        <i class="large">login</i>
+                        <div>
+                            <strong>Login</strong>
+                            <div class="small ">Access your account</div>
+                        </div>
+                    </button>
+
+                </div>
+            </article>
+
+            <!-- WORKSPACE -->
+            <article class="round">
+                <h6 class>Workspace</h6>
+                <div class="grid">
+
+                    <button class="extra border s12 m6 l4 left-align"
+                        onclick="window.location.href='/workspace'">
+                        <i class="large">construction</i>
+                        <div>
+                            <strong>Workspace</strong>
+                            <div class="small ">Live production tracking</div>
+                        </div>
+                    </button>
+
+                    <button class="extra border s12 m6 l4 left-align"
+                        onclick="window.location.href='/inventory'">
+                        <i class="large">inventory_2</i>
+                        <div>
+                            <strong>Inventory</strong>
+                            <div class="small ">Sheets, parts, materials</div>
+                        </div>
+                    </button>
+
+                    <button class="extra border s12 m6 l4 left-align"
+                        onclick="window.location.href='/sheet_qr_codes'">
+                        <i class="large">qr_code</i>
+                        <div>
+                            <strong>Sheet QR Codes</strong>
+                            <div class="small ">Label & scan material</div>
+                        </div>
+                    </button>
+
+                </div>
+            </article>
+
+            <!-- PRODUCTION -->
+            <article class="round">
+                <h6 class>Production</h6>
+                <div class="grid">
+
+                    <button class="extra border s12 m6 l4 left-align"
+                        data-auth
+                        data-permission="plan_production"
+                        onclick="window.location.href='/production_planner'">
+                        <i class="large">edit_calendar</i>
+                        <div>
+                            <strong>Production Planner</strong>
+                            <div class="small ">Schedule & load work</div>
+                        </div>
+                    </button>
+
+                    <button class="extra border s12 m6 l4 left-align"
+                        onclick="window.location.href='/add_cutoff_sheet'">
+                        <i class="large">library_add</i>
+                        <div>
+                            <strong>Add Cutoff Sheet</strong>
+                            <div class="small ">Material reuse</div>
+                        </div>
+                    </button>
+
+                </div>
+            </article>
+
+            <!-- RECORDS -->
+            <article class="round">
+                <h6 class>Records</h6>
+                <div class="grid">
+                    <button class="extra border s12 m6 l4 left-align"
+                        data-auth
+                        data-permission="access_printouts"
+                        onclick="window.location.href='/jobs'">
+                        <i class="large">home_storage</i>
+                        <div>
+                            <strong>Job Printouts</strong>
+                            <div class="small ">Shop floor docs</div>
+                        </div>
+                    </button>
+
+                    <button class="extra border s12 m6 l4 left-align"
+                        data-auth
+                        data-permission="access_printouts"
+                        onclick="window.location.href='/purchase_orders'">
+                        <i class="large">receipt_long</i>
+                        <div>
+                            <strong>Purchase Orders</strong>
+                            <div class="small ">Vendor tracking</div>
+                        </div>
+                    </button>
+
+                    <button class="extra border s12 m6 l4 left-align"
+                        data-auth
+                        data-permission="access_printouts"
+                        onclick="window.location.href='/workorders'">
+                        <i class="large">checklist</i>
+                        <div>
+                            <strong>Workorders</strong>
+                            <div class="small ">Task execution</div>
+                        </div>
+                    </button>
+
+                </div>
+            </article>
+
+            <!-- ADMIN -->
+            <article class="round">
+                <h6 class>Administration</h6>
+                <div class="grid">
+
+                    <button class="extra border s12 m6 l4 left-align"
+                        data-auth
+                        data-permission="edit_roles"
+                        onclick="window.location.href='/roles'">
+                        <i class="large">assignment_ind</i>
+                        <div>
+                            <strong>Roles</strong>
+                            <div class="small ">Permission control</div>
+                        </div>
+                    </button>
+
+                    <button class="extra border s12 m6 l4 left-align"
+                        data-auth
+                        data-permission="edit_users"
+                        onclick="window.location.href='/users'">
+                        <i class="large">groups</i>
+                        <div>
+                            <strong>Users</strong>
+                            <div class="small ">Account management</div>
+                        </div>
+                    </button>
+
+                    <button class="extra border s12 m6 l4 left-align"
+                        data-auth
+                        data-permission="edit_users"
+                        onclick="window.location.href='/register'">
+                        <i class="large">person_add</i>
+                        <div>
+                            <strong>Register</strong>
+                            <div class="small ">New user registration</div>
+                        </div>
+                    </button>
+
+                    <button class="extra border s12 m6 l4 left-align"
+                        data-auth
+                        data-permission="view_logs"
+                        onclick="window.location.href='/server_log'">
+                        <i class="large">article</i>
+                        <div>
+                            <strong>Server Log</strong>
+                            <div class="small ">System events</div>
+                        </div>
+                    </button>
+
+                    <button class="extra border s12 m6 l4 left-align"
+                        data-auth
+                        data-permission="view_logs"
+                        onclick="window.location.href='/logs'">
+                        <i class="large">problem</i>
+                        <div>
+                            <strong>Logs</strong>
+                            <div class="small ">Errors & diagnostics</div>
+                        </div>
+                    </button>
+
+                </div>
+            </article>
+
+            <!-- EXTERNAL -->
+            <article class="round">
+                <h6 class>Resources</h6>
+                <div class="grid">
+
+                    <button class="extra border s12 m6 l4 left-align"
+                        onclick="window.location.href='https://github.com/TheCodingJsoftware/Invigo/wiki'">
+                        <i class="large">globe</i>
+                        <div>
+                            <strong>Wiki</strong>
+                            <div class="small ">Documentation</div>
+                        </div>
+                    </button>
+
+                </div>
+            </article>
+
         </main>
+
         <div class="snackbar success" id="welcome-message">Welcome to Invigo.</div>
     </body>
 
