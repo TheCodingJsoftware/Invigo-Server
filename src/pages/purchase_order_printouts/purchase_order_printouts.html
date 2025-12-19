@@ -15,7 +15,7 @@
         <nav class="top fixed primary small-padding">
         </nav>
 
-        <nav class="left max left-align no-padding scroll">
+        <nav class="left max left-align no-padding">
             <nav class="top primary">
                 <button class="circle transparent" onclick="window.location.href='/';">
                     <i>arrow_back</i>
@@ -26,7 +26,7 @@
             {% for vendor in all_vendors %}
             <a class="{{ 'active' if loop.first else '' }} left-margin left-align" data-ui="#vendor-{{ vendor.id }}" style="width: 90%;">
                 <i>store</i>
-                <span>{{ vendor.name }}</span>
+                <span class="small-width">{{ vendor.name }}</span>
             </a>
             {% endfor %}
         </nav>
