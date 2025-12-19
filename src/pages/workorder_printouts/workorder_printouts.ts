@@ -9,6 +9,7 @@ document.addEventListener("DOMContentLoaded", () => {
         button.addEventListener("click", () => {
             new DialogComponent({
                 id: "workorder-dialog",
+                title: `${button.dataset.name}`,
                 bodyContent: `<img class="responsive round nest-image" src="/images/${button.dataset.image}" alt="nest-image">`
             });
             invertImages();
