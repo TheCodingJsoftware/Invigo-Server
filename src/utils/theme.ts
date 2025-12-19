@@ -1,6 +1,27 @@
 import '@static/css/style.css';
 import "material-dynamic-colors";
 
+let themeObserver: MutationObserver | null = null;
+
+export function startThemeObserver() {
+    if (themeObserver) return;
+
+    themeObserver = new MutationObserver(() => {
+        updateMetaColors();
+    });
+
+    themeObserver.observe(document.documentElement, {
+        attributes: true,
+        attributeFilter: ["class", "style"]
+    });
+
+    // Optional but safe: body can change too
+    themeObserver.observe(document.body, {
+        attributes: true,
+        attributeFilter: ["class", "style"]
+    });
+}
+
 export function triggerThemeTransition(duration = 500) {
     const html = document.documentElement;
     html.classList.add("theme-transition");
@@ -38,6 +59,18 @@ export function loadTheme(overideMode?: string) {
     ui("theme", localStorage.getItem("theme") || "#006493");
 }
 
+export function getPrimaryColor(): string {
+    const value = getComputedStyle(document.body)
+        .getPropertyValue("--primary")
+        .trim();
+
+    if (!value) {
+        throw new Error("BeerCSS --primary not found on body");
+    }
+
+    return value;
+}
+
 export function toggleTheme() {
     const mode = ui("mode");
     if (mode === "dark") {
@@ -47,6 +80,26 @@ export function toggleTheme() {
         ui("mode", "dark");
         localStorage.setItem("mode", "dark");
     }
+}
+
+function upsertMeta(name: string, content: string): void {
+    let meta = document.querySelector<HTMLMetaElement>(`meta[name="${name}"]`);
+
+    if (!meta) {
+        meta = document.createElement("meta");
+        meta.name = name;
+        document.head.appendChild(meta);
+    }
+
+    if (meta.content !== content) {
+        meta.content = content;
+    }
+}
+
+export function updateMetaColors(color?: string): void {
+    const resolvedColor = getPrimaryColor();
+    upsertMeta("theme-color", resolvedColor);
+    upsertMeta("msapplication-TileColor", resolvedColor);
 }
 
 export function invertImages(element?: HTMLElement, modeOverride?: string) {
@@ -78,4 +131,5 @@ window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e =
 
 document.addEventListener("DOMContentLoaded", () => {
     loadTheme();
+    startThemeObserver();
 })
