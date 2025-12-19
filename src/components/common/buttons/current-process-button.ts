@@ -1,6 +1,6 @@
-import {PartData} from "@components/workspace/parts/part-container";
-import {UserContext} from "@core/auth/user-context";
-import {PermissionMap, WorkspacePermissions} from "@core/auth/workspace-permissions";
+import { PartData } from "@components/workspace/parts/part-container";
+import { UserContext } from "@core/auth/user-context";
+import { PermissionMap, WorkspacePermissions } from "@core/auth/workspace-permissions";
 
 export class CurrentProcessButton {
     private readonly text: string;
@@ -16,7 +16,7 @@ export class CurrentProcessButton {
     }
 
     init() {
-        this.element.className = "small-round border vertical tiny-padding tiny-margin blur";
+        this.element.className = "chip small-round border blur tiny-margin";
 
         if (this.#user.can(WorkspacePermissions.CanSeeProgressBar)) {
             const progress = document.createElement("progress");

@@ -1,6 +1,6 @@
-import {PartData} from "@components/workspace/parts/part-container";
-import {UserContext} from "@core/auth/user-context";
-import {WorkspacePermissions} from "@core/auth/workspace-permissions";
+import { PartData } from "@components/workspace/parts/part-container";
+import { UserContext } from "@core/auth/user-context";
+import { WorkspacePermissions } from "@core/auth/workspace-permissions";
 
 export class DueButton {
     private readonly text: string;
@@ -16,7 +16,7 @@ export class DueButton {
     }
 
     init() {
-        this.element.className = "small-round border tiny-padding tiny-margin blur vertical";
+        this.element.className = "chip small-round border blur tiny-margin";
         if (this.data.is_overdue) {
             const icon = document.createElement("i");
             icon.innerHTML = "assignment_late";

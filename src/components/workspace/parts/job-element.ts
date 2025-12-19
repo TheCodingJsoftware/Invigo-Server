@@ -160,6 +160,8 @@ export class JobElement {
         const header = document.createElement("div");
         header.classList.add("row");
 
+        header.ondblclick = () => this.collapseArticleContent();
+
         const title = document.createElement("h5");
         title.id = `job-${this.jobId}`;
         title.classList.add("max");

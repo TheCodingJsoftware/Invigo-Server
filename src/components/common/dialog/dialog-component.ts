@@ -23,9 +23,9 @@ export class DialogComponent {
     private readonly footerElement: HTMLElement;
 
     constructor(options: DialogOptions = {}) {
-        this.headerElement = document.createElement("header");
+        this.headerElement = document.createElement("div");
         this.bodyElement = document.createElement("div");
-        this.footerElement = document.createElement("footer");
+        this.footerElement = document.createElement("div");
 
         this.options = {
             id: options.id,
@@ -87,7 +87,7 @@ export class DialogComponent {
 
         if (this.options.headerContent) {
             this.headerElement.innerHTML = this.options.headerContent;
-            this.headerElement.className = "dialog-header";
+            this.headerElement.className = "dialog-header right-align";
         } else {
             this.createDefaultHeader();
         }
@@ -95,7 +95,7 @@ export class DialogComponent {
 
         if (this.options.bodyContent) {
             this.bodyElement.innerHTML = this.options.bodyContent;
-            this.bodyElement.className = "dialog-body";
+            this.bodyElement.className = "dialog-body top-padding";
             dialogContent.appendChild(this.bodyElement);
         } else {
             this.createDefaultBody();
@@ -103,7 +103,7 @@ export class DialogComponent {
 
         if (this.options.footerContent) {
             this.footerElement.innerHTML = this.options.footerContent;
-            this.footerElement.className = "dialog-footer";
+            this.footerElement.className = "dialog-footer right-align";
             dialogContent.appendChild(this.footerElement);
         } else {
             this.createDefaultFooter();

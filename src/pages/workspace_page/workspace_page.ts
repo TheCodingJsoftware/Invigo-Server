@@ -1,4 +1,5 @@
 import "beercss";
+import "@static/css/workspace.css";
 import { FilterMenuButton } from "@components/common/buttons/filter-menu-button";
 import { SortMenuButton } from "@components/common/buttons/sort-menu-button";
 import { DialogComponent } from "@components/common/dialog/dialog-component";
@@ -103,6 +104,7 @@ class WorkspacePage {
         WorkspaceWebSocket.onReconnect(() => {
             this.resyncState();
         });
+
         this.loadHeader();
         this.loadTopNav();
         this.loadRightNav();

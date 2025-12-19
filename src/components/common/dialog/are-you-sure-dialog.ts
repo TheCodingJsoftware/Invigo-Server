@@ -10,13 +10,11 @@ export class AreYouSureDialog extends DialogComponent {
             bodyContent: `<div>${bodyContent}</div>`,
             footerContent: `
                 <nav class="row top-margin right-align">
-                    <button id="confirm" autofocus>
-                        <i>check</i>
-                        <span>Confirm</span>
-                    </button>
                     <button id="cancel" class="transparent link">
-                        <i>cancel</i>
                         <span>Cancel</span>
+                    </button>
+                    <button id="confirm" class="transparent link" autofocus>
+                        <span>Confirm</span>
                     </button>
                 </nav>`
         });

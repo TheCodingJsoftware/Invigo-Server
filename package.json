@@ -11,6 +11,7 @@
     "dxf": "^5.3.1",
     "flatpickr": "^4.6.13",
     "material-dynamic-colors": "^1.1.2",
+    "material-file-icons": "^2.4.0",
     "morphdom": "^2.7.7",
     "puppeteer": "^24.33.0",
     "qrcode": "^1.5.4",

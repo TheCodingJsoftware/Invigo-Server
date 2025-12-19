@@ -41,32 +41,6 @@ body.dark {
     overflow: hidden;
 }
 
-.zoom-stage {
-    position: absolute;
-    inset: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.zoom-target {
-    transform-origin: center center;
-    will-change: transform;
-    transition: transform var(--speed3) ease-out;
-}
-
-.panning .zoom-target {
-    cursor: grabbing;
-}
-
-.panning {
-    cursor: grabbing;
-}
-
-svg {
-    shape-rendering: geometricPrecision;
-}
-
 .job-details[open] summary i::before {
     content: 'expand_less';
 }
@@ -189,89 +163,6 @@ svg {
 
 /* workspace.html */
 
-.rotate-0 {
-    transform: rotate(0deg);
-    transition: transform var(--speed3) ease;
-}
-
-.rotate-180 {
-    transform: rotate(180deg);
-    transition: transform var(--speed3) ease;
-}
-
-.table-checkbox {
-    opacity: 0;
-    transition: var(--speed3) ease;
-}
-
-.table-checkbox.show-checkbox {
-    opacity: 1;
-}
-
-tr {
-    transition: background-color var(--speed1) ease;
-}
-
-tr.selected {
-    background-color: var(--primary-container) !important;
-}
-
-tr.overdue {
-    background-color: var(--error-container);
-}
-
-tr.finished {
-    /*background-color: var(--success-container);*/
-}
-
-.fade-hidden {
-    opacity: 0;
-    pointer-events: none;
-    visibility: hidden;
-}
-
-.floating-part-menu {
-    transition: opacity var(--speed3) ease,
-        transform var(--speed3) ease;
-    opacity: 1;
-    visibility: visible;
-    pointer-events: auto;
-    z-index: 10 !important;
-}
-
-.floating-part-menu.fade-hidden {
-    opacity: 0;
-    pointer-events: none;
-}
-
-.floating-part-menu .handle {
-    cursor: grab;
-}
-
-.floating-part-menu.dragging .handle {
-    cursor: grabbing;
-    color: var(--primary);
-}
-
-.floating-part-menu.dragging {
-    transition: transform var(--speed1) !important;
-}
-
-.part-table-thumbnail {
-    height: 64px;
-    width: auto;
-    transition: transform var(--speed2);
-    transform: scale(1);
-}
-
-.part-table-thumbnail:hover {
-    transform: scale(1.1);
-    cursor: pointer;
-}
-
-button menu {
-    max-height: 100vh;
-}
 
 .global-table {
     max-height: 80vh !important;

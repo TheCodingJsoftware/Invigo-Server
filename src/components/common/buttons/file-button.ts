@@ -1,15 +1,9 @@
-import {PartData} from "@components/workspace/parts/part-container";
-import {Ext, Previewer} from "@utils/preview-cache";
-import {FileViewerDialog} from "@components/common/dialog/file-viewer-dialog";
-import {invertImages} from "@utils/theme";
+import { PartData } from "@components/workspace/parts/part-container";
+import { Ext, Previewer } from "@utils/preview-cache";
+import { FileViewerDialog } from "@components/common/dialog/file-viewer-dialog";
+import { getIcon } from 'material-file-icons';
+import { invertImages } from "@utils/theme";
 
-export function getFileIcon(extension: string): string {
-    if (["DXF", "JPG", "JPEG", "WEBP"].includes(extension)) return "image";
-    else if (extension === "PNG") return "file_png"
-    else if (extension === "PDF") return "picture_as_pdf"
-    else if (extension === "DXF") return "file_pdf"
-    else return "preview"
-}
 
 export class FileButton {
     readonly element: HTMLButtonElement;
@@ -25,7 +19,7 @@ export class FileButton {
     constructor(part: PartData, filePath: string) {
         this.part = part;
         this.element = document.createElement("button");
-        this.element.className = "file-button small-round tiny-padding tiny-margin vertical"
+        this.element.className = "file-button chip tiny-margin fill "
         this.element.addEventListener("click", () => this.buttonPressed());
 
         this.filePath = filePath;
@@ -36,6 +30,7 @@ export class FileButton {
         this.tooltip.className = "tooltip max right";
 
         const nameEl = document.createElement("div");
+        nameEl.className = "bold";
         nameEl.textContent = this.fileName;
 
         this.previewHost = document.createElement("div");
@@ -44,11 +39,13 @@ export class FileButton {
         this.tooltip.appendChild(this.previewHost);
 
         this.element.innerHTML = "";
-        // const icon = document.createElement("i");
-        // icon.textContent = getFileIcon(this.extension);
+        const iconDiv = document.createElement("i");
+        const icon = getIcon(`.${this.extension.toLowerCase()}`);
         const ext = document.createElement("span");
         ext.textContent = String(this.extension);
-        // this.element.appendChild(icon);
+        iconDiv.innerHTML = icon.svg
+
+        this.element.appendChild(iconDiv);
         this.element.appendChild(ext);
         this.element.appendChild(this.tooltip);
 
@@ -60,15 +57,63 @@ export class FileButton {
     }
 
     buttonPressed() {
-        const fileViewerDialog = new FileViewerDialog(this.part.name, [this.part], this.filePath);
+        new FileViewerDialog(this.part.name, [this.part], this.filePath);
     }
 
     private async ensurePreview() {
         if (this.previewLoaded) return;
         this.previewLoaded = true;
+
         const node = await Previewer.get(this.fileName, this.extension);
         this.previewHost.innerHTML = "";
         this.previewHost.appendChild(node);
+
+        // ---- ACTION ROW ----
+        const actions = document.createElement("nav");
+        actions.className = "grid top-margin";
+
+        // ---- OPEN BUTTON ----
+        const openButton = document.createElement("a");
+        openButton.className = "s6 inverse-link chip";
+        openButton.innerHTML = `
+            <i>open_in_new</i>
+            <span>Open File</span>
+        `.trim();
+
+        openButton.addEventListener("click", (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            this.buttonPressed();
+        });
+
+        // ---- DOWNLOAD BUTTON ----
+        const downloadButton = document.createElement("a");
+        downloadButton.className = "s6 inverse-link chip";
+        downloadButton.innerHTML = `
+            <i>download</i>
+            <span>Download</span>
+        `.trim();
+
+        downloadButton.addEventListener("click", (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+
+            const a = document.createElement("a");
+            a.href = `/workspace/get_file/${encodeURIComponent(this.fileName)}`;
+            a.download = this.fileName;
+            a.style.display = "none";
+
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        });
+
+        actions.appendChild(openButton);
+        actions.appendChild(downloadButton);
+
+        this.previewHost.appendChild(actions);
+
         invertImages();
     }
+
 }

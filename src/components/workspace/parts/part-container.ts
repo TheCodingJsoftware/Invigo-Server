@@ -198,6 +198,7 @@ export class PartContainer {
     }
 
     private async loadJobTables(data: PartPageData) {
+        const scrollY = this.saveScroll();
         const t0 = performance.now();
         const fragment = document.createDocumentFragment();
         const groups = this.groupPartsByJob(data);
@@ -230,9 +231,12 @@ export class PartContainer {
 
         requestIdleCallback(() => {
             this.element.replaceChildren(fragment);
-            setTimeout(() => {
+
+            requestAnimationFrame(() => {
+                this.restoreScroll(scrollY);
                 invertImages();
-            }, 100);
+            });
+
             console.log(JSON.stringify({
                 handler: "PartContainer.loadJobTables",
                 jobs: jobCount,
@@ -283,5 +287,18 @@ export class PartContainer {
         empty.textContent = message;
 
         this.element.replaceChildren(empty);
+    }
+
+    private saveScroll(): number {
+        return window.scrollY;
+    }
+
+    private restoreScroll(y: number) {
+        requestAnimationFrame(() => {
+            window.scrollTo({
+                top: y,
+                behavior: "auto"
+            });
+        });
     }
 }

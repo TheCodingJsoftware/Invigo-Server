@@ -49,9 +49,17 @@ export function toggleTheme() {
     }
 }
 
-export function invertImages() {
+export function invertImages(element?: HTMLElement, modeOverride?: string) {
     let mode = ui("mode");
-    const images = document.querySelectorAll<HTMLImageElement>('img:not(.ignore-invert)');
+    if (modeOverride) {
+        mode = modeOverride;
+    }
+    let images: NodeListOf<HTMLImageElement>;
+    if (element) {
+        images = element.querySelectorAll<HTMLImageElement>('img:not(.ignore-invert)');
+    } else {
+        images = document.querySelectorAll<HTMLImageElement>('img:not(.ignore-invert)');
+    }
     if (mode === "light") {
         for (let i = 0; i < images.length; i++) {
             images[i].style.filter = 'invert(0)';

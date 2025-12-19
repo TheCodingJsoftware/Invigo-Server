@@ -12,7 +12,6 @@ export class RecutDialog extends DialogComponent {
         super({
             id: "recut-dialog",
             title: `Recutting ${parts.length} part(s)`,
-            position: "bottom",
             bodyContent: `
                 <div class="grid center-align">
                     <div class="s12 field label border round">
