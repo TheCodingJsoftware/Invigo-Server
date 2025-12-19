@@ -1,92 +1,91 @@
 <!DOCTYPE html>
 <html>
-<head>
-    <meta charset="UTF-8">
-    <meta content="width=device-width, initial-scale=1" name="viewport">
-    <meta content="ie=edge" http-equiv="X-UA-Compatible">
-    <meta content="notranslate" name="google">
-    <link href="/static/icon.png" rel="icon">
-    <meta content="width=device-width,initial-scale=1,user-scalable=yes" name="viewport"/>
-    <title>Add Cutoff Sheet</title>
-    <script src="/public/js/sorttable.js"></script>
-</head>
+    <head>
+        <meta charset="UTF-8">
+        <meta content="width=device-width, initial-scale=1" name="viewport">
+        <meta content="ie=edge" http-equiv="X-UA-Compatible">
+        <meta content="notranslate" name="google">
+        <link href="/static/icon.png" rel="icon">
+        <meta content="width=device-width,initial-scale=1,user-scalable=yes" name="viewport" />
+        <title>Add Cutoff Sheet</title>
+    </head>
 
-<body class="dark">
-<header class="fixed primary" style="height: 60px;">
-    <nav>
-        <button class="circle transparent" onclick="goToMainUrl()">
-            <i>arrow_back</i>
-        </button>
-        <h5 class="max">Add Cutoff Sheet</h5>
-    </nav>
-</header>
-<main class="responsive">
-    <div class="content">
-        <article class="border round">
-            <form action="/add_cutoff_sheet" class="grid" method="post">
-                <h4 class="s12 center-align m l">Add Cutoff Sheet</h4>
-                <div class="s12 m6 l6 max field label border small-round">
-                    <input id="length" name="length" oninput="validateForm()" step="0.001" type="number">
-                    <label>Length</label>
-                </div>
-                <div class="s12 m6 l6 max field label border small-round">
-                    <input id="width" name="width" oninput="validateForm()" step="0.001" type="number">
-                    <label>Width</label>
-                </div>
-                <div class="s12 m6 l6 field label suffix border small-round">
-                    <select id="thickness" name="thickness" oninput="validateForm()">
-                        <option disabled selected value>Select Thickness</option>
-                        {% for thickness in thicknesses %}
-                        <option value="{{ thickness }}">{{ thickness }}</option>
-                        {% endfor %}
-                    </select>
-                    <label>Thickness</label>
-                    <i>arrow_drop_down</i>
-                </div>
-                <div class="s12 m6 l6 field label suffix border small-round">
-                    <select id="material" name="material" oninput="validateForm()">
-                        <option disabled selected value>Select Material</option>
-                        {% for material in materials %}
-                        <option value="{{ material }}">{{ material }}</option>
-                        {% endfor %}
-                    </select>
-                    <label>Material</label>
-                    <i>arrow_drop_down</i>
-                </div>
-                <div class="s12 max field label border small-round">
-                    <input id="quantity" name="quantity" oninput="validateForm()" step="0.001" type="number"
-                           value="1">
-                    <label>Quantity</label>
-                </div>
-                <nav class="s12 right-align">
-                    <button class="round" disabled id="addButton" type="submit">
-                        <i>add</i>
-                        <span>Add Cutoff</span>
-                    </button>
-                </nav>
-            </form>
-        </article>
-        <article class="border round no-padding">
-            <h5 class="center-align padding">Cutoff Sheets</h5>
-            <ul class="list border">
-                {% for sheet in cutoff_sheets %}
-                <li>
-                    <div class="max">
-                        <h6 class="small">{{ sheet.thickness }} {{ sheet.material }}</h6>
-                        <div>{{ sheet.get_sheet_dimension() }}</div>
-                    </div>
-                    <form action="/delete_cutoff_sheet" method="post">
-                        <input name="sheet_id" type="hidden" value="{{ sheet.get_name() }}">
-                        <button class="circle error" type="submit">
-                            <i>delete_forever</i>
-                        </button>
+    <body class="dark">
+        <header class="fixed primary" style="height: 60px;">
+            <nav>
+                <button class="circle transparent" onclick="goToMainUrl()">
+                    <i>arrow_back</i>
+                </button>
+                <h5 class="max">Add Cutoff Sheet</h5>
+            </nav>
+        </header>
+        <main class="responsive">
+            <div class="content">
+                <article class="border round">
+                    <form action="/add_cutoff_sheet" class="grid" method="post">
+                        <h4 class="s12 m l">Add Cutoff Sheet</h4>
+                        <div class="s12 m6 l6 max field label border small-round">
+                            <input id="length" name="length" oninput="validateForm()" step="0.001" type="number" required>
+                            <label>Length</label>
+                        </div>
+                        <div class="s12 m6 l6 max field label border small-round">
+                            <input id="width" name="width" oninput="validateForm()" step="0.001" type="number" required>
+                            <label>Width</label>
+                        </div>
+                        <div class="s12 m6 l6 field label suffix border small-round">
+                            <select id="thickness" name="thickness" oninput="validateForm()" required>
+                                <option disabled selected value>Select Thickness</option>
+                                {% for thickness in thicknesses %}
+                                <option value="{{ thickness }}">{{ thickness }}</option>
+                                {% endfor %}
+                            </select>
+                            <label>Thickness</label>
+                            <i>arrow_drop_down</i>
+                        </div>
+                        <div class="s12 m6 l6 field label suffix border small-round">
+                            <select id="material" name="material" oninput="validateForm()" required>
+                                <option disabled selected value>Select Material</option>
+                                {% for material in materials %}
+                                <option value="{{ material }}">{{ material }}</option>
+                                {% endfor %}
+                            </select>
+                            <label>Material</label>
+                            <i>arrow_drop_down</i>
+                        </div>
+                        <div class="s12 max field label border small-round">
+                            <input id="quantity" name="quantity" oninput="validateForm()" step="0.001" type="number"
+                                value="1" required>
+                            <label>Quantity</label>
+                        </div>
+                        <nav class="s12 right-align">
+                            <button class="round" disabled id="addButton" type="submit">
+                                <i>add</i>
+                                <span>Add Cutoff</span>
+                            </button>
+                        </nav>
                     </form>
-                </li>
-                {% endfor %}
-            </ul>
-        </article>
-    </div>
-</main>
-</body>
+                </article>
+                <article class="border round no-padding">
+                    <h5 class="padding">Cutoff Sheets</h5>
+                    <ul class="list border">
+                        {% for sheet in cutoff_sheets %}
+                        <li>
+                            <div class="max">
+                                <span class="bold large-text">{{ sheet.thickness }} {{ sheet.material }}</span>
+                                <div>{{ sheet.get_sheet_dimension() }}</div>
+                            </div>
+                            <form action="/delete_cutoff_sheet" method="post">
+                                <input name="sheet_id" type="hidden" value="{{ sheet.get_name() }}">
+                                <button class="circle error" type="submit">
+                                    <i>delete_forever</i>
+                                </button>
+                            </form>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </article>
+            </div>
+        </main>
+    </body>
 
 </html>
