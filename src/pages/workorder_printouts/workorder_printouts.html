@@ -31,7 +31,7 @@
                                 {% for nest in workorder.nests %}
                                 <button class="border small-round extra tiny-margin nest-button" data-id="{{ workorder.id }}"
                                     data-image="{{ nest.image_path }}" data-name="{{ nest.name }}">
-                                    <img class="responsive" src="/images/{{ nest.image_path }}">
+                                    <img class="responsive" height="440" width="580" src="/images/{{ nest.image_path }}">
                                     <div>{{ nest.name }}</div>
                                     <div class="tooltip right">
                                         <p>Sheet Count: {{ nest.sheet_count }}</p>
