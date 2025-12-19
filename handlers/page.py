@@ -11,9 +11,16 @@ class PageHandler(BaseHandler):
         self.extra_context = extra_context or {}
 
     def set_default_headers(self):
+        self.set_header("X-Content-Type-Options", "nosniff")
+        self.set_header("X-Frame-Options", "DENY")
+        self.set_header("Referrer-Policy", "strict-origin-when-cross-origin")
         self.set_header("Access-Control-Allow-Origin", "*")  # Or specify domains
         self.set_header("Access-Control-Allow-Headers", "x-requested-with, content-type")
         self.set_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+        self.set_header(
+            "Cache-Control",
+            "no-store, no-cache, must-revalidate, max-age=0",
+        )
 
     def options(self):
         # For preflight requests
