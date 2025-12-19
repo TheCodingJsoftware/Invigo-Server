@@ -35,38 +35,39 @@
             {% for vendor in all_vendors %}
             <div class="page padding {{'active' if loop.first else ''}}" id="vendor-{{ vendor.id }}">
                 {% if vendor.email or vendor.website or vendor.phone %}
-                <div class="grid center-align">
+                <div class="row wrap center-align">
                     {% if vendor.phone %}
-                    <button class="border left-align link s12 m6 l4" onclick="window.location.href='tel:{{ vendor.phone }}';">
+                    <button class="border link" onclick="window.location.href='tel:{{ vendor.phone }}';">
                         <i>phone</i>
                         <span>{{ vendor.phone }}</span>
                     </button>
                     {% endif %}
                     {% if vendor.email %}
-                    <button class="border left-align link s12 m6 l4" onclick="window.location.href='mailto:{{ vendor.email }}';">
+                    <button class="border link" onclick="window.location.href='mailto:{{ vendor.email }}';">
                         <i>mail</i>
                         <span>{{ vendor.email }}</span>
                     </button>
                     {% endif %}
                     {% if vendor.website %}
-                    <button class="border left-align link s12 m12 l4" onclick="window.open('{{ vendor.website }}', '_blank')">
+                    <button class="border link" onclick="window.open('{{ vendor.website }}', '_blank')">
                         <i>globe</i>
                         <span data-website="{{ vendor.website }}" id="website-name"></span>
+                        <div class="tooltip bottom">
+                            {{ vendor.website }}
+                        </div>
+                    </button>
+                    {% endif %}
+                    {% if vendor.address %}
+                    <button class="border"
+                        onclick="window.open('https://www.google.com/maps/search/{{ vendor.address|urlencode }}', '_blank')">
+                        <i>map</i>
+                        <span data-website="https://www.google.com/maps/search/{{ vendor.address|urlencode }}">Google Maps</span>
+                        <div class="tooltip bottom max">
+                            {{ vendor.address }}
+                        </div>
                     </button>
                     {% endif %}
                 </div>
-                {% endif %}
-                {% if vendor.address %}
-                <article class="border round">
-                    <nav class="row">
-                        <p class="max">{{ vendor.address }}</p>
-                        <button class="border"
-                            onclick="window.open('https://www.google.com/maps/search/{{ vendor.address|urlencode }}', '_blank')">
-                            <i>map</i>
-                            <span data-website="https://www.google.com/maps/search/{{ vendor.address|urlencode }}">Google Maps</span>
-                        </button>
-                    </nav>
-                </article>
                 {% endif %}
                 <article class="top-margin border round vertical scroll" style="max-height: calc(100vh - 400px) !important;">
                     <ul class="list border">
