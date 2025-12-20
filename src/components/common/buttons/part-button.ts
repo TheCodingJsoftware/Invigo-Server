@@ -52,12 +52,7 @@ export class PartButton {
         applyScopedBeerTheme(
             dialog.element,
             this.part.job_data.job_data.color,
-            `workspace-part-${this.part.job_id}`
-        );
-        applyScopedBeerTheme(
-            dialog.element,
-            this.part.job_data.job_data.color,
-            `workspace-part-dialog-job-${this.part.job_id}`
+            `workspace-part-dialog-${this.part.name}`
         );
         dialog.show();
     }

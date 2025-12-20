@@ -5,11 +5,10 @@ export class InfoDialog extends DialogComponent {
         super({
             id: "info-dialog",
             title: title,
-            headerContent: `<h5>${title}</h5>`,
             bodyContent: `<div>${bodyContent}</div>`,
             footerContent: `
                 <nav class="row top-margin right-align">
-                    <button id="ok" autofocus>
+                    <button id="ok" class="transparent link" autofocus>
                         <span>Ok</span>
                     </button>
                 </nav>`

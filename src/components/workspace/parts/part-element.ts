@@ -2,6 +2,9 @@ import { DueButton } from "@components/common/buttons/due-button";
 import { PartData } from "./part-container";
 import { PartRow } from "./part-row";
 import { SnackbarComponent } from "@components/common/snackbar/snackbar-component";
+import { DialogComponent } from "@components/common/dialog/dialog-component";
+import { InfoDialog } from "@components/common/dialog/info-dialog";
+import { applyScopedBeerTheme } from "@config/material-theme-cookie";
 
 
 export function parsePgTimestamp(input: string | Date): Date | null {
@@ -212,16 +215,61 @@ export class PartElement {
 
         const copyButton = document.createElement("button");
         copyButton.innerHTML = `<i>content_copy</i><span>Copy URL</span>`;
-        copyButton.addEventListener("click", () => {
+
+        copyButton.addEventListener("click", async () => {
             const partURL = `${window.location.origin}/workspace/part/${this.part.job_id}/${this.part.name}`;
-            navigator.clipboard.writeText(partURL);
-            new SnackbarComponent({
-                message: "Part URL copied to clipboard!",
-                type: "green",
-                icon: "content_copy",
-                duration: 1000
-            });
+
+            let copied = false;
+
+            // Try modern clipboard API first
+            if (navigator.clipboard && window.isSecureContext) {
+                try {
+                    await navigator.clipboard.writeText(partURL);
+                    copied = true;
+                } catch {
+                    copied = false;
+                }
+            }
+
+            if (copied) {
+                new SnackbarComponent({
+                    message: "Part URL copied to clipboard!",
+                    type: "green",
+                    icon: "content_copy",
+                    duration: 1000
+                });
+                return;
+            }
+
+            // Clipboard failed → manual copy dialog
+            const dialog = new InfoDialog(
+                "Copy Part URL",
+                `<p>
+                    Automatic copying is not available in this browser.
+                    Please copy the URL below manually:
+                </p>
+                <div class="field label border small-round">
+                    <input
+                        id="manual-copy-input"
+                        type="text"
+                        value="${partURL}"
+                        readonly/>
+                <label>URL</label>
+                </div>
+            `);
+
+            applyScopedBeerTheme(dialog.element, this.part.job_data.job_data.color, `info-dialog`);
+
+            // Auto-select text when dialog is shown
+            setTimeout(() => {
+                const input = dialog.element.querySelector<HTMLInputElement>(
+                    "#manual-copy-input"
+                );
+                input?.focus();
+                input?.select();
+            }, 200);
         });
+
 
         actionsNave.appendChild(copyButton);
 
