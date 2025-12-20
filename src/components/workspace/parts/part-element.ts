@@ -259,7 +259,6 @@ export class PartElement {
             `);
 
             applyScopedBeerTheme(dialog.element, this.part.job_data.job_data.color, `info-dialog`);
-
             // Auto-select text when dialog is shown
             setTimeout(() => {
                 const input = dialog.element.querySelector<HTMLInputElement>(
@@ -268,6 +267,7 @@ export class PartElement {
                 input?.focus();
                 input?.select();
             }, 200);
+            await dialog.show();
         });
 
 
