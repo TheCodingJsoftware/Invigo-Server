@@ -22,6 +22,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     const jobData = await fetchJobData(jobId);
     ui("theme", jobData.job_data.color);
     const partData = loadJSONFromScript<PartData>("part-data");
+    partData.job_data = jobData;
     const partElement = new PartElement(partData);
     partElement.element.classList.add("middle");
     partElement.element.classList.remove("border");

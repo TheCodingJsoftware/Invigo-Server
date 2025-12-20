@@ -218,10 +218,7 @@ class PreviewCache {
         const ctx = canvas.getContext("2d", { alpha: false })!;
         ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-        ctx.fillStyle =
-            getComputedStyle(document.documentElement)
-                .getPropertyValue("--surface")
-                .trim() || "#ffffff";
+        ctx.fillStyle = "#ffffff";
 
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
@@ -271,9 +268,9 @@ class PreviewCache {
             }
             svg.style.width = "100%";
             svg.style.height = "auto";
-            svg.style.background = "var(--surface)";
+            svg.style.background = "#ffffff";
 
-            const stroke = "var(--on-surface)";
+            const stroke = "#000000";
             svg.querySelectorAll<SVGElement>("*").forEach(el => {
                 (el.style as any).stroke = stroke;
                 if (!(el as any).hasAttribute("fill")) {

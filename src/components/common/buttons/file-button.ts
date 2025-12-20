@@ -65,21 +65,11 @@ export class FileButton {
             this.filePath
         );
 
-        this.applyJobThemeAsync(dialog.element);
-    }
-
-    private applyJobThemeAsync(dialog: HTMLElement) {
-        fetchJobData(this.part.job_id)
-            .then(data => {
-                applyScopedBeerTheme(
-                    dialog,
-                    data.job_data.color,
-                    `file-viewer-dialog-job-${this.part.job_id}`
-                );
-            })
-            .catch(() => {
-                /* no-op: dialog stays default themed */
-            });
+        applyScopedBeerTheme(
+            dialog.element,
+            this.part.job_data.job_data.color,
+            `file-viewer-dialog-job-${this.part.job_id}`
+        );
     }
 
     private async ensurePreview() {

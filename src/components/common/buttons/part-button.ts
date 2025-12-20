@@ -49,23 +49,16 @@ export class PartButton {
     buttonPressed() {
         const dialog = new WorkspacePartDialog(this.part);
         invertImages(dialog.element);
-        this.applyJobThemeAsync(dialog.element);
+        applyScopedBeerTheme(
+            dialog.element,
+            this.part.job_data.job_data.color,
+            `workspace-part-${this.part.job_id}`
+        );
+        applyScopedBeerTheme(
+            dialog.element,
+            this.part.job_data.job_data.color,
+            `workspace-part-dialog-job-${this.part.job_id}`
+        );
         dialog.show();
     }
-
-
-    private applyJobThemeAsync(dialog: HTMLElement) {
-        fetchJobData(this.part.job_id)
-            .then(data => {
-                applyScopedBeerTheme(
-                    dialog,
-                    data.job_data.color,
-                    `workspace-part-${this.part.job_id}`
-                );
-            })
-            .catch(() => {
-                /* no-op: dialog stays default themed */
-            });
-    }
-
 }

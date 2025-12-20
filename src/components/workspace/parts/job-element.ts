@@ -88,6 +88,7 @@ export class JobElement {
             const isOverdue = end < now;
 
             part.is_overdue = isOverdue;
+            part.job_data = this.jobData;
             part.part_timeline = timelineEntry;
 
             if (isOverdue) return true;

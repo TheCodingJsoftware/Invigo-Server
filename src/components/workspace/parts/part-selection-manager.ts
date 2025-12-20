@@ -147,27 +147,21 @@ export class PartSelectionManager {
     static recutParts() {
         const selectedParts = this.getSelected().map(partRow => partRow.data);
         const recutPartsDialog = new RecutDialog(selectedParts);
-        this.applyJobThemeAsync(selectedParts[0].job_id, recutPartsDialog.element);
-    }
-
-    static applyJobThemeAsync(jobId: number, dialog: HTMLElement) {
-        fetchJobData(jobId)
-            .then(data => {
-                applyScopedBeerTheme(
-                    dialog,
-                    data.job_data.color,
-                    `recut-dialog-${jobId}`
-                );
-            })
-            .catch(() => {
-                /* no-op: dialog stays default themed */
-            });
+        applyScopedBeerTheme(
+            recutPartsDialog.element,
+            selectedParts[0].job_data.job_data.color,
+            `recut-dialog-${selectedParts[0].job_id}`
+        );
     }
 
     static viewSelectedFiles() {
         const selectedParts = this.getSelected().map(partRow => partRow.data);
         const viewFilesDialog = new FileViewerDialog("Viewer", selectedParts)
-        this.applyJobThemeAsync(selectedParts[0].job_id, viewFilesDialog.element);
+        applyScopedBeerTheme(
+            viewFilesDialog.element,
+            selectedParts[0].job_data.job_data.color,
+            `file-viewer-dialog-job-${selectedParts[0].job_id}`
+        );
     }
 
     static clearSelection() {
