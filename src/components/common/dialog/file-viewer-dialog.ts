@@ -42,6 +42,12 @@ export class FileViewerDialog extends DialogComponent {
             id: "file-viewer-dialog",
             title: title,
             position: "max",
+            headerContent: `<div class="row padding surface-container">
+                <h5 class="max">${title}</h5>
+                <button id="close-button" class="circle transparent">
+                    <i>close</i>
+                </button>
+            </div>`,
             bodyContent: `
                 <div>
                     <header class="surface-container">
@@ -86,6 +92,8 @@ export class FileViewerDialog extends DialogComponent {
     }
 
     async init() {
+        const closeButton = this.element.querySelector("#close-button") as HTMLButtonElement;
+        closeButton.addEventListener("click", () => this.close());
         this.partsElement = this.element.querySelector("#parts") as HTMLElement;
         this.filesElement = this.element.querySelector("#files") as HTMLElement;
         this.partInfoElement = this.element.querySelector("#part-info") as HTMLElement;
@@ -135,7 +143,8 @@ export class FileViewerDialog extends DialogComponent {
         this.selectPart(targetPart ?? this.parts[0]);
         this.initZoomControls();
         this.initPanControls();
-        invertImages();
+
+        invertImages(this.element);
     }
 
     private initZoomControls() {

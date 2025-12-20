@@ -77,6 +77,7 @@ export class DialogComponent {
 
         if (this.options.autoRemove) {
             setTimeout(() => this.dialog.remove(), 200);
+            this.removeOwnOverlay();
         }
 
         this.options.onClose?.();
@@ -110,6 +111,17 @@ export class DialogComponent {
         }
 
         this.dialog.appendChild(dialogContent);
+    }
+
+    private removeOwnOverlay(): void {
+        const prev = this.dialog.previousElementSibling;
+        console.log(prev);
+
+
+        if (prev instanceof HTMLElement && prev.classList.contains("overlay")) {
+            prev.remove();
+            console.log("removed overlay");
+        }
     }
 
     private createDefaultHeader(): void {

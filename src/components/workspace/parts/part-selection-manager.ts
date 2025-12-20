@@ -3,6 +3,8 @@ import { FileViewerDialog } from "@components/common/dialog/file-viewer-dialog";
 import { PartRow } from "@components/workspace/parts/part-row";
 import { UserContext } from "@core/auth/user-context";
 import { WorkspacePermissions } from "@core/auth/workspace-permissions";
+import { fetchJobData } from "./job-element";
+import { applyScopedBeerTheme } from "@config/material-theme-cookie";
 
 export class PartSelectionManager {
     private static element: HTMLElement;
@@ -145,11 +147,27 @@ export class PartSelectionManager {
     static recutParts() {
         const selectedParts = this.getSelected().map(partRow => partRow.data);
         const recutPartsDialog = new RecutDialog(selectedParts);
+        this.applyJobThemeAsync(selectedParts[0].job_id, recutPartsDialog.element);
+    }
+
+    static applyJobThemeAsync(jobId: number, dialog: HTMLElement) {
+        fetchJobData(jobId)
+            .then(data => {
+                applyScopedBeerTheme(
+                    dialog,
+                    data.job_data.color,
+                    `recut-dialog-${jobId}`
+                );
+            })
+            .catch(() => {
+                /* no-op: dialog stays default themed */
+            });
     }
 
     static viewSelectedFiles() {
         const selectedParts = this.getSelected().map(partRow => partRow.data);
         const viewFilesDialog = new FileViewerDialog("Viewer", selectedParts)
+        this.applyJobThemeAsync(selectedParts[0].job_id, viewFilesDialog.element);
     }
 
     static clearSelection() {

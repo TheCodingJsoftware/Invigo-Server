@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+
+    <head>
+        <meta charset="UTF-8">
+
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <title>{{ part_name }}</title>
+
+        <meta name="description"
+            content="Workspace is a real-time production and inventory management interface for tracking parts, jobs, assemblies, and workflow status with live updates, filtering, and state-preserving navigation.">
+
+        <meta name="robots" content="noindex, nofollow">
+
+        <meta name="theme-color" content="#121212">
+
+        <meta property="og:title" content="{{ part_name }}">
+        <meta property="og:description"
+            content="Real-time production and inventory management for parts, jobs, assemblies, and workflows.">
+        <meta property="og:type" content="website">
+        <meta property="og:image" content="/images/{{ part_name }}">
+
+        <meta name="mobile-web-app-capable" content="yes">
+        <link rel="apple-touch-icon" sizes="57x57" href="/images/{{ part_name }}">
+        <link rel="apple-touch-icon" sizes="60x60" href="/images/{{ part_name }}">
+        <link rel="apple-touch-icon" sizes="72x72" href="/images/{{ part_name }}">
+        <link rel="apple-touch-icon" sizes="76x76" href="/images/{{ part_name }}">
+        <link rel="apple-touch-icon" sizes="114x114" href="/images/{{ part_name }}">
+        <link rel="apple-touch-icon" sizes="120x120" href="/images/{{ part_name }}">
+        <link rel="apple-touch-icon" sizes="144x144" href="/images/{{ part_name }}">
+        <link rel="apple-touch-icon" sizes="152x152" href="/images/{{ part_name }}">
+        <link rel="apple-touch-icon" sizes="180x180" href="/images/{{ part_name }}">
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+        <link rel="icon" type="image/png" sizes="192x192" href="/images/{{ part_name }}">
+        <link rel="icon" type="image/png" sizes="32x32" href="/images/{{ part_name }}">
+        <link rel="icon" type="image/png" sizes="16x16" href="/images/{{ part_name }}">
+        <link rel="icon" type="image/svg+xml" href="/images/{{ part_name }}">
+        <link rel="shortcut icon" href="/images/{{ part_name }}">
+
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+        <meta name="apple-mobile-web-app-title" content="{{ part_name }}">
+
+        <link rel="icon" href="/images/{{ part_name }}">
+    </head>
+
+    <body class="dark" data-job-id="{{ job_id }}" data-part-name="{{ part_name }}">
+        <script id="part-data" type="application/json">
+            {{ part_data | tojson }}
+        </script>
+        <main class="responsive">
+        </main>
+    </body>
+
+</html>

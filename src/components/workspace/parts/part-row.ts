@@ -19,6 +19,8 @@ import { TimerButton } from "@components/common/buttons/timer-button";
 import { CurrentProcessButton } from "@components/common/buttons/current-process-button";
 import { PartButton } from "@components/common/buttons/part-button";
 import { DueButton } from "@components/common/buttons/due-button";
+import { fetchJobData } from "./job-element";
+import { applyScopedBeerTheme } from "@config/material-theme-cookie";
 
 export class PartRow {
     readonly element: HTMLTableRowElement;
@@ -256,6 +258,21 @@ export class PartRow {
 
     static async markAsRecut(data: PartData): Promise<void> {
         const recutDialog = new RecutDialog([data]);
+        await this.applyJobThemeAsync(data, recutDialog.element);
+    }
+
+    static applyJobThemeAsync(part: PartData, dialog: HTMLElement) {
+        fetchJobData(part.job_id)
+            .then(data => {
+                applyScopedBeerTheme(
+                    dialog,
+                    data.job_data.color,
+                    `recut-dialog-${part.job_id}`
+                );
+            })
+            .catch(() => {
+                /* no-op: dialog stays default themed */
+            });
     }
 
     static async markAsRecutFinished(data: PartData): Promise<void> {

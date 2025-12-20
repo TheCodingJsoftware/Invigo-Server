@@ -177,7 +177,7 @@ class WorkspacePage {
 
     loadRightNav() {
         const nav = document.createElement("nav");
-        nav.className = "right m l small-width no-space";
+        nav.classList.add("right", "min", "m", "l", "no-space");
         //
         // const materialsFieldset = document.createElement("fieldset");
         // materialsFieldset.classList.add("surface-container", "small-round", "small-width");
@@ -215,7 +215,8 @@ class WorkspacePage {
         // const thicknessContainer = document.createElement("div");
         // thicknessContainer.className = "grid no-space"
         // thicknessFieldset.appendChild(thicknessContainer);
-        const spacer = document.createElement("br");
+        const spacer = document.createElement("hr");
+        spacer.className = "small-margin";
         nav.appendChild(spacer);
 
         for (const thickness of SheetSettingsModel.thicknesses) {
@@ -242,18 +243,18 @@ class WorkspacePage {
 
     loadLeftNav() {
         const nav = document.createElement("nav");
-        nav.classList.add("left", "min");
-        const homeButton = document.createElement("button");
-        homeButton.className = "square round extra";
-        const homeIcon = document.createElement("i");
-        homeIcon.innerText = "home";
-        homeButton.appendChild(homeIcon);
-        homeButton.onclick = () => window.location.href = "/";
+        nav.classList.add("left", "min", "m", "l");
+        const homeButton = document.createElement("a");
+        homeButton.innerHTML = `
+            <i>home</i>
+            <span>Home</span>
+        `
+        homeButton.href = "/";
 
-        const profileButton = document.createElement("button");
-        profileButton.classList.add("border", "large", "circle");
+        const profileButton = document.createElement("a");
         profileButton.innerHTML = `
             <i>person</i>
+            <span>Profile</span>
         `
         profileButton.onclick = () => this.showProfile();
 

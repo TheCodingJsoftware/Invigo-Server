@@ -142,51 +142,117 @@ class PreviewCache {
         return wrap;
     }
 
-    // private async renderPdfThumb(url: string): Promise<HTMLElement> {
-    //     const wrap = document.createElement("div");
-    //     wrap.classList.add("center-align");
-    //     wrap.style.width = `${MAX_W}px`;
-    //
-    //     const loadingTask = (pdfjsLib as any).getDocument({ url });
-    //     const pdf = await loadingTask.promise;
-    //    if (!pdf.numPages || pdf.numPages < 1) {
-    //         const msg = document.createElement("div");
-    //         msg.textContent = "No pages in PDF.";
-    //         wrap.appendChild(msg);
-    //         return wrap;
-    //     }
-    //     const page = await pdf.getPage(1);
-    //     const vp1 = page.getViewport({ scale: 1 });
-    //     const scale = Math.max(0.1, Math.min(1.5, MAX_W / vp1.width));
-    //     const viewport = page.getViewport({ scale: scale });
-    //
-    //     const canvas = document.createElement("canvas");
-    //     const ctx = canvas.getContext("2d")!;
-    //     canvas.width = Math.floor(viewport.width);
-    //     canvas.height = Math.floor(viewport.height);
-    //     canvas.style.width = `${Math.floor(viewport.width)}px`;
-    //     canvas.style.height = `${Math.floor(viewport.height)}px`;
-    //
-    //     if (this.isDark()) {
-    //         canvas.style.filter = "";
-    //         canvas.style.backgroundColor = "";
-    //     } else {
-    //         canvas.style.filter = "invert(1) hue-rotate(180deg) brightness(0.95) contrast(0.95)";
-    //         canvas.style.backgroundColor = "transparent";
-    //     }
-    //
-    //     wrap.appendChild(canvas);
-    //
-    //     const renderTask = page.render({
-    //         canvasContext: ctx,
-    //         viewport,
-    //         background: this.isDark() ? "rgba(0,0,0,0)" : "#ffffff"
-    //     });
-    //     await renderTask.promise;
-    //     return wrap;
-    // }
-
     private async renderDxfThumb(url: string): Promise<HTMLElement> {
+        const { Helper: DxfHelper } = await import("dxf");
+
+        const wrap = document.createElement("div");
+        wrap.className = "center-align";
+
+        const dxfText = await fetch(url, { cache: "force-cache" }).then(r => r.text());
+        const helper = new DxfHelper(dxfText);
+        const svgMarkup = helper.toSVG();
+
+        // Parse SVG safely
+        const svg = new DOMParser()
+            .parseFromString(svgMarkup, "image/svg+xml")
+            .querySelector("svg") as SVGSVGElement | null;
+
+        if (!svg) {
+            wrap.textContent = "Invalid DXF preview";
+            return wrap;
+        }
+
+        // Normalize SVG geometry
+        const w = parseFloat(svg.getAttribute("width") || "0");
+        const h = parseFloat(svg.getAttribute("height") || "0");
+
+        if (!svg.hasAttribute("viewBox") && w > 0 && h > 0) {
+            svg.setAttribute("viewBox", `0 0 ${w} ${h}`);
+        }
+
+        // Force stroke-only DXF look
+        const stroke = getComputedStyle(document.documentElement)
+            .getPropertyValue("--on-surface")
+            .trim() || "#000";
+
+        const STROKE_W = 2;
+
+        svg.querySelectorAll<SVGElement>("*").forEach(el => {
+            el.setAttribute("stroke", stroke);
+            el.setAttribute("stroke-width", String(STROKE_W));
+            el.setAttribute("vector-effect", "non-scaling-stroke"); // IMPORTANT
+            if (!el.hasAttribute("fill")) el.setAttribute("fill", "none");
+        });
+
+        // Serialize SVG
+        const svgStr = new XMLSerializer().serializeToString(svg);
+        const svgBlob = new Blob([svgStr], { type: "image/svg+xml" });
+        const svgUrl = URL.createObjectURL(svgBlob);
+
+        // Rasterize SVG → canvas
+        const imgSvg = new Image();
+        imgSvg.decoding = "async";
+
+        await new Promise<void>((resolve, reject) => {
+            imgSvg.onload = () => resolve();
+            imgSvg.onerror = reject;
+            imgSvg.src = svgUrl;
+        });
+
+        const TARGET_PX = 500;
+        const PAD_PX = 24;
+        const dpr = Math.max(1, window.devicePixelRatio || 1);
+
+        const naturalW = imgSvg.width;
+        const naturalH = imgSvg.height;
+
+        const scale = TARGET_PX / Math.max(naturalW, naturalH);
+
+        const drawW = naturalW * scale;
+        const drawH = naturalH * scale;
+
+        const canvas = document.createElement("canvas");
+        canvas.width = Math.ceil((drawW + PAD_PX * 2) * dpr);
+        canvas.height = Math.ceil((drawH + PAD_PX * 2) * dpr);
+
+        const ctx = canvas.getContext("2d", { alpha: false })!;
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+        ctx.fillStyle =
+            getComputedStyle(document.documentElement)
+                .getPropertyValue("--surface")
+                .trim() || "#ffffff";
+
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        ctx.drawImage(
+            imgSvg,
+            PAD_PX,
+            PAD_PX,
+            drawW,
+            drawH
+        );
+
+        URL.revokeObjectURL(svgUrl);
+
+        // Canvas → PNG
+        const blob = await new Promise<Blob | null>(res =>
+            canvas.toBlob(res, "image/png", 0.92)
+        );
+
+        const img = document.createElement("img");
+        img.loading = "lazy";
+        img.decoding = "async";
+        img.className = "responsive small-round";
+        img.src = blob
+            ? URL.createObjectURL(blob)
+            : canvas.toDataURL("image/png", 0.92);
+
+        wrap.appendChild(img);
+        return wrap;
+    }
+
+    private async renderDxfThumbSVG(url: string): Promise<HTMLElement> {
         const { Helper: DxfHelper } = await import("dxf");
         const wrap = document.createElement("div");
         wrap.classList.add("center-align");

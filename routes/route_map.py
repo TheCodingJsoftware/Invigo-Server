@@ -142,6 +142,7 @@ from handlers.workspace.update_grouped_laser_cut_parts import (
 )
 from handlers.workspace.workspace import WorkspaceHandler
 from handlers.workspace.workspace_part_handler import WorkspaceLaserCutPartHandler
+from handlers.workspace.workspace_part_page_handler import WorkspacePartHandler
 from handlers.workspace.workspace_recut_finished_handler import RecutPartFinishedHandler
 from handlers.workspace.workspace_recut_handler import RecutPartHandler
 from routes.route import route
@@ -234,6 +235,7 @@ api_routes = [
     route(r"/send_email", SendEmailHandler),
     # Workspace Routes
     route(r"/workspace", WorkspaceHandler),
+    route(r"/workspace/part/([0-9]+)/(.*)", WorkspacePartHandler),
     route(r"/api/workspace/update_group", WorkspaceUpdateGroupHandler),
     route(r"/api/workspace/view/parts", PartViewDataHandler),
     route(r"/api/workspace/get/part", GetPartDataHandler),

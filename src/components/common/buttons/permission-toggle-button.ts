@@ -1,4 +1,4 @@
-import {PermissionMap} from "@core/auth/workspace-permissions";
+import { PermissionMap } from "@core/auth/workspace-permissions";
 
 export class PermissionToggleButton {
     private readonly button: HTMLElement;
@@ -10,7 +10,7 @@ export class PermissionToggleButton {
         this.checked = checked;
 
         this.button = document.createElement("button");
-        this.button.className = "left-align round perm tiny-margin";
+        this.button.className = "left-align round perm tiny-margin border";
         this.button.dataset.value = value;
         this.button.setAttribute("role", "checkbox");
         this.button.setAttribute("aria-checked", String(checked));

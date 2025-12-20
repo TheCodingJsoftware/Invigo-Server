@@ -1,6 +1,8 @@
 import { PartData } from "@components/workspace/parts/part-container";
 import { invertImages } from "@utils/theme";
-import { DialogComponent } from "@components/common/dialog/dialog-component";
+import { WorkspacePartDialog } from "@components/common/dialog/workspace-part-dialog";
+import { fetchJobData } from "@components/workspace/parts/job-element";
+import { applyScopedBeerTheme } from "@config/material-theme-cookie";
 
 
 export class PartButton {
@@ -10,7 +12,6 @@ export class PartButton {
     private readonly image: HTMLImageElement;
     private readonly span: HTMLSpanElement;
     private readonly helper: HTMLSpanElement;
-    private readonly tooltip: HTMLDivElement;
 
     constructor(part: PartData) {
         this.part = part;
@@ -18,12 +19,6 @@ export class PartButton {
         this.button = document.createElement("button");
         this.button.className = "part-button extra border small-round blur left-align"
         this.button.addEventListener("click", () => this.buttonPressed());
-
-        this.tooltip = document.createElement("div");
-        this.tooltip.className = "tooltip bottom";
-        this.tooltip.innerHTML = `
-            ${this.part.meta_data.gauge} ${this.part.meta_data.material}
-        `.trim();
 
         this.image = document.createElement("img");
         this.image.className = "responsive";
@@ -52,10 +47,25 @@ export class PartButton {
     }
 
     buttonPressed() {
-        new DialogComponent({
-            title: this.part.name,
-            bodyContent: `<img class="responsive small-round" src="${this.image.src}" alt="${this.image.alt}" />`,
-        })
-        invertImages();
+        const dialog = new WorkspacePartDialog(this.part);
+        invertImages(dialog.element);
+        this.applyJobThemeAsync(dialog.element);
+        dialog.show();
     }
+
+
+    private applyJobThemeAsync(dialog: HTMLElement) {
+        fetchJobData(this.part.job_id)
+            .then(data => {
+                applyScopedBeerTheme(
+                    dialog,
+                    data.job_data.color,
+                    `workspace-part-${this.part.job_id}`
+                );
+            })
+            .catch(() => {
+                /* no-op: dialog stays default themed */
+            });
+    }
+
 }

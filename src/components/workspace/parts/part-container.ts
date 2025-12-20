@@ -31,7 +31,7 @@ export interface PartData {
     meta_data: LaserCutPartData["meta_data"];
     workspace_data: LaserCutPartData["workspace_data"];
     created_at: string;
-    updated_at: string;
+    modified_at: string;
     // This does not come from workspace db
     is_overdue: boolean;
     part_timeline: TimelineEntry;
@@ -120,7 +120,7 @@ export class PartContainer {
                 [settings.sortByMaterial, a.meta_data.material.localeCompare(b.meta_data.material)],
                 [settings.sortByThickness, a.meta_data.gauge.localeCompare(b.meta_data.gauge)],
                 [settings.sortByCreatedTime, new Date(a.created_at).getTime() - new Date(b.created_at).getTime()],
-                [settings.sortByModifiedTime, new Date(a.updated_at).getTime() - new Date(b.updated_at).getTime()],
+                [settings.sortByModifiedTime, new Date(a.modified_at).getTime() - new Date(b.modified_at).getTime()],
                 [settings.sortByBendHits, a.meta_data.bend_hits - b.meta_data.bend_hits],
                 [settings.sortBySurfaceArea, a.meta_data.surface_area - b.meta_data.surface_area],
                 [settings.sortByWeight, a.meta_data.weight - b.meta_data.weight],

@@ -1,8 +1,8 @@
-import {AssemblyViewMode} from "@config/assembly-view-mode";
-import {DataTypeSwitcherMode} from "@config/data-type-mode";
-import {JobViewMode} from "@config/job-view-mode";
-import {PartViewMode} from "@config/part-view-mode";
-import {WorkspaceSettings} from "@core/settings/workspace-settings";
+import { AssemblyViewMode } from "@config/assembly-view-mode";
+import { DataTypeSwitcherMode } from "@config/data-type-mode";
+import { JobViewMode } from "@config/job-view-mode";
+import { PartViewMode } from "@config/part-view-mode";
+import { WorkspaceSettings } from "@core/settings/workspace-settings";
 
 export type PermissionEntry = {
     value: string;
@@ -31,6 +31,16 @@ export const PermissionTree = {
             value: "edit_roles",
             label: "Edit Roles",
             description: "Allows editing role permissions and configurations.",
+        },
+        AccessPrintouts: {
+            value: "access_printouts",
+            label: "Access Printouts",
+            description: "Allows access to printout interfaces for jobs, purchase orders, and workorders.",
+        },
+        ViewLogs: {
+            value: "view_logs",
+            label: "View Logs",
+            description: "Allows access to view application logs.",
         },
         PlanProduction: {
             value: "plan_production",

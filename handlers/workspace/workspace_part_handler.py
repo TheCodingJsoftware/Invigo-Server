@@ -1,6 +1,7 @@
 import json
 import logging
 import traceback
+from datetime import date, datetime
 from enum import Enum
 
 from handlers.base import BaseHandler
@@ -17,12 +18,37 @@ class PartDataType(Enum):
 
 
 class WorkspaceLaserCutPartHandler(BaseHandler):
+    def write_json(self, payload, status: int = 200):
+        """
+        Safely write JSON responses.
+        - Converts datetime/date to ISO 8601
+        - Sets correct headers
+        - Prevents Tornado json serialization crashes
+        """
+        self.set_status(status)
+        self.set_header("Content-Type", "application/json")
+
+        self.finish(json.dumps(payload, default=self._json_default))
+
+    @staticmethod
+    def _json_default(obj):
+        if isinstance(obj, (datetime, date)):
+            return obj.isoformat()
+        raise TypeError(f"Object of type {obj.__class__.__name__} is not JSON serializable")
+
     async def get(self):
-        job_id = int(self.get_argument("job_id", -1))
-        name = self.get_argument("name", "")
-        flowtag = self.get_argument("flowtag", []).split(",")
-        flowtag_index = self.get_argument("flowtag_index", -1)
-        flowtag_status_index = self.get_argument("flowtag_status_index", -1)
+        job_id = int(self.get_argument("job_id"))
+        name = self.get_argument("name")
+
+        flowtag_arg = self.get_argument("flowtag", None)
+        flowtag = flowtag_arg.split(",") if flowtag_arg else None
+
+        flowtag_index_arg = self.get_argument("flowtag_index", None)
+        flowtag_index = int(flowtag_index_arg) if flowtag_index_arg is not None else None
+
+        flowtag_status_index_arg = self.get_argument("flowtag_status_index", None)
+        flowtag_status_index = int(flowtag_status_index_arg) if flowtag_status_index_arg is not None else None
+
         data_type = self.get_argument("data_type", None)
 
         try:
@@ -30,17 +56,17 @@ class WorkspaceLaserCutPartHandler(BaseHandler):
                 job_id=job_id,
                 name=name,
                 flowtag=flowtag,
-                flowtag_index=int(flowtag_index),
-                flowtag_status_index=int(flowtag_status_index),
+                flowtag_index=flowtag_index,
+                flowtag_status_index=flowtag_status_index,
                 data_type=data_type,
             )
-            self.write({"data": data})
+            self.write_json({"data": data})
 
         except ValueError as e:
-            logging.error(traceback.print_exc())
+            logging.error(traceback.format_exc())
             self.send_error(400, reason=str(e))
         except Exception as e:
-            logging.error(traceback.print_exc())
+            logging.error(traceback.format_exc())
             self.send_error(500, reason=str(e))
 
     async def put(self):

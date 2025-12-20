@@ -14,11 +14,24 @@ interface JobSettings {
     isCollapsed: boolean;
 }
 
+
+export async function fetchJobData(jobId: number): Promise<JobData> {
+    const response = await fetch(`/api/workspace/get/job/${jobId}`);
+    if (!response.ok) {
+        throw new Error(`Failed to fetch job data: ${response.statusText}`);
+    }
+
+    const data: JobData = await response.json();
+    return data;
+}
+
+
 export class JobElement {
     readonly element: HTMLElement;
     readonly articleContent: HTMLDivElement;
     readonly jobId: number;
     jobName?: string;
+    jobData!: JobData;
     parts: PartData[];
     jobSettings: SettingsManager<JobSettings>;
 
@@ -44,10 +57,11 @@ export class JobElement {
         this.element.appendChild(this.articleContent);
 
         const jd0 = performance.now();
-        const jobData = await this.fetchJobData();
+        this.jobData = await fetchJobData(this.jobId);
+        await this.applyJobDataToUI(this.jobData);
         const jdMs = performance.now() - jd0;
 
-        const flowtagTimeline = jobData.job_data.flowtag_timeline;
+        const flowtagTimeline = this.jobData.job_data.flowtag_timeline;
         const activeRange = WorkspaceDateRange.getActiveRange();
 
         const f0 = performance.now();
@@ -131,17 +145,6 @@ export class JobElement {
         }));
     }
 
-    private async fetchJobData(): Promise<JobData> {
-        const response = await fetch(`/api/workspace/get/job/${this.jobId}`);
-        if (!response.ok) {
-            throw new Error(`Failed to fetch job data: ${response.statusText}`);
-        }
-
-        const data: JobData = await response.json();
-        await this.applyJobDataToUI(data);
-        return data;
-    }
-
     private async applyJobDataToUI(data: JobData): Promise<void> {
         const title = this.element.querySelector<HTMLElement>(`#job-${this.jobId}`);
         if (!title) return;
@@ -184,6 +187,12 @@ export class JobElement {
                 "Are you sure you want to mark all parts in this job as complete?"
             );
 
+            applyScopedBeerTheme(
+                dialog.element,
+                this.jobData.job_data.color,
+                `are-you-sure-dialog-job-${this.jobId}`
+            );
+
             if (!(await dialog.show())) return;
 
             for (const part of this.parts) {
@@ -207,7 +216,12 @@ export class JobElement {
         `.trim();
 
         openFilesButton.onclick = () => {
-            new FileViewerDialog(this.jobName, this.parts);
+            const dialog = new FileViewerDialog(this.jobName, this.parts);
+            applyScopedBeerTheme(
+                dialog.element,
+                this.jobData.job_data.color,
+                `file-viewer-dialog-job-${this.jobId}`
+            );
         };
 
         const toggleButton = document.createElement("button");

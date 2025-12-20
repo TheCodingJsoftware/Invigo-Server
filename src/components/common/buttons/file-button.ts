@@ -3,6 +3,8 @@ import { Ext, Previewer } from "@utils/preview-cache";
 import { FileViewerDialog } from "@components/common/dialog/file-viewer-dialog";
 import { getIcon } from 'material-file-icons';
 import { invertImages } from "@utils/theme";
+import { fetchJobData } from "@components/workspace/parts/job-element";
+import { applyScopedBeerTheme } from "@config/material-theme-cookie";
 
 
 export class FileButton {
@@ -30,7 +32,7 @@ export class FileButton {
         this.tooltip.className = "tooltip max right";
 
         const nameEl = document.createElement("div");
-        nameEl.className = "bold";
+        nameEl.className = "bold large-text";
         nameEl.textContent = this.fileName;
 
         this.previewHost = document.createElement("div");
@@ -57,7 +59,27 @@ export class FileButton {
     }
 
     buttonPressed() {
-        new FileViewerDialog(this.part.name, [this.part], this.filePath);
+        const dialog = new FileViewerDialog(
+            this.part.name,
+            [this.part],
+            this.filePath
+        );
+
+        this.applyJobThemeAsync(dialog.element);
+    }
+
+    private applyJobThemeAsync(dialog: HTMLElement) {
+        fetchJobData(this.part.job_id)
+            .then(data => {
+                applyScopedBeerTheme(
+                    dialog,
+                    data.job_data.color,
+                    `file-viewer-dialog-job-${this.part.job_id}`
+                );
+            })
+            .catch(() => {
+                /* no-op: dialog stays default themed */
+            });
     }
 
     private async ensurePreview() {
@@ -74,7 +96,7 @@ export class FileButton {
 
         // ---- OPEN BUTTON ----
         const openButton = document.createElement("a");
-        openButton.className = "s6 inverse-link chip";
+        openButton.className = "s6 button primary small";
         openButton.innerHTML = `
             <i>open_in_new</i>
             <span>Open File</span>
@@ -88,7 +110,7 @@ export class FileButton {
 
         // ---- DOWNLOAD BUTTON ----
         const downloadButton = document.createElement("a");
-        downloadButton.className = "s6 inverse-link chip";
+        downloadButton.className = "s6 button primary small";
         downloadButton.innerHTML = `
             <i>download</i>
             <span>Download</span>
@@ -113,7 +135,7 @@ export class FileButton {
 
         this.previewHost.appendChild(actions);
 
-        invertImages();
+        invertImages(this.tooltip);
     }
 
 }

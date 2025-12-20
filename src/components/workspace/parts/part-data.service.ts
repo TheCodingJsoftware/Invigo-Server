@@ -39,6 +39,11 @@ interface RecutPartDataParams extends PartDataParams {
     recutReason: string;
 }
 
+interface FetchPartParams {
+    jobId: number;
+    name: string;
+}
+
 export class PartDataService {
     private static buildFetchUrl(params: PartDataParams): string {
         const url = new URL('/api/workspace/laser_cut_part', window.location.origin);
@@ -243,6 +248,22 @@ export class PartDataService {
         const result = await response.json();
         return result.data;
     }
+
+    static async fetchPart<T>(params: FetchPartParams): Promise<T> {
+        const url = new URL('/api/workspace/laser_cut_part', window.location.origin);
+        url.searchParams.append('job_id', params.jobId.toString());
+        url.searchParams.append('name', params.name);
+
+        const response = await fetch(url.toString());
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const result = await response.json();
+        return result.data;
+    }
+
 
     static async getWorkspaceData(params: Omit<PartDataParams, 'dataType'>) {
         const data = await this.fetchPartData<string>({

@@ -1,6 +1,5 @@
 import { PartData } from "@components/workspace/parts/part-container";
 import { UserContext } from "@core/auth/user-context";
-import { WorkspacePermissions } from "@core/auth/workspace-permissions";
 
 export class DueButton {
     private readonly text: string;
