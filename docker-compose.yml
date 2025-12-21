@@ -1,0 +1,66 @@
+services:
+  app:
+    image: jarebear/invigo-server:latest
+    container_name: invigo_server
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
+    environment:
+      # App
+      PORT: 5057
+      PYTHONPATH: /app
+      DATA_PATH: /app/data
+      TZ: America/Winnipeg
+
+      # Database
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: "PostgresPassword123!"
+      POSTGRES_HOST: db
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: invigo
+      POSTGRES_WORKSPACE_DB: workspace
+
+      # Pooling / timeouts
+      POSTGRES_MIN_CONNECTIONS: 5
+      POSTGRES_MAX_CONNECTIONS: 20
+      POSTGRES_TIMEOUT: 60
+      POSTGRES_COMMAND_TIMEOUT: 60
+      POSTGRES_MAX_INACTIVE_CONNECTION_LIFETIME: 60
+
+      WORKSPACE_BACKGROUND_CACHE_WARM_UP_INTERVAL: 60
+
+    ports:
+      - "5057:5057"
+
+    volumes:
+      # - /volume1/Invigo/Server:/app/data
+      - /mnt/SafeHaven/Forge/Invigo-Server:/app/data
+
+  db:
+    image: postgres:18.1
+    container_name: invigo_db
+    restart: unless-stopped
+
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+    environment:
+      POSTGRES_DB: invigo
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: "PostgresPassword123!"
+      TZ: America/Winnipeg
+
+    volumes:
+      - pgdata:/var/lib/postgresql/18/main
+
+
+    ports:
+      - "5432:5432"
+
+volumes:
+  pgdata:

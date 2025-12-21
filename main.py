@@ -3,18 +3,15 @@ import os
 import shutil
 import signal
 import sys
-import threading
-import time
 import zipfile
-from collections import defaultdict
-from datetime import datetime, timedelta
+from datetime import datetime
 from functools import partial
 from typing import Literal
 
 import msgspec
-import schedule
 import tornado
-from tornado.ioloop import IOLoop
+from tornado.ioloop import IOLoop, PeriodicCallback
+from tornado.httpserver import HTTPServer
 
 import config.variables as variables
 from config.environments import Environment
@@ -26,10 +23,6 @@ from utils.sheet_report import generate_sheet_report
 
 workspace_db = BaseHandler.workspace_db
 
-# A buffer to collect notifications briefly
-_notify_buffer = defaultdict(list)
-_notify_tasks = {}
-
 WORKSPACE_TABLE_CHANNELS = [
     "jobs",
     "assemblies",
@@ -39,145 +32,183 @@ WORKSPACE_TABLE_CHANNELS = [
     "view_grouped_laser_cut_parts_by_job",
 ]
 
+shutdown_event = asyncio.Event()
 
+# -------------------------
+# DATABASE LISTENER (ROBUST)
+# -------------------------
 async def start_workspace_services():
-    await workspace_db.connect()
-    if workspace_db.db_pool:
-        conn = await workspace_db.db_pool.acquire()
-        for channel in WORKSPACE_TABLE_CHANNELS:
-            await conn.add_listener(channel, workspace_notify_handler)
+    while not shutdown_event.is_set():
+        try:
+            await workspace_db.connect()
+
+            async with workspace_db.db_pool.acquire() as conn:
+                for channel in WORKSPACE_TABLE_CHANNELS:
+                    await conn.add_listener(channel, workspace_notify_handler)
+
+                # Block until connection dies or shutdown
+                await shutdown_event.wait()
+
+        except asyncio.CancelledError:
+            break
+        except Exception:
+            tornado.log.app_log.exception(
+                "Workspace DB listener crashed, retrying in 5s"
+            )
+            await asyncio.sleep(5)
 
 
 async def workspace_notify_handler(conn, pid, channel, payload):
-    msg = msgspec.json.decode(payload)
+    try:
+        msg = msgspec.json.decode(payload)
+    except Exception:
+        tornado.log.app_log.warning("Invalid NOTIFY payload: %r", payload)
+        return
 
-    # Dynamic mapping
-    table = channel
+    try:
+        await _handle_workspace_message(channel, msg)
+    except Exception:
+        tornado.log.app_log.exception("Error processing workspace notification")
+
+
+async def _handle_workspace_message(channel: str, msg: dict):
     op: Literal["INSERT", "UPDATE", "DELETE"] = msg.get("type")
     job_id = msg.get("job_id")
-    part_id = msg.get("id")
-    delta = msg.get("delta")
     part_name = msg.get("part_name")
 
-    if table == "jobs":
-        if op == "INSERT":
+    if channel == "jobs":
+        if op in ("INSERT", "UPDATE"):
             job = await workspace_db.get_job_by_id(job_id)
-            WebSocketWorkspaceHandler.broadcast({"type": "job_created", "job": job})
-        elif op == "UPDATE":
-            job = await workspace_db.get_job_by_id(job_id)
-            WebSocketWorkspaceHandler.broadcast({"type": "job_updated", "job": job})
+            WebSocketWorkspaceHandler.broadcast(
+                {"type": f"job_{op.lower()}", "job": job}
+            )
         elif op == "DELETE":
-            WebSocketWorkspaceHandler.broadcast({"type": "job_deleted", "job_id": job_id})
-    elif table == "view_grouped_laser_cut_parts_by_job":
-        flowtag = msg.get("flowtag")
-        flowtag_index = msg.get("flowtag_index")
+            WebSocketWorkspaceHandler.broadcast(
+                {"type": "job_deleted", "job_id": job_id}
+            )
 
+    elif channel == "view_grouped_laser_cut_parts_by_job":
         WebSocketWorkspaceHandler.broadcast(
             {
                 "type": "grouped_parts_job_view_changed",
                 "operation": op.lower(),
                 "job_id": job_id,
                 "part_name": part_name,
-                "flowtag": flowtag,
-                "flowtag_index": flowtag_index,
+                "flowtag": msg.get("flowtag"),
+                "flowtag_index": msg.get("flowtag_index"),
             }
         )
 
 
-setup_logging()
-# tornado.log.enable_pretty_logging()
+# -------------------------
+# BACKUPS (SAFE)
+# -------------------------
+def zip_files(zip_path: str):
+    data_dir = os.path.join(Environment.DATA_PATH, "data")
+    os.makedirs(os.path.dirname(zip_path), exist_ok=True)
 
-if sys.platform == "win32":
-    asyncio.set_event_loop_policy(asyncio.WindowsProactorEventLoopPolicy())
+    if not os.path.isdir(data_dir):
+        return
 
-
-def hourly_backup_inventory_files() -> None:
-    files_to_backup = os.listdir(f"{Environment.DATA_PATH}/data")
-    path_to_zip_file: str = f"{Environment.DATA_PATH}/backups/Hourly Backup - {datetime.now().strftime('%I %p')}.zip"
-    zip_files(path_to_zip_file, files_to_backup)
-
-
-def daily_backup_inventory_files() -> None:
-    files_to_backup = os.listdir(f"{Environment.DATA_PATH}/data")
-    path_to_zip_file: str = f"{Environment.DATA_PATH}/backups/Daily Backup - {datetime.now().strftime('%d %B')}.zip"
-    zip_files(path_to_zip_file, files_to_backup)
+    with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as z:
+        for name in os.listdir(data_dir):
+            full = os.path.join(data_dir, name)
+            if os.path.isfile(full):
+                z.write(full, name)
 
 
-def weekly_backup_inventory_files() -> None:
-    files_to_backup = os.listdir(f"{Environment.DATA_PATH}/data")
-    path_to_zip_file: str = f"{Environment.DATA_PATH}/backups/Weekly Backup - {datetime.now().strftime('%W')}.zip"
-    zip_files(path_to_zip_file, files_to_backup)
-
-
-def zip_files(path_to_zip_file: str, files_to_backup: list[str]) -> None:
-    os.makedirs(f"{Environment.DATA_PATH}/backups", exist_ok=True)
-    file = zipfile.ZipFile(path_to_zip_file, mode="w")
-    for file_path in files_to_backup:
-        file.write(
-            f"{Environment.DATA_PATH}/data/{file_path}",
-            file_path,
-            compress_type=zipfile.ZIP_DEFLATED,
-        )
-    file.close()
-
-
-def schedule_thread():
-    while True:
-        schedule.run_pending()
-        time.sleep(5)
-
-
-def schedule_daily_task_at(hour, minute, task):
-    now = datetime.now()
-    next_run = now.replace(hour=hour, minute=minute, second=0, microsecond=0)
-    if next_run < now:
-        next_run += timedelta(days=1)
-    delay = (next_run - now).total_seconds()
-
-    IOLoop.current().call_later(delay, task)
-    IOLoop.current().call_later(delay + 86400, lambda: schedule_daily_task_at(hour, minute, task))  # Reschedule for the next day
-
-
-def copy_server_log_file():
-    shutil.copyfile(
-        f"{Environment.DATA_PATH}/server.log",
-        f"{Environment.DATA_PATH}/logs/Server Log - {datetime.now().strftime('%A %B %d %Y')}.log",
+def hourly_backup():
+    zip_files(
+        f"{Environment.DATA_PATH}/backups/Hourly Backup - "
+        f"{datetime.now().strftime('%I %p')}.zip"
     )
 
 
+def daily_backup():
+    zip_files(
+        f"{Environment.DATA_PATH}/backups/Daily Backup - "
+        f"{datetime.now().strftime('%d %B')}.zip"
+    )
+
+
+def weekly_backup():
+    zip_files(
+        f"{Environment.DATA_PATH}/backups/Weekly Backup - "
+        f"{datetime.now().strftime('%W')}.zip"
+    )
+
+
+def copy_server_log():
+    src = f"{Environment.DATA_PATH}/server.log"
+    dst_dir = f"{Environment.DATA_PATH}/logs"
+    os.makedirs(dst_dir, exist_ok=True)
+
+    if os.path.exists(src):
+        shutil.copyfile(
+            src,
+            f"{dst_dir}/Server Log - {datetime.now().strftime('%A %B %d %Y')}.log",
+        )
+
+
+# -------------------------
+# APP
+# -------------------------
 def make_app():
-    return tornado.web.Application(route_map.routes, cookie_secret=Environment.COOKIE_SECRET, websocket_ping_interval=25, websocket_ping_timeout=25)
+    return tornado.web.Application(
+        route_map.routes,
+        cookie_secret=Environment.COOKIE_SECRET,
+        websocket_ping_interval=25,
+        websocket_ping_timeout=25,
+    )
 
 
-def shutdown():
-    print("Shutting down cleanly...")
+# -------------------------
+# SHUTDOWN
+# -------------------------
+async def shutdown():
+    tornado.log.app_log.info("Shutting down cleanly...")
+    shutdown_event.set()
+
+    if workspace_db.db_pool:
+        await workspace_db.db_pool.close()
+
     IOLoop.current().stop()
 
 
+def signal_handler(sig, frame):
+    IOLoop.current().add_callback_from_signal(shutdown)
+
+
+# -------------------------
+# MAIN
+# -------------------------
 if __name__ == "__main__":
-    signal.signal(signal.SIGINT, lambda s, f: shutdown())
-    signal.signal(signal.SIGTERM, lambda s, f: shutdown())
-    # Does not need to be thread safe
-    schedule.every().monday.at("04:00").do(partial(generate_sheet_report, variables.software_connected_clients))
-    schedule.every().hour.do(hourly_backup_inventory_files)
-    schedule.every().day.at("04:00").do(copy_server_log_file)
-    schedule.every().day.at("04:00").do(daily_backup_inventory_files)
-    schedule.every().week.do(weekly_backup_inventory_files)
+    setup_logging()
 
-    # For thread safety
-    # schedule_daily_task_at(4, 0, check_production_plan_for_jobs)
-    # periodic_callback = PeriodicCallback(check_if_jobs_are_complete, 60000)  # 60000 ms = 1 minute
-    # periodic_callback.start()
+    if sys.platform == "win32":
+        asyncio.set_event_loop_policy(asyncio.WindowsProactorEventLoopPolicy())
 
-    thread = threading.Thread(target=schedule_thread)
-    thread.start()
+    signal.signal(signal.SIGINT, signal_handler)
+    signal.signal(signal.SIGTERM, signal_handler)
 
-    IOLoop.current().run_sync(start_workspace_services)
-
-    app = tornado.httpserver.HTTPServer(make_app(), xheaders=True)
-    # IOLoop.current().add_callback(BaseHandler.workspace_db.start_background_cache_worker)
-
-    # executor = concurrent.futures.ThreadPoolExecutor(max_workers=10)
-    # app.executor = executor
+    # HTTP server
+    app = HTTPServer(make_app(), xheaders=True)
     app.listen(int(Environment.PORT), address="0.0.0.0")
-    tornado.ioloop.IOLoop.current().start()
+
+    # Schedulers (Tornado-native)
+    PeriodicCallback(hourly_backup, 60 * 60 * 1000).start()
+    PeriodicCallback(daily_backup, 24 * 60 * 60 * 1000).start()
+    PeriodicCallback(weekly_backup, 7 * 24 * 60 * 60 * 1000).start()
+    PeriodicCallback(copy_server_log, 24 * 60 * 60 * 1000).start()
+
+    # Weekly report
+    PeriodicCallback(
+        partial(generate_sheet_report, variables.software_connected_clients),
+        7 * 24 * 60 * 60 * 1000,
+    ).start()
+
+    # DB listeners
+    IOLoop.current().spawn_callback(start_workspace_services)
+
+    tornado.log.app_log.info("Invigo server started")
+    IOLoop.current().start()

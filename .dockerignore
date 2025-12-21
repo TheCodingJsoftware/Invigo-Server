@@ -23,6 +23,7 @@ __pycache__/
 .coverage
 .tox/
 .ruff_cache/
+*.pyc
 
 # Build artifacts
 build/
@@ -33,20 +34,23 @@ dist/
 # Logs and temp files
 *.log
 logs/
+app/logs/
 backups/
+app/backups/
 *.bak
 *.tmp
 *.swp
 
 # App-specific data and output
 data/
+app/data/
 workorders/
 saved_quotes/
 saved_jobs/
 previous_quotes/
 images/
 .dist/
-public/
+/frontend/public
 logs/
 jscharting/
 
