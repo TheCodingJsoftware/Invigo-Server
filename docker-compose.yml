@@ -2,19 +2,28 @@ services:
   app:
     image: jarebear/invigo-server:latest
     container_name: invigo_server
+
+    # App will not start until Postgres passes pg_isready
+    # This prevents connection storms and startup crashes
     depends_on:
       db:
         condition: service_healthy
+
     restart: unless-stopped
 
     environment:
-      # App
+      # ======================
+      # Application settings
+      # ======================
       PORT: 5057
       PYTHONPATH: /app
       DATA_PATH: /app/data
       TZ: America/Winnipeg
 
-      # Database
+      # ======================
+      # Database connection
+      # ======================
+      # Uses Docker DNS (service name `db`)
       POSTGRES_USER: admin
       POSTGRES_PASSWORD: "PostgresPassword123!"
       POSTGRES_HOST: db
@@ -22,27 +31,39 @@ services:
       POSTGRES_DB: invigo
       POSTGRES_WORKSPACE_DB: workspace
 
-      # Pooling / timeouts
+      # ======================
+      # Connection pooling / safety
+      # ======================
+      # Prevents runaway connections and stale sockets
       POSTGRES_MIN_CONNECTIONS: 5
       POSTGRES_MAX_CONNECTIONS: 20
       POSTGRES_TIMEOUT: 60
       POSTGRES_COMMAND_TIMEOUT: 60
       POSTGRES_MAX_INACTIVE_CONNECTION_LIFETIME: 60
 
+      # Background cache warm-up interval (seconds)
       WORKSPACE_BACKGROUND_CACHE_WARM_UP_INTERVAL: 60
 
     ports:
+      # Exposes app to host
       - "5057:5057"
 
     volumes:
+      # Old Synology mount (commented out)
       # - /volume1/Invigo/Server:/app/data
+
+      # Active bind mount for application data
+      # Explicit host path avoids Portainer-managed volumes
       - /mnt/SafeHaven/Forge/Invigo-Server:/app/data
+
 
   db:
     image: postgres:18.1
     container_name: invigo_db
     restart: unless-stopped
 
+    # Healthcheck is critical for depends_on gating
+    # pg_isready confirms Postgres is accepting connections
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U admin"]
       interval: 5s
@@ -50,17 +71,54 @@ services:
       retries: 10
 
     environment:
+      # Initial database created on first init only
       POSTGRES_DB: invigo
       POSTGRES_USER: admin
       POSTGRES_PASSWORD: "PostgresPassword123!"
       TZ: America/Winnipeg
 
     volumes:
-      - pgdata:/var/lib/postgresql/18/main
+      # ======================
+      # DATA PERSISTENCE (READ THIS)
+      # ======================
+      #
+      # Use EITHER:
+      #   - a named volume (pgdata)
+      # OR:
+      #   - a bind mount (/volume1/Invigo/Postgres)
+      #
+      # NEVER both.
+      #
+      # Mixing a named volume and a bind mount on /var/lib/postgresql
+      # will cause mount shadowing and silent data loss.
+      #
+      # If you enable the bind mount below:
+      #   - REMOVE pgdata from this service
+      #   - REMOVE the `volumes: pgdata:` block at the bottom
+      #
 
+      # CURRENT (named volume)
+      # Docker-managed volume, opaque and Portainer-scoped
+      # Safe ONLY if stack name never changes and volumes are never removed
+      - pgdata:/var/lib/postgresql
+
+      # RECOMMENDED (bind mount)
+      # Explicit host path, SMB-visible, immune to Portainer redeploys
+      # - /volume1/Invigo/Postgres:/var/lib/postgresql
 
     ports:
+      # Exposes Postgres to host (optional; remove if not needed externally)
       - "5432:5432"
 
+
 volumes:
+  # ======================
+  # NAMED VOLUME DEFINITION
+  # ======================
+  #
+  # This MUST be removed if a bind mount is used above.
+  #
+  # Leaving this defined while using a bind mount is a foot-gun:
+  # Portainer or a future edit can reattach it and hide real data.
+  #
   pgdata:
