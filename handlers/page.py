@@ -21,6 +21,8 @@ class PageHandler(BaseHandler):
             "Cache-Control",
             "no-store, no-cache, must-revalidate, max-age=0",
         )
+        self.set_header("Pragma", "no-cache")
+        self.set_header("Expires", "0")
 
     def options(self):
         # For preflight requests

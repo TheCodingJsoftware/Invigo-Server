@@ -184,3 +184,4 @@ workorders
 jscharting
 node_modules
 users.json.lock
+migrate_invigo_db.sh

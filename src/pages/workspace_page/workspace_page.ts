@@ -304,10 +304,14 @@ class WorkspacePage {
 }
 
 document.addEventListener("DOMContentLoaded", async () => {
+    await UserContext.init();
+    if (UserContext.getInstance().user.name === "Guest") {
+        window.location.href = "/login";
+        return;
+    }
     loadAnimationStyleSheet();
     await SheetSettingsModel.init();
     await WorkspaceSettings.init();
-    await UserContext.init();
 
     await Promise.all([
         WorkspaceFilter.init(),
