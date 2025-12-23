@@ -7,6 +7,47 @@ function goToMainUrl() {
 
 window.goToMainUrl = goToMainUrl;
 
+const logContainer = document.getElementById("log-container");
+const CHUNK_SIZE = 200;
+
+async function loadLogsInBackground() {
+    if (!logContainer) return;
+
+    const res = await fetch("/api/server-logs", { credentials: "include" });
+    if (!res.ok) return;
+
+    const { logs } = await res.json();
+
+    let index = 0;
+
+    function renderChunk(deadline) {
+        let count = 0;
+        const fragment = document.createDocumentFragment();
+
+        while (
+            index < logs.length &&
+            count < CHUNK_SIZE &&
+            (!deadline || deadline.timeRemaining() > 5)
+        ) {
+            const code = document.createElement("code");
+            code.className = "log-line no-margin no-line no-wrap no-padding transparent";
+            code.innerHTML = logs[index];
+            fragment.appendChild(code);
+
+            index++;
+            count++;
+        }
+
+        logContainer.appendChild(fragment);
+
+        if (index < logs.length) {
+            requestIdleCallback(renderChunk);
+        }
+    }
+
+    requestIdleCallback(renderChunk);
+}
+
 function resize() {
     const article = document.querySelector("article.scroll");
     if (!article) return;
@@ -49,6 +90,13 @@ document.addEventListener("DOMContentLoaded", function () {
         article.addEventListener("scroll", () => {
             localStorage.setItem(scrollKeyX, article.scrollLeft);
             localStorage.setItem(scrollKeyY, article.scrollTop);
+
+            const nearBottom =
+                article.scrollTop + article.clientHeight >= article.scrollHeight - 200;
+
+            if (nearBottom) {
+                loadLogs();
+            }
         });
     }
 
@@ -87,6 +135,6 @@ document.addEventListener("DOMContentLoaded", function () {
         search.value = savedSearch;
         search.dispatchEvent(new Event("input"));
     }
-
+    loadLogsInBackground();
     resize();
 });
