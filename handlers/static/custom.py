@@ -47,6 +47,12 @@ class CustomStaticFileHandler(StaticFileHandler):
         base_path = os.path.join(self.root, path)
         ae = self.request.headers.get("Accept-Encoding", "")
 
+        if path.endswith(".html"):
+            self._original_path = path
+            self._encoding = None
+            await super().get(path, include_body)
+            return
+
         file_to_serve = path
         encoding = None
 

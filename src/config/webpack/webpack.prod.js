@@ -38,20 +38,20 @@ module.exports = merge(common, {
             ]),
             safelist: { standard: [/^html/, /^body/, /^#/, /^\.*/] },
         }),
-        // new CompressionPlugin({
-        //     filename: '[path][base].gz',      // generate .gz files
-        //     algorithm: 'gzip',
-        //     test: /\.(js|css|html|svg)$/,
-        //     threshold: 10240,                  // only compress files >10 KB
-        //     minRatio: 0.8
-        // }),
-        // new CompressionPlugin({
-        //     filename: '[path][base].br',       // generate .br files
-        //     algorithm: 'brotliCompress',
-        //     test: /\.(js|css|html|svg)$/,
-        //     compressionOptions: { level: 11 },
-        //     threshold: 10240,
-        //     minRatio: 0.8
-        // }),
+        new CompressionPlugin({
+            filename: '[path][base].gz',      // generate .gz files
+            algorithm: 'gzip',
+            test: /\.(js|css|html|svg)$/,
+            threshold: 10240,                  // only compress files >10 KB
+            minRatio: 0.8
+        }),
+        new CompressionPlugin({
+            filename: '[path][base].br',       // generate .br files
+            algorithm: 'brotliCompress',
+            test: /\.(js|css|html|svg)$/,
+            compressionOptions: { level: 11 },
+            threshold: 10240,
+            minRatio: 0.8
+        }),
     ]
 });
