@@ -74,6 +74,7 @@
                         {% for purchase_order in all_purchase_orders %}
                         {% if purchase_order.purchase_order_data.meta_data.vendor.id == vendor.id %}
                         <li>
+                            <i>receipt_long</i>
                             <div class="max">
                                 <h6 class="small">
                                     {% if purchase_order.purchase_order_data.meta_data.status == 0 %}
@@ -83,10 +84,11 @@
                                     {% elif purchase_order.purchase_order_data.meta_data.status == 2 %}
                                     <span class="bold">Release Order</span>
                                     {% endif %}
-                                    #{{ purchase_order.purchase_order_data.meta_data.purchase_order_number }}</h6>
+                                    #{{ purchase_order.purchase_order_data.meta_data.purchase_order_number }}
+                                </h6>
                                 <div>{{purchase_order.purchase_order_data.meta_data.order_date}}</div>
                             </div>
-                            <button onclick="window.location.href='/purchase_orders/view?id={{ purchase_order.purchase_order_data.id }}';">
+                            <button class="fill" onclick="window.location.href='/purchase_orders/view?id={{ purchase_order.purchase_order_data.id }}';">
                                 <i>open_in_new</i>
                                 <span>Open</span>
                             </button>
