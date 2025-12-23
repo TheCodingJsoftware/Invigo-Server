@@ -11,7 +11,7 @@ export class WorkspaceStatus {
         if (this.element) return;
 
         const wrapper = document.createElement("span");
-        wrapper.className = "workspace-status fixed bottom center tiny-padding small-round small-blur";
+        wrapper.className = "workspace-status fixed bottom right tiny-padding small-round small-text";
 
         const label = document.createElement("span");
         label.className = "bold";

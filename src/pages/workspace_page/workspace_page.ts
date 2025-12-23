@@ -62,7 +62,6 @@ class PageHost {
         SessionSettingsManager.set({
             lastActiveDataType: view.dataType,
         });
-        WorkspaceStatus.touch();
     }
 
     private async renderJobPage() {
