@@ -12,6 +12,10 @@ body.dark {
     --on-success-container: #D6FFD7;
 }
 
+button:has(.tooltip) {
+    backdrop-filter: none !important;
+}
+
 .logo {
     width: 100px;
     height: auto;
@@ -100,10 +104,13 @@ body.dark {
     border-radius: 10px;
 }
 
-#log_content {
+#log_content,
+#log-container {
     font-size: 8pt;
     text-align: left;
-    font-family: "Fira Code";
+    font-family: "Fira Code", "SF Mono", "Consolas", "Menlo", "Liberation Mono", monospace;
+    font-variant-ligatures: none;
+    font-feature-settings: "liga" 0;
 }
 
 /* view_qr_codes.html */
@@ -154,13 +161,6 @@ body.dark {
     page-break-after: always;
 }
 
-/* workorder.html */
-
-.workorder-image {
-    -webkit-filter: invert(0.9);
-    filter: invert(0.9);
-}
-
 /* workspace.html */
 
 
@@ -205,5 +205,18 @@ body.dark {
     100% {
         border-color: var(--error);
         color: var(--error);
+    }
+}
+
+
+@media print {
+    * {
+        background: white !important;
+        color: black !important;
+        background-color: white !important;
+    }
+
+    .hide-on-print {
+        display: none !important;
     }
 }
