@@ -55,13 +55,14 @@
 
     <body class="dark">
         <header class="fixed transparent left-align row">
-            <button class="extra elevate extend circle">
+            <button class="extra medium-elevate extend circle">
                 <img class="responsive" height="60" width="60" src="/static/icon.png">
                 <span class="bold large-text">Invigo</span>
             </button>
             <div class="max"></div>
-            <button class="circle" id="theme-button">
+            <button class="medium-elevate" id="theme-button">
                 <i>palette</i>
+                <span>Appearance</span>
             </button>
         </header>
         <main class="responsive">
@@ -71,13 +72,23 @@
                 <h6 class>Access</h6>
                 <div class="grid">
 
-                    <button class="extra border s12 m6 l4 left-align"
-                        data-guest
-                        onclick="window.location.href='/login'">
+                    <button class="extra blur border s12 m6 l4 left-align"
+                        id="login-button"
+                        data-guest>
                         <i class="large">login</i>
                         <div>
                             <strong>Login</strong>
                             <div class="small ">Access your account</div>
+                        </div>
+                    </button>
+
+                    <button class="extra blur border s12 m6 l4 left-align hidden"
+                        id="logout-button"
+                        data-guest>
+                        <i class="large">logout</i>
+                        <div>
+                            <strong>Logout</strong>
+                            <div class="small ">Logout of your account</div>
                         </div>
                     </button>
 
@@ -89,7 +100,7 @@
                 <h6 class>Workspace</h6>
                 <div class="grid">
 
-                    <button class="extra border s12 m6 l4 left-align"
+                    <button class="extra blur border s12 m6 l4 left-align"
                         onclick="window.location.href='/workspace'">
                         <i class="large">construction</i>
                         <div>
@@ -98,7 +109,7 @@
                         </div>
                     </button>
 
-                    <button class="extra border s12 m6 l4 left-align"
+                    <button class="extra blur border s12 m6 l4 left-align"
                         onclick="window.location.href='/inventory'">
                         <i class="large">inventory_2</i>
                         <div>
@@ -107,7 +118,7 @@
                         </div>
                     </button>
 
-                    <button class="extra border s12 m6 l4 left-align"
+                    <button class="extra blur border s12 m6 l4 left-align"
                         onclick="window.location.href='/sheet_qr_codes'">
                         <i class="large">qr_code</i>
                         <div>
@@ -124,7 +135,7 @@
                 <h6 class>Production</h6>
                 <div class="grid">
 
-                    <button class="extra border s12 m6 l4 left-align"
+                    <button class="extra blur border s12 m6 l4 left-align"
                         data-auth
                         data-permission="plan_production"
                         onclick="window.location.href='/production_planner'">
@@ -135,7 +146,7 @@
                         </div>
                     </button>
 
-                    <button class="extra border s12 m6 l4 left-align"
+                    <button class="extra blur border s12 m6 l4 left-align"
                         onclick="window.location.href='/add_cutoff_sheet'">
                         <i class="large">library_add</i>
                         <div>
@@ -151,7 +162,7 @@
             <article class="round">
                 <h6 class>Records</h6>
                 <div class="grid">
-                    <button class="extra border s12 m6 l4 left-align"
+                    <button class="extra blur border s12 m6 l4 left-align"
                         data-auth
                         data-permission="access_printouts"
                         onclick="window.location.href='/jobs'">
@@ -162,7 +173,7 @@
                         </div>
                     </button>
 
-                    <button class="extra border s12 m6 l4 left-align"
+                    <button class="extra blur border s12 m6 l4 left-align"
                         data-auth
                         data-permission="access_printouts"
                         onclick="window.location.href='/purchase_orders'">
@@ -173,7 +184,7 @@
                         </div>
                     </button>
 
-                    <button class="extra border s12 m6 l4 left-align"
+                    <button class="extra blur border s12 m6 l4 left-align"
                         data-auth
                         data-permission="access_printouts"
                         onclick="window.location.href='/workorders'">
@@ -192,7 +203,7 @@
                 <h6 class>Administration</h6>
                 <div class="grid">
 
-                    <button class="extra border s12 m6 l4 left-align"
+                    <button class="extra blur border s12 m6 l4 left-align"
                         data-auth
                         data-permission="edit_roles"
                         onclick="window.location.href='/roles'">
@@ -203,7 +214,7 @@
                         </div>
                     </button>
 
-                    <button class="extra border s12 m6 l4 left-align"
+                    <button class="extra blur border s12 m6 l4 left-align"
                         data-auth
                         data-permission="edit_users"
                         onclick="window.location.href='/users'">
@@ -214,7 +225,7 @@
                         </div>
                     </button>
 
-                    <button class="extra border s12 m6 l4 left-align"
+                    <button class="extra blur border s12 m6 l4 left-align"
                         data-auth
                         data-permission="edit_users"
                         onclick="window.location.href='/register'">
@@ -225,7 +236,7 @@
                         </div>
                     </button>
 
-                    <button class="extra border s12 m6 l4 left-align"
+                    <button class="extra blur border s12 m6 l4 left-align"
                         data-auth
                         data-permission="view_logs"
                         onclick="window.location.href='/server_log'">
@@ -236,7 +247,7 @@
                         </div>
                     </button>
 
-                    <button class="extra border s12 m6 l4 left-align"
+                    <button class="extra blur border s12 m6 l4 left-align"
                         data-auth
                         data-permission="view_logs"
                         onclick="window.location.href='/logs'">
@@ -255,7 +266,7 @@
                 <h6 class>Resources</h6>
                 <div class="grid">
 
-                    <button class="extra border s12 m6 l4 left-align"
+                    <button class="extra blur border s12 m6 l4 left-align"
                         onclick="window.location.href='https://github.com/TheCodingJsoftware/Invigo/wiki'">
                         <i class="large">globe</i>
                         <div>
