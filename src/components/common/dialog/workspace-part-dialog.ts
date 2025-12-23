@@ -11,7 +11,7 @@ export class WorkspacePartDialog extends DialogComponent {
         super({
             id: `workspace-part-dialog-${part.name}`,
             title: part.name,
-            position: "max",
+            position: "bottom",
             bodyContent: `<div id="part-container"></div>`
         });
 

@@ -37,7 +37,7 @@ export class SearchInput {
         }
 
         this.element = document.createElement("div");
-        this.element.className = "field label prefix suffix round border surface";
+        this.element.className = "field label prefix suffix round border";
 
         this.progress = document.createElement("progress");
         this.progress.className = "circle";
@@ -58,8 +58,8 @@ export class SearchInput {
         closeI.textContent = "close";
         this.clearBtn.appendChild(closeI);
 
-        this.helper = document.createElement("span");
-        this.helper.className = "helper hidden";
+        this.helper = document.createElement("output");
+        this.helper.className = "hidden";
 
         this.element.appendChild(this.icon);
         this.element.appendChild(this.input);

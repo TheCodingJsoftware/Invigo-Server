@@ -29,7 +29,7 @@ export class FileButton {
         this.extension = (filePath.match(/[^.]+$/)?.[0] ?? "").toUpperCase();
 
         this.tooltip = document.createElement("div");
-        this.tooltip.className = "tooltip max right";
+        this.tooltip.className = "tooltip max right surface-container-high";
 
         const nameEl = document.createElement("div");
         nameEl.className = "bold large-text";
@@ -86,7 +86,7 @@ export class FileButton {
 
         // ---- OPEN BUTTON ----
         const openButton = document.createElement("a");
-        openButton.className = "s6 button primary small";
+        openButton.className = "s6 button fill small";
         openButton.innerHTML = `
             <i>open_in_new</i>
             <span>Open File</span>
@@ -100,7 +100,7 @@ export class FileButton {
 
         // ---- DOWNLOAD BUTTON ----
         const downloadButton = document.createElement("a");
-        downloadButton.className = "s6 button primary small";
+        downloadButton.className = "s6 button fill small";
         downloadButton.innerHTML = `
             <i>download</i>
             <span>Download</span>

@@ -156,7 +156,7 @@ export class PartElement {
     private build(): void {
         /* ---------- IMAGE COLUMN ---------- */
         const img = document.createElement("img");
-        img.className = "responsive left-round";
+        img.className = "responsive left-round medium-height medium-width";
         img.loading = "lazy";
         img.width = 48;
         img.height = 48;
