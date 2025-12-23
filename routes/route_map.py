@@ -65,6 +65,7 @@ from handlers.laser_cut_inventory.upsert_quantities import (
     UpsertQuantitiesHandler,
 )
 from handlers.logs.delete_log import LogDeleteHandler
+from handlers.logs.get_server_logs import GetServerLogsHandler
 from handlers.logs.log_conent_loader import LogContentHandler
 from handlers.logs.logs import LogsHandler
 from handlers.logs.server_log import ServerLogsHandler
@@ -125,6 +126,7 @@ from handlers.websocket.website import WebSocketWebsiteHandler
 from handlers.websocket.workspace import WebSocketWorkspaceHandler
 from handlers.workorder.delete_workorder import DeleteWorkorderHandler
 from handlers.workorder.get_all_workorders import GetAllWorkordersHandler
+from handlers.workorder.get_nest import GetNestWorkorderHandler
 from handlers.workorder.get_workorder import GetWorkorderHandler
 from handlers.workorder.mark_complete import WorkorderMarkComplete
 from handlers.workorder.save_workorder import SaveWorkorderHandler
@@ -185,6 +187,7 @@ page_routes = [
     route(r"/logs", LogsHandler),
     route(r"/message", MessageHandler),
     route(r"/server_log", ServerLogsHandler),
+    route(r"/api/server-logs", GetServerLogsHandler),
     route(r"/jobs", JobsPageHandler),
     route(r"/jobs/view", PageHandler, template_name="job_printout.html"),
     route(r"/workorders", WorkordersPageHandler),
@@ -215,8 +218,8 @@ api_routes = [
     route(r"/ws", WebSocketSoftwareHandler),
     route(r"/ws/web", WebSocketWebsiteHandler),
     route(r"/ws/workspace", WebSocketWorkspaceHandler),
-    route(r"/fetch_log", LogContentHandler),
-    route(r"/delete_log", LogDeleteHandler),
+    route(r"/api/fetch-log", LogContentHandler),
+    route(r"/api/delete-log", LogDeleteHandler),
     route(r"/command", CommandHandler),
     route(r"/file/(.*)", FileReceiveHandler),
     route(r"/upload", FileUploadHandler),
@@ -327,11 +330,12 @@ api_routes = [
     route(r"/coatings_inventory/update_coatings", UpdateCoatingsHandler),
     route(r"/coatings_inventory/get_all", GetAllCoatingsHandler),
     route(r"/coatings_inventory/get_categories", GetCoatingsCategoriesHandler),
-    # Workder Routes
+    # Workorder Routes
     route(r"/workorders/save", SaveWorkorderHandler),
     route(r"/workorders/get_all", GetAllWorkordersHandler),
-    route(r"/workorders/get/(.*)", GetWorkorderHandler),
-    route(r"/workorders/delete/(.*)", DeleteWorkorderHandler),
+    route(r"/workorders/get/([0-9]+)", GetWorkorderHandler),
+    route(r"/workorders/get/nest/([0-9]+)/(.*)", GetNestWorkorderHandler),
+    route(r"/workorders/delete/([0-9]+)", DeleteWorkorderHandler),
     route(r"/api/workorder/mark_complete/([0-9]+)", WorkorderMarkComplete),
     # Purchase Orders
     route(r"/purchase_orders/save", SavePurchaseOrderHandler),
