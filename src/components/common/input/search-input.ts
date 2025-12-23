@@ -1,5 +1,6 @@
 import { Signal } from "@utils/signal";
 import { WorkspaceFilter } from "@models/workspace-filter";
+import { SnackbarComponent } from "../snackbar/snackbar-component";
 
 type SearchInputOptions = {
     label?: string;
@@ -17,7 +18,6 @@ export class SearchInput {
     private static input: HTMLInputElement | undefined;
     private static labelEl: HTMLLabelElement | undefined;
     private static clearBtn: HTMLElement | undefined;
-    private static helper: HTMLSpanElement | undefined;
 
     private static resultsText: (count: number) => string = (n) => `${n} result${n === 1 ? "" : "s"}`;
     private static debounceMs = 300;
@@ -58,20 +58,15 @@ export class SearchInput {
         closeI.textContent = "close";
         this.clearBtn.appendChild(closeI);
 
-        this.helper = document.createElement("output");
-        this.helper.className = "hidden";
-
         this.element.appendChild(this.icon);
         this.element.appendChild(this.input);
         this.element.appendChild(this.labelEl);
         this.element.appendChild(this.clearBtn);
-        this.element.appendChild(this.helper);
 
         if (typeof opts.debounceMs === "number") this.debounceMs = Math.max(0, opts.debounceMs);
         if (opts.resultsText) this.resultsText = opts.resultsText;
 
         this.updateClearVisibility();
-        this.updateHelper();
         this.bind();
 
         this.initialized = true;
@@ -120,7 +115,6 @@ export class SearchInput {
 
     private static queueEmit() {
         this.updateClearVisibility();
-        this.updateHelper();
         if (this.debounceId !== null) clearTimeout(this.debounceId);
         this.setLoading(true);
         this.debounceId = window.setTimeout(() => {
@@ -144,11 +138,13 @@ export class SearchInput {
 
     private static updateHelper() {
         if (!this.input!.value.trim() || this.resultsCount === null) {
-            this.helper!.classList.add("hidden");
             return;
         }
-        this.helper!.textContent = this.resultsText(this.resultsCount);
-        this.helper!.classList.remove("hidden");
+        new SnackbarComponent({
+            message: this.resultsText(this.resultsCount),
+            position: "top",
+            duration: 1000,
+        });
     }
 
     private static updateClearVisibility() {
@@ -175,7 +171,6 @@ export class SearchInput {
         this.input!.value = value ?? "";
         WorkspaceFilter.searchQuery = this.input!.value;
         this.updateClearVisibility();
-        this.updateHelper();
     }
 
     static focus() {

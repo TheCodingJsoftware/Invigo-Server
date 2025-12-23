@@ -283,7 +283,7 @@ export class PartContainer {
 
     private showEmptyMessage(message: string): void {
         const empty = document.createElement("p");
-        empty.className = "center-align";
+        empty.className = "center-align surface-container padding small-round margin border";
         empty.textContent = message;
 
         this.element.replaceChildren(empty);
