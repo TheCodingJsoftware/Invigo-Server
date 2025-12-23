@@ -1,49 +1,49 @@
 <!DOCTYPE html>
 <html>
 
-<head>
-    <meta charset="UTF-8">
-    <meta content="width=device-width, initial-scale=1" name="viewport">
-    <meta content="ie=edge" http-equiv="X-UA-Compatible">
-    <meta content="notranslate" name="google">
-    <link href="/static/icon.png" rel="icon">
-    <title>View QR Codes</title>
-</head>
+    <head>
+        <meta charset="UTF-8">
+        <meta content="width=device-width, initial-scale=1" name="viewport">
+        <meta content="ie=edge" http-equiv="X-UA-Compatible">
+        <meta content="notranslate" name="google">
+        <link href="/static/icon.png" rel="icon">
+        <title>View QR Codes</title>
+    </head>
 
-<body class="dark">
-<header class="fixed primary" style="height: 60px;">
-    <nav>
-        <button class="circle transparent" onclick="window.location.href = '/'">
-            <i>arrow_back</i>
-        </button>
-        <h5 class="max">Sheet QR Codes</h5>
-    </nav>
-</header>
-<main class="responsive">
-    {% for category, sheets in sheet_data.items() %}
-    <details class="center-align">
-        <summary class="qr-summary">{{ category }}</summary>
-        <div class="qr-container center-align">
-            {% for sheet in sheets %}
-            <div class="qr-item center-align" data-name="{{ sheet }}">
-                <div class="qr-code"></div>
-                <p class="center-align">{{ sheet }}</p>
-            </div>
+    <header class="fixed primary hide-on-print">
+        <nav>
+            <button class="circle transparent" onclick="window.location.href = '/'">
+                <i>arrow_back</i>
+            </button>
+            <h5 class="max">Sheet QR Codes</h5>
+        </nav>
+    </header>
+
+    <body class="dark">
+        <main class="responsive">
+            {% for category, sheets in sheet_data.items() %}
+            <details class="center-align" open>
+                <summary class="qr-summary">{{ category }}</summary>
+                <div class="qr-container center-align">
+                    {% for sheet in sheets %}
+                    <div class="qr-item center-align" data-name="{{ sheet }}">
+                        <div class="qr-code"></div>
+                        <span class="bold center-align">{{ sheet }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </details>
             {% endfor %}
-        </div>
-    </details>
-    {% endfor %}
-    <div class="page-break"></div>
-    <details class="center-align">
-        <summary class="qr-summary">Add Cut Off</summary>
-        <div class="center-align center-align">
-            <div class="qr-item center-align" data-name="add_cutoff_sheet">
-                <div class="qr-code-add-cut-off" style="width: 100%;"></div>
-                <br>
-                <p class="center-align" style="font-size: 56px;">Add Remnant to Database</p>
-            </div>
-        </div>
-    </details>
-</main>
-</body>
+            <div class="page-break"></div>
+            <details class="center-align">
+                <summary class="qr-summary">Add Cut Off</summary>
+                <div class="center-align center-align">
+                    <div class="qr-item center-align" data-name="add_cutoff_sheet">
+                        <div class="qr-code-add-cut-off"></div>
+                        <h2 class="center-align">Add Remnant to Database</h2>
+                    </div>
+                </div>
+            </details>
+        </main>
+    </body>
 </html>

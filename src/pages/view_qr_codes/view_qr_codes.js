@@ -1,11 +1,12 @@
 import "beercss"
 import "@utils/theme"
+import "@static/css/style.css"
 import QRCode from 'qrcode'
 
 async function loadQRCodes() {
     for (const item of document.querySelectorAll('.qr-item')) {
         const name = item.getAttribute('data-name');
-        const baseUrl = "http://invi.go/";
+        const baseUrl = window.location.origin + '/';
         const encodedUrl = encodeURI(
             name === "add_cutoff_sheet"
                 ? baseUrl + name.replace(/ /g, "_")
@@ -15,7 +16,7 @@ async function loadQRCodes() {
 
         const canvas = document.createElement('canvas');
         await QRCode.toCanvas(canvas, encodedUrl, {
-            width: name === "add_cutoff_sheet" ? 2048 : 256,
+            width: name === "add_cutoff_sheet" ? 512 : 256,
             color: {
                 dark: '#000000',
                 light: '#ffffff'
@@ -34,14 +35,3 @@ async function loadQRCodes() {
 document.addEventListener('DOMContentLoaded', async function () {
     await loadQRCodes();
 });
-
-window.addEventListener('beforeprint', function () {
-    document.body.classList.remove('dark');
-    document.body.classList.add('light');
-});
-
-window.addEventListener('afterprint', function () {
-    document.body.classList.remove('light');
-    document.body.classList.add('dark');
-});
-
