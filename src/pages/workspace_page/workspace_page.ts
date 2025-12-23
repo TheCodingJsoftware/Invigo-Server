@@ -20,6 +20,7 @@ import { SheetSettingsModel } from "@core/settings/sheet-settings-model";
 import { ToggleButton } from "@components/common/buttons/toggle-button";
 import { AppearanceDialog } from "@components/common/dialog/appearance-dialog";
 import { LoginDialog } from "@components/common/dialog/login-dialog";
+import { WorkspaceStatus } from "@components/workspace/views/workspace-status";
 
 let pageLoaded = false;
 
@@ -61,6 +62,7 @@ class PageHost {
         SessionSettingsManager.set({
             lastActiveDataType: view.dataType,
         });
+        WorkspaceStatus.touch();
     }
 
     private async renderJobPage() {
@@ -90,8 +92,6 @@ class WorkspacePage {
     readonly #user = Object.freeze(UserContext.getInstance().user);
     private viewSwitcherPanel: ViewSwitcherPanel;
     private pageHost: PageHost;
-    private workspaceFilterSettings: WorkspaceFilter = new WorkspaceFilter();
-    private searchInput!: SearchInput;
 
     constructor() {
         this.mainElement = document.querySelector("main") as HTMLElement;
@@ -110,11 +110,15 @@ class WorkspacePage {
         this.loadTopNav();
         this.loadRightNav();
         this.loadLeftNav();
+
+        WorkspaceStatus.init(document.body);
+
         pageLoaded = true;
         ViewBus.update({
             dataType: SessionSettingsManager.get().lastActiveDataType,
         });
     }
+
 
     resyncState() {
         ViewBus.update({
@@ -131,7 +135,7 @@ class WorkspacePage {
 
     loadTopNav() {
         const nav = document.createElement("nav");
-        nav.className = "tiny-space fixed top transparent";
+        nav.className = "tiny-space fixed top transparent l m";
 
         const toolbar = document.createElement("nav");
         toolbar.className = "toolbar medium-elevate blur"

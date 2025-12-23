@@ -11,6 +11,7 @@ import { PartsTable } from "@components/workspace/parts/parts-table";
 import { JobData } from "@interfaces/job";
 import { TimelineEntry } from "../../../pages/production_planner/production_planner";
 import { JobElement } from "@components/workspace/parts/job-element";
+import { WorkspaceStatus } from "@components/workspace/views/workspace-status";
 
 export interface PartData {
     group_id: number;
@@ -161,6 +162,7 @@ export class PartContainer {
         Loading.hide();
         SearchInput.setLoading(false);
         SearchInput.setResultsCount(data.length);
+        WorkspaceStatus.touch();
 
         console.log(JSON.stringify({
             handler: "PartContainer.load",

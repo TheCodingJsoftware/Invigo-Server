@@ -130,3 +130,25 @@ tr.finished {
 button menu {
     max-height: 100vh;
 }
+
+@keyframes statusPulse {
+    from {
+        opacity: 0;
+        transform: translateY(1rem);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.workspace-status {
+    min-block-size: 1.5rem;
+    transition: all var(--speed3) ease;
+    pointer-events: none;
+}
+
+.status-text.animate {
+    animation: statusPulse var(--speed3) ease;
+}
