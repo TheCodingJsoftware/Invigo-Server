@@ -68,7 +68,7 @@ export class NestedSheets implements BaseComponent {
         return `
         <div class="s12">
             <article class="nest no-padding border round">
-                <img class="responsive small top-round nest-image" src="/images/${nest.image_path}" class="responsive">
+                <img class="responsive top-round nest-image" src="/images/${nest.image_path}" class="responsive">
                 <div class="padding">
                     <nav class="row">
                         <h6 class="max">${nest.name}</h6>
