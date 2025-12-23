@@ -109,7 +109,9 @@ export class PartRow {
                             PartRow.startTiming(data);
                         }
                     });
-                    td.appendChild(timerButton.getElement());
+                    if (!this.data.is_completed) {
+                        td.appendChild(timerButton.getElement());
+                    }
                 }
 
             } else {

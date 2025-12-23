@@ -25,7 +25,11 @@ export class DueButton {
         }
 
         const span = document.createElement("span");
-        span.textContent = this.getDueDate(this.data.part_timeline.ending_date);
+        if (this.data.is_completed) {
+            span.textContent = "Completed";
+        } else {
+            span.textContent = this.getDueDate(this.data.part_timeline.ending_date);
+        }
         this.element.appendChild(span);
 
         if (!this.data.is_completed) {

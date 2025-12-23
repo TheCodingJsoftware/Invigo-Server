@@ -65,6 +65,14 @@ export class JobElement {
         const activeRange = WorkspaceDateRange.getActiveRange();
 
         const f0 = performance.now();
+
+        for (const part of this.parts) {
+            const flowtag = part.current_flowtag;
+            const timelineEntry = flowtagTimeline[flowtag];
+            part.part_timeline = timelineEntry;
+            part.job_data = this.jobData;
+        }
+
         const filteredParts = this.parts.filter(part => {
             if (part.is_completed) return true;
 
@@ -88,7 +96,6 @@ export class JobElement {
             const isOverdue = end < now;
 
             part.is_overdue = isOverdue;
-            part.job_data = this.jobData;
             part.part_timeline = timelineEntry;
 
             if (isOverdue) return true;
@@ -99,6 +106,7 @@ export class JobElement {
 
             return true;
         });
+
         const fMs = performance.now() - f0;
 
         this.parts = filteredParts;

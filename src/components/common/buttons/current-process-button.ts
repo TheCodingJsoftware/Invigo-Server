@@ -3,7 +3,7 @@ import { UserContext } from "@core/auth/user-context";
 import { PermissionMap, WorkspacePermissions } from "@core/auth/workspace-permissions";
 
 export class CurrentProcessButton {
-    private readonly text: string;
+    private text: string;
     private readonly data: PartData;
     private readonly element: HTMLButtonElement;
     readonly #user = UserContext.getInstance().user;
@@ -35,6 +35,7 @@ export class CurrentProcessButton {
         } else if (this.data.is_completed) {
             const icon = document.createElement("i");
             icon.innerHTML = "check";
+            this.text = "Done";
             this.element.appendChild(icon);
         }
 

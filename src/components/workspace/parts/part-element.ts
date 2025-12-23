@@ -2,9 +2,9 @@ import { DueButton } from "@components/common/buttons/due-button";
 import { PartData } from "./part-container";
 import { PartRow } from "./part-row";
 import { SnackbarComponent } from "@components/common/snackbar/snackbar-component";
-import { DialogComponent } from "@components/common/dialog/dialog-component";
 import { InfoDialog } from "@components/common/dialog/info-dialog";
 import { applyScopedBeerTheme } from "@config/material-theme-cookie";
+import { CurrentProcessButton } from "@components/common/buttons/current-process-button";
 
 
 export function parsePgTimestamp(input: string | Date): Date | null {
@@ -201,9 +201,17 @@ export class PartElement {
         const filesWrap = document.createElement("div");
         filesWrap.appendChild(files);
 
-        const dueButton = new DueButton("", this.part);
         const dueInfo = document.createElement("div");
-        dueInfo.appendChild(dueButton.getElement());
+        const processButton = new CurrentProcessButton(
+            this.part.current_flowtag,
+            this.part
+        );
+        dueInfo.appendChild(processButton.getElement());
+
+        if (!this.part.is_completed) {
+            const dueButton = new DueButton("", this.part);
+            dueInfo.appendChild(dueButton.getElement());
+        }
 
         const flowNav = buildFlowtagNav(
             this.part.flowtag,

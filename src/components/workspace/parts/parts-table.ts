@@ -68,19 +68,19 @@ export class PartsTable {
             label: 'Record',
             render: () => ''
         },
-        {
-            key: 'icon',
-            label: '',
-            render: (data) => {
-                if (data.is_completed) {
-                    return "done_all"
-                } else if (data.is_overdue) {
-                    return "assignment_late"
-                } else {
-                    return "avg_pace"
-                }
-            }
-        }
+        // {
+        //     key: 'icon',
+        //     label: '',
+        //     render: (data) => {
+        //         if (data.is_completed) {
+        //             return "done_all"
+        //         } else if (data.is_overdue) {
+        //             return "assignment_late"
+        //         } else {
+        //             return "avg_pace"
+        //         }
+        //     }
+        // }
     ];
     private readonly BATCH_SIZE = 100;
     private readonly BATCH_DELAY = 0;

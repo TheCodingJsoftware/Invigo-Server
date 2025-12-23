@@ -1,7 +1,6 @@
 import { PartData } from "@components/workspace/parts/part-container";
 import { invertImages } from "@utils/theme";
 import { WorkspacePartDialog } from "@components/common/dialog/workspace-part-dialog";
-import { fetchJobData } from "@components/workspace/parts/job-element";
 import { applyScopedBeerTheme } from "@config/material-theme-cookie";
 
 
