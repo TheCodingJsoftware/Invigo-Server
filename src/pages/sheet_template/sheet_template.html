@@ -1,87 +1,86 @@
 <!DOCTYPE html>
 <html>
 
-<head>
-    <meta charset="UTF-8">
-    <meta content="width=device-width, initial-scale=1" name="viewport">
-    <meta content="ie=edge" http-equiv="X-UA-Compatible">
-    <meta content="notranslate" name="google">
-    <link href="/static/icon.png" rel="icon">
-    <title>{{sheet_name}}</title>
-    <meta content="{{sheet_name}}" property="og:title"/>
-    <meta content="Set Invigo Sheets in Inventory Information." property="og:description"/>
-</head>
+    <head>
+        <meta charset="UTF-8">
+        <meta content="width=device-width, initial-scale=1" name="viewport">
+        <meta content="ie=edge" http-equiv="X-UA-Compatible">
+        <meta content="notranslate" name="google">
+        <link href="/static/icon.png" rel="icon">
+        <title>{{sheet_name}}</title>
+        <meta content="{{sheet_name}}" property="og:title" />
+        <meta content="Set Invigo Sheets in Inventory Information." property="og:description" />
+    </head>
 
-<body class="dark" data-current-quantity="{{ quantity }}">
-<header class="fixed primary">
-    <nav>
-        <h5 class="max center-align small">
-            {{sheet_name}}
-        </h5>
-    </nav>
-</header>
-<main class="responsive">
-    <form action="/sheets_in_inventory/{{ sheet_name }}" class="form-container" method="post">
-        <nav class="row">
-            <div class="field label border max small-round">
-                <input id="current_quantity" name="new_quantity" required type="number" value={{quantity}}>
-                <label>Quantity</label>
-                <span class="helper">Quantity in Stock: {{quantity}}</span>
-            </div>
-            <input name="order_pending_date" type="hidden">
-            <input name="order_pending_quantity" type="hidden">
-            <input name="expected_arrival_time" type="hidden">
-            <input name="notes" type="hidden">
-            <button type="submit">
-                <i>check</i>
-                <span>Set</span>
-            </button>
-        </nav>
-    </form>
-    <br>
-    {% if pending_data %}
-    <h2 class="max center-align">Orders Pending:</h2>
-    {% for order in pending_data %}
-    <article class="round border">
-        <h4>Order</h4>
-        <p class="no-margin">Order Sent: {{order.order_pending_date}}</p>
-        <p class="no-margin">Expected Arrival Time: {{order.expected_arrival_time}}</p>
-        <p class="no-margin">Quantity Ordered: {{order.quantity}}</p>
-        <p class="no-margin">Notes: {{order.notes}}</p>
-        <nav class="right-align">
-            <button class="add-quantity-button round" data-expected-arrival-time="{{order.expected_arrival_time}}"
-                    data-notes="{{order.notes}}"
-                    data-order-pending-date="{{order.order_pending_date}}" data-quantity="{{order.quantity}}">
-                <i>add</i>
-                <span>Add Incoming Quantity ({{order.quantity}})</span>
-            </button>
-        </nav>
-    </article>
-    {% endfor %}
-    {% endif %}
-</main>
-<div class="overlay blur"></div>
-<dialog class="bottom" id="confirmationModal">
-    <h4 class="center-align max">Confirm Quantity</h4>
-    <p>Are you sure you this is the new quantity?</p>
-    <br>
-    <form action="/sheets_in_inventory/{{ sheet_name }}" class="form-container" method="post">
-        <nav class="row">
-            <div class="field label border max small-round">
-                <input id="modalQuantity" name="new_quantity" placeholder="0" type="number" value={{quantity}}>
-                <label>New Quantity</label>
-            </div>
-            <!-- Hidden fields for additional order data -->
-            <input id="orderPendingDate" name="order_pending_date" type="hidden">
-            <input id="orderPendingQuantity" name="order_pending_quantity" type="hidden">
-            <input id="expectedArrivalTime" name="expected_arrival_time" type="hidden">
-            <input id="orderNotes" name="notes" type="hidden">
-            <button type="submit">
-                <i>check</i>
-                <span>Confirm</span>
-            </button>
-        </nav>
-    </form>
-</dialog>
-</body>
+    <body class="dark" data-current-quantity="{{ quantity }}">
+        <header class="fixed primary">
+            <nav>
+                <h5 class="max center-align small">
+                    {{sheet_name}}
+                </h5>
+            </nav>
+        </header>
+        <main class="responsive">
+            <form action="/sheets_in_inventory/{{ sheet_name }}" class="padding form-container" method="post">
+                <nav class="row">
+                    <div class="field label border max small-round">
+                        <input id="current_quantity" name="new_quantity" required type="number" value={{quantity}}>
+                        <label>Quantity</label>
+                        <output>Quantity in Stock: {{quantity}}</output>
+                    </div>
+                    <input name="order_pending_date" type="hidden">
+                    <input name="order_pending_quantity" type="hidden">
+                    <input name="expected_arrival_time" type="hidden">
+                    <input name="notes" type="hidden">
+                    <button type="submit">
+                        <i>check</i>
+                        <span>Set</span>
+                    </button>
+                </nav>
+            </form>
+            {% if pending_data %}
+            <h2 class="max center-align">Orders Pending:</h2>
+            {% for order in pending_data %}
+            <article class="round border">
+                <h4>Order</h4>
+                <p class="no-margin">Order Sent: {{order.order_pending_date}}</p>
+                <p class="no-margin">Expected Arrival Time: {{order.expected_arrival_time}}</p>
+                <p class="no-margin">Quantity Ordered: {{order.quantity}}</p>
+                <p class="no-margin">Notes: {{order.notes}}</p>
+                <nav class="right-align">
+                    <button class="add-quantity-button round" data-expected-arrival-time="{{order.expected_arrival_time}}"
+                        data-notes="{{order.notes}}"
+                        data-order-pending-date="{{order.order_pending_date}}" data-quantity="{{order.quantity}}">
+                        <i>add</i>
+                        <span>Add Incoming Quantity ({{order.quantity}})</span>
+                    </button>
+                </nav>
+            </article>
+            {% endfor %}
+            {% endif %}
+        </main>
+        <div class="overlay blur"></div>
+        <dialog class="bottom" id="confirmationModal">
+            <h4 class="center-align max">Confirm Quantity</h4>
+            <p>Are you sure you this is the new quantity?</p>
+            <br>
+            <form action="/sheets_in_inventory/{{ sheet_name }}" class="form-container" method="post">
+                <nav class="row">
+                    <div class="field label border max small-round">
+                        <input id="modalQuantity" name="new_quantity" placeholder="0" type="number" value={{quantity}}>
+                        <label>New Quantity</label>
+                    </div>
+                    <!-- Hidden fields for additional order data -->
+                    <input id="orderPendingDate" name="order_pending_date" type="hidden">
+                    <input id="orderPendingQuantity" name="order_pending_quantity" type="hidden">
+                    <input id="expectedArrivalTime" name="expected_arrival_time" type="hidden">
+                    <input id="orderNotes" name="notes" type="hidden">
+                    <button type="submit">
+                        <i>check</i>
+                        <span>Confirm</span>
+                    </button>
+                </nav>
+            </form>
+        </dialog>
+    </body>
 </html>
