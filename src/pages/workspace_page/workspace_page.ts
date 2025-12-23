@@ -19,6 +19,7 @@ import { DateRangeButton } from "@components/common/buttons/date-range-button";
 import { SheetSettingsModel } from "@core/settings/sheet-settings-model";
 import { ToggleButton } from "@components/common/buttons/toggle-button";
 import { AppearanceDialog } from "@components/common/dialog/appearance-dialog";
+import { LoginDialog } from "@components/common/dialog/login-dialog";
 
 let pageLoaded = false;
 
@@ -258,10 +259,25 @@ class WorkspacePage {
         `
         profileButton.onclick = () => this.showProfile();
 
+        const logoutButton = document.createElement("a");
+        logoutButton.id = "logout-button";
+        logoutButton.innerHTML = `
+            <i>logout</i>
+            <span>Logout</span>
+        `
+        logoutButton.onclick = () => this.logout();
 
         nav.appendChild(homeButton);
         nav.appendChild(profileButton);
+        if (UserContext.getInstance().user.id) {
+            nav.appendChild(logoutButton);
+        }
         document.body.appendChild(nav);
+    }
+
+    logout() {
+        fetch("/api/logout", { method: "POST", credentials: "include" });
+        window.location.reload();
     }
 
     appearanceDialog() {
@@ -306,9 +322,10 @@ class WorkspacePage {
 document.addEventListener("DOMContentLoaded", async () => {
     await UserContext.init();
     if (UserContext.getInstance().user.name === "Guest") {
-        window.location.href = "/login";
+        new LoginDialog();
         return;
     }
+
     loadAnimationStyleSheet();
     await SheetSettingsModel.init();
     await WorkspaceSettings.init();
