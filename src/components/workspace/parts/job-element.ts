@@ -170,7 +170,7 @@ export class JobElement {
 
     private createArticleHeader(): HTMLElement {
         const header = document.createElement("div");
-        header.classList.add("row");
+        header.classList.add("row", "non-selectable");
 
         header.ondblclick = () => this.collapseArticleContent();
 
@@ -236,7 +236,7 @@ export class JobElement {
         const toggleButton = document.createElement("button");
         toggleButton.classList.add("right-round", "square", "small", "toggle-button");
         toggleButton.innerHTML =
-            "<i>expand_less</i><div class='tooltip'>Expand/Collapse</div>";
+            "<i>expand_less</i>";
 
         toggleButton.onclick = () => this.collapseArticleContent();
 
@@ -251,8 +251,7 @@ export class JobElement {
     }
 
     private collapseArticleContent(): void {
-        const toggleButton =
-            this.element.querySelector<HTMLButtonElement>(".toggle-button");
+        const toggleButton = this.element.querySelector<HTMLButtonElement>(".toggle-button");
         if (!toggleButton) return;
 
         const icon = toggleButton.querySelector("i");

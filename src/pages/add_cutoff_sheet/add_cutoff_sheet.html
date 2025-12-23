@@ -69,7 +69,7 @@
                     <h5 class="padding">Cutoff Sheets</h5>
                     <ul class="list border">
                         {% for sheet in cutoff_sheets %}
-                        <li>
+                        <li class="wave">
                             <div class="max">
                                 <span class="bold large-text">{{ sheet.thickness }} {{ sheet.material }}</span>
                                 <div>{{ sheet.get_sheet_dimension() }}</div>
