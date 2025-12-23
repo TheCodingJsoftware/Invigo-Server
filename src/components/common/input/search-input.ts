@@ -1,5 +1,5 @@
-import {Signal} from "@utils/signal";
-import {WorkspaceFilter} from "@models/workspace-filter";
+import { Signal } from "@utils/signal";
+import { WorkspaceFilter } from "@models/workspace-filter";
 
 type SearchInputOptions = {
     label?: string;
@@ -37,7 +37,7 @@ export class SearchInput {
         }
 
         this.element = document.createElement("div");
-        this.element.className = "field label prefix suffix round border";
+        this.element.className = "field label prefix suffix round border surface";
 
         this.progress = document.createElement("progress");
         this.progress.className = "circle";
@@ -126,7 +126,7 @@ export class SearchInput {
         this.debounceId = window.setTimeout(() => {
             this.debounceId = null;
             WorkspaceFilter.searchQuery = this.query;
-            this.onChange.emit({query: this.query});
+            this.onChange.emit({ query: this.query });
         }, this.debounceMs);
     }
 
@@ -138,8 +138,8 @@ export class SearchInput {
         this.setLoading(true);
         const q = this.query;
         WorkspaceFilter.searchQuery = q;
-        this.onChange.emit({query: q});
-        this.onSearch.emit({query: q});
+        this.onChange.emit({ query: q });
+        this.onSearch.emit({ query: q });
     }
 
     private static updateHelper() {

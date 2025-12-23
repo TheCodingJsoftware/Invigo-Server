@@ -9,6 +9,7 @@ class Environment:
     def __init__(self):
         raise RuntimeError("Environment is a static class and cannot be instantiated.")
 
+    DEBUG = os.getenv("DEBUG", "false").lower() in ("1", "true", "yes")
     POSTGRES_USER = os.getenv("POSTGRES_USER")
     POSTGRES_PASSWORD = os.getenv("POSTGRES_PASSWORD")
     POSTGRES_DB = os.getenv("POSTGRES_DB")

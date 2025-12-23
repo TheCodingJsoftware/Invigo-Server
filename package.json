@@ -28,6 +28,7 @@
     "@typescript-eslint/parser": "^8.50.0",
     "@typescript-eslint/utils": "^8.50.0",
     "compression-webpack-plugin": "^11.1.0",
+    "concurrently": "^9.2.1",
     "copy-webpack-plugin": "^13.0.1",
     "cross-env": "^10.1.0",
     "css-loader": "^7.1.2",
@@ -55,8 +56,11 @@
   "version": "1.0.0",
   "main": "main.py",
   "scripts": {
-    "dev": "cross-env NODE_ENV=development webpack serve",
-    "build": "cross-env NODE_ENV=production webpack",
+    "dev:frontend": "webpack --config src/config/webpack/webpack.dev.js --watch",
+    "dev:backend": "./.venv/bin/python main.py",
+    "dev": "concurrently -k -n WEBPACK,BACKEND \"npm run dev:frontend\" \"npm run dev:backend\"",
+    "build": "cross-env NODE_ENV=production webpack --config src/config/webpack/webpack.prod.js",
+    "docker": "./docker_build.sh",
     "run": ".venv/bin/python main.py"
   },
   "repository": {

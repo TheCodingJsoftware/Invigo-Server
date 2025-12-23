@@ -28,16 +28,17 @@ export class DialogComponent {
         this.footerElement = document.createElement("div");
 
         this.options = {
-            id: options.id,
             title: options.title ?? "Dialog",
             position: options.position ?? null,
             width: options.width ?? null,
-            onClose: options.onClose,
             autoRemove: options.autoRemove ?? true,
-            headerContent: options.headerContent,
-            bodyContent: options.bodyContent,
-            footerContent: options.footerContent,
-            isModal: options.isModal ?? false
+            isModal: options.isModal ?? false,
+
+            ...(options.id !== undefined && { id: options.id }),
+            ...(options.onClose && { onClose: options.onClose }),
+            ...(options.headerContent && { headerContent: options.headerContent }),
+            ...(options.bodyContent && { bodyContent: options.bodyContent }),
+            ...(options.footerContent && { footerContent: options.footerContent }),
         };
 
         this.dialog = document.createElement("dialog");
@@ -115,12 +116,8 @@ export class DialogComponent {
 
     private removeOwnOverlay(): void {
         const prev = this.dialog.previousElementSibling;
-        console.log(prev);
-
-
         if (prev instanceof HTMLElement && prev.classList.contains("overlay")) {
             prev.remove();
-            console.log("removed overlay");
         }
     }
 
