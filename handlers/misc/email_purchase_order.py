@@ -1,12 +1,9 @@
-import asyncio
-import json
+import aiohttp
 import logging
-import os
-import tempfile
 import traceback
-
 import tornado
 
+from config.environments import Environment
 from handlers.base import BaseHandler
 from utils.send_email import send_purchase_order_email
 
@@ -14,47 +11,53 @@ from utils.send_email import send_purchase_order_email
 class EmailPurchaseOrderHandler(BaseHandler):
     async def post(self):
         data = tornado.escape.json_decode(self.request.body)
+
         to = data["to"]
         cc = data.get("cc", "")
         subject = data["subject"]
         body = data["body"]
+
         page_url = data["pageUrl"]
         local_storage = data.get("localStorage", {})
+
         sender_email = data["senderEmail"]
         encrypted_password = data["encryptedPassword"]
 
-        pdf_fd, pdf_path = tempfile.mkstemp(suffix=".pdf")
-        os.close(pdf_fd)
+        # Rewrite URL so renderer can reach the app
+        page_url = (
+            page_url
+            .replace("http://invi.go", f"http://invigo_server:{Environment.PORT}")
+            .replace("http://localhost:5057", "http://127.0.0.1:5057")
+        )
 
-        ls_fd, ls_path = tempfile.mkstemp(suffix=".json")
-        try:
-            with os.fdopen(ls_fd, "w") as f:
-                f.write(json.dumps(local_storage))
-        except Exception:
-            os.close(ls_fd)
-            os.remove(pdf_path)
-            raise
+        renderer_url = Environment.PUPPETEER_URL
 
         try:
-            proc = await asyncio.create_subprocess_exec(
-                "node",
-                "scripts/generate-pdf.js",
-                page_url,
-                pdf_path,
-                ls_path,
-                stdout=asyncio.subprocess.PIPE,
-                stderr=asyncio.subprocess.PIPE,
-            )
-            stdout, stderr = await proc.communicate()
+            async with aiohttp.ClientSession() as session:
+                async with session.post(
+                    f"{renderer_url}/pdf",
+                    json={
+                        "url": page_url,
+                        "localStorage": local_storage,
+                    },
+                    timeout=aiohttp.ClientTimeout(total=120),
+                ) as resp:
 
-            if proc.returncode != 0:
-                self.set_status(500)
-                self.write("PDF generation failed:\n" + stderr.decode())
-                return
+                    pdf_data = await resp.read()
 
-            with open(pdf_path, "rb") as f:
-                pdf_data = f.read()
+                    if resp.status != 200:
+                        self.set_status(500)
+                        self.write(pdf_data.decode(errors="replace"))
+                        return
 
+                    # Hard safety check: real PDF
+                    if not pdf_data.startswith(b"%PDF-"):
+                        raise RuntimeError(
+                            "Renderer returned invalid PDF. First bytes: "
+                            + repr(pdf_data[:50])
+                        )
+
+            # Send email with in-memory PDF
             send_purchase_order_email(
                 sender_email=sender_email,
                 encrypted_password=encrypted_password,
@@ -68,16 +71,8 @@ class EmailPurchaseOrderHandler(BaseHandler):
 
             self.set_status(200)
             self.write("Email sent.")
-        except Exception as e:
+
+        except Exception:
             logging.exception(traceback.format_exc())
             self.set_status(500)
-            self.write(f"Email send failed: {e}")
-        finally:
-            try:
-                os.remove(pdf_path)
-            except Exception:
-                pass
-            try:
-                os.remove(ls_path)
-            except Exception:
-                pass
+            self.write("Email send failed.")

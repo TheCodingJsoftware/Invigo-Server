@@ -10,6 +10,7 @@ class Environment:
         raise RuntimeError("Environment is a static class and cannot be instantiated.")
 
     DEBUG = os.getenv("DEBUG", "false").lower() in ("1", "true", "yes")
+    PUPPETEER_URL = os.getenv("PUPPETEER_URL", "http://puppeteer:3000")
     POSTGRES_USER = os.getenv("POSTGRES_USER")
     POSTGRES_PASSWORD = os.getenv("POSTGRES_PASSWORD")
     POSTGRES_DB = os.getenv("POSTGRES_DB")

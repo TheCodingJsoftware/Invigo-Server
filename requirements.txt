@@ -1,3 +1,4 @@
+aiohttp==3.13.2
 aiotools==1.9.1
 ansi2html==1.9.2
 asyncpg==0.30.0

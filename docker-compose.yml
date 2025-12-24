@@ -8,6 +8,8 @@ services:
     depends_on:
       db:
         condition: service_healthy
+      puppeteer:
+        condition: service_started
 
     restart: unless-stopped
 
@@ -19,6 +21,7 @@ services:
       PYTHONPATH: /app
       DATA_PATH: /app/data
       TZ: America/Winnipeg
+      PUPPETEER_URL: http://127.0.0.1:3000
 
       # ======================
       # Database connection
@@ -109,6 +112,19 @@ services:
     ports:
       # Exposes Postgres to host (optional; remove if not needed externally)
       - "5432:5432"
+
+
+  puppeteer:
+    image: jarebear/invigo-puppeteer:latest
+    working_dir: /srv
+    volumes:
+      - /mnt/SafeHaven/Forge/Invigo-Server/scripts:/srv/scripts:ro
+    command: ["node", "/srv/scripts/puppeteer-server.js"]
+    expose:
+      - "3000"
+    shm_size: "1gb"
+    init: true
+
 
 
 volumes:

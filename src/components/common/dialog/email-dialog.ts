@@ -47,7 +47,7 @@ export class EmailDialogComponent extends DialogComponent {
                     <div class="s12 field label border small-round">
                         <input type="email" id="email-to" value="${purchaseOrder.meta_data.vendor.email}" required>
                         <label for="email-to">To</label>
-                        <span class="helper">${purchaseOrder.meta_data.vendor.name}</span>
+                        <output>${purchaseOrder.meta_data.vendor.name}</span>
                     </div>
                     <div class="s12 field label border small-round">
                         <input type="email" id="email-cc">

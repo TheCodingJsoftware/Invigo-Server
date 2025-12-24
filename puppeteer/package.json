@@ -1,0 +1,9 @@
+{
+    "name": "invigo-puppeteer",
+    "private": true,
+    "type": "commonjs",
+    "dependencies": {
+        "express": "^4.19.2",
+        "puppeteer": "^24.34.0"
+    }
+}

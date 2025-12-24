@@ -124,7 +124,7 @@ class ItemsTable implements BaseComponent {
                 ${this.generateTable().outerHTML}
                 <nav class="row no-space top-margin">
                     <div class="max">
-                        <div class="small small-round field border label textarea no-margin" id="notes">
+                        <div class="small small-round field border label no-margin" id="notes">
                             <textarea>${this.purchaseOrder.meta_data.notes}</textarea>
                             <label>Notes</label>
                         </div>
