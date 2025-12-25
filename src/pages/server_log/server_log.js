@@ -43,6 +43,22 @@ async function loadLogsInBackground() {
         if (index < logs.length) {
             requestIdleCallback(renderChunk);
         }
+
+        filterSearch();
+
+        const savedX = localStorage.getItem("logScrollX");
+        const savedY = localStorage.getItem("logScrollY");
+
+        const article = document.querySelector("article.scroll");
+        if (!article) return;
+        if (savedX !== null) article.scrollLeft = parseInt(savedX, 10);
+        if (savedY !== null) {
+            // Delay scrollTop in case content isn't fully loaded yet
+            setTimeout(() => {
+                article.scrollTop = parseInt(savedY, 10);
+            }, 0);
+        }
+
     }
 
     requestIdleCallback(renderChunk);
@@ -66,37 +82,32 @@ function resize() {
 window.addEventListener("load", resize);
 window.addEventListener("resize", resize);
 
+function filterSearch() {
+    const search = document.getElementById("search");
+    const searchText = search.value.toLowerCase();
+    const logLines = document.querySelectorAll(".log-line");
+    for (let i = 0; i < logLines.length; i++) {
+        const logLine = logLines[i];
+        const logText = logLine.textContent.toLowerCase();
+        if (logText.includes(searchText)) {
+            logLine.classList.remove("hidden");
+        } else {
+            logLine.classList.add("hidden");
+        }
+    }
+}
+
 document.addEventListener("DOMContentLoaded", function () {
     const search = document.getElementById("search");
     const savedSearch = localStorage.getItem("searchText");
-    const scrollKeyX = "logScrollX";
-    const scrollKeyY = "logScrollY";
     const article = document.querySelector("article.scroll");
 
     // Restore article scroll (horizontal and vertical)
     if (article) {
-        const savedX = localStorage.getItem(scrollKeyX);
-        const savedY = localStorage.getItem(scrollKeyY);
-
-        if (savedX !== null) article.scrollLeft = parseInt(savedX, 10);
-        if (savedY !== null) {
-            // Delay scrollTop in case content isn't fully loaded yet
-            setTimeout(() => {
-                article.scrollTop = parseInt(savedY, 10);
-            }, 0);
-        }
-
         // Save scroll
         article.addEventListener("scroll", () => {
-            localStorage.setItem(scrollKeyX, article.scrollLeft);
-            localStorage.setItem(scrollKeyY, article.scrollTop);
-
-            const nearBottom =
-                article.scrollTop + article.clientHeight >= article.scrollHeight - 200;
-
-            if (nearBottom) {
-                loadLogs();
-            }
+            localStorage.setItem("logScrollX", article.scrollLeft);
+            localStorage.setItem("logScrollY", article.scrollTop);
         });
     }
 
@@ -104,19 +115,8 @@ document.addEventListener("DOMContentLoaded", function () {
     if (search) {
         search.addEventListener("input", function () {
             const searchText = search.value.toLowerCase();
-
             localStorage.setItem("searchText", search.value);
-
-            const logLines = document.querySelectorAll(".log-line");
-            for (let i = 0; i < logLines.length; i++) {
-                const logLine = logLines[i];
-                const logText = logLine.textContent.toLowerCase();
-                if (logText.includes(searchText)) {
-                    logLine.classList.remove("hidden");
-                } else {
-                    logLine.classList.add("hidden");
-                }
-            }
+            filterSearch();
         });
     }
 
