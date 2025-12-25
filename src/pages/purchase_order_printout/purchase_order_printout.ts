@@ -124,7 +124,7 @@ class ItemsTable implements BaseComponent {
                 ${this.generateTable().outerHTML}
                 <nav class="row no-space top-margin">
                     <div class="max">
-                        <div class="small small-round field border label no-margin" id="notes">
+                        <div class="small-round field border label no-margin" id="notes">
                             <textarea>${this.purchaseOrder.meta_data.notes}</textarea>
                             <label>Notes</label>
                         </div>
@@ -718,25 +718,25 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-    const copyBtn = document.getElementById("copy-pdf") as HTMLButtonElement;
-    copyBtn.addEventListener("click", async () => {
-        const blob = await generateBlob(`/api/generate-png?url=${encodeURIComponent(location.href)}`);
-        if (!blob) {
-            return ui("#image-generation-failed", 1000);
-        }
+    // const copyBtn = document.getElementById("copy-pdf") as HTMLButtonElement;
+    // copyBtn.addEventListener("click", async () => {
+    //     const blob = await generateBlob(`/api/generate-png?url=${encodeURIComponent(location.href)}`);
+    //     if (!blob) {
+    //         return ui("#image-generation-failed", 1000);
+    //     }
 
-        const success = await handleClipboardCopy(blob);
-        if (success) {
-            ui("#copied-to-clipboard", 2500);
-        } else {
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement("a");
-            a.href = url;
-            a.download = `${document.title}.pdf`;
-            a.click();
-            URL.revokeObjectURL(url);
-        }
-    });
+    //     const success = await handleClipboardCopy(blob);
+    //     if (success) {
+    //         ui("#copied-to-clipboard", 2500);
+    //     } else {
+    //         const url = URL.createObjectURL(blob);
+    //         const a = document.createElement("a");
+    //         a.href = url;
+    //         a.download = `${document.title}.pdf`;
+    //         a.click();
+    //         URL.revokeObjectURL(url);
+    //     }
+    // });
 
     const downloadBtn = document.getElementById("download-pdf") as HTMLButtonElement;
     downloadBtn.addEventListener("click", async () => {

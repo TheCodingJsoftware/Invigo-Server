@@ -120,6 +120,18 @@ export class PurchaseOrder {
         return `${this.meta_data.vendor.name} PO ${this.meta_data.purchase_order_number}`;
     }
 
+    getPurchaseOrderType(): string {
+        let type = "";
+        if (this.meta_data.status === 0) {
+            type = "PO";
+        } else if (this.meta_data.status === 1) {
+            type = "Quote";
+        } else if (this.meta_data.status === 2) {
+            type = "RO";
+        }
+        return type;
+    }
+
     setComponentOrderQuantity(component: Component, quantity: number): void {
         const item = this.components_order_data.find(i => i.id === component.id);
         if (item) {

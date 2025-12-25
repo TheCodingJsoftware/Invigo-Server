@@ -39,7 +39,7 @@ export class EmailDialogComponent extends DialogComponent {
             id: "email-dialog",
             title: purchaseOrder.getName(),
             bodyContent: `
-                <div class="padding">
+                <div class="grid">
                     <div class="s12 field label border small-round">
                         <input type="email" id="email-from" value="${purchaseOrder.meta_data.contact_info.name} (${purchaseOrder.meta_data.contact_info.email})" disabled>
                         <label for="email-from">From</label>
@@ -54,8 +54,8 @@ export class EmailDialogComponent extends DialogComponent {
                         <label>CC (Optional)</label>
                     </div>
                     <div class="s12 field label border small-round">
-                        <input type="text" id="email-subject" value="PO ${purchaseOrder.meta_data.purchase_order_number} from ${purchaseOrder.meta_data.business_info.name}">
-                        <label>Subject</label>
+                        <input type="text" id="email-subject" value="${purchaseOrder.getPurchaseOrderType()} ${purchaseOrder.meta_data.purchase_order_number} from ${purchaseOrder.meta_data.business_info.name}">
+                        <label for="email-subject">Subject</label>
                     </div>
                     <div class="s12 border no-round">
                         <div id="email-body" style="z-index: 0;"></div>
@@ -63,7 +63,7 @@ export class EmailDialogComponent extends DialogComponent {
                 </div>
             `,
             footerContent: `
-                    <nav class="s12 row top-margin right-align">
+                    <nav class="row top-margin right-align">
                         <p class="italic max">This printout is automatically attached as a PDF.</p>
                         <button type="button" id="email-send">
                             <i>send</i>

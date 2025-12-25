@@ -58,7 +58,8 @@
   "scripts": {
     "dev:frontend": "webpack --config src/config/webpack/webpack.dev.js --watch",
     "dev:backend": "./.venv/bin/python main.py",
-    "dev": "concurrently -k -n WEBPACK,BACKEND \"npm run dev:frontend\" \"npm run dev:backend\"",
+    "dev:puppeteer": "cd puppeteer && npm run run",
+    "dev": "concurrently -k -n WEBPACK,BACKEND,PUPPETEER \"npm run dev:frontend\" \"npm run dev:backend\" \"npm run dev:puppeteer\"",
     "build": "cross-env NODE_ENV=production webpack --config src/config/webpack/webpack.prod.js",
     "docker": "./docker_build.sh",
     "run": ".venv/bin/python main.py"

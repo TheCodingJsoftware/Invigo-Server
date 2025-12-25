@@ -5,5 +5,8 @@
     "dependencies": {
         "express": "^4.19.2",
         "puppeteer": "^24.34.0"
+    },
+    "scripts": {
+        "run": "node server.js"
     }
 }
