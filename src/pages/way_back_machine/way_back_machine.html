@@ -2,13 +2,39 @@
 <html lang="en">
 
     <head>
+        <!-- Core -->
         <meta charset="UTF-8">
-        <meta content="width=device-width, initial-scale=1" name="viewport">
-        <meta content="ie=edge" http-equiv="X-UA-Compatible">
-        <meta content="notranslate" name="google">
-        <link href="/static/icon.png" rel="icon">
-        <meta content="width=device-width,initial-scale=1,user-scalable=yes" name="viewport" />
-        <title>Way Back Machine</title>
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=yes">
+        <meta name="google" content="notranslate">
+        <link rel="icon" href="/static/icon.png">
+
+        <!-- Primary metadata -->
+        <title>Way Back Machine - Inventory History & Timeline</title>
+        <meta name="description"
+            content="View historical changes to components, laser cut parts, and sheet inventory. Track quantity, pricing, and order history over time in an interactive timeline.">
+
+        <!-- Application context -->
+        <meta name="application-name" content="Way Back Machine">
+        <meta name="theme-color" content="#121212">
+
+        <!-- Open Graph (used by Slack, Discord, internal previews) -->
+        <meta property="og:type" content="website">
+        <meta property="og:title" content="Way Back Machine - Inventory History">
+        <meta property="og:description"
+            content="Interactive timeline showing inventory history for components, laser cut parts, and sheets.">
+        <meta property="og:image" content="/static/icon.png">
+        <meta property="og:site_name" content="Way Back Machine">
+
+        <!-- Twitter / X -->
+        <meta name="twitter:card" content="summary">
+        <meta name="twitter:title" content="Way Back Machine - Inventory History">
+        <meta name="twitter:description"
+            content="Track inventory quantity, pricing, and order changes over time.">
+        <meta name="twitter:image" content="/static/icon.png">
+
+        <!-- Optional but useful -->
+        <meta name="robots" content="noindex, nofollow">
     </head>
 
     <style>
@@ -19,6 +45,7 @@
 
         .vis-timeline{
             border-radius: 2rem;
+            border-color: var(--outline-variant);
             background: var(--surface-container);
             pointer-events: auto;
         }
@@ -30,12 +57,26 @@
         .vis-panel, .vis-background{
             border-radius: 0 !important;
         }
+
         .vis-legend{
             background-color: var(--surface-container-high);
             box-shadow: var(--elevate2) !important;
+            border-color: var(--outline-variant);
             border-radius: 0.5rem;
             margin: 1rem;
             z-index: 100 !important;
+        }
+
+        .vis-outline{
+            filter: opacity(0);
+        }
+
+        menu {
+            display: none;
+        }
+
+        menu.active {
+            display: block;
         }
     </style>
 
@@ -49,20 +90,24 @@
             </nav>
         </header>
         <main class="responsive">
-            <nav class="toolbar center fill top-margin" id="item-type">
+            <nav class="toolbar center top-margin" id="item-type">
                 <a class="active" id="components">
-                    <div>Components</div>
+                    <i>widgets</i>
+                    <span>Components Inventory</span>
                 </a>
                 <a id="laser-cut-parts">
-                    <div>Laser Cut Parts</div>
+                    <i>precision_manufacturing</i>
+                    <span>Laser Cut Parts Inventory</span>
                 </a>
                 <a id="sheets">
-                    <div>Sheets</div>
+                    <i>view_module</i>
+                    <span>Sheets Inventory</span>
                 </a>
             </nav>
-            <div class="center field large prefix round fill" id="search-field" style="width: 80%;">
+            <div class="center field large prefix round fill large-width" id="search-field">
                 <i class="front">search</i>
                 <input id="search-launcher" readonly>
+                <output>Search the selected inventory</output>
 
                 <menu class="min" id="search-menu">
                     <li>

@@ -417,7 +417,6 @@ function getSelectedItemType(): string {
 
 function getSelectedItem(itemName: string): Component | Sheet | LaserCutPart | null {
     if (!inventory) return null;
-    console.log(inventory);
 
     const type = getSelectedItemType();
     if (type === "sheets") {
@@ -439,9 +438,8 @@ function getSelectedItem(itemName: string): Component | Sheet | LaserCutPart | n
 
 async function runSearch() {
     const type = getSelectedItemType();
-    console.log(type, selectedItem);
-
     if (!type || !selectedItem) return;
+
     try {
         const history = await fetchHistoryData(type, selectedItem);
         if (!history) return; // guard
@@ -502,14 +500,20 @@ document.addEventListener("DOMContentLoaded", async () => {
     laserCutParts.onclick = () => itemTypeChanged(laserCutParts);
     sheets.onclick = () => itemTypeChanged(sheets);
     launcherInput.addEventListener("click", () => {
+        launcherInput.blur();               // ← REQUIRED
         menu.classList.add("active");
+
         activeInput.value = lastTypedQuery;
-        activeInput.focus();
+
+        requestAnimationFrame(() => {
+            activeInput.focus({ preventScroll: true });
+        });
 
         if (lastTypedQuery.length >= 2) {
             onActiveSearchInput();
         }
     });
+
     activeInput.addEventListener("input", debouncedActiveSearch);
     menu.querySelector(".front")?.addEventListener("click", closeMenu);
 
