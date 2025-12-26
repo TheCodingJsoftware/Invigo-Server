@@ -43,34 +43,6 @@
             z-index: 10;
         }
 
-        .vis-timeline{
-            border-radius: 2rem;
-            border-color: var(--outline-variant);
-            background: var(--surface-container);
-            pointer-events: auto;
-        }
-
-        .vis-y-axis, .vis-x-axis, .vis-text{
-            color: var(--on-surface) !important;
-        }
-
-        .vis-panel, .vis-background{
-            border-radius: 0 !important;
-        }
-
-        .vis-legend{
-            background-color: var(--surface-container-high);
-            box-shadow: var(--elevate2) !important;
-            border-color: var(--outline-variant);
-            border-radius: 0.5rem;
-            margin: 1rem;
-            z-index: 100 !important;
-        }
-
-        .vis-outline{
-            filter: opacity(0);
-        }
-
         menu {
             display: none;
         }
@@ -119,7 +91,24 @@
                 </menu>
             </div>
             <br>
-            <div id="visualization"></div>
+            <article class="border round" id="visualization"></article>
+            <article class="border round" id="controls">
+                <h6>Chart Controls</h6>
+                <ul class="list no-space">
+                    <li>
+                        <strong>Zoom</strong>
+                        Use the <kbd>mouse wheel</kbd> to zoom in and out on the timeline.
+                    </li>
+                    <li>
+                        <strong>Pan</strong>
+                        Hold <kbd>Ctrl</kbd> and <kbd>click + drag</kbd> left or right to move through time.
+                    </li>
+                    <li>
+                        <strong>Details</strong>
+                        Hover over points or bars to see the exact date and value.
+                    </li>
+                </ul>
+            </article>
         </main>
     </body>
 </html>

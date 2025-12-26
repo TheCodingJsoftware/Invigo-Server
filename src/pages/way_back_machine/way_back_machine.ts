@@ -4,10 +4,29 @@ import { Sheet } from "@models/sheet";
 import { Component } from "@models/component";
 import { LaserCutPart } from "@models/laser-cut-part";
 import Fuse, { IFuseOptions } from "fuse.js";
-import { Graph2d } from "vis-timeline/esnext";
-import { DataSet } from "vis-data";
-import type { DataGroup } from "vis-timeline/declarations";
-import "@static/css/vis-timeline-graph2d.min.css";
+import {
+    Chart,
+    LineController,
+    LineElement,
+    PointElement,
+    LinearScale,
+    TimeScale,
+    Tooltip,
+    Legend,
+} from "chart.js";
+import "chartjs-adapter-date-fns";
+import zoomPlugin from "chartjs-plugin-zoom";
+
+Chart.register(
+    LineController,
+    LineElement,
+    PointElement,
+    LinearScale,
+    TimeScale,
+    Tooltip,
+    Legend,
+    zoomPlugin
+);
 
 /* =========================
    DOM REFERENCES
@@ -16,10 +35,11 @@ const itemType = document.getElementById("item-type") as HTMLDivElement;
 const components = document.getElementById("components") as HTMLAnchorElement;
 const laserCutParts = document.getElementById("laser-cut-parts") as HTMLAnchorElement;
 const sheets = document.getElementById("sheets") as HTMLAnchorElement;
-
 const launcherInput = document.getElementById("search-launcher") as HTMLInputElement;
 const activeInput = document.getElementById("search-active") as HTMLInputElement;
 const menu = document.getElementById("search-menu") as HTMLMenuElement;
+
+let chartInstance: Chart | null = null;
 
 /* =========================
    SEARCH INDEXES
@@ -82,6 +102,17 @@ type FullHistoryResponse = {
 };
 
 /* =========================
+   NORMALIZED DATA MODEL
+   ========================= */
+type SeriesPoint = { x: string; y: number };
+
+type NormalizedHistory = {
+    quantity?: SeriesPoint[];
+    price?: SeriesPoint[];
+    orders?: SeriesPoint[];
+};
+
+/* =========================
    UTILITIES
    ========================= */
 function debounce<T extends (...args: any[]) => void>(fn: T, delay = 200) {
@@ -102,32 +133,6 @@ async function fetchJSON<T>(url: string): Promise<T> {
     return res.json() as Promise<T>;
 }
 
-type HistoryRoutes = {
-    order?: (id: string) => string;
-    quantity?: (id: string) => string;
-    price?: (id: string) => string;
-};
-
-const HISTORY_ROUTE_MAP: Record<string, HistoryRoutes> = {
-    components: {
-        order: id => `/get_order_history/component/${id}`,
-        quantity: id => `/get_quantity_history/component/${id}`,
-        price: id => `/get_price_history/component/${id}`,
-    },
-    sheets: {
-        order: id => `/get_order_history/sheet/${id}`,
-        quantity: id => `/get_quantity_history/sheet/${id}`,
-        price: id => `/get_price_history/sheet/${id}`,
-    },
-    "laser-cut-parts": {
-        quantity: id => `/get_quantity_history/laser_cut_part/${id}`,
-    },
-};
-
-function getItemIdentifier(item: any): string {
-    return String(item.id);
-}
-
 function sortByDate<T extends { created_at: string }>(entries: T[]): T[] {
     return entries
         .slice()
@@ -138,63 +143,45 @@ function sortByDate<T extends { created_at: string }>(entries: T[]): T[] {
         );
 }
 
-function parseQuantityHistory(
-    history: HistoryResponse<QuantityHistoryEntry>,
-    group: string
-) {
-    if (!history.success) return [];
-
+/* =========================
+   HISTORY PARSERS
+   ========================= */
+function parseQuantity(history?: HistoryResponse<QuantityHistoryEntry>) {
+    if (!history?.success) return undefined;
     return sortByDate(history.history_entries).map(e => ({
         x: e.created_at,
         y: e.to_quantity,
-        group,
     }));
 }
 
-function parsePriceHistory(
-    history: HistoryResponse<PriceHistoryEntry>,
-    group: string
-) {
-    if (!history.success) return [];
-
+function parsePrice(history?: HistoryResponse<PriceHistoryEntry>) {
+    if (!history?.success) return undefined;
     return sortByDate(history.history_entries).map(e => ({
         x: e.created_at,
         y: e.to_price,
-        group,
     }));
 }
 
-function parseOrderHistory(
-    history: HistoryResponse<OrderHistoryEntry>,
-    group: string
-) {
-    if (!history.success) return [];
+function parseOrders(history?: HistoryResponse<OrderHistoryEntry>) {
+    if (!history?.success) return undefined;
 
     let pending = 0;
-
     return sortByDate(history.history_entries).map(e => {
-        if (e.details?.new_orders) {
-            pending += e.details.new_orders.reduce(
-                (sum, o) => sum + o.order_pending_quantity,
-                0
-            );
-        }
-
-        if (e.details?.removed_orders) {
-            pending -= e.details.removed_orders.reduce(
-                (sum, o) => sum + o.order_pending_quantity,
-                0
-            );
-        }
-
-        return {
-            x: e.created_at,
-            y: pending,
-            group,
-        };
+        if (e.details?.new_orders)
+            pending += e.details.new_orders.reduce((s, o) => s + o.order_pending_quantity, 0);
+        if (e.details?.removed_orders)
+            pending -= e.details.removed_orders.reduce((s, o) => s + o.order_pending_quantity, 0);
+        return { x: e.created_at, y: pending };
     });
 }
 
+function normalizeHistory(history: FullHistoryResponse): NormalizedHistory {
+    return {
+        quantity: parseQuantity(history.quantity),
+        price: parsePrice(history.price),
+        orders: parseOrders(history.order),
+    };
+}
 
 /* =========================
    DATA LOADERS
@@ -216,74 +203,6 @@ async function loadAllInventory() {
     ]);
     return { sheets, components, laserCutParts };
 }
-
-async function fetchHistoryData(
-    type: string,
-    item: any
-): Promise<FullHistoryResponse> {
-    const routes = HISTORY_ROUTE_MAP[type];
-    if (!routes) {
-        throw new Error(`No history routes for type: ${type}`);
-    }
-
-    const id = getItemIdentifier(item);
-
-    const promises: [
-        Promise<HistoryResponse<OrderHistoryEntry>> | Promise<undefined>,
-        Promise<HistoryResponse<QuantityHistoryEntry>> | Promise<undefined>,
-        Promise<HistoryResponse<PriceHistoryEntry>> | Promise<undefined>,
-    ] = [
-            routes.order
-                ? fetchJSON<HistoryResponse<OrderHistoryEntry>>(routes.order(id))
-                : Promise.resolve(undefined),
-
-            routes.quantity
-                ? fetchJSON<HistoryResponse<QuantityHistoryEntry>>(routes.quantity(id))
-                : Promise.resolve(undefined),
-
-            routes.price
-                ? fetchJSON<HistoryResponse<PriceHistoryEntry>>(routes.price(id))
-                : Promise.resolve(undefined),
-        ];
-
-    const [order, quantity, price] = await Promise.all(promises);
-
-    return { order, quantity, price };
-}
-
-
-function buildHistoryGroups(): DataSet<DataGroup> {
-    const groups = new DataSet<DataGroup>();
-
-    groups.add({
-        id: "quantity",
-        content: "Quantity",
-        options: {
-            drawPoints: { style: "circle", size: 6 },
-            shaded: { orientation: "bottom" },
-        },
-    });
-
-    groups.add({
-        id: "price",
-        content: "Price",
-        options: {
-            yAxisOrientation: "right",
-            drawPoints: { style: "square" },
-        },
-    });
-
-    groups.add({
-        id: "orders",
-        content: "Pending Orders",
-        options: {
-            style: "bar",
-        },
-    });
-    return groups;
-}
-
-
 
 /* =========================
    FUSE SETUP
@@ -362,35 +281,141 @@ function renderResults(results: any[]) {
     });
 }
 
-function renderHistoryGraph(
-    container: HTMLElement,
-    history: FullHistoryResponse
-) {
-    const items: any[] = [];
+/* =========================
+   CHART.JS RENDERER
+   ========================= */
 
-    if (history.quantity)
-        items.push(...parseQuantityHistory(history.quantity, "quantity"));
+function trendColor(ctx: any) {
+    const { p0, p1 } = ctx;
+    if (!p0 || !p1) return "#999";
+    return p1.parsed.y >= p0.parsed.y
+        ? "#4caf50"   // increase → green
+        : "#f44336";  // decrease → red
+}
 
-    if (history.price)
-        items.push(...parsePriceHistory(history.price, "price"));
+function renderChart(container: HTMLElement, data: NormalizedHistory) {
+    container.innerHTML = `<canvas></canvas>`;
+    const ctx = container.querySelector("canvas")!;
 
-    if (history.order)
-        items.push(...parseOrderHistory(history.order, "orders"));
+    chartInstance?.destroy();
 
-    const dataset = new DataSet(items);
-    const groups = buildHistoryGroups();
+    chartInstance = new Chart(ctx, {
+        type: "line",
+        data: {
+            datasets: [data.quantity && {
 
-    return new Graph2d(container, dataset, groups, {
-        height: "800px",
-        legend: {
-            enabled: true,
-            left: {
-                position: "bottom-right",
+                label: "Quantity",
+                data: data.quantity,
+                borderColor: "#4caf50",
+                pointRadius: 6,
+                pointHoverRadius: 5,
+                tension: 0.1,
+
+                segment: {
+                    borderColor: trendColor,
+                },
+
+                // POINT COLORS — match segment trend
+                pointBackgroundColor: (ctx: any) => {
+                    const i = ctx.dataIndex;
+                    const data = ctx.dataset.data;
+
+                    // If only one point, default to neutral
+                    if (data.length < 2) return "#4caf50";
+
+                    // First point: compare to second
+                    if (i === 0) {
+                        return data[1].y >= data[0].y ? "#4caf50" : "#f44336";
+                    }
+
+                    // All others: compare previous → current
+                    return ctx.parsed.y >= data[i - 1].y ? "#4caf50" : "#f44336";
+                },
+
+                pointBorderColor: (ctx: any) => {
+                    const i = ctx.dataIndex;
+                    const data = ctx.dataset.data;
+
+                    if (data.length < 2) return "#4caf50";
+
+                    if (i === 0) {
+                        return data[1].y >= data[0].y ? "#4caf50" : "#f44336";
+                    }
+
+                    return ctx.parsed.y >= data[i - 1].y ? "#4caf50" : "#f44336";
+                },
+            },
+            data.price && {
+                label: "Price",
+                data: data.price,
+                borderColor: "#2196f3",
+                borderDash: [10, 4],
+                borderWidth: 2,
+                yAxisID: "y1",
+                pointRadius: 6,
+                pointHoverRadius: 5,
+                tension: 0.1,
+            },
+            data.orders && {
+                label: "Pending Orders",
+                data: data.orders,
+                borderColor: "#ff9800",
+                borderDash: [2, 6],
+                borderWidth: 2,
+                pointRadius: 6,
+                pointHoverRadius: 5,
+                tension: 0.1,
+            },
+            ].filter(Boolean) as any[],
+        }, options: {
+            interaction: {
+                mode: "nearest",
+                intersect: false,
+            },
+            scales: {
+                x: {
+                    type: "time",
+                },
+                y: {
+                    beginAtZero: true,
+                },
+                y1: {
+                    position: "right",
+                    grid: { drawOnChartArea: false },
+                },
+            },
+            plugins: {
+                legend: {
+                    display: true,
+                },
+                tooltip: {
+                    enabled: true,
+                },
+                zoom: {
+                    pan: {
+                        enabled: true,
+                        mode: "x",
+                        modifierKey: "ctrl", // prevent accidental pans
+                    },
+                    zoom: {
+                        wheel: {
+                            enabled: true,
+                        },
+                        pinch: {
+                            enabled: true,
+                        },
+                        mode: "x",
+                    },
+                },
             },
         },
-        dataAxis: { showMinorLabels: false },
+
     });
 }
+
+/* =========================
+   SEARCH + STATE
+   ========================= */
 
 function onActiveSearchInput() {
     const query = activeInput.value.trim();
@@ -408,9 +433,6 @@ function onActiveSearchInput() {
 }
 const debouncedActiveSearch = debounce(onActiveSearchInput, 150);
 
-/* =========================
-   SEARCH + STATE
-   ========================= */
 function getSelectedItemType(): string {
     return itemType.querySelector(".active")!.id;
 }
@@ -437,21 +459,48 @@ function getSelectedItem(itemName: string): Component | Sheet | LaserCutPart | n
 }
 
 async function runSearch() {
-    const type = getSelectedItemType();
-    if (!type || !selectedItem) return;
+    if (!selectedItem) return;
 
-    try {
-        const history = await fetchHistoryData(type, selectedItem);
-        if (!history) return; // guard
+    const type = itemType.querySelector(".active")!.id;
+    const id = selectedItem.id;
 
-        const container = document.getElementById("visualization")!;
-        container.innerHTML = "";
+    const routes: any = {
+        components: {
+            order: `/get_order_history/component/${id}`,
+            quantity: `/get_quantity_history/component/${id}`,
+            price: `/get_price_history/component/${id}`,
+        },
+        sheets: {
+            order: `/get_order_history/sheet/${id}`,
+            quantity: `/get_quantity_history/sheet/${id}`,
+            price: `/get_price_history/sheet/${id}`,
+        },
+        "laser-cut-parts": {
+            quantity: `/get_quantity_history/laser_cut_part/${id}`,
+        },
+    }[type];
 
-        renderHistoryGraph(container, history);
-    } catch (err) {
-        console.error("Failed to load history:", err);
-    }
+    const [order, quantity, price] = await Promise.all([
+        routes.order
+            ? fetchJSON<HistoryResponse<OrderHistoryEntry>>(routes.order)
+            : Promise.resolve(undefined),
+
+        routes.quantity
+            ? fetchJSON<HistoryResponse<QuantityHistoryEntry>>(routes.quantity)
+            : Promise.resolve(undefined),
+
+        routes.price
+            ? fetchJSON<HistoryResponse<PriceHistoryEntry>>(routes.price)
+            : Promise.resolve(undefined),
+    ]);
+
+    const normalized = normalizeHistory({ order, quantity, price });
+
+    const container = document.getElementById("visualization")!;
+    container.innerHTML = "";
+    renderChart(container, normalized);
 }
+
 
 function setURLParams() {
     const params = new URLSearchParams(window.location.search);
@@ -500,7 +549,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     laserCutParts.onclick = () => itemTypeChanged(laserCutParts);
     sheets.onclick = () => itemTypeChanged(sheets);
     launcherInput.addEventListener("click", () => {
-        launcherInput.blur();               // ← REQUIRED
+        launcherInput.blur();
         menu.classList.add("active");
 
         activeInput.value = lastTypedQuery;
