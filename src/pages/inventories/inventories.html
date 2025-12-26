@@ -1,72 +1,73 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta content="width=device-width, initial-scale=1" name="viewport">
-    <meta content="ie=edge" http-equiv="X-UA-Compatible">
-    <meta content="notranslate" name="google">
-    <link href="/static/icon.png" rel="icon">
-    <meta content="width=device-width,initial-scale=1,user-scalable=yes" name="viewport"/>
-    <title>Inventory</title>
-</head>
+    <head>
+        <meta charset="UTF-8">
+        <meta content="width=device-width, initial-scale=1" name="viewport">
+        <meta content="ie=edge" http-equiv="X-UA-Compatible">
+        <meta content="notranslate" name="google">
+        <link href="/static/icon.png" rel="icon">
+        <meta content="width=device-width,initial-scale=1,user-scalable=yes" name="viewport" />
+        <title>Inventory</title>
+    </head>
 
-<body class="dark">
-<header class="fixed primary">
-    <nav>
-        <button class="circle transparent" onclick="window.location.href = '/'">
-            <i>arrow_back</i>
-        </button>
-        <h5 class="max">
-            Inventory
-        </h5>
-    </nav>
-</header>
-<main class="responsive">
-    <article class="border round">
-        <h4 class="center-align">Components Inventory</h4>
-        <nav class="center-align no-space wrap" id="components-inventory-container">
-            {% for category in components_categories %}
-            <button class="chip fill tiny-margin"
-                    onclick="window.location.href='/inventory/components_inventory/{{category | urlencode_path}}'">
-                <span>{{category}}</span>
+    <header class="fixed primary">
+        <nav>
+            <button class="circle transparent" onclick="window.location.href = '/'">
+                <i>arrow_back</i>
             </button>
-            {% endfor %}
+            <h5 class="max">
+                Inventory
+            </h5>
         </nav>
-    </article>
-    <article class="border round">
-        <h4 class="center-align">Laser Cut Parts Inventory</h4>
-        <nav class="center-align no-space wrap" id="laser-cut-parts-inventory-container">
-            {% for category in laser_cut_parts_categories %}
-            <button class="chip fill tiny-margin"
-                    onclick="window.location.href='/inventory/laser_cut_parts_inventory/{{category | urlencode_path}}'">
-                <span>{{category}}</span>
-            </button>
-            {% endfor %}
-        </nav>
-    </article>
-    <article class="border round">
-        <h4 class="center-align">Sheets Inventory</h4>
-        <nav class="center-align no-space wrap" id="sheets-inventory-container">
-            {% for category in sheets_categories %}
-            <button class="chip fill tiny-margin"
-                    onclick="window.location.href='/inventory/sheets_inventory/{{category | urlencode_path}}'">
-                <span>{{category}}</span>
-            </button>
-            {% endfor %}
-        </nav>
-    </article>
-    <article class="border round">
-        <h4 class="center-align">Coatings Inventory</h4>
-        <nav class="center-align no-space wrap" id="coatings-inventory-container">
-            {% for category in coatings_categories %}
-            <button class="chip fill tiny-margin"
-                    onclick="window.location.href='/inventory/coatings_inventory/{{category | urlencode_path}}'">
-                <span>{{category}}</span>
-            </button>
-            {% endfor %}
-        </nav>
-    </article>
-</main>
-</body>
+    </header>
+
+    <body class="dark">
+        <main class="responsive">
+            <article class="border round">
+                <h4 class="center-align">Components Inventory</h4>
+                <nav class="center-align no-space wrap" id="components-inventory-container">
+                    {% for category in components_categories %}
+                    <button class="chip fill tiny-margin"
+                        onclick="window.location.href='/inventory/components_inventory/{{category | urlencode_path}}'">
+                        <span>{{category}}</span>
+                    </button>
+                    {% endfor %}
+                </nav>
+            </article>
+            <article class="border round">
+                <h4 class="center-align">Laser Cut Parts Inventory</h4>
+                <nav class="center-align no-space wrap" id="laser-cut-parts-inventory-container">
+                    {% for category in laser_cut_parts_categories %}
+                    <button class="chip fill tiny-margin"
+                        onclick="window.location.href='/inventory/laser_cut_parts_inventory/{{category | urlencode_path}}'">
+                        <span>{{category}}</span>
+                    </button>
+                    {% endfor %}
+                </nav>
+            </article>
+            <article class="border round">
+                <h4 class="center-align">Sheets Inventory</h4>
+                <nav class="center-align no-space wrap" id="sheets-inventory-container">
+                    {% for category in sheets_categories %}
+                    <button class="chip fill tiny-margin"
+                        onclick="window.location.href='/inventory/sheets_inventory/{{category | urlencode_path}}'">
+                        <span>{{category}}</span>
+                    </button>
+                    {% endfor %}
+                </nav>
+            </article>
+            <article class="border round">
+                <h4 class="center-align">Coatings Inventory</h4>
+                <nav class="center-align no-space wrap" id="coatings-inventory-container">
+                    {% for category in coatings_categories %}
+                    <button class="chip fill tiny-margin"
+                        onclick="window.location.href='/inventory/coatings_inventory/{{category | urlencode_path}}'">
+                        <span>{{category}}</span>
+                    </button>
+                    {% endfor %}
+                </nav>
+            </article>
+        </main>
+    </body>
 
 </html>

@@ -1,11 +1,11 @@
 import "beercss";
 import "@utils/theme";
-import {Timeline, TimelineOptions} from "vis-timeline/esnext";
-import {DataSet} from "vis-data";
-import {DataGroup, DataItem} from "vis-timeline/declarations";
+import { Timeline, TimelineOptions } from "vis-timeline/esnext";
+import { DataSet } from "vis-data";
+import { DataGroup, DataItem } from "vis-timeline/declarations";
 import "@static/css/vis-timeline-graph2d.min.css";
-import {SnackbarComponent} from "@components/common/snackbar/snackbar-component";
-import {extractCssVar, getCachedThemeCss} from "@config/material-theme-cookie";
+import { SnackbarComponent } from "@components/common/snackbar/snackbar-component";
+import { extractCssVar, getCachedThemeCss } from "@config/material-theme-cookie";
 
 export interface ContactInfo {
     name: string;
@@ -206,7 +206,7 @@ function toISOStringSafe(date: string | Date | number | null | undefined): strin
 function buildJobProcessTimelines(items: DataItem[]): JobTimelinePayload[] {
     const jobs: Record<number, JobTimelinePayload> = {};
 
-    for (const {group, content, start, end} of items) {
+    for (const { group, content, start, end } of items) {
         console.log(items)
         const jobId = typeof group === "string" ? parseInt(group, 10) : group;
         if (!jobId) continue;
@@ -301,7 +301,7 @@ class JobTimeline {
             }
         };
 
-        const mergedOptions = {...defaultOptions, ...options};
+        const mergedOptions = { ...defaultOptions, ...options };
 
         this.timeline = new Timeline(this.container, [], mergedOptions);
         this.timeline.setOptions(mergedOptions);
@@ -320,7 +320,7 @@ class JobTimeline {
 
         window.addEventListener("resize", () => {
             if (this.timeline) {
-                this.timeline.setOptions({maxHeight: getTimelineHeight()});
+                this.timeline.setOptions({ maxHeight: getTimelineHeight() });
             }
         });
     }
@@ -369,7 +369,7 @@ class JobTimeline {
 
             // Add dynamic CSS for job color
             if (!document.getElementById(`job-color-style-${jobGroupId}`)) {
-                const {light, dark} = await getCachedThemeCss(job.job_data.color);
+                const { light, dark } = await getCachedThemeCss(job.job_data.color);
 
                 const primaryLight = extractCssVar(light, "primary");
                 const primaryDark = extractCssVar(dark, "primary");
@@ -399,7 +399,7 @@ class JobTimeline {
                         background-color: red !important;
                         color: ${onPrimaryLight};
                     }
-                    
+
                     body.dark .vis-item.${colorClass} {
                         background-color: ${primaryDark};
                         border-color: ${primaryDark};

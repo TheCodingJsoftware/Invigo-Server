@@ -1,54 +1,55 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta content="width=device-width, initial-scale=1" name="viewport">
-    <meta content="ie=edge" http-equiv="X-UA-Compatible">
-    <meta content="notranslate" name="google">
-    <title>{{inventory_type}} - {{category}}</title>
-    <meta content="{{inventory_type}} - {{category}}" property="og:title"/>
-    <meta content="Set Invigo Sheets in Inventory Information." property="og:description"/>
-    <link href="/static/icon.png" rel="icon">
-</head>
+    <head>
+        <meta charset="UTF-8">
+        <meta content="width=device-width, initial-scale=1" name="viewport">
+        <meta content="ie=edge" http-equiv="X-UA-Compatible">
+        <meta content="notranslate" name="google">
+        <title>{{inventory_type}} - {{category}}</title>
+        <meta content="{{inventory_type}} - {{category}}" property="og:title" />
+        <meta content="Set Invigo Sheets in Inventory Information." property="og:description" />
+        <link href="/static/icon.png" rel="icon">
+    </head>
 
-<body class="dark">
-<header class="fixed primary" style="height: 60px;">
-    <nav>
-        <button class="circle transparent" onclick="window.location.href = '/inventory'">
-            <i>arrow_back</i>
-        </button>
-        <h5 class="max">{{inventory_type}} - {{category}}</h5>
-    </nav>
-</header>
-<main stlye="padding-top: 60px;">
-    <div class="scroll" style="height: 100vh;">
-        <table class="sortable stripes center-align">
-            <thead class="fixed">
-            <tr>
-                {% for header in headers %}
-                <th class="min">{{ header.replace('_', ' ').capitalize() }}</th>
-                {% endfor %}
-            </tr>
-            </thead>
-            <tbody>
-            {% for item in data %}
-            <tr>
-                {% for idx, value in item.items() %}
-                {% if loop.first %}
-                <td class="min">
-                    <a class="link"
-                       href="/way_back_machine?inventory={{ inventory_type.lower().replace(' ', '_') }}&item={{ value }}">{{
-                        value }}</a>
-                </td>
-                {% else %}
-                <td>{{ value }}</td>
-                {% endif %}
-                {% endfor %}
-            </tr>
-            {% endfor %}
-            </tbody>
-        </table>
-    </div>
-</main>
-</body>
+    <header class="fixed primary">
+        <nav>
+            <button class="circle transparent" onclick="window.location.href = '/inventory'">
+                <i>arrow_back</i>
+            </button>
+            <h5 class="max">{{inventory_type}} - {{category}}</h5>
+        </nav>
+    </header>
+
+    <body class="dark">
+        <main class="responsive">
+            <div class="scroll" style="height: 100vh;">
+                <table class="stripes border center-align">
+                    <thead class="fixed surface">
+                        <tr>
+                            {% for header in headers %}
+                            <th class="min">{{ header.replace('_', ' ').capitalize() }}</th>
+                            {% endfor %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in data %}
+                        <tr>
+                            {% for idx, value in item.items() %}
+                            {% if loop.first %}
+                            <td class="min left-align">
+                                <a class="link wrap"
+                                    href="/way_back_machine?itemType={{ inventory_type.lower().replace(' ', '_') | urlencode }}&search={{ value | urlencode }}">{{
+                                    value }}</a>
+                            </td>
+                            {% else %}
+                            <td>{{ value }}</td>
+                            {% endif %}
+                            {% endfor %}
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </main>
+    </body>
 </html>

@@ -153,7 +153,6 @@ page_routes = [
     route(r"/", PageHandler, name="index", template_name="index.html"),
     route(r"/ping", PingHandler),
     route(r"/health", HealthHandler),
-    route(r"/way_back_machine", WayBackMachineHandler),
     route(
         r"/workspace_dashboard",
         PageHandler,
@@ -180,9 +179,9 @@ page_routes = [
         template_name="workspace_archives.html",
     ),
     route(
-        r"/wayback_machine",
+        r"/way_back_machine",
         PageHandler,
-        template_name="wayback_machine.html",
+        template_name="way_back_machine.html",
     ),
     route(r"/logs", LogsHandler),
     route(r"/message", MessageHandler),

@@ -55,7 +55,7 @@ class InventoryTablesHandler(BaseHandler):
         self.set_header("Content-Type", "text/html")
         self.render_template(
             "inventory_table.html",
-            inventory_type=inventory_type.replace("_", " ").title(),
+            inventory_type=inventory_type.replace("_inventory", "").replace("_", "-").title(),
             category=category,
             data=data,
             headers=data[0].keys() if data else [],
