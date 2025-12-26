@@ -5,8 +5,8 @@
         <meta content="width=device-width, initial-scale=1" name="viewport">
         <meta content="ie=edge" http-equiv="X-UA-Compatible">
         <meta content="notranslate" name="google">
-        <title>{{inventory_type}} - {{category}}</title>
-        <meta content="{{inventory_type}} - {{category}}" property="og:title" />
+        <title>{{item_type}} - {{category}}</title>
+        <meta content="{{item_type}} - {{category}}" property="og:title" />
         <meta content="Set Invigo Sheets in Inventory Information." property="og:description" />
         <link href="/static/icon.png" rel="icon">
     </head>
@@ -16,7 +16,7 @@
             <button class="circle transparent" onclick="window.location.href = '/inventory'">
                 <i>arrow_back</i>
             </button>
-            <h5 class="max">{{inventory_type}} - {{category}}</h5>
+            <h5 class="max">{{item_type}} - {{category}}</h5>
         </nav>
     </header>
 
@@ -27,21 +27,25 @@
                     <thead class="fixed surface">
                         <tr>
                             {% for header in headers %}
+                            {% if header != "id" %}
                             <th class="min">{{ header.replace('_', ' ').capitalize() }}</th>
+                            {% endif %}
                             {% endfor %}
                         </tr>
                     </thead>
                     <tbody>
                         {% for item in data %}
                         <tr>
-                            {% for idx, value in item.items() %}
-                            {% if loop.first %}
                             <td class="min left-align">
-                                <a class="link wrap"
-                                    href="/way_back_machine?itemType={{ inventory_type.lower().replace(' ', '_') | urlencode }}&search={{ value | urlencode }}">{{
-                                    value }}</a>
+                                <a
+                                    class="link wrap"
+                                    href="/way_back_machine?type={{ item_type | lower }}&id={{ item['id'] }}&q={{ item['name'] | urlencode }}">
+                                    {{ item['name'] }}
+                                </a>
                             </td>
-                            {% else %}
+
+                            {% for key, value in item.items() %}
+                            {% if key not in ["id", "name"] %}
                             <td>{{ value }}</td>
                             {% endif %}
                             {% endfor %}
