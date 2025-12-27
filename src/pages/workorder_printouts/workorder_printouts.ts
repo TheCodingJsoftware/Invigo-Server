@@ -34,6 +34,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
             const tooltip = button.querySelector(".tooltip") as HTMLDivElement;
             tooltip.innerHTML = nestedSheets.generateNestedSheetsListHTML(nest);
+            tooltip.querySelector("article")!.classList.add("medium-elevate");
 
             invertImages(tooltip);
         }, { once: true });
