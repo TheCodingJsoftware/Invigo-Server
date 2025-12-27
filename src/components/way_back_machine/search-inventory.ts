@@ -1,6 +1,7 @@
 import { Component } from "@models/component";
 import { LaserCutPart } from "@models/laser-cut-part";
 import { Sheet } from "@models/sheet";
+import { debounce } from "@utils/debounce";
 import { fetchJSON } from "@utils/fetch-json";
 import Fuse from "fuse.js";
 
@@ -19,6 +20,8 @@ export class SearchInventory extends EventTarget {
     private menu!: HTMLMenuElement;
     public activeInput!: HTMLInputElement;
     public launcherInput!: HTMLInputElement;
+    private backButton!: HTMLElement;
+    private clearButton!: HTMLElement;
 
     private lastTypedQuery = "";
 
@@ -46,35 +49,44 @@ export class SearchInventory extends EventTarget {
         searchIcon.textContent = "search";
 
         this.launcherInput = document.createElement("input");
+        this.launcherInput.placeholder = "Search";
+        this.launcherInput.autocomplete = "off";
         this.launcherInput.readOnly = true;
 
-        const output = document.createElement("output");
-        output.textContent = "Search the selected inventory";
-
         this.menu = document.createElement("menu");
-        this.menu.className = "min";
+        this.menu.className = "min top-round";
 
         const headerLi = document.createElement("li");
 
         const headerField = document.createElement("div");
-        headerField.className = "field large prefix";
+        headerField.className = "field large prefix suffix";
 
-        const backIcon = document.createElement("i");
-        backIcon.className = "front";
-        backIcon.textContent = "arrow_back";
+        this.backButton = document.createElement("i");
+        this.backButton.className = "front";
+        this.backButton.textContent = "arrow_back";
 
         this.activeInput = document.createElement("input");
+        this.activeInput.placeholder = "Search";
         this.activeInput.autocomplete = "off";
 
-        headerField.appendChild(backIcon);
+        this.clearButton = document.createElement("i");
+        this.clearButton.className = "end clickable";
+        this.clearButton.textContent = "close";
+        this.clearButton.setAttribute("role", "button");
+        this.clearButton.tabIndex = 0;
+        this.clearButton.style.cursor = "pointer";
+        this.clearButton.style.pointerEvents = "auto";
+        this.clearButton.classList.add("hidden");
+
+        headerField.appendChild(this.backButton);
         headerField.appendChild(this.activeInput);
+        headerField.appendChild(this.clearButton);
 
         headerLi.appendChild(headerField);
         this.menu.appendChild(headerLi);
 
         this.root.appendChild(searchIcon);
         this.root.appendChild(this.launcherInput);
-        this.root.appendChild(output);
         this.root.appendChild(this.menu);
 
         this.mount.appendChild(this.root);
@@ -126,6 +138,7 @@ export class SearchInventory extends EventTarget {
         this.launcherInput.addEventListener("click", () => {
             this.launcherInput.blur();
             this.menu.classList.add("active");
+            this.clearButton.classList.remove("hidden");
             this.activeInput.value = this.lastTypedQuery;
 
             requestAnimationFrame(() =>
@@ -139,22 +152,25 @@ export class SearchInventory extends EventTarget {
 
         this.activeInput.addEventListener(
             "input",
-            this.debounce(() => this.search(), 150)
+            debounce(() => this.search(), 150)
         );
 
-        this.menu
-            .querySelector(".front")
-            ?.addEventListener("click", () =>
-                this.menu.classList.remove("active")
-            );
-    }
+        this.clearButton.addEventListener("click", (e) => {
+            e.stopPropagation();
 
-    private debounce<T extends (...args: any[]) => void>(fn: T, delay = 200) {
-        let timer: number;
-        return (...args: Parameters<T>) => {
-            clearTimeout(timer);
-            timer = window.setTimeout(() => fn(...args), delay);
-        };
+            this.activeInput.value = "";
+            this.launcherInput.value = "";
+            this.lastTypedQuery = "";
+
+            this.clearResults();
+            this.menu.classList.remove("active");
+            this.clearButton.classList.add("hidden");
+        });
+
+        this.backButton.addEventListener("click", () => {
+            this.menu.classList.remove("active");
+            this.clearButton.classList.add("hidden");
+        });
     }
 
     public setSearchQuery(q: string) {
@@ -174,7 +190,7 @@ export class SearchInventory extends EventTarget {
             const li = document.createElement("li");
             li.className = "result";
             li.innerHTML = `
-                <i>history</i>
+                <i>search</i>
                 <div>
                     <div>${r.item.label}</div>
                     <small>${r.item.subtitle}</small>
