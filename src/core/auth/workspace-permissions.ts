@@ -86,8 +86,12 @@ export const PermissionTree = {
             value: "can_see_progress_bar",
             label: "Can See Progress Bar",
             description: "Allows being able to see the progress bar for current process.",
+        },
+        DeleteJobs: {
+            value: "delete_jobs",
+            label: "Delete Jobs",
+            description: "Allows deleting jobs from Workspace.",
         }
-
     },
     DataType: {
         SwitchDataTypes: {

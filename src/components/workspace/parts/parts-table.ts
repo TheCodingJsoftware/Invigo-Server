@@ -16,6 +16,7 @@ export class PartsTable {
     readonly table: HTMLTableElement;
     readonly thead: HTMLElement;
     readonly tbody: HTMLElement;
+    readonly tfoot: HTMLElement;
     readonly #user = Object.freeze(UserContext.getInstance().user);
     readonly selectAllCheckbox = new WorkspaceRowCheckbox();
 
@@ -91,6 +92,7 @@ export class PartsTable {
         this.table.classList.add("border", "round", "prats-table");
         this.thead = document.createElement("thead");
         this.tbody = document.createElement("tbody");
+        this.tfoot = document.createElement("tfoot");
 
         this.initialize();
     }
@@ -128,10 +130,32 @@ export class PartsTable {
             }
             headerRow.appendChild(th);
         }
+        for (const column of this.columns) {
+            const th = document.createElement("th");
+            if (column.key === 'files') {
+                this.tfoot.appendChild(th);
+
+                const downloadAllFilesButton = document.createElement("button");
+                downloadAllFilesButton.classList.add("responsive");
+                downloadAllFilesButton.innerHTML = `
+                    <i>download</i>
+                    <span>Download</span>
+                `.trim();
+                downloadAllFilesButton.classList.add("chip");
+                downloadAllFilesButton.addEventListener("click", () => {
+                    // TODO
+                    // PartSelectionManager.downloadFiles();
+                });
+                th.appendChild(downloadAllFilesButton);
+            } else {
+                this.tfoot.appendChild(th);
+            }
+        }
 
         this.thead.appendChild(headerRow);
         this.table.appendChild(this.thead);
         this.table.appendChild(this.tbody);
+        this.table.appendChild(this.tfoot);
     }
 
     async renderBatch(data: PartData[], startIndex: number): Promise<void> {

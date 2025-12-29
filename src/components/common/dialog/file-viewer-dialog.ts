@@ -24,7 +24,7 @@ export class FileViewerDialog extends DialogComponent {
     private partButtons = new Map<number, HTMLButtonElement>();
     private fileButtons = new Map<string, HTMLButtonElement>();
 
-    private zoomLevel = 1;
+    private zoomLevel = 0.8;
     private readonly ZOOM_MIN = 0.25;
     private readonly ZOOM_MAX = 10;
     private readonly ZOOM_STEP = 0.15;
@@ -111,9 +111,7 @@ export class FileViewerDialog extends DialogComponent {
         }, { passive: false });
 
         this.contentElement.addEventListener("dblclick", () => {
-            this.zoomLevel = 1;
-            this.panX = 0;
-            this.panY = 0;
+            this.resetZoom();
             this.applyZoom();
         });
         this.partsElement.innerHTML = "";
@@ -143,6 +141,7 @@ export class FileViewerDialog extends DialogComponent {
         this.selectPart(targetPart ?? this.parts[0]);
         this.initZoomControls();
         this.initPanControls();
+        this.applyZoom();
 
         invertImages(this.element);
     }
@@ -162,9 +161,7 @@ export class FileViewerDialog extends DialogComponent {
 
         this.element.querySelector('[data-zoom="reset"]')
             ?.addEventListener("click", () => {
-                this.zoomLevel = 1;
-                this.panX = 0;
-                this.panY = 0;
+                this.resetZoom();
                 this.applyZoom();
             });
     }
@@ -341,9 +338,7 @@ export class FileViewerDialog extends DialogComponent {
     private renderContent(filePath: string) {
         const ext = this.extension(filePath);
         const name = this.filename(filePath);
-        this.zoomLevel = 1;
-        this.panX = 0;
-        this.panY = 0;
+        this.resetZoom();
 
         this.contentElement.innerHTML = "";
         const url = `/workspace/get_file/${encodeURIComponent(name)}`;
@@ -398,6 +393,12 @@ export class FileViewerDialog extends DialogComponent {
         this.contentElement.appendChild(iframe);
     }
 
+    private resetZoom() {
+        this.zoomLevel = 0.8;
+        this.panX = 0;
+        this.panY = 0;
+    }
+
     private async renderPdf(url: string) {
         const scroller = document.createElement("div");
         scroller.classList.add("center-align")
@@ -410,7 +411,6 @@ export class FileViewerDialog extends DialogComponent {
         stage.appendChild(zoomTarget);
 
         this.contentElement.appendChild(stage);
-        this.applyZoom();
 
         const loadingTask = (pdfjsLib as any).getDocument(url);
         const pdfDocument = await loadingTask.promise;
@@ -447,6 +447,7 @@ export class FileViewerDialog extends DialogComponent {
             });
             await renderTask.promise;
         }
+        this.applyZoom();
     }
 
     private async renderDxf(url: string) {
@@ -464,7 +465,6 @@ export class FileViewerDialog extends DialogComponent {
         stage.appendChild(zoomTarget);
 
         this.contentElement.appendChild(stage);
-        this.applyZoom();
         const text = await fetch(url).then(r => r.text());
         const helper = new DxfHelper(text);
         const svgMarkup: string = helper.toSVG();
@@ -494,6 +494,7 @@ export class FileViewerDialog extends DialogComponent {
             });
             svg.setAttribute("preserveAspectRatio", "xMidYMid meet");
         }
+        this.applyZoom();
     }
 
     private filename(p: string): string {

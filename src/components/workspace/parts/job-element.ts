@@ -9,6 +9,10 @@ import { SnackbarComponent } from "@components/common/snackbar/snackbar-componen
 import { FileViewerDialog } from "@components/common/dialog/file-viewer-dialog";
 import { PartData } from "@components/workspace/parts/part-container";
 import morphdom from "morphdom";
+import { fetchJSON } from "@utils/fetch-json";
+import { UserContext } from "@core/auth/user-context";
+import { WorkspacePermissions } from "@core/auth/workspace-permissions";
+import { Loading } from "@components/common/loading/loading";
 
 interface JobSettings {
     isCollapsed: boolean;
@@ -16,15 +20,8 @@ interface JobSettings {
 
 
 export async function fetchJobData(jobId: number): Promise<JobData> {
-    const response = await fetch(`/api/workspace/get/job/${jobId}`);
-    if (!response.ok) {
-        throw new Error(`Failed to fetch job data: ${response.statusText}`);
-    }
-
-    const data: JobData = await response.json();
-    return data;
+    return fetchJSON<JobData>(`/api/workspace/get/job/${jobId}`);
 }
-
 
 export class JobElement {
     readonly element: HTMLElement;
@@ -48,6 +45,7 @@ export class JobElement {
         this.element.setAttribute("data-job-id", String(this.jobId));
 
         this.articleContent = document.createElement("div");
+        this.articleContent.classList.add("table-scroll");
     }
 
     async initialize(): Promise<void> {
@@ -216,7 +214,7 @@ export class JobElement {
         };
 
         const openFilesButton = document.createElement("button");
-        openFilesButton.classList.add("no-round", "square", "small");
+        openFilesButton.classList.add("right-round", "square", "small");
         openFilesButton.innerHTML = `
             <i>preview</i>
             <div class="tooltip">
@@ -233,20 +231,65 @@ export class JobElement {
             );
         };
 
+        const deleteJobButton = document.createElement("button");
+        deleteJobButton.classList.add("round", "square", "small", "error");
+        deleteJobButton.innerHTML = `
+            <i>delete</i>
+            <div class="tooltip">
+                <span>Delete Job</span>
+            </div>
+        `.trim();
+
+        deleteJobButton.onclick = async () => {
+            const dialog = new AreYouSureDialog(
+                "Are you sure?",
+                "Are you sure you want to delete this job? This cannot be undone."
+            );
+
+            applyScopedBeerTheme(
+                dialog.element,
+                this.jobData.job_data.color,
+                `are-you-sure-dialog-job-${this.jobId}`
+            );
+
+            if (!(await dialog.show())) return;
+
+            Loading.show();
+
+            const response = await fetch(`/workspace/delete_job/${this.jobId}`, { method: "POST" });
+
+            if (!response.ok) {
+                const error = await response.text();
+                throw new Error(error);
+            }
+
+            new SnackbarComponent({
+                message: "Job deleted!",
+                type: "green",
+                icon: "check",
+                duration: 1000
+            });
+
+            this.element.remove();
+
+            Loading.hide();
+        };
+
         const toggleButton = document.createElement("button");
-        toggleButton.classList.add("right-round", "square", "small", "toggle-button");
-        toggleButton.innerHTML =
-            "<i>expand_less</i>";
+        toggleButton.classList.add("round", "square", "small", "transparent", "link", "toggle-button");
+        toggleButton.innerHTML = "<i>expand_less</i>";
 
         toggleButton.onclick = () => this.collapseArticleContent();
 
         split.appendChild(markCompleteButton);
         split.appendChild(openFilesButton);
-        split.appendChild(toggleButton);
 
+        header.appendChild(toggleButton);
         header.appendChild(title);
         header.appendChild(split);
-
+        if (UserContext.getInstance().user.can(WorkspacePermissions.DeleteJobs)) {
+            header.appendChild(deleteJobButton);
+        }
         return header;
     }
 
