@@ -5,6 +5,7 @@ import { UserContext } from "@core/auth/user-context";
 import { WorkspacePermissions } from "@core/auth/workspace-permissions";
 import { fetchJobData } from "./job-element";
 import { applyScopedBeerTheme } from "@config/material-theme-cookie";
+import { FileDownloaderDialog } from "@components/common/dialog/file-downloader-dialoy";
 
 export class PartSelectionManager {
     private static element: HTMLElement;
@@ -81,6 +82,15 @@ export class PartSelectionManager {
             <span>View Files</span>
         `.trim();
 
+        const downloadFiles = document.createElement("button");
+        downloadFiles.classList.add("transparent", "responsive", "left-align");
+        downloadFiles.id = "download-files";
+        downloadFiles.onclick = () => this.downloadFiles();
+        downloadFiles.innerHTML = `
+            <i>file_download</i>
+            <span>Download Files</span>
+        `.trim();
+
         const recutButton = document.createElement("button");
         recutButton.classList.add("transparent", "responsive", "left-align");
         recutButton.id = "recut-button";
@@ -109,6 +119,7 @@ export class PartSelectionManager {
         verticalStack.appendChild(startTimingButton);
         verticalStack.appendChild(stopTimingButton);
         verticalStack.appendChild(viewFilesButton);
+        verticalStack.appendChild(downloadFiles);
         verticalStack.appendChild(recutButton);
         verticalStack.appendChild(clearButton);
         container.appendChild(verticalStack);
@@ -161,6 +172,16 @@ export class PartSelectionManager {
             viewFilesDialog.element,
             selectedParts[0].job_data.job_data.color,
             `file-viewer-dialog-job-${selectedParts[0].job_id}`
+        );
+    }
+
+    static downloadFiles() {
+        const selectedParts = this.getSelected().map(partRow => partRow.data);
+        const downloadFilesDialog = new FileDownloaderDialog(selectedParts);
+        applyScopedBeerTheme(
+            downloadFilesDialog.element,
+            selectedParts[0].job_data.job_data.color,
+            "file-downloader-dialog"
         );
     }
 

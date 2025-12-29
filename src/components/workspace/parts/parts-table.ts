@@ -4,6 +4,9 @@ import { PartRow } from "@components/workspace/parts/part-row";
 import { PartSelectionManager } from "@components/workspace/parts/part-selection-manager";
 import { PartData } from "@components/workspace/parts/part-container";
 import { LazyLoad } from "@utils/lazy-render";
+import { FileDownloaderDialog } from "@components/common/dialog/file-downloader-dialoy";
+import { applyScopedBeerTheme } from "@config/material-theme-cookie";
+import { JobData } from "@interfaces/job";
 
 export interface PartColumn {
     key: keyof PartData | 'part' | 'actions' | 'icon' | 'checkbox' | 'thumbnail' | 'files' | 'recording';
@@ -20,6 +23,9 @@ export class PartsTable {
     readonly #user = Object.freeze(UserContext.getInstance().user);
     readonly selectAllCheckbox = new WorkspaceRowCheckbox();
 
+    parts: PartData[] = [];
+
+    private readonly jobData: JobData;
     private readonly columns: PartColumn[] = [
         {
             key: 'checkbox',
@@ -87,7 +93,8 @@ export class PartsTable {
     private readonly BATCH_DELAY = 0;
     private readonly rowMap = new Map<string, PartRow>();
 
-    constructor() {
+    constructor(jobData: JobData) {
+        this.jobData = jobData;
         this.table = document.createElement("table") as HTMLTableElement;
         this.table.classList.add("border", "round", "prats-table");
         this.thead = document.createElement("thead");
@@ -136,15 +143,19 @@ export class PartsTable {
                 this.tfoot.appendChild(th);
 
                 const downloadAllFilesButton = document.createElement("button");
-                downloadAllFilesButton.classList.add("responsive");
+                downloadAllFilesButton.classList.add("responsive", "link", "no-margin");
                 downloadAllFilesButton.innerHTML = `
                     <i>download</i>
                     <span>Download</span>
                 `.trim();
                 downloadAllFilesButton.classList.add("chip");
                 downloadAllFilesButton.addEventListener("click", () => {
-                    // TODO
-                    // PartSelectionManager.downloadFiles();
+                    const dialog = new FileDownloaderDialog(this.parts)
+                    applyScopedBeerTheme(
+                        dialog.element,
+                        this.jobData.job_data.color,
+                        "file-downloader-dialog"
+                    );
                 });
                 th.appendChild(downloadAllFilesButton);
             } else {
@@ -199,6 +210,7 @@ export class PartsTable {
     }
 
     async loadData(parts: PartData[]) {
+        this.parts = parts;
         await this.renderBatch(parts, 0);
     }
 }

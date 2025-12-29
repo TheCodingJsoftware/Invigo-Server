@@ -177,28 +177,6 @@ export class PartContainer {
         }));
     }
 
-    private async loadGlobalTable(data: PartPageData) {
-        const fragment = document.createDocumentFragment();
-        const article = document.createElement("article");
-        article.classList.add("round", "border");
-
-        const globalTable = new PartsTable();
-        await globalTable.loadData(data);
-
-        globalTable.table.classList.add("global-table");
-        globalTable.table.classList.add("scroll");
-        globalTable.thead.classList.add("fixed");
-
-        article.appendChild(globalTable.table);
-
-        fragment.appendChild(article);
-
-        requestIdleCallback(() => {
-            this.element.replaceChildren(fragment);
-            invertImages();
-        });
-    }
-
     private async loadJobTables(data: PartPageData) {
         const scrollY = this.saveScroll();
         const t0 = performance.now();

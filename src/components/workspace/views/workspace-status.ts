@@ -46,17 +46,12 @@ export class WorkspaceStatus {
         this.currentText = text;
 
         this.textNode.textContent = text;
-
-        // restart pulse animation
-        this.textNode.classList.remove("animate");
-        void this.textNode.offsetHeight;
-        this.textNode.classList.add("animate");
     }
 
     private static formatAge(ts: number): string {
         const seconds = Math.floor((Date.now() - ts) / 1000);
 
-        if (seconds < 5) return "just now";
+        if (seconds < 9) return "just now";
         if (seconds < 60) return `${seconds}s ago`;
 
         const minutes = Math.floor(seconds / 60);

@@ -3,7 +3,6 @@ import { Ext, Previewer } from "@utils/preview-cache";
 import { FileViewerDialog } from "@components/common/dialog/file-viewer-dialog";
 import { getIcon } from 'material-file-icons';
 import { invertImages } from "@utils/theme";
-import { fetchJobData } from "@components/workspace/parts/job-element";
 import { applyScopedBeerTheme } from "@config/material-theme-cookie";
 
 

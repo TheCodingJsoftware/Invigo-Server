@@ -122,7 +122,7 @@ export class JobElement {
         }
 
         const tbl0 = performance.now();
-        const partsTable = new PartsTable();
+        const partsTable = new PartsTable(this.jobData);
         await partsTable.loadData(this.parts);
 
         const newTable = partsTable.table;
@@ -254,7 +254,6 @@ export class JobElement {
 
             if (!(await dialog.show())) return;
 
-            Loading.show();
 
             const response = await fetch(`/workspace/delete_job/${this.jobId}`, { method: "POST" });
 
@@ -270,9 +269,6 @@ export class JobElement {
                 duration: 1000
             });
 
-            this.element.remove();
-
-            Loading.hide();
         };
 
         const toggleButton = document.createElement("button");
