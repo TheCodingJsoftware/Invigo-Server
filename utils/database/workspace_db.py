@@ -206,6 +206,31 @@ class WorkspaceDB(BaseWithDBPool):
             raise e
 
     @ensure_connection
+    async def delete_job(self, job_id: int):
+        async with self.db_pool.acquire() as conn:
+            async with conn.transaction():
+                await conn.execute(
+                    """
+                    DELETE FROM part_status_timeline
+                    WHERE part_id IN (
+                        SELECT id
+                        FROM assembly_laser_cut_parts
+                        WHERE job_id = $1
+                    )
+                    """,
+                    job_id,
+                )
+
+                await conn.execute(
+                    "DELETE FROM jobs WHERE id = $1",
+                    job_id,
+                )
+
+                await conn.execute(
+                    f"NOTIFY jobs, '{msgspec.json.encode({'type': 'job_deleted', 'job_id': job_id}).decode()}'"
+                )
+
+    @ensure_connection
     async def get_all_jobs(self):
         async with self.db_pool.acquire() as conn:
             rows = await conn.fetch("SELECT id, name, job_data, created_at, modified_at FROM jobs")
