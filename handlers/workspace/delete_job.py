@@ -2,9 +2,9 @@ from handlers.base import BaseHandler
 
 
 class WorkspaceDeleteJobHandler(BaseHandler):
-    async def post(self, job_id):
+    async def post(self, job_id: str):
         try:
-            await self.workspace_db.delete_job(job_id)
+            await self.workspace_db.delete_job(int(job_id))
             self.set_header("Content-Type", "application/json")
             self.write({"status": "success", "message": f"Job {job_id} deleted successfully."})
         except Exception as e:
