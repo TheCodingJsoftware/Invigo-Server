@@ -9,6 +9,12 @@ class SoftwareVersionHandler(RequestHandler):
     def initialize(self):
         self.db = SoftwareDB()
 
+    def set_default_headers(self):
+        self.set_header("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0")
+        self.set_header("Pragma", "no-cache")      # HTTP/1.0 proxies
+        self.set_header("Expires", "0")             # Absolute kill-switch
+        self.set_header("Surrogate-Control", "no-store")
+
     async def get(self):
         await self.db.connect()
         row = await self.db.get_latest_version()
@@ -28,6 +34,9 @@ class SoftwareVersionHandler(RequestHandler):
 class SoftwareUploadHandler(RequestHandler):
     def initialize(self):
         self.db = SoftwareDB()
+
+    def set_default_headers(self):
+        self.set_header("Cache-Control", "no-store")
 
     async def post(self):
         await self.db.connect()
@@ -67,6 +76,12 @@ class SoftwareUpdateHandler(RequestHandler):
     def initialize(self):
         self.db = SoftwareDB()
 
+    def set_default_headers(self):
+        self.set_header("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0")
+        self.set_header("Pragma", "no-cache")      # HTTP/1.0 proxies
+        self.set_header("Expires", "0")             # Absolute kill-switch
+        self.set_header("Surrogate-Control", "no-store")
+
     async def get(self):
         version = self.get_argument("version", None)
 
@@ -78,6 +93,7 @@ class SoftwareUpdateHandler(RequestHandler):
 
         file_path = data["file_path"]
 
+        self.set_header("Content-Length", os.path.getsize(file_path))
         self.set_header("Content-Type", "application/octet-stream")
         self.set_header(
             "Content-Disposition",
@@ -91,3 +107,4 @@ class SoftwareUpdateHandler(RequestHandler):
                     break
                 self.write(chunk)
                 await self.flush()
+        await self.finish()
