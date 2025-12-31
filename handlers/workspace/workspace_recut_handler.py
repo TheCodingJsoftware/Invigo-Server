@@ -31,6 +31,7 @@ class RecutPartHandler(BaseHandler):
                 recut_quantity=int(recut_quantity),
                 recut_reason=recut_reason,
                 changed_by=self.get_client_name_from_header(),
+                user_id=self.get_user_id_from_header(),
                 job_id=job_id,
             )
             self.write({"status": "ok"})

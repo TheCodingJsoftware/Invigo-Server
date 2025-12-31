@@ -1,7 +1,7 @@
 import { DialogComponent } from "@components/common/dialog/dialog-component";
 import { PartData } from "@components/workspace/parts/part-container";
-import { ToggleButton } from "@components/common/buttons/toggle-button";
 import { getIcon } from 'material-file-icons';
+import { SelectableFileButton } from "@components/common/buttons/selectable-file-button";
 
 export class FileDownloaderDialog extends DialogComponent {
     readonly parts: PartData[];
@@ -10,7 +10,7 @@ export class FileDownloaderDialog extends DialogComponent {
 
     private readonly filesContainer: HTMLDivElement;
     private readonly downloadButton: HTMLButtonElement;
-    private readonly fileButtons: ToggleButton[] = [];
+    private readonly fileButtons: SelectableFileButton[] = [];
     private readonly quickSelectExtensions = this.element.querySelector("#quick-select-extensions") as HTMLDivElement;
 
     constructor(parts: PartData[], filePath?: string) {
@@ -72,7 +72,7 @@ export class FileDownloaderDialog extends DialogComponent {
             const extIdx = fileName.lastIndexOf(".");
             const extension = extIdx === -1 ? "" : fileName.slice(extIdx + 1).toLowerCase();
 
-            const fileButton = new ToggleButton(fileName, fileName);
+            const fileButton = new SelectableFileButton(fileName, fileName);
             fileButton.element.dataset.extension = extension;
 
             fileButton.element.classList.add("s12", "m6", "l4");
@@ -105,7 +105,7 @@ export class FileDownloaderDialog extends DialogComponent {
         if (selected.length === 0) return;
 
         for (const btn of selected) {
-            const fileName = btn.value; // or btn.label — must match backend filename
+            const fileName = btn.fileName; // or btn.label — must match backend filename
 
             const url = `/workspace/get_file/${encodeURIComponent(fileName)}`;
 

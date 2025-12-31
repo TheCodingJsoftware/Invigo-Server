@@ -20,6 +20,7 @@ class RecutPartFinishedHandler(BaseHandler):
                 flowtag_index=int(flowtag_index),
                 flowtag_status_index=int(flowtag_status_index),
                 changed_by=self.get_client_name_from_header(),
+                user_id=self.get_user_id_from_header(),
                 job_id=job_id,
             )
             self.write({"status": "ok"})

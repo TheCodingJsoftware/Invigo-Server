@@ -221,7 +221,7 @@ export class PartRow {
             new SnackbarComponent({
                 message: "Started timing",
                 icon: "timer",
-                type: "green",
+                color: "green",
                 position: "bottom",
                 duration: 1000,
             });
@@ -248,7 +248,7 @@ export class PartRow {
             new SnackbarComponent({
                 message: "Stopped timing",
                 icon: "timer",
-                type: "green",
+                color: "green",
                 position: "bottom",
                 duration: 1000,
             });
@@ -283,7 +283,7 @@ export class PartRow {
             new SnackbarComponent({
                 message: "Successfully marked as recut finished.",
                 icon: "check",
-                type: "green",
+                color: "green",
                 position: "bottom",
                 duration: 1000,
             });
@@ -320,7 +320,7 @@ export class PartRow {
                 new SnackbarComponent({
                     message: "Synced",
                     icon: "sync",
-                    type: "green",
+                    color: "green",
                     position: "bottom",
                     duration: 1000,
                 });
@@ -351,7 +351,7 @@ export class PartRow {
             });
             new SnackbarComponent({
                 message: "Moved to next process",
-                type: "green",
+                color: "green",
                 position: "bottom",
                 duration: 1000,
             });

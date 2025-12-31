@@ -116,6 +116,13 @@ class BaseHandler(RequestHandler):
     def get_client_address_from_header(self) -> str | None:
         return self.request.headers.get("X-Client-Address")
 
+    def get_user_id_from_header(self) -> int:
+        client_id = self.request.headers.get("X-Client-Id")
+        if isinstance(client_id, str) and client_id.isnumeric():
+            return int(client_id)
+        else :
+            return -1
+
     def signal_clients_for_changes(
         self,
         client_name_to_ignore,

@@ -90,6 +90,7 @@ class WorkspaceLaserCutPartHandler(BaseHandler):
                     flowtag_status_index=int(flowtag_status_index),
                     new_index=int(new_value),
                     changed_by=self.get_client_name_from_header(),
+                    user_id=self.get_user_id_from_header(),
                     job_id=job_id,
                 )
                 self.write({"status": "ok"})
@@ -101,6 +102,7 @@ class WorkspaceLaserCutPartHandler(BaseHandler):
                     flowtag_status_index=int(flowtag_status_index),
                     new_status_index=int(new_value),
                     changed_by=self.get_client_name_from_header(),
+                    user_id=self.get_user_id_from_header(),
                     job_id=job_id,
                 )
                 self.write({"status": "ok"})
@@ -112,6 +114,7 @@ class WorkspaceLaserCutPartHandler(BaseHandler):
                     flowtag_status_index=int(flowtag_status_index),
                     is_timing=bool(new_value),
                     changed_by=self.get_client_name_from_header(),
+                    user_id=self.get_user_id_from_header(),
                     job_id=job_id,
                 )
                 self.write({"status": "ok"})

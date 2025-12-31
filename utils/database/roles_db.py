@@ -17,7 +17,7 @@ class RolesDB(BaseWithDBPool):
                 self.db_pool = await asyncpg.create_pool(
                     user=Environment.POSTGRES_USER,
                     password=Environment.POSTGRES_PASSWORD,
-                    database=Environment.POSTGRES_DB,
+                    database=Environment.POSTGRES_WORKSPACE_DB,
                     host=Environment.POSTGRES_HOST,
                     port=Environment.POSTGRES_PORT,
                     min_size=Environment.POSTGRES_MIN_POOL_SIZE,
@@ -38,7 +38,7 @@ class RolesDB(BaseWithDBPool):
                 id SERIAL PRIMARY KEY,
                 name TEXT NOT NULL UNIQUE,
                 permissions TEXT[] NOT NULL DEFAULT '{}'
-            )
+            );
         """
         async with self.db_pool.acquire() as conn:
             await conn.execute(query)

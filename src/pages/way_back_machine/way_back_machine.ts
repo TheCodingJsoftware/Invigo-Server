@@ -49,7 +49,7 @@ async function restoreFromURL(items: SearchItem[]) {
     if (!match) {
         new SnackbarComponent({
             message: "URL item not found in inventory",
-            type: "error",
+            color: "error",
             duration: 5000,
         });
         console.warn("URL item not found in inventory", { type, id });

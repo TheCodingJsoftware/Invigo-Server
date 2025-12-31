@@ -242,7 +242,7 @@ export class PartElement {
             if (copied) {
                 new SnackbarComponent({
                     message: "Part URL copied to clipboard!",
-                    type: "green",
+                    color: "green",
                     icon: "content_copy",
                     duration: 1000
                 });

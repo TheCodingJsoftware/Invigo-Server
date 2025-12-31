@@ -111,7 +111,7 @@ export class PartDataService {
 
         if (!response.ok) {
             new SnackbarComponent({
-                type: "error",
+                color: "error",
                 message: `getParts - error: ${response.status}: ${response.statusText}`,
                 position: "bottom",
                 duration: 1000,
@@ -139,7 +139,8 @@ export class PartDataService {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
-                'X-Client-Name': UserContext.getInstance().user.name
+                'X-Client-Name': UserContext.getInstance().user.name,
+                "X-Client-Id": UserContext.getInstance().user.id.toString()
             },
             body: JSON.stringify({
                 job_id: params.jobId,
@@ -155,7 +156,7 @@ export class PartDataService {
 
         if (!response.ok) {
             new SnackbarComponent({
-                type: "error",
+                color: "error",
                 message: "Failed to update part data",
                 position: "bottom",
                 duration: 1000,
@@ -171,7 +172,8 @@ export class PartDataService {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'X-Client-Name': UserContext.getInstance().user.name
+                'X-Client-Name': UserContext.getInstance().user.name,
+                "X-Client-Id": UserContext.getInstance().user.id.toString()
             },
             body: JSON.stringify({
                 job_id: params.jobId,
@@ -187,7 +189,7 @@ export class PartDataService {
 
         if (!response.ok) {
             new SnackbarComponent({
-                type: "error",
+                color: "error",
                 message: "Failed to request recut",
                 position: "bottom",
                 duration: 1000,
@@ -202,7 +204,8 @@ export class PartDataService {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'X-Client-Name': UserContext.getInstance().user.name
+                'X-Client-Name': UserContext.getInstance().user.name,
+                "X-Client-Id": UserContext.getInstance().user.id.toString()
             },
             body: JSON.stringify({
                 job_id: params.jobId,
@@ -216,7 +219,7 @@ export class PartDataService {
 
         if (!response.ok) {
             new SnackbarComponent({
-                type: "error",
+                color: "error",
                 message: "Failed to request recut",
                 position: "bottom",
                 duration: 1000,

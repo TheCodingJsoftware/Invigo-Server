@@ -476,7 +476,7 @@ async function loadJobItemsTimeline() {
                     const text = await response.text();
                     new SnackbarComponent({
                         id: "error",
-                        type: "error",
+                        color: "error",
                         message: `Failed to save timeline: ${response.status} ${text}`,
                         icon: "error",
                         duration: 1000,
@@ -487,7 +487,7 @@ async function loadJobItemsTimeline() {
                 const result = await response.json();
                 new SnackbarComponent({
                     id: "success",
-                    type: "green",
+                    color: "green",
                     message: "Timeline saved successfully",
                     icon: "save",
                     duration: 1000,
@@ -496,7 +496,7 @@ async function loadJobItemsTimeline() {
             } catch (err) {
                 new SnackbarComponent({
                     id: "error",
-                    type: "error",
+                    color: "error",
                     message: `Error posting timeline: ${err}`,
                     icon: "error",
                     duration: 1000,

@@ -5,7 +5,7 @@ import { UserContext } from "@core/auth/user-context";
 import { WorkspacePermissions } from "@core/auth/workspace-permissions";
 import { fetchJobData } from "./job-element";
 import { applyScopedBeerTheme } from "@config/material-theme-cookie";
-import { FileDownloaderDialog } from "@components/common/dialog/file-downloader-dialoy";
+import { FileDownloaderDialog } from "@components/common/dialog/file-downloader-dialog";
 
 export class PartSelectionManager {
     private static element: HTMLElement;

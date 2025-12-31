@@ -4,7 +4,7 @@ import { PartRow } from "@components/workspace/parts/part-row";
 import { PartSelectionManager } from "@components/workspace/parts/part-selection-manager";
 import { PartData } from "@components/workspace/parts/part-container";
 import { LazyLoad } from "@utils/lazy-render";
-import { FileDownloaderDialog } from "@components/common/dialog/file-downloader-dialoy";
+import { FileDownloaderDialog } from "@components/common/dialog/file-downloader-dialog";
 import { applyScopedBeerTheme } from "@config/material-theme-cookie";
 import { JobData } from "@interfaces/job";
 

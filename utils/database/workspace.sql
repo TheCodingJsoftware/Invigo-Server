@@ -348,3 +348,62 @@ ORDER BY part_id, total_duration DESC;
 -- FROM part_status_timeline
 -- GROUP BY part_id, name, recut, recoat, flowtag_index, flowtag_name
 -- ORDER BY part_id, first_seen;
+
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1
+        FROM pg_type
+        WHERE typname = 'workspace_event_type'
+    ) THEN
+        CREATE TYPE workspace_event_type AS ENUM (
+            'PROCESS_ADVANCED',
+            'PROCESS_REVERTED',
+            'RECUT_SET',
+            'RECUT_CLEARED',
+            'RECOAT_SET',
+            'RECOAT_CLEARED',
+            'TIMING_STARTED',
+            'TIMING_STOPPED',
+            'PART_CREATED',
+            'PART_DELETED',
+            'ASSEMBLY_CREATED',
+            'ASSEMBLY_DELETED',
+            'JOB_CREATED',
+            'JOB_DELETED'
+        );
+    END IF;
+END
+$$;
+
+CREATE TABLE IF NOT EXISTS workspace_event_log (
+    id BIGSERIAL PRIMARY KEY,
+
+    event_type workspace_event_type NOT NULL,
+    description TEXT NOT NULL,
+
+    user_id BIGINT NOT NULL REFERENCES users(id),                 -- who did it
+    user_name TEXT NOT NULL,                                      -- who did it
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS user_event_subscriptions (
+    user_id BIGINT NOT NULL REFERENCES users(id),
+    event_type workspace_event_type NOT NULL,
+    PRIMARY KEY (user_id, event_type)
+);
+
+CREATE TABLE IF NOT EXISTS user_notifications (
+    id BIGSERIAL PRIMARY KEY,
+
+    user_id BIGINT NOT NULL REFERENCES users(id),
+    event_id BIGINT NOT NULL REFERENCES workspace_event_log(id) ON DELETE CASCADE,
+
+    is_read BOOLEAN NOT NULL DEFAULT false,
+    read_at TIMESTAMPTZ,
+
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS idx_user_notifications_user_unread
+    ON user_notifications(user_id, is_read, created_at DESC);

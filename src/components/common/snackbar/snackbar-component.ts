@@ -1,4 +1,4 @@
-type SnackbarType = "error" | "green" | "primary" | "secondary" | "tertiary" | "default";
+type SnackbarColor = "error" | "green" | "primary" | "secondary" | "tertiary" | "default";
 type SnackbarPosition = "top" | "bottom";
 
 interface SnackbarAction {
@@ -9,7 +9,7 @@ interface SnackbarAction {
 interface SnackbarOptions {
     id?: string;
     message: string;
-    type?: SnackbarType;
+    color?: SnackbarColor;
     position?: SnackbarPosition;
     duration?: number;
     action?: SnackbarAction;
@@ -27,7 +27,7 @@ export class SnackbarComponent {
         this.options = {
             id: options.id,
             message: options.message,
-            type: options.type ?? "default",
+            color: options.color ?? "default",
             position: options.position ?? "bottom",
             duration: options.duration ?? 6000,
             action: options.action,
@@ -42,8 +42,8 @@ export class SnackbarComponent {
             this.snackbar.id = this.options.id;
         }
 
-        if (this.options.type !== "default") {
-            this.snackbar.classList.add(this.options.type);
+        if (this.options.color !== "default") {
+            this.snackbar.classList.add(this.options.color);
         }
 
         if (this.options.position === "top") {

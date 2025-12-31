@@ -22,6 +22,7 @@ class ViewDB(BaseWithDBPool):
         self._background_task = None
         self._cache_refresh_queue = set()
 
+
     async def connect(self):
         if self.db_pool is None or self.db_pool._closed:
             try:
@@ -112,6 +113,7 @@ class ViewDB(BaseWithDBPool):
         flowtag_index: int,
         flowtag_status_index: int,
         changed_by: str,
+        user_id: int,
         job_id: int | None = None,
     ) -> None:
         base_query = """
@@ -146,6 +148,13 @@ class ViewDB(BaseWithDBPool):
 
         async with self.db_pool.acquire() as conn:
             await conn.execute(base_query, *params)
+            await self.log_workspace_event(
+                conn,
+                event_type="PROCESS_ADVANCED",
+                description=f"{changed_by} advanced process for {name}",
+                user_id=user_id,
+                user_name=changed_by
+            )
 
     @ensure_connection
     async def update_flowtag_status_index(
@@ -156,6 +165,7 @@ class ViewDB(BaseWithDBPool):
         flowtag_status_index: int,
         new_status_index: int,
         changed_by: str,
+        user_id: int,
         job_id: int | None = None,
     ) -> None:
         query = """
@@ -185,6 +195,13 @@ class ViewDB(BaseWithDBPool):
 
         async with self.db_pool.acquire() as conn:
             await conn.execute(query, *params)
+            await self.log_workspace_event(
+                conn,
+                event_type="PROCESS_ADVANCED",
+                description=f"{changed_by} updated process status for {name}",
+                user_id=user_id,
+                user_name=changed_by
+            )
 
     @ensure_connection
     async def update_is_timing(
@@ -195,6 +212,7 @@ class ViewDB(BaseWithDBPool):
         flowtag_status_index: int,
         is_timing: bool,
         changed_by: str,
+        user_id: int,
         job_id: int | None = None,
     ) -> None:
         query = """
@@ -224,6 +242,13 @@ class ViewDB(BaseWithDBPool):
 
         async with self.db_pool.acquire() as conn:
             await conn.execute(query, *params)
+            await self.log_workspace_event(
+                conn,
+                event_type="TIMING_STARTED" if is_timing else "TIMING_STOPPED",
+                description=f"{changed_by} {'started' if is_timing else 'stopped'} timing on '{name}'",
+                user_id=user_id,
+                user_name=changed_by,
+            )
 
     @ensure_connection
     async def handle_recut(
@@ -235,6 +260,7 @@ class ViewDB(BaseWithDBPool):
         recut_quantity: int,
         recut_reason: str,
         changed_by: str,
+        user_id: int,
         job_id: int | None = None,
     ) -> None:
         where_clauses: list[str] = []
@@ -311,6 +337,14 @@ class ViewDB(BaseWithDBPool):
                 async with conn.transaction():
                     updated_parts = await conn.fetch(update_query, *params)
 
+                    await self.log_workspace_event(
+                        conn,
+                        event_type="RECUT_SET",
+                        description=f"{changed_by} recut {recut_quantity} parts",
+                        user_id=user_id,
+                        user_name=changed_by,
+                    )
+
                     if not updated_parts:
                         return
 
@@ -345,6 +379,7 @@ class ViewDB(BaseWithDBPool):
         flowtag_index: int,
         flowtag_status_index: int,
         changed_by: str,
+        user_id: int,
         job_id: int | None = None,
     ) -> None:
         base_query = """
@@ -378,6 +413,14 @@ class ViewDB(BaseWithDBPool):
 
         async with self.db_pool.acquire() as conn:
             await conn.execute(base_query, *params)
+
+            await self.log_workspace_event(
+                conn,
+                event_type="RECUT_CLEARED",
+                description=f"{changed_by} finished recut for {name}",
+                user_id=user_id,
+                user_name=changed_by,
+            )
 
     def decode_json_fields(self, row, fields=("meta_data", "workspace_data")):
         result = dict(row)
@@ -429,3 +472,25 @@ class ViewDB(BaseWithDBPool):
         except Exception as e:
             logging.error(f"Error getting grouped parts view: {e} {traceback.format_exc()}")
             raise e
+
+    async def log_workspace_event(
+        self,
+        conn: asyncpg.Connection,
+        *,
+        event_type: str,
+        description: str,
+        user_id: int,
+        user_name: str
+    ) -> None:
+        await conn.execute(
+            """
+            INSERT INTO workspace_event_log
+                (event_type, description, user_id, user_name)
+            VALUES
+                ($1, $2, $3, $4)
+            """,
+            event_type,
+            description,
+            user_id,
+            user_name
+        )

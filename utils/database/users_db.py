@@ -18,7 +18,7 @@ class UsersDB(BaseWithDBPool):
                 self.db_pool = await asyncpg.create_pool(
                     user=Environment.POSTGRES_USER,
                     password=Environment.POSTGRES_PASSWORD,
-                    database=Environment.POSTGRES_DB,
+                    database=Environment.POSTGRES_WORKSPACE_DB,
                     host=Environment.POSTGRES_HOST,
                     port=Environment.POSTGRES_PORT,
                     min_size=Environment.POSTGRES_MIN_POOL_SIZE,
@@ -217,6 +217,14 @@ class UsersDB(BaseWithDBPool):
                 "roles": [r["role"] for r in rows],
                 "permissions": list({p for r in rows for p in r["permissions"]}),
             }
+
+    @ensure_connection
+    async def get_user_id_by_name(self, name: str) -> int | None:
+        async with self.db_pool.acquire() as conn:
+            return await conn.fetchval(
+                "SELECT id FROM users WHERE name = $1",
+                name,
+            )
 
     @ensure_connection
     async def authenticate_user(self, name: str, password: str):

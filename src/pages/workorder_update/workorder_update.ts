@@ -146,7 +146,7 @@ class WorkorderUpdatePage {
             console.error(err);
             new SnackbarComponent({
                 message: String(err),
-                type: "error",
+                color: "error",
                 duration: 5000
             });
         } finally {

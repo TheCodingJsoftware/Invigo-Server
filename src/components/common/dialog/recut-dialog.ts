@@ -15,7 +15,7 @@ export class RecutDialog extends DialogComponent {
             bodyContent: `
                 <div class="grid center-align">
                     <div class="s12 field label border round">
-                        <input type="number" id="recut-count" value="1">
+                        <input type="number" id="recut-count" value="0">
                         <label>Recut Count</label>
                     </div>
                     <div class="s12 field label border small-round">
@@ -23,8 +23,7 @@ export class RecutDialog extends DialogComponent {
                         <label>Description</label>
                         <output>Give a detailed description as to why this needs to be recut.</output>
                     </div>
-                </div>
-            `,
+                </div>`,
             footerContent: `
                 <nav class="row top-margin right-align">
                     <span class="italic max">Recutting a part sends it back to ${parts[0].flowtag[0]}.</span>
@@ -58,7 +57,7 @@ export class RecutDialog extends DialogComponent {
             this.close();
             new SnackbarComponent({
                 message: `Successfully requested recut for ${this.parts.length} part(s).`,
-                type: "green",
+                color: "green",
                 duration: 1000,
                 icon: "check"
             })

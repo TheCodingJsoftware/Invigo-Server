@@ -208,7 +208,7 @@ export class JobElement {
 
             new SnackbarComponent({
                 message: "All parts marked complete!",
-                type: "green",
+                color: "green",
                 icon: "done_all"
             });
         };
@@ -264,7 +264,7 @@ export class JobElement {
 
             new SnackbarComponent({
                 message: "Job deleted!",
-                type: "green",
+                color: "green",
                 icon: "check",
                 duration: 1000
             });
