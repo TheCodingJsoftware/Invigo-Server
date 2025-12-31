@@ -4,19 +4,19 @@ from tornado.web import RequestHandler, HTTPError
 from utils.database.software_db import SoftwareDB
 from config.environments import Environment
 
-
-class SoftwareVersionHandler(RequestHandler):
-    def initialize(self):
-        self.db = SoftwareDB()
+class BaseSoftwareHandler(RequestHandler):
+    db = SoftwareDB()
 
     def set_default_headers(self):
         self.set_header("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0")
-        self.set_header("Pragma", "no-cache")      # HTTP/1.0 proxies
-        self.set_header("Expires", "0")             # Absolute kill-switch
+        self.set_header("Pragma", "no-cache")
+        self.set_header("Expires", "0")
         self.set_header("Surrogate-Control", "no-store")
 
+
+
+class SoftwareVersionHandler(BaseSoftwareHandler):
     async def get(self):
-        await self.db.connect()
         row = await self.db.get_latest_version()
 
         if not row:
@@ -31,16 +31,8 @@ class SoftwareVersionHandler(RequestHandler):
         })
 
 
-class SoftwareUploadHandler(RequestHandler):
-    def initialize(self):
-        self.db = SoftwareDB()
-
-    def set_default_headers(self):
-        self.set_header("Cache-Control", "no-store")
-
+class SoftwareUploadHandler(BaseSoftwareHandler):
     async def post(self):
-        await self.db.connect()
-
         if "file" not in self.request.files:
             raise HTTPError(400, "file missing")
 
@@ -72,10 +64,7 @@ class SoftwareUploadHandler(RequestHandler):
         })
 
 
-class SoftwareUpdateHandler(RequestHandler):
-    def initialize(self):
-        self.db = SoftwareDB()
-
+class SoftwareUpdateHandler(BaseSoftwareHandler):
     def set_default_headers(self):
         self.set_header("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0")
         self.set_header("Pragma", "no-cache")      # HTTP/1.0 proxies
@@ -85,7 +74,6 @@ class SoftwareUpdateHandler(RequestHandler):
     async def get(self):
         version = self.get_argument("version", None)
 
-        await self.db.connect()
         data = await self.db.get_version(version) if version else await self.db.get_latest_version()
 
         if not data:
