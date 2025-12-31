@@ -139,26 +139,29 @@ export class FileDownloaderDialog extends DialogComponent {
     }
 
     private downloadSelectedFiles() {
-        const selected = this.fileButtons.filter(b => b.isChecked());
+        const selected = this.fileButtons
+            .filter(b => b.isChecked())
+            .map(b => b.fileName);
 
         if (selected.length === 0) return;
 
-        for (const btn of selected) {
-            const fileName = btn.fileName; // or btn.label — must match backend filename
+        const url = `/workspace/download_bundle`;
 
-            const url = `/workspace/get_file/${encodeURIComponent(fileName)}`;
+        const form = document.createElement("form");
+        form.method = "POST";
+        form.action = url;
+        form.target = "_blank";
 
-            const a = document.createElement("a");
-            a.href = url;
-            a.download = fileName; // browser may ignore if inline
-            a.target = "_blank";   // allows PDFs/images to open inline
+        const input = document.createElement("input");
+        input.type = "hidden";
+        input.name = "files";
+        input.value = JSON.stringify(selected);
 
-            document.body.appendChild(a);
-            a.click();
-            a.remove();
-        }
+        form.appendChild(input);
+        document.body.appendChild(form);
+        form.submit();
+        form.remove();
     }
-
 
     getExtensions(): string[] {
         const extensions = new Set<string>();

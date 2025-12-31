@@ -3,7 +3,6 @@ import logging
 import os
 import traceback
 import urllib.parse
-from concurrent.futures import ThreadPoolExecutor
 from typing import Literal
 
 import jinja2
@@ -40,8 +39,6 @@ def urlencode_path_segment(value: str) -> str:
 loader = jinja2.FileSystemLoader("public/html")
 env = jinja2.Environment(loader=loader)
 env.filters["urlencode_path"] = urlencode_path_segment
-
-executor = ThreadPoolExecutor(max_workers=4, thread_name_prefix="file_directory_gatherer")
 
 
 class BaseHandler(RequestHandler):

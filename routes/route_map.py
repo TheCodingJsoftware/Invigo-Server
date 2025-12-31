@@ -113,6 +113,7 @@ from handlers.static.custom import CustomStaticFileHandler
 from handlers.static.data_file_receiver import FileReceiveHandler
 from handlers.static.data_file_uploader import FileUploadHandler
 from handlers.static.image import ImageHandler
+from handlers.static.workspace_download_bundle import DownloadBundleHandler
 from handlers.static.workspace_file_receiver import WorkspaceFileReceiverHandler
 from handlers.static.workspace_file_uploader import WorkspaceFileUploader
 from handlers.vendors.delete_vendor import DeleteVendorHandler
@@ -251,6 +252,7 @@ api_routes = [
     route(r"/api/production_planner/job/timeline/(.*)", JobTimelineHandler),
     # OLD Workspace Routes
     route(r"/workspace/get_file/(.*)", WorkspaceFileReceiverHandler),
+    route(r"/workspace/download_bundle", DownloadBundleHandler),
     route(r"/workspace/add_job", WorkspaceAddJobHandler),
     route(r"/workspace/delete_job/(.*)", WorkspaceDeleteJobHandler),
     route(r"/workspace/get_all_jobs", WorkspaceGetAllJobsHandler),
