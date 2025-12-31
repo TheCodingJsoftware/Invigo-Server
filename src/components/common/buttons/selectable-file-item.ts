@@ -33,6 +33,7 @@ export class SelectableFileItem {
         this.preview.style.maxHeight = "100px";
         this.preview.style.maxWidth = "100px";
         this.preview.style.objectFit = "cover";
+        this.preview.style.overflow = "auto";
 
         // ---- TEXT ----
         const textWrap = document.createElement("div");
