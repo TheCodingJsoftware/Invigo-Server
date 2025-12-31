@@ -93,6 +93,7 @@ class JobPrintout {
         }
         return response.json();
     }
+
     updateSwapy(): void {
         if (!this.swapy) {
             return;
