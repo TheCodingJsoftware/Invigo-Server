@@ -1,7 +1,7 @@
 import { DialogComponent } from "@components/common/dialog/dialog-component";
 import { PartData } from "@components/workspace/parts/part-container";
 import { getIcon } from 'material-file-icons';
-import { SelectableFileButton } from "@components/common/buttons/selectable-file-button";
+import { SelectableFileItem } from "@components/common/buttons/selectable-file-item";
 
 export class FileDownloaderDialog extends DialogComponent {
     readonly parts: PartData[];
@@ -10,7 +10,7 @@ export class FileDownloaderDialog extends DialogComponent {
 
     private readonly filesContainer: HTMLDivElement;
     private readonly downloadButton: HTMLButtonElement;
-    private readonly fileButtons: SelectableFileButton[] = [];
+    private readonly fileButtons: SelectableFileItem[] = [];
     private readonly quickSelectExtensions = this.element.querySelector("#quick-select-extensions") as HTMLDivElement;
 
     constructor(parts: PartData[], filePath?: string) {
@@ -23,7 +23,7 @@ export class FileDownloaderDialog extends DialogComponent {
                     <nav class="row center-align" id="quick-select-extensions">
                 </fieldset>
                 </nav>
-                <div class="grid tiny-space" id="files-container">
+                <div class="top-margin border small-round center-align medium-height scroll" id="files-container">
                 </div>
                 <nav class="row top-margin right-align">
                     <button id="download-button">
@@ -53,6 +53,10 @@ export class FileDownloaderDialog extends DialogComponent {
     }
 
     async init() {
+        const ul = document.createElement("ul");
+        ul.className = "list border selectable-list";
+        ul.setAttribute("role", "listbox");
+
         for (const extension of this.getExtensions()) {
             const button = document.createElement("button");
             button.classList.add("vertical", "extra", "border", "small-round");
@@ -67,22 +71,57 @@ export class FileDownloaderDialog extends DialogComponent {
             this.quickSelectExtensions.appendChild(button);
         }
 
-        for (const filePath of this.filePaths) {
+        const selectAllBtn = document.createElement("button");
+        selectAllBtn.classList.add("vertical", "extra", "border", "small-round");
+
+        const selectAllIcon = document.createElement("i");
+        selectAllIcon.textContent = "select_all";
+
+        const selectAllLabel = document.createElement("span");
+        selectAllLabel.textContent = "ALL";
+
+        selectAllBtn.append(selectAllIcon, selectAllLabel);
+
+        selectAllBtn.addEventListener("click", () => this.toggleSelectAll());
+
+        this.quickSelectExtensions.appendChild(selectAllBtn);
+
+        const collator = new Intl.Collator(undefined, {
+            numeric: true,
+            sensitivity: "base",
+        });
+
+        const sortedFilePaths = [...this.filePaths].sort((a, b) => {
+            const aName = a.split(/[\\/]/).pop()!;
+            const bName = b.split(/[\\/]/).pop()!;
+            return collator.compare(aName, bName);
+        });
+
+        for (const filePath of sortedFilePaths) {
             const fileName = filePath.split(/[\\/]/).pop()!;
             const extIdx = fileName.lastIndexOf(".");
             const extension = extIdx === -1 ? "" : fileName.slice(extIdx + 1).toLowerCase();
 
-            const fileButton = new SelectableFileButton(fileName, fileName);
+            const fileButton = new SelectableFileItem(fileName);
             fileButton.element.dataset.extension = extension;
 
-            fileButton.element.classList.add("s12", "m6", "l4");
             fileButton.element.classList.remove("tiny-margin");
 
             this.fileButtons.push(fileButton);
-            this.filesContainer.appendChild(fileButton.element);
+            ul.appendChild(fileButton.element);
         }
 
+        this.filesContainer.appendChild(ul);
+
         this.downloadButton.addEventListener("click", () => this.downloadSelectedFiles());
+    }
+
+    toggleSelectAll() {
+        const allSelected = this.fileButtons.every(b => b.isChecked());
+
+        for (const btn of this.fileButtons) {
+            btn.setChecked(!allSelected);
+        }
     }
 
     selectByExtension(extension: string) {
