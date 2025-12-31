@@ -86,7 +86,7 @@ class SoftwareUpdateHandler(RequestHandler):
 
         with open(file_path, "rb") as f:
             while True:
-                chunk = f.read(1024 * 1024)
+                chunk = f.read(4 * 1024 * 1024)
                 if not chunk:
                     break
                 self.write(chunk)
