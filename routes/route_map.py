@@ -108,6 +108,7 @@ from handlers.shipping_addresses.get_all_shipping_addresses import (
 )
 from handlers.shipping_addresses.get_shipping_address import GetShippingAddressHandler
 from handlers.shipping_addresses.save_shipping_address import SaveShippingAddressHandler
+from handlers.software.software_handlers import SoftwareUpdateHandler, SoftwareUploadHandler, SoftwareVersionHandler
 from handlers.static.custom import CustomStaticFileHandler
 from handlers.static.data_file_receiver import FileReceiveHandler
 from handlers.static.data_file_uploader import FileUploadHandler
@@ -364,6 +365,12 @@ api_routes = [
     route(r"/api/email-sent/([0-9]+)", EmailSentHandler),
 ]
 
+software_api_routes = [
+    route(r'/api/software/version', SoftwareVersionHandler),
+    route(r'/api/software/upload', SoftwareUploadHandler),
+    route(r'/api/software/download', SoftwareUpdateHandler),
+]
+
 static_routes = [
     (
         r"/static/(.*)",
@@ -380,4 +387,4 @@ static_routes = [
     ),
 ]
 
-routes = page_routes + api_routes + static_routes
+routes = page_routes + api_routes + static_routes + software_api_routes

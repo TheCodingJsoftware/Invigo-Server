@@ -192,7 +192,11 @@ if __name__ == "__main__":
     signal.signal(signal.SIGTERM, signal_handler)
 
     # HTTP server
-    app = HTTPServer(make_app(), xheaders=True)
+    app = HTTPServer(make_app(),
+                     xheaders=True,
+                    max_body_size=1024 * 1024 * 1024,
+                    max_buffer_size=1024 * 1024 * 1024,
+    )
     app.listen(int(Environment.PORT), address="0.0.0.0")
 
     # Schedulers (Tornado-native)
