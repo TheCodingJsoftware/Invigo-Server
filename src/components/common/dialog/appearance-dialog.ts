@@ -1,11 +1,13 @@
-import {DialogComponent} from "@components/common/dialog/dialog-component";
-import {invertImages} from "@utils/theme";
+import { DialogComponent } from "@components/common/dialog/dialog-component";
+import { invertImages } from "@utils/theme";
 
 export class AppearanceDialog extends DialogComponent {
     constructor() {
         super({
             id: "appearance-dialog",
             title: "Appearance",
+            draggable: true,
+            width: "large-width",
             bodyContent: `<div>
                 <div id="theme-buttons">
                     <div class="padding">

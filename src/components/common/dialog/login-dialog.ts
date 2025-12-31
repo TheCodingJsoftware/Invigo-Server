@@ -14,6 +14,8 @@ export class LoginDialog extends DialogComponent {
         super({
             id: "login-dialog",
             title: "Login",
+            draggable: true,
+            isModal: true,
             bodyContent: `<form id="login-form" class="grid large-space">
                 <div class="s12 field small-round label border">
                     <input id="username" required autocomplete="username" />

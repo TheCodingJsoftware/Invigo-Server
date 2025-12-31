@@ -124,6 +124,16 @@ tr.finished {
     color: var(--primary);
 }
 
+.dialog-header .handle {
+    cursor: grab;
+    display: flex;
+    align-items: center;
+}
+
+.dialog-header .handle:active {
+    cursor: grabbing;
+}
+
 .floating-part-menu.dragging {
     transition: transform var(--speed1) !important;
 }

@@ -23,7 +23,7 @@ export class SelectableFileItem {
         this.checked = checked;
 
         this.li = document.createElement("li");
-        this.li.className = "selectable wave";
+        this.li.className = "selectable wave link";
         this.li.setAttribute("role", "option");
         this.li.tabIndex = 0;
 

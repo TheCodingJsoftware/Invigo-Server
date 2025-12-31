@@ -5,6 +5,7 @@ export class InfoDialog extends DialogComponent {
         super({
             id: "info-dialog",
             title: title,
+            draggable: true,
             bodyContent: `<div>${bodyContent}</div>`,
             footerContent: `
                 <nav class="row top-margin right-align">

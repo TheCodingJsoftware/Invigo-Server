@@ -17,13 +17,14 @@ export class FileDownloaderDialog extends DialogComponent {
         super({
             id: "file-downloader-dialog",
             title: "File Downloader",
+            draggable: true,
             bodyContent: `
                 <fieldset class="small-round">
                     <legend>Quick Select</legend>
                     <nav class="row center-align" id="quick-select-extensions">
                 </fieldset>
                 </nav>
-                <div class="top-margin border small-round center-align medium-height scroll" id="files-container">
+                <div class="top-margin border small-round scroll" id="files-container">
                 </div>
                 <nav class="row top-margin right-align">
                     <button id="download-button">
@@ -35,6 +36,7 @@ export class FileDownloaderDialog extends DialogComponent {
         });
 
         this.filesContainer = this.element.querySelector("#files-container") as HTMLDivElement;
+        this.filesContainer.style.maxBlockSize = "24rem";
         this.downloadButton = this.element.querySelector("#download-button") as HTMLButtonElement;
         this.quickSelectExtensions = this.element.querySelector("#quick-select-extensions") as HTMLDivElement;
 

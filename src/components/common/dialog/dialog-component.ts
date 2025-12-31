@@ -12,6 +12,7 @@ interface DialogOptions {
     bodyContent?: string;
     footerContent?: string;
     isModal?: boolean;
+    draggable?: boolean;
 }
 
 export class DialogComponent {
@@ -21,6 +22,15 @@ export class DialogComponent {
         Pick<DialogOptions, "id" | "onClose" | "headerContent" | "bodyContent" | "footerContent" | "isModal">;
     private readonly headerElement: HTMLElement;
     private readonly footerElement: HTMLElement;
+    private isDragging = false;
+    private dragStartMouseX = 0;
+    private dragStartMouseY = 0;
+    private dragStartX = 0;
+    private dragStartY = 0;
+
+    private rafPending = false;
+    private nextX = 0;
+    private nextY = 0;
 
     constructor(options: DialogOptions = {}) {
         this.headerElement = document.createElement("div");
@@ -33,6 +43,7 @@ export class DialogComponent {
             width: options.width ?? null,
             autoRemove: options.autoRemove ?? true,
             isModal: options.isModal ?? false,
+            draggable: options.draggable ?? false,
 
             ...(options.id !== undefined && { id: options.id }),
             ...(options.onClose && { onClose: options.onClose }),
@@ -123,7 +134,15 @@ export class DialogComponent {
 
     private createDefaultHeader(): void {
         const nav = document.createElement("nav");
-        nav.className = "row";
+        nav.className = "row tiny-space dialog-header";
+
+        if (this.options.draggable) {
+            const handle = document.createElement("i");
+            handle.className = "handle";
+            handle.innerHTML = "drag_indicator";
+            handle.addEventListener("mousedown", this.startDrag);
+            nav.appendChild(handle);
+        }
 
         const header = document.createElement("h5");
         header.className = "max";
@@ -131,13 +150,10 @@ export class DialogComponent {
 
         const closeButton = document.createElement("button");
         closeButton.className = "circle transparent";
-        closeButton.id = "close-button";
         closeButton.innerHTML = "<i>close</i>";
         closeButton.addEventListener("click", () => this.close());
 
-        nav.appendChild(header);
-        nav.appendChild(closeButton);
-
+        nav.append(header, closeButton);
         this.headerElement.appendChild(nav);
     }
 
@@ -161,6 +177,71 @@ export class DialogComponent {
             }
         }
     };
+
+    private startDrag = (e: MouseEvent) => {
+        if (!this.options.draggable || e.button !== 0) return;
+
+        e.preventDefault();
+        e.stopPropagation();
+
+        this.isDragging = true;
+        this.dialog.classList.add("dragging");
+        document.body.classList.add("no-select");
+
+        // Mouse position at drag start
+        this.dragStartMouseX = e.clientX;
+        this.dragStartMouseY = e.clientY;
+
+        // 🔑 Get the REAL on-screen position
+        const rect = this.dialog.getBoundingClientRect();
+
+        // This is now the authoritative transform origin
+        this.dragStartX = rect.left;
+        this.dragStartY = rect.top;
+
+        // Freeze dialog visually where it is
+        this.dialog.style.position = "fixed";
+        this.dialog.style.left = "0";
+        this.dialog.style.top = "0";
+        this.dialog.style.margin = "0";
+
+        // 🔑 Overwrite BeerCSS transform with absolute screen position
+        this.dialog.style.transform =
+            `translate(${this.dragStartX}px, ${this.dragStartY}px)`;
+
+        document.addEventListener("mousemove", this.onDrag);
+        document.addEventListener("mouseup", this.stopDrag);
+    };
+
+
+    private onDrag = (e: MouseEvent) => {
+        if (!this.isDragging || e.buttons !== 1) return;
+
+        const dx = e.clientX - this.dragStartMouseX;
+        const dy = e.clientY - this.dragStartMouseY;
+
+        this.nextX = this.dragStartX + dx;
+        this.nextY = this.dragStartY + dy;
+
+        if (this.rafPending) return;
+        this.rafPending = true;
+
+        requestAnimationFrame(() => {
+            this.dialog.style.transform =
+                `translate(${this.nextX}px, ${this.nextY}px)`;
+            this.rafPending = false;
+        });
+    };
+
+    private stopDrag = () => {
+        this.isDragging = false;
+        this.dialog.classList.remove("dragging");
+        document.body.classList.remove("no-select");
+
+        document.removeEventListener("mousemove", this.onDrag);
+        document.removeEventListener("mouseup", this.stopDrag);
+    };
+
 
     public handleResize = () => {
         if (window.innerWidth < 600) {

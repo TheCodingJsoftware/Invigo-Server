@@ -6,6 +6,7 @@ export class AreYouSureDialog extends DialogComponent {
             id: "are-you-sure-dialog",
             title: title,
             isModal: true,
+            draggable: true,
             bodyContent: `<div>${bodyContent}</div>`,
             footerContent: `
                 <nav class="row top-margin right-align">
