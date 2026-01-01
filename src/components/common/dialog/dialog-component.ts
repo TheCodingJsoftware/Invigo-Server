@@ -27,7 +27,8 @@ export class DialogComponent {
     private dragStartMouseY = 0;
     private dragStartX = 0;
     private dragStartY = 0;
-
+    private dragOffsetX = 0;
+    private dragOffsetY = 0;
     private rafPending = false;
     private nextX = 0;
     private nextY = 0;
@@ -71,6 +72,30 @@ export class DialogComponent {
         document.body.appendChild(this.dialog);
         ui(this.dialog);
         document.addEventListener("keydown", this.handleEscape);
+        setTimeout(() => {
+            const el = this.element;
+
+            // Read once
+            const rect = el.getBoundingClientRect();
+
+            requestAnimationFrame(() => {
+                // Freeze BeerCSS animation immediately
+                el.style.transition = "none";
+                el.style.animation = "none";
+
+                // Lock position exactly where BeerCSS put it
+                el.style.position = "fixed";
+                el.style.left = "0";
+                el.style.top = "0";
+                el.style.transform = `translate3d(${rect.left}px, ${rect.top}px, 0)`;
+
+                // Force style flush
+                el.getBoundingClientRect();
+
+                el.style.transition = "transform var(--speed1) ease-out";
+                el.style.transform = `translate3d(${rect.left}px, ${rect.top}px, 0)`;
+            });
+        }, 300);
     }
 
     public get element(): HTMLDialogElement {
@@ -185,29 +210,11 @@ export class DialogComponent {
         e.stopPropagation();
 
         this.isDragging = true;
-        this.dialog.classList.add("dragging");
-        document.body.classList.add("no-select");
+        this.element.classList.add("dragging");
 
-        // Mouse position at drag start
-        this.dragStartMouseX = e.clientX;
-        this.dragStartMouseY = e.clientY;
-
-        // 🔑 Get the REAL on-screen position
-        const rect = this.dialog.getBoundingClientRect();
-
-        // This is now the authoritative transform origin
-        this.dragStartX = rect.left;
-        this.dragStartY = rect.top;
-
-        // Freeze dialog visually where it is
-        this.dialog.style.position = "fixed";
-        this.dialog.style.left = "0";
-        this.dialog.style.top = "0";
-        this.dialog.style.margin = "0";
-
-        // 🔑 Overwrite BeerCSS transform with absolute screen position
-        this.dialog.style.transform =
-            `translate(${this.dragStartX}px, ${this.dragStartY}px)`;
+        const rect = this.element.getBoundingClientRect();
+        this.dragOffsetX = e.clientX - rect.left;
+        this.dragOffsetY = e.clientY - rect.top;
 
         document.addEventListener("mousemove", this.onDrag);
         document.addEventListener("mouseup", this.stopDrag);
@@ -217,25 +224,16 @@ export class DialogComponent {
     private onDrag = (e: MouseEvent) => {
         if (!this.isDragging || e.buttons !== 1) return;
 
-        const dx = e.clientX - this.dragStartMouseX;
-        const dy = e.clientY - this.dragStartMouseY;
+        const x = e.clientX - this.dragOffsetX;
+        const y = e.clientY - this.dragOffsetY;
 
-        this.nextX = this.dragStartX + dx;
-        this.nextY = this.dragStartY + dy;
-
-        if (this.rafPending) return;
-        this.rafPending = true;
-
-        requestAnimationFrame(() => {
-            this.dialog.style.transform =
-                `translate(${this.nextX}px, ${this.nextY}px)`;
-            this.rafPending = false;
-        });
+        this.element.style.transform = `translate3d(${x}px, ${y}px, 0)`;
     };
+
 
     private stopDrag = () => {
         this.isDragging = false;
-        this.dialog.classList.remove("dragging");
+        this.element.classList.remove("dragging");
         document.body.classList.remove("no-select");
 
         document.removeEventListener("mousemove", this.onDrag);
