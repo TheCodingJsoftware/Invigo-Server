@@ -72,30 +72,32 @@ export class DialogComponent {
         document.body.appendChild(this.dialog);
         ui(this.dialog);
         document.addEventListener("keydown", this.handleEscape);
-        setTimeout(() => {
-            const el = this.element;
+        if (this.options.draggable) {
+            setTimeout(() => {
+                const el = this.element;
 
-            // Read once
-            const rect = el.getBoundingClientRect();
+                // Read once
+                const rect = el.getBoundingClientRect();
 
-            requestAnimationFrame(() => {
-                // Freeze BeerCSS animation immediately
-                el.style.transition = "none";
-                el.style.animation = "none";
+                requestAnimationFrame(() => {
+                    // Freeze BeerCSS animation immediately
+                    el.style.transition = "none";
+                    el.style.animation = "none";
 
-                // Lock position exactly where BeerCSS put it
-                el.style.position = "fixed";
-                el.style.left = "0";
-                el.style.top = "0";
-                el.style.transform = `translate3d(${rect.left}px, ${rect.top}px, 0)`;
+                    // Lock position exactly where BeerCSS put it
+                    el.style.position = "fixed";
+                    el.style.left = "0";
+                    el.style.top = "0";
+                    el.style.transform = `translate3d(${rect.left}px, ${rect.top}px, 0)`;
 
-                // Force style flush
-                el.getBoundingClientRect();
+                    // Force style flush
+                    el.getBoundingClientRect();
 
-                el.style.transition = "transform var(--speed1) ease-out";
-                el.style.transform = `translate3d(${rect.left}px, ${rect.top}px, 0)`;
-            });
-        }, 300);
+                    el.style.transition = "transform var(--speed1) ease-out";
+                    el.style.transform = `translate3d(${rect.left}px, ${rect.top}px, 0)`;
+                });
+            }, 300);
+        }
     }
 
     public get element(): HTMLDialogElement {
