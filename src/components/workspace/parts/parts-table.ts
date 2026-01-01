@@ -143,7 +143,7 @@ export class PartsTable {
                 this.tfoot.appendChild(th);
 
                 const downloadAllFilesButton = document.createElement("button");
-                downloadAllFilesButton.classList.add("responsive", "link", "no-margin");
+                downloadAllFilesButton.classList.add("responsive", "link", "tiny-margin");
                 downloadAllFilesButton.innerHTML = `
                     <i>download</i>
                     <span>Download</span>
