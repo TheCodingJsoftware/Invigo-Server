@@ -17,6 +17,10 @@ export interface MetaDataDict {
     business_info: BusinessInfoDict;
     vendor: VendorDict;
     shipping_address: ShippingAddressDict;
+    is_draft: boolean;
+    email_sent_at: string;
+    freight_price: number;
+    has_opened: boolean;
 }
 
 export interface POItemDict {
@@ -81,6 +85,11 @@ export class MetaData {
     contact_info: ContactInfo;
     business_info: BusinessInfo;
     vendor: Vendor;
+    is_draft: boolean = false;
+    email_sent_at: string = "";
+    freight_price: number = 0.0;
+    has_opened: boolean = false;
+
 
     constructor(data?: MetaDataDict) {
         this.vendor = new Vendor();
@@ -102,6 +111,10 @@ export class MetaData {
         this.contact_info.loadData(data.contact_info);
         this.business_info.loadData(data.business_info);
         this.vendor.loadData(data.vendor);
+        this.is_draft = data.is_draft ?? false;
+        this.email_sent_at = data.email_sent_at ?? "";
+        this.freight_price = data.freight_price ?? 0.0;
+        this.has_opened = data.has_opened ?? false;
     }
 
     toDict(): MetaDataDict {
@@ -115,6 +128,10 @@ export class MetaData {
             business_info: this.business_info.toDict(),
             vendor: this.vendor.toDict(),
             shipping_address: this.shipping_address.toDict(),
+            is_draft: this.is_draft,
+            email_sent_at: this.email_sent_at,
+            freight_price: this.freight_price,
+            has_opened: this.has_opened
         };
     }
 }

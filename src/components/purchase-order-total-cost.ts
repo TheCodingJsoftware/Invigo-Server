@@ -1,5 +1,5 @@
-import {BaseComponent} from "@interfaces/base-component";
-import {PurchaseOrder} from "@models/purchase-order";
+import { BaseComponent } from "@interfaces/base-component";
+import { PurchaseOrder } from "@models/purchase-order";
 
 export class PurchaseOrderTotalCost implements BaseComponent {
     purchaseOrder: PurchaseOrder;
@@ -12,7 +12,7 @@ export class PurchaseOrderTotalCost implements BaseComponent {
     }
 
     public build(): HTMLElement {
-        const subtotal = this.purchaseOrder.getSheetsCost() + this.purchaseOrder.getComponentsCost();
+        const subtotal = this.purchaseOrder.getSheetsCost() + this.purchaseOrder.getComponentsCost() + this.purchaseOrder.meta_data.freight_price;
 
         const showGST = localStorage.getItem("show-gst-row") === "true";
         const showPST = localStorage.getItem("show-pst-row") === "true";
@@ -81,7 +81,7 @@ export class PurchaseOrderTotalCost implements BaseComponent {
     }
 
     updateTotalPrice(): void {
-        const subtotal = this.purchaseOrder.getSheetsCost() + this.purchaseOrder.getComponentsCost();
+        const subtotal = this.purchaseOrder.getSheetsCost() + this.purchaseOrder.getComponentsCost() + this.purchaseOrder.meta_data.freight_price;
 
         const showGST = localStorage.getItem("show-GST") === "true";
         const showPST = localStorage.getItem("show-PST") === "true";
@@ -104,7 +104,7 @@ export class PurchaseOrderTotalCost implements BaseComponent {
     }
 
     formatPercent(value: number): string {
-        return `${(value * 100).toLocaleString("en-US", {minimumFractionDigits: 2, maximumFractionDigits: 2})}%`;
+        return `${(value * 100).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%`;
     }
 
     public async render(): Promise<void> {
@@ -123,6 +123,6 @@ export class PurchaseOrderTotalCost implements BaseComponent {
     }
 
     private formatPrice(price: number): string {
-        return `$${price.toLocaleString("en-US", {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+        return `$${price.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
     }
 }

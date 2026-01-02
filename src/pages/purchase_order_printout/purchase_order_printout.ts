@@ -185,6 +185,15 @@ class ItemsTable implements BaseComponent {
                     <td data-column="price">${this.formatPrice(component.price * this.getComponentOrderQuantity(component))}</td>
                 </tr>
                 `).join("")}
+                ${this.purchaseOrder.meta_data.freight_price > 0 ? `
+                <tr>
+                    <td class="no-line tiny-padding"><i>local_shipping</i> Freight</td>
+                    <td data-column="partNumber"></td>
+                    <td></td>
+                    <td data-column="unitPrice"></td>
+                    <td data-column="price">${this.formatPrice(this.purchaseOrder.meta_data.freight_price)}</td>
+                </tr>
+                `: ""}
             </tbody>
         </table>
         `.trim();
