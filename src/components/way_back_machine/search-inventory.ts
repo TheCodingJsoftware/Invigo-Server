@@ -54,7 +54,7 @@ export class SearchInventory extends EventTarget {
         this.launcherInput.readOnly = true;
 
         this.menu = document.createElement("menu");
-        this.menu.className = "min top-round";
+        this.menu.className = "min round";
 
         const headerLi = document.createElement("li");
 
@@ -103,7 +103,7 @@ export class SearchInventory extends EventTarget {
             ...components.map(c => ({
                 id: c.id,
                 type: "component" as const,
-                label: c.part_name,
+                label: `${c.part_name} (#${c.part_number})`,
                 subtitle: "Component",
                 raw: c,
             })),
@@ -198,6 +198,8 @@ export class SearchInventory extends EventTarget {
             `;
             li.onclick = () => this.select(r.item);
             this.menu.appendChild(li);
+            this.menu.classList.add("top-round");
+            this.menu.classList.remove("round");
         });
     }
 
@@ -205,6 +207,8 @@ export class SearchInventory extends EventTarget {
         this.menu
             .querySelectorAll("li.result")
             .forEach(li => li.remove());
+        this.menu.classList.add("round");
+        this.menu.classList.remove("top-round");
     }
 
     private select(item: SearchItem) {
