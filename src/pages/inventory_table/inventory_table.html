@@ -22,9 +22,9 @@
 
     <body class="dark">
         <main class="responsive">
-            <div class="scroll" style="height: 100vh;">
+            <article class="border round scroll" style="max-height: calc(100vh - 115px);">
                 <table class="stripes border center-align">
-                    <thead class="fixed surface">
+                    <thead>
                         <tr>
                             {% for header in headers %}
                             {% if header != "id" %}
@@ -53,7 +53,7 @@
                         {% endfor %}
                     </tbody>
                 </table>
-            </div>
+            </article>
         </main>
     </body>
 </html>
