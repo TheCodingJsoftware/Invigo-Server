@@ -142,7 +142,7 @@ const overloadLegendPlugin = {
         if (!chartArea) return;
 
         const title = opts?.title ?? "Overload";
-        const labels = opts?.labels ?? ["Low", "", "", "", "High"];
+        const labels = opts?.labels ?? ["", "Low", "", "", "High"];
 
         // Layout
         const pad = 6;
@@ -518,7 +518,7 @@ export class JobTimelineMatrix {
                 // your custom gradient legend
                 overloadLegend: {
                     title: "Overload",
-                    labels: ["Low", "", "Medium", "", "High"], // edit if you want
+                    labels: ["", "Low", "Medium", "", "High"], // edit if you want
                 },
 
                 legend: { display: false },
