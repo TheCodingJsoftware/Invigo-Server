@@ -7,6 +7,8 @@ import "@static/css/vis-timeline-graph2d.min.css";
 import { SnackbarComponent } from "@components/common/snackbar/snackbar-component";
 import { extractCssVar, getCachedThemeCss } from "@config/material-theme-cookie";
 import { JobTimelineMatrix } from "@components/production_planner/job-timeline-matrix";
+import { TimelineMatrix } from "@components/production_planner/timline-matrix";
+import { AppearanceDialog } from "@components/common/dialog/appearance-dialog";
 
 export interface ContactInfo {
     name: string;
@@ -396,6 +398,11 @@ async function loadJobItemsTimeline() {
 }
 
 document.addEventListener("DOMContentLoaded", async () => {
+
+    const themeButton = document.getElementById("theme-button") as HTMLButtonElement;
+    themeButton.onclick = () => new AppearanceDialog();
+
+
     await loadJobItemsTimeline()
     const heatmap = new JobTimelineMatrix("jobMatrix", {
         endpoint: "/api/production_planner/job/timeline",
@@ -406,4 +413,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
 
     heatmap.start();
+
+    const heatmap2 = new TimelineMatrix("jobMatrix2");
+    heatmap2.start();
 });

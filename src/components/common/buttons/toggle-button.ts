@@ -1,6 +1,5 @@
 export class ToggleButton {
     private readonly button: HTMLButtonElement;
-    private readonly row: HTMLElement;
     private readonly icon: HTMLElement;
     private readonly label: HTMLSpanElement;
     private checked: boolean;
@@ -17,16 +16,11 @@ export class ToggleButton {
         this.button.setAttribute("role", "button");
         this.button.setAttribute("aria-pressed", String(checked));
 
-        // ---- ROW (icon + text stay horizontal forever) ----
-        this.row = document.createElement("nav");
-        this.row.className = "tiny-space left-align";
-
         this.icon = document.createElement("i");
         this.label = document.createElement("span");
         this.label.textContent = labelText;
 
-        this.row.append(this.icon, this.label);
-        this.button.append(this.row);
+        this.button.append(this.icon, this.label);
 
         this.updateUI();
         this.button.addEventListener("click", () => this.toggle());
