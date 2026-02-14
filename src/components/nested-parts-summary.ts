@@ -113,10 +113,10 @@ export class NestedPartsSummary implements BaseComponent {
             nestSummaryTable += `
             <tr>
                 <td class="min" data-column="nest-part-partName">
-                    <div class="row">
-                        <img class="square extra small-round" src="/images/${group.getImagePath()}">
-                        <span class="wrap no-line">${group.name}</span>
-                    </div>
+                    <button class="small-round extra transparent">
+                        <img class="square responsive" src="/images/${group.getImagePath()}">
+                        <div>${group.name}</div>
+                    </button>
                 </td>
                 <td class="min right-align" data-column="nest-name">
                         ${nestNameNumber}

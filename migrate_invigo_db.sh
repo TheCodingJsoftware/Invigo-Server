@@ -9,10 +9,10 @@ SRC_PORT="5434"
 SRC_USER="admin"
 SRC_PASSWORD="Pine2admin"
 
-DST_HOST="127.0.0.1"
+DST_HOST="0.0.0.0"
 DST_PORT="5432"
 DST_USER="admin"
-DST_PASSWORD="PostgresPassword123!"
+DST_PASSWORD="Pine2admin"
 
 DATABASES=("invigo" "workspace")
 

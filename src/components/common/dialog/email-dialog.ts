@@ -1,4 +1,5 @@
 import { DialogComponent } from "@components/common/dialog/dialog-component";
+import { PurchaseOrderStatus } from "@interfaces/purchase-order";
 import { PurchaseOrder } from "@models/purchase-order";
 
 let Editor: typeof import('@toast-ui/editor').Editor;
@@ -29,6 +30,29 @@ async function loadEditorModules() {
     Editor = editorModule.Editor;
     Viewer = viewerModule.default;
 }
+
+function normalizeStatus(status: number): PurchaseOrderStatus {
+    // Defensive: ensure we always land on a known enum value
+    if (status === PurchaseOrderStatus.QUOTE) return PurchaseOrderStatus.QUOTE;
+    if (status === PurchaseOrderStatus.RELEASE_ORDER) return PurchaseOrderStatus.RELEASE_ORDER;
+    return PurchaseOrderStatus.PURCHASE_ORDER;
+}
+
+function getEmailDraftStorageKey(po: PurchaseOrder): string {
+    const status = normalizeStatus(po.meta_data.status);
+    return `email-body:status:${status}`;
+}
+
+function loadInitialEmailMarkdown(po: PurchaseOrder): string {
+    const key = getEmailDraftStorageKey(po);
+    return localStorage.getItem(key) ?? "";
+}
+
+function saveEmailMarkdown(po: PurchaseOrder, markdown: string): void {
+    const key = getEmailDraftStorageKey(po);
+    localStorage.setItem(key, markdown);
+}
+
 
 export class EmailDialogComponent extends DialogComponent {
     editor!: InstanceType<typeof Editor>;
@@ -85,19 +109,20 @@ export class EmailDialogComponent extends DialogComponent {
 
             // ui("mode") can return auto, this is why we check.
             const editorTheme = ui("mode") === "dark" ? "dark" : "light";
+            const initialMarkdown = loadInitialEmailMarkdown(this.purchaseOrder);
 
             this.editor = new Editor({
                 el: this.query("#email-body") as HTMLElement,
                 previewStyle: "vertical",
                 height: "500px",
                 initialEditType: "wysiwyg",
-                initialValue: localStorage.getItem("email-body") || "",
+                initialValue: initialMarkdown,
                 usageStatistics: false,
                 theme: editorTheme,
             });
 
             this.editor.on("change", () => {
-                localStorage.setItem("email-body", this.editor.getMarkdown());
+                saveEmailMarkdown(this.purchaseOrder, this.editor.getMarkdown());
             });
 
             this.query("#email-send")?.addEventListener("click", async () => {

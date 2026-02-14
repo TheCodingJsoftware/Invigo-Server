@@ -421,7 +421,7 @@ export class TimelineMatrix {
             // weekday header row respects weekStart
             for (let d = 0; d < 7; d++) {
                 const wd = document.createElement("button");
-                wd.className = "fill no-border square no-round no-margin";
+                wd.className = "fill square no-margin";
                 wd.textContent = weekdayLabels[d];
                 wd.style.width = `${cellSize}px`;
                 wd.style.height = `${cellSize}px`;

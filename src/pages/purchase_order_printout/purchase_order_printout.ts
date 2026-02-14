@@ -597,6 +597,7 @@ class PurchaseOrderPrintout {
 
     private purchaseOrderTypeChanged() {
         const purchaseOrderType = this.getPurchaseOrderType();
+        this.purchaseOrder.meta_data.status = purchaseOrderType;
         ui("theme", PURCHASE_ORDER_COLORS[purchaseOrderType]);
         document.querySelectorAll("#purchase-order-type").forEach(el => {
             if (purchaseOrderType === PurchaseOrderStatus.PURCHASE_ORDER) {

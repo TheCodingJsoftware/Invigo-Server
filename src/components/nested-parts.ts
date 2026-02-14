@@ -139,13 +139,13 @@ export class NestedParts implements BaseComponent {
             nestSummaryTable += `
             <tr>
                 <td class="min" data-column="nest-part-partName">
-                    <div class="row">
-                        <img class="square extra small-round" src="/images/${laserCutPart.meta_data.image_index}">
-                        <div class="vertical">
-                            <span class="wrap no-line">${laserCutPart.name}</span>
+                    <button class="extra small-round transparent">
+                        <img class="square responsive" src="/images/${laserCutPart.meta_data.image_index}">
+                        <div class="vertical left-align">
+                            <div>${laserCutPart.name}</div>
                             <span><i>tag</i> ${partNumber}</span>
                         </div>
-                    </div>
+                    </button>
                 </td>
                 <td class="center-align" data-column="nest-part-material">${material}</td>
                 <td class="center-align" data-column="nest-part-weight">${this.formatWeight(weight)}</td>
