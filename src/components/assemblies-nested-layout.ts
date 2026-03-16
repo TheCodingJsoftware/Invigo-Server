@@ -65,6 +65,10 @@ class AssemblyLaserCutPartsComponent {
                         <input type="checkbox" id="show-assembly-laser-cut-part-price" checked>
                         <span>Price</span>
                     </label>
+                    <label class="s12 m4 l3 checkbox">
+                        <input type="checkbox" id="show-assembly-laser-cut-part-unitWeight" checked>
+                        <span>Unit Weight</span>
+                    </label>
                 </div>
                 <div>
                     ${new AssemblyLaserCutPartsTable(this.jobId, this.assembly).generatePartsTable().outerHTML}

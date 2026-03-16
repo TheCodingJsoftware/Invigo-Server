@@ -1,17 +1,19 @@
-import {BaseComponent} from "@interfaces/base-component";
-import {SHIPPING_METHOD_ICONS, ShippingMethod} from "@interfaces/purchase-order";
-import {BusinessInfo} from "@models/business-info";
-import {ContactInfo} from "@models/contact-info";
-import {PurchaseOrder} from "@models/purchase-order";
-import {Vendor} from "@models/vendor";
+import { BaseComponent } from "@interfaces/base-component";
+import { SHIPPING_METHOD_ICONS, ShippingMethod } from "@interfaces/purchase-order";
+import { BusinessInfo } from "@models/business-info";
+import { ContactInfo } from "@models/contact-info";
+import { PurchaseOrder } from "@models/purchase-order";
+import { ShippingAddress } from "@models/shipping_address";
+import { Vendor } from "@models/vendor";
 import flatpickr from "flatpickr";
-import {Instance as FlatpickrInstance} from "flatpickr/dist/types/instance";
+import { Instance as FlatpickrInstance } from "flatpickr/dist/types/instance";
 
 require("flatpickr/dist/themes/dark.css");
 
 export class PurchaseOrderDetails implements BaseComponent {
     purchaseOrder: PurchaseOrder;
     vendor: Vendor;
+    shippingAddress: ShippingAddress;
     contactInfo: ContactInfo;
     businessInfo: BusinessInfo;
     purchaseOrderId: number;
@@ -21,6 +23,7 @@ export class PurchaseOrderDetails implements BaseComponent {
         this.purchaseOrderId = purchaseOrderId;
         this.purchaseOrder = purchaseOrder;
         this.vendor = purchaseOrder.meta_data.vendor;
+        this.shippingAddress = purchaseOrder.meta_data.shipping_address;
         this.contactInfo = purchaseOrder.meta_data.contact_info;
         this.businessInfo = purchaseOrder.meta_data.business_info;
     }
@@ -28,6 +31,7 @@ export class PurchaseOrderDetails implements BaseComponent {
     public build(): HTMLElement {
         const shippingMethod = this.titleCase(ShippingMethod[this.purchaseOrder.meta_data.shipping_method].toLowerCase());
         const template = document.createElement("template");
+
         const purchaseFrom = `
             ${this.vendor.name ? `${this.vendor.name}<br>` : ""}
             ${this.vendor.address ? `${this.vendor.address.split("\n").join("<br>")}<br>` : ""}
@@ -40,16 +44,15 @@ export class PurchaseOrderDetails implements BaseComponent {
             </div>` : ""}
         `.trim().replace(/  /g, "");
 
-        const contactDetails = `
-            ${this.businessInfo.name ? `${this.businessInfo.name}<br>` : ""}
-            ${this.purchaseOrder.meta_data.shipping_address.address
-            ? `${this.purchaseOrder.meta_data.shipping_address.address.split("\n").join("<br>")}<br>` : ""}
-            ${(this.contactInfo.name || this.contactInfo.email || this.contactInfo.phone) ? `
-            <div id="contactDetails"><hr>
+        const shippingAddress = `
+            ${this.shippingAddress.name ? `${this.shippingAddress.name}<br>` : ""}
+            ${this.shippingAddress.address ? `${this.shippingAddress.address.split("\n").join("<br>")}<br>` : ""}
+            ${(this.shippingAddress.phone || this.shippingAddress.email || this.shippingAddress.website) ? `
+            <div id="vendorContactDetails"><hr>
                 <b>Contact Information:</b><br>
-                ${this.contactInfo.name ? `${this.contactInfo.name}` : ""}
-                ${this.contactInfo.email ? `(<a class="link" href="mailto:${this.contactInfo.email}">${this.contactInfo.email}</a>)<br>` : ""}
-                ${this.contactInfo.phone ? `<a class="link" href="tel:${this.contactInfo.phone}">${this.contactInfo.phone}</a><br>` : ""}
+                ${this.shippingAddress.phone ? `<a class="link" href="tel:${this.shippingAddress.phone}">${this.shippingAddress.phone}</a><br>` : ""}
+                ${this.shippingAddress.email ? `<a class="link" href="mailto:${this.shippingAddress.email}">${this.shippingAddress.email}</a><br>` : ""}
+                ${this.shippingAddress.website ? `<a class="link" href="${this.shippingAddress.website}">${this.shippingAddress.website}</a>` : ""}
             </div>` : ""}
         `.trim().replace(/  /g, "");
 
@@ -77,7 +80,7 @@ export class PurchaseOrderDetails implements BaseComponent {
                     </fieldset>
                     <fieldset class="s6 small-round">
                         <legend>Ship To</legend>
-                        ${contactDetails}
+                        ${shippingAddress}
                     </fieldset>
                     <div class="s6 small small-round field label prefix border">
                         <i>${SHIPPING_METHOD_ICONS[this.purchaseOrder.meta_data.shipping_method]}</i>

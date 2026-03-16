@@ -62,6 +62,10 @@ class GroupedLaserCutParts {
                         <input type="checkbox" id="show-assembly-laser-cut-part-price" checked>
                         <span>Price</span>
                     </label>
+                    <label class="s12 m4 l3 checkbox">
+                        <input type="checkbox" id="show-assembly-laser-cut-part-unitWeight" checked>
+                        <span>Unit Weight</span>
+                    </label>
                 </div>
                 <div>
                     ${new GroupedLaserCutPartsTable(this.jobId, this.laserCutParts).generatePartsTable()}
@@ -114,6 +118,7 @@ class GroupedLaserCutPartsTable {
                 <th class="center-align" data-column="assembly-laser-cut-part-process">Process</th>
                 <th class="center-align" data-column="assembly-laser-cut-part-notes">Notes</th>
                 <th class="center-align" data-column="assembly-laser-cut-part-shelfNumber">Shelf #</th>
+                <th class="center-align" data-column="assembly-laser-cut-part-unitWeight">Unit Weight</th>
                 <th class="center-align" data-column="assembly-laser-cut-part-quantity">Qty</th>
                 <th class="center-align" data-column="assembly-laser-cut-part-unitPrice">Unit Price</th>
                 <th class="center-align" data-column="assembly-laser-cut-part-price">Price</th>
@@ -132,6 +137,7 @@ class GroupedLaserCutPartsTable {
             const quantity = laserCutPart.getTotalQuantity();
             const unitPrice = laserCutPart.getPrice();
             const price = laserCutPart.getTotalPrice();
+            const unitWeight = laserCutPart.getWeight();
             partsTable += `
             <tr>
                 <td data-column="assembly-laser-cut-part-partPicture">
@@ -145,6 +151,7 @@ class GroupedLaserCutPartsTable {
                 <td class="center-align" data-column="assembly-laser-cut-part-process">${process}</td>
                 <td class="center-align" data-column="assembly-laser-cut-part-notes">${notes}</td>
                 <td class="center-align" data-column="assembly-laser-cut-part-shelfNumber">${shelfNumber}</td>
+                <td class="center-align" data-column="assembly-laser-cut-part-unitWeight">${this.formatWeight(unitWeight)}</td>
                 <td class="center-align" data-column="assembly-laser-cut-part-quantity">${this.formatQuantity(quantity)}</td>
                 <td class="center-align" data-column="assembly-laser-cut-part-unitPrice">${this.formatPrice(unitPrice)}</td>
                 <td class="center-align" data-column="assembly-laser-cut-part-price">${this.formatPrice(price)}</td>
@@ -158,10 +165,12 @@ class GroupedLaserCutPartsTable {
         let totalPrice = 0;
         let totalQuantity = 0;
         let totalUnitPrice = 0;
+        let totalWeight = 0;
         for (const laserCutPart of this.laserCutParts) {
             totalPrice += laserCutPart.getTotalPrice();
             totalUnitPrice += laserCutPart.getPrice();
             totalQuantity += laserCutPart.getTotalQuantity();
+            totalWeight += laserCutPart.getWeight();
         }
         let partsTableFooter = `
             <tr>
@@ -172,6 +181,7 @@ class GroupedLaserCutPartsTable {
                 <th class="center-align" data-column="assembly-laser-cut-part-process"></th>
                 <th class="center-align" data-column="assembly-laser-cut-part-notes"></th>
                 <th class="center-align" data-column="assembly-laser-cut-part-shelfNumber"></th>
+                <th class="center-align" data-column="assembly-laser-cut-part-unitWeight">${this.formatWeight(totalWeight)}</th>
                 <th class="center-align" data-column="assembly-laser-cut-part-quantity">${this.formatQuantity(totalQuantity)}</th>
                 <th class="center-align" data-column="assembly-laser-cut-part-unitPrice">${this.formatPrice(totalUnitPrice)}</th>
                 <th class="center-align" data-column="assembly-laser-cut-part-price">${this.formatPrice(totalPrice)}</th>
@@ -185,6 +195,10 @@ class GroupedLaserCutPartsTable {
 
     private formatPrice(price: number): string {
         return `$${price.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    }
+
+    private formatWeight(weight: number): string {
+        return `${weight.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} lbs`;
     }
 }
 

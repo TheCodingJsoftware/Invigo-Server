@@ -65,6 +65,10 @@ class AssemblyLaserCutPartsComponent {
                         <input type="checkbox" id="show-assembly-laser-cut-part-price" checked>
                         <span>Price</span>
                     </label>
+                    <label class="s12 m4 l3 checkbox">
+                        <input type="checkbox" id="show-assembly-laser-cut-part-unitWeight" checked>
+                        <span>Unit Weight</span>
+                    </label>
                 </div>
                 <div>
                     ${new AssemblyLaserCutPartsTable(this.jobId, this.assembly).generatePartsTable().outerHTML}
@@ -124,6 +128,7 @@ export class AssemblyLaserCutPartsTable {
                 <th class="center-align" data-column="assembly-laser-cut-part-process">Process</th>
                 <th class="center-align" data-column="assembly-laser-cut-part-notes">Notes</th>
                 <th class="center-align" data-column="assembly-laser-cut-part-shelfNumber">Shelf #</th>
+                <th class="center-align" data-column="assembly-laser-cut-part-unitWeight">Unit Weight</th>
                 <th class="center-align" data-column="assembly-laser-cut-part-unitQuantity">Unit Qty</th>
                 <th class="center-align" data-column="assembly-laser-cut-part-quantity">Qty</th>
                 <th class="center-align" data-column="assembly-laser-cut-part-unitPrice">Unit Price</th>
@@ -143,6 +148,7 @@ export class AssemblyLaserCutPartsTable {
             const unitQuantity = laserCutPart.inventory_data.quantity;
             const quantity = unitQuantity * this.assembly.meta_data.quantity;
             const unitPrice = laserCutPart.prices.price;
+            const unitWeight = laserCutPart.meta_data.weight;
             const price = unitPrice * quantity;
             partsTable += `
             <tr>
@@ -157,6 +163,7 @@ export class AssemblyLaserCutPartsTable {
                 <td class="center-align" data-column="assembly-laser-cut-part-process">${process}</td>
                 <td class="left-align" data-column="assembly-laser-cut-part-notes">${notes}</td>
                 <td class="center-align" data-column="assembly-laser-cut-part-shelfNumber">${shelfNumber}</td>
+                <td class="center-align" data-column="assembly-laser-cut-part-unitWeight">${this.formatWeight(unitWeight)}</td>
                 <td class="center-align" data-column="assembly-laser-cut-part-unitQuantity">${unitQuantity}</td>
                 <td class="center-align" data-column="assembly-laser-cut-part-quantity">${quantity}</td>
                 <td class="center-align" data-column="assembly-laser-cut-part-unitPrice">${this.formatPrice(unitPrice)}</td>
@@ -170,9 +177,11 @@ export class AssemblyLaserCutPartsTable {
     generatePartsTableFooter(): string {
         let totalPrice = 0;
         let totalUnitPrice = 0;
+        let totalWeight = 0;
         for (const laserCutPart of this.laserCutParts) {
             totalPrice += laserCutPart.prices.price * laserCutPart.inventory_data.quantity * this.assembly.meta_data.quantity;
             totalUnitPrice += laserCutPart.prices.price * laserCutPart.inventory_data.quantity;
+            totalWeight += laserCutPart.meta_data.weight * laserCutPart.inventory_data.quantity * this.assembly.meta_data.quantity;
         }
         let partsTableFooter = `
             <tr>
@@ -183,6 +192,7 @@ export class AssemblyLaserCutPartsTable {
                 <th class="center-align" data-column="assembly-laser-cut-part-process"></th>
                 <th class="center-align" data-column="assembly-laser-cut-part-notes"></th>
                 <th class="center-align" data-column="assembly-laser-cut-part-shelfNumber"></th>
+                <th class="center-align" data-column="assembly-laser-cut-part-unitWeight">${this.formatWeight(totalWeight)}</th>
                 <th class="center-align" data-column="assembly-laser-cut-part-unitQuantity"></th>
                 <th class="center-align" data-column="assembly-laser-cut-part-quantity"></th>
                 <th class="center-align" data-column="assembly-laser-cut-part-unitPrice">${this.formatPrice(totalUnitPrice)}</th>
@@ -193,6 +203,10 @@ export class AssemblyLaserCutPartsTable {
 
     private formatPrice(price: number): string {
         return `$${price.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    }
+
+    private formatWeight(weight: number): string {
+        return `${weight.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} lbs`;
     }
 }
 

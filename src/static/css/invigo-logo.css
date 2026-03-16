@@ -1,0 +1,239 @@
+:root {
+    /* Aura colors (light) */
+    --invigo-aura-1: #4aa3d8;
+    --invigo-aura-2: #b6e6ff;
+    --invigo-aura-3: #2a6fb8;
+
+    /* Back-compat aliases */
+    --invigo-gold-1: var(--invigo-aura-1);
+    --invigo-gold-2: var(--invigo-aura-2);
+    --invigo-gold-3: var(--invigo-aura-3);
+
+    /* Glow tuning */
+    --invigo-glow-blur: 1rem;
+    --invigo-glow-blur-2: 44px;
+    --invigo-glow-opacity: 0.55;
+
+    --invigo-speed: var(--speed3);
+
+    /* Pull strength (px) */
+    --invigo-pull: 6px;
+
+    /* Hover wobble tuning */
+    --invigo-hover-y: 10px;
+    --invigo-hover-rot: 1.6deg;
+    --invigo-hover-time: 3.8s;
+}
+
+/* ✅ Center the logo container even if the parent isn't center-align */
+.invigo-logo-container {
+    position: relative;
+    isolation: isolate;
+    overflow: visible;
+    border-radius: 9999px;
+
+    /* cursor position defaults (updated by JS) */
+    --mx: 50%;
+    --my: 50%;
+
+    /* horizontal centering */
+    display: block;
+    margin-inline: auto;
+
+    /* keep content centered inside */
+    text-align: center;
+}
+
+/* (Optional) if BeerCSS uses inline-flex for .circle in some cases */
+.invigo-logo-container.circle {
+    margin-inline: auto;
+}
+
+/* ✅ Hover-only float: animate the container itself, BUT keep it centered by
+   animating with translate3d on the container (transform doesn't affect margin centering). */
+.invigo-logo-container {
+    transform: translate3d(0, 0, 0);
+    will-change: transform;
+}
+
+.invigo-logo-container:hover,
+.invigo-logo-container:focus-within {
+    animation: invigo-hover-float var(--invigo-hover-time) ease-in-out infinite;
+}
+
+/* No idle background */
+.invigo-logo-container::before,
+.invigo-logo-container::after {
+    content: "";
+    position: absolute;
+    inset: -26px;
+    border-radius: inherit;
+    z-index: 0;
+    pointer-events: none;
+    opacity: 0;
+    transform: scale(0.96);
+    transition:
+        opacity var(--invigo-speed) ease,
+        transform var(--invigo-speed) cubic-bezier(.2, .8, .2, 1),
+        filter var(--invigo-speed) ease;
+}
+
+/* Cursor-following soft spotlight */
+.invigo-logo-container::before {
+    inset: -18px;
+    background:
+        radial-gradient(circle at var(--mx) var(--my),
+            color-mix(in srgb, var(--invigo-gold-2) 22%, transparent),
+            transparent 58%);
+    filter: blur(1rem);
+}
+
+/* Aura + conic shimmer */
+.invigo-logo-container::after {
+    background:
+        radial-gradient(circle at var(--mx) var(--my),
+            color-mix(in srgb, var(--invigo-gold-1) 16%, transparent),
+            transparent 60%),
+        conic-gradient(from 180deg,
+            transparent 0deg,
+            color-mix(in srgb, var(--invigo-gold-2) 20%, transparent) 40deg,
+            transparent 90deg,
+            color-mix(in srgb, var(--invigo-gold-1) 22%, transparent) 150deg,
+            transparent 210deg,
+            color-mix(in srgb, var(--invigo-gold-3) 22%, transparent) 280deg,
+            transparent 360deg);
+    filter: blur(var(--invigo-glow-blur));
+}
+
+/* Show effects only on hover/focus */
+.invigo-logo-container:hover::before,
+.invigo-logo-container:focus-within::before {
+    opacity: 0.55;
+    transform: scale(1.01);
+}
+
+.invigo-logo-container:hover::after,
+.invigo-logo-container:focus-within::after {
+    opacity: var(--invigo-glow-opacity);
+    transform: scale(1.02);
+    filter: blur(var(--invigo-glow-blur-2));
+    animation: invigo-aura-rotate 5s linear infinite;
+}
+
+/* Logo */
+.invigo-logo {
+    cursor: pointer;
+
+    position: relative;
+    z-index: 1;
+
+    --tilt-x: 0deg;
+    --tilt-y: 0deg;
+    --lift: 0px;
+
+    --pull-x: 0px;
+    --pull-y: 0px;
+
+    transform-style: preserve-3d;
+
+    transform:
+        translate3d(var(--pull-x), var(--pull-y), 0) perspective(500px) rotateX(var(--tilt-x)) rotateY(var(--tilt-y)) translateY(var(--lift));
+
+    outline: 0 solid transparent;
+    outline-offset: 3px;
+
+    transition:
+        transform var(--speed2) ease,
+        box-shadow var(--speed2) ease,
+        filter var(--speed2) ease,
+        background-color var(--speed2) ease,
+        outline-color var(--speed2) ease,
+        outline-width var(--speed2) ease !important;
+
+    background-color: transparent;
+    will-change: transform, filter;
+
+    filter:
+        drop-shadow(0 10px 18px rgba(0, 0, 0, 0.18)) saturate(1.02) contrast(1.02);
+}
+
+.invigo-logo:hover {
+    --lift: -10px;
+
+    box-shadow: 0 16px 34px rgba(0, 0, 0, 0.18);
+
+    filter:
+        drop-shadow(0 16px 32px rgba(0, 0, 0, 0.22)) drop-shadow(0 0 12px color-mix(in srgb, var(--invigo-gold-1) 14%, transparent)) saturate(1.05) contrast(1.03);
+
+    outline-width: 1px;
+    outline-color: var(--outline-variant);
+}
+
+.invigo-logo:active {
+    --lift: -2px;
+
+    transform:
+        translate3d(var(--pull-x), var(--pull-y), 0) perspective(900px) rotateX(var(--tilt-x)) rotateY(var(--tilt-y)) translateY(var(--lift)) scale(0.985);
+
+    box-shadow: 0 10px 22px rgba(0, 0, 0, 0.16);
+
+    filter:
+        drop-shadow(0 10px 22px rgba(0, 0, 0, 0.18)) drop-shadow(0 0 10px color-mix(in srgb, var(--invigo-gold-1) 10%, transparent)) saturate(0.99) contrast(1.01);
+
+    outline-width: 1px;
+    outline-color: color-mix(in srgb, var(--outline-variant) 80%, transparent);
+}
+
+@keyframes invigo-aura-rotate {
+    from {
+        transform: scale(1.02) rotate(0deg);
+    }
+
+    to {
+        transform: scale(1.02) rotate(360deg);
+    }
+}
+
+/* Hover float. Because the element stays centered via margin auto,
+   translate doesn't “stick” it to the left. */
+@keyframes invigo-hover-float {
+    0% {
+        transform: translate3d(0, 0, 0) rotateZ(0deg);
+    }
+
+    20% {
+        transform: translate3d(0, calc(var(--invigo-hover-y) * -0.60), 0) rotateZ(calc(var(--invigo-hover-rot) * 0.45));
+    }
+
+    50% {
+        transform: translate3d(0, calc(var(--invigo-hover-y) * 0.80), 0) rotateZ(calc(var(--invigo-hover-rot) * -0.60));
+    }
+
+    78% {
+        transform: translate3d(0, calc(var(--invigo-hover-y) * -0.70), 0) rotateZ(calc(var(--invigo-hover-rot) * 0.55));
+    }
+
+    100% {
+        transform: translate3d(0, 0, 0) rotateZ(0deg);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+    .invigo-logo-container:hover,
+    .invigo-logo-container:focus-within {
+        animation: none;
+    }
+
+    .invigo-logo-container::after {
+        animation: none;
+        transition: none;
+    }
+
+    .invigo-logo {
+        transition: none;
+        transform: translateY(0);
+        --pull-x: 0px;
+        --pull-y: 0px;
+    }
+}

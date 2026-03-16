@@ -1,5 +1,6 @@
 import "beercss";
 import "@utils/theme";
+import "@static/css/invigo-logo.css"
 import { AppearanceDialog } from "@components/common/dialog/appearance-dialog";
 import { UserContext } from "@core/auth/user-context";
 import { PermissionMap } from "@core/auth/workspace-permissions";

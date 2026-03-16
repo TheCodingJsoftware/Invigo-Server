@@ -54,8 +54,8 @@
     </head>
 
     <body class="dark">
-        <header class="fixed transparent left-align row">
-            <button class="extra medium-elevate extend circle">
+        <header class="fixed transparent left-align row s">
+            <button>
                 <img class="responsive" height="60" width="60" src="/static/icon.png">
                 <span class="bold large-text">Invigo</span>
             </button>
@@ -66,7 +66,22 @@
             </button>
         </header>
         <main class="responsive">
-
+            <div class="m l top-padding">
+                <div class="circle small-width small-height invigo-logo-container">
+                    <img
+                        class="circle small-width small-height invigo-logo"
+                        width="400"
+                        height="400"
+                        src="/static/icon.png"
+                        alt="Invigo"
+                        onclick="ui('#info-dialog')"
+                        role="button"
+                        tabindex="0" />
+                    <div class="tooltip right">
+                        <h5>Invigo</h5>
+                    </div>
+                </div>
+            </div>
             <!-- ACCOUNT / ACCESS -->
             <article class="round">
                 <h6 class>Access</h6>
