@@ -18,3 +18,4 @@ def setup_logging():
         sys.__excepthook__(exc_type, exc_value, exc_traceback)
 
     sys.excepthook = excepthook
+    logging.getLogger("tornado.access").setLevel(logging.WARNING)

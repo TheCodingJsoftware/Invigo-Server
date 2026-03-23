@@ -67,7 +67,7 @@ class CoatingsInventoryDB(BaseWithDBPool):
         if cached := self.cache_manager.get(key):
             return cached
 
-        query = f"SELECT data FROM {self.TABLE_NAME} WHERE $1 = coating_type"
+        query = f"SELECT data FROM {self.TABLE_NAME} WHERE coating_type = $1"
         async with self.db_pool.acquire() as conn:
             rows = await conn.fetch(query, category)
 

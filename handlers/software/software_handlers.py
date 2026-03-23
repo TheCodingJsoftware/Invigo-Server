@@ -1,18 +1,19 @@
 import os
-from tornado.web import RequestHandler, HTTPError
 
-from utils.database.software_db import SoftwareDB
+from tornado.web import HTTPError, RequestHandler
+
 from config.environments import Environment
+from utils.database.software_db import SoftwareDB
+
 
 class BaseSoftwareHandler(RequestHandler):
     db = SoftwareDB()
 
     def set_default_headers(self):
-        self.set_header("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0")
+        self.set_header("Cache-Control", "private, no-store, no-cache, must-revalidate, max-age=0, no-transform")
         self.set_header("Pragma", "no-cache")
         self.set_header("Expires", "0")
         self.set_header("Surrogate-Control", "no-store")
-
 
 
 class SoftwareVersionHandler(BaseSoftwareHandler):
@@ -22,13 +23,15 @@ class SoftwareVersionHandler(BaseSoftwareHandler):
         if not row:
             raise HTTPError(404)
 
-        self.write({
-            "version": row["version"],
-            "file": os.path.basename(row["file_path"]),
-            "uploaded_by": row["uploaded_by"],
-            "changelog": row["changelog"],
-            "created_at": row["created_at"].isoformat()
-        })
+        self.write(
+            {
+                "version": row["version"],
+                "file": os.path.basename(row["file_path"]),
+                "uploaded_by": row["uploaded_by"],
+                "changelog": row["changelog"],
+                "created_at": row["created_at"].isoformat(),
+            }
+        )
 
 
 class SoftwareUploadHandler(BaseSoftwareHandler):
@@ -54,21 +57,22 @@ class SoftwareUploadHandler(BaseSoftwareHandler):
         with open(file_path, "wb") as f:
             f.write(fileinfo["body"])
 
-
         await self.db.add_version(version, file_path, uploaded_by, changelog)
 
-        self.write({
-            "status": "ok",
-            "version": version,
-            "file": filename,
-        })
+        self.write(
+            {
+                "status": "ok",
+                "version": version,
+                "file": filename,
+            }
+        )
 
 
 class SoftwareUpdateHandler(BaseSoftwareHandler):
     def set_default_headers(self):
         self.set_header("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0")
-        self.set_header("Pragma", "no-cache")      # HTTP/1.0 proxies
-        self.set_header("Expires", "0")             # Absolute kill-switch
+        self.set_header("Pragma", "no-cache")  # HTTP/1.0 proxies
+        self.set_header("Expires", "0")  # Absolute kill-switch
         self.set_header("Surrogate-Control", "no-store")
 
     async def get(self):

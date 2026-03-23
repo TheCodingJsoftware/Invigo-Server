@@ -351,6 +351,66 @@ class PurchaseOrderPrintout {
             }
             vendorContactDetailsElement.classList.toggle('hidden', !vendorContactDetailsCheckbox.checked);
         }
+
+        function updateVendorShipLayout(
+            vendorCheckbox: HTMLInputElement,
+            shipToCheckbox: HTMLInputElement,
+            vendorFieldset: HTMLElement,
+            shipToFieldset: HTMLElement
+        ) {
+            const vendorVisible = vendorCheckbox.checked;
+            const shipVisible = shipToCheckbox.checked;
+
+            // Reset classes first
+            vendorFieldset.classList.remove("s6", "s12");
+            shipToFieldset.classList.remove("s6", "s12");
+
+            if (vendorVisible && shipVisible) {
+                vendorFieldset.classList.add("s6");
+                shipToFieldset.classList.add("s6");
+            } else {
+                // only one (or none)
+                vendorFieldset.classList.add("s12");
+                shipToFieldset.classList.add("s12");
+            }
+
+            // Handle visibility
+            vendorFieldset.classList.toggle("hidden", !vendorVisible);
+            shipToFieldset.classList.toggle("hidden", !shipVisible);
+        }
+
+        const vendorCheckbox = document.getElementById('show-vendor') as HTMLInputElement;
+        const vendorFieldset = document.getElementById('vendor') as HTMLElement;
+
+        const shipToCheckbox = document.getElementById('show-ship-to') as HTMLInputElement;
+        const shipToFieldset = document.getElementById('ship-to') as HTMLElement;
+
+        if (vendorCheckbox && shipToCheckbox && vendorFieldset && shipToFieldset) {
+            // Load saved state
+            vendorCheckbox.checked = localStorage.getItem('show-vendor') !== "false";
+            shipToCheckbox.checked = localStorage.getItem('show-ship-to') !== "false";
+
+            const update = () => {
+                localStorage.setItem('show-vendor', String(vendorCheckbox.checked));
+                localStorage.setItem('show-ship-to', String(shipToCheckbox.checked));
+
+                updateVendorShipLayout(
+                    vendorCheckbox,
+                    shipToCheckbox,
+                    vendorFieldset,
+                    shipToFieldset
+                );
+
+                this.totalCostComponent.updateTotalPrice();
+            };
+
+            vendorCheckbox.addEventListener("change", update);
+            shipToCheckbox.addEventListener("change", update);
+
+            // Initial run
+            update();
+        }
+
         const contactDetailsCheckbox = document.getElementById('show-contactDetails') as HTMLInputElement;
         const contactDetailsElement = document.getElementById('contactDetails') as HTMLElement;
         if (contactDetailsElement) {

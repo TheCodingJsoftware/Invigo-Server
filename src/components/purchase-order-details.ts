@@ -74,11 +74,11 @@ export class PurchaseOrderDetails implements BaseComponent {
             </nav>
             <div class="content-wrapper" style="height: auto;">
                 <div class="grid top-padding">
-                    <fieldset class="s6 small-round">
+                    <fieldset class="s6 small-round" id="vendor">
                         <legend>Vendor</legend>
                         ${purchaseFrom}
                     </fieldset>
-                    <fieldset class="s6 small-round">
+                    <fieldset class="s6 small-round" id="ship-to">
                         <legend>Ship To</legend>
                         ${shippingAddress}
                     </fieldset>
